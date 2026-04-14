@@ -1,0 +1,1742 @@
+[exec_1774869767188] ▶  Writing 59 POM files to temp directory...
+✓  Helper files refreshed from current pom-generator (4 helpers)
+✓  59 files written — 40 spec files across 6 test categories
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://amerisure.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774869767188.log
+
+Running 148 tests using 1 worker
+
+[1A[2K[1/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\agency.a11y.spec.ts:6:7 › @accessibility | Find an Agency - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\agency.a11y.spec.ts:6:7 › @accessibility | Find an Agency - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 3 advisory issue(s):
+  1. 24 image(s) missing alt: phone.png, globe.png, phone.png…
+  2. 3 button(s) without accessible text
+  3. Page has no H1 heading
+[1A[2K[2/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\agency.a11y.spec.ts:13:7 › @accessibility | Find an Agency - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[3/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\agency.a11y.spec.ts:22:7 › @accessibility | Find an Agency - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[4/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\careers.a11y.spec.ts:6:7 › @accessibility | Careers - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\careers.a11y.spec.ts:6:7 › @accessibility | Careers - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+[1A[2K[5/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\careers.a11y.spec.ts:13:7 › @accessibility | Careers - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[6/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\careers.a11y.spec.ts:22:7 › @accessibility | Careers - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[7/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\construction.a11y.spec.ts:6:7 › @accessibility | Commercial Construction Insurance - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\construction.a11y.spec.ts:6:7 › @accessibility | Commercial Construction Insurance - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+
+[1A[2K[8/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\construction.a11y.spec.ts:13:7 › @accessibility | Commercial Construction Insurance - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[9/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\construction.a11y.spec.ts:22:7 › @accessibility | Commercial Construction Insurance - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[10/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\contact_us.a11y.spec.ts:6:7 › @accessibility | Contact Us - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\contact_us.a11y.spec.ts:6:7 › @accessibility | Contact Us - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 2 advisory issue(s):
+  1. 1 input(s) without accessible label
+  2. 3 button(s) without accessible text
+[1A[2K[11/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\contact_us.a11y.spec.ts:13:7 › @accessibility | Contact Us - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[12/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\contact_us.a11y.spec.ts:22:7 › @accessibility | Contact Us - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[13/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\file_a_claim.a11y.spec.ts:6:7 › @accessibility | File a Claim - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\file_a_claim.a11y.spec.ts:6:7 › @accessibility | File a Claim - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+[1A[2K[14/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\file_a_claim.a11y.spec.ts:13:7 › @accessibility | File a Claim - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[15/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\file_a_claim.a11y.spec.ts:22:7 › @accessibility | File a Claim - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[16/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home_1.a11y.spec.ts:6:7 › @accessibility | 403 Forbidden › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home_1.a11y.spec.ts:6:7 › @accessibility | 403 Forbidden › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+
+[1A[2K[17/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home_1.a11y.spec.ts:13:7 › @accessibility | 403 Forbidden › TC-A1102 page has a descriptive non-empty title
+[1A[2K[18/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home_1.a11y.spec.ts:22:7 › @accessibility | 403 Forbidden › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[19/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Commercial Insurance Solutions - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Commercial Insurance Solutions - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+[1A[2K[20/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home.a11y.spec.ts:13:7 › @accessibility | Commercial Insurance Solutions - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[21/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\home.a11y.spec.ts:22:7 › @accessibility | Commercial Insurance Solutions - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[22/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\industries.a11y.spec.ts:6:7 › @accessibility | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\industries.a11y.spec.ts:6:7 › @accessibility | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-A1101 WCAG 2.1 AA baseline checks pass
+[A11Y ADVISORY]
+WCAG 2.1 AA — 1 advisory issue(s):
+  1. 3 button(s) without accessible text
+
+[1A[2K[23/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\industries.a11y.spec.ts:13:7 › @accessibility | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-A1102 page has a descriptive non-empty title
+[1A[2K[24/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\accessibility\industries.a11y.spec.ts:22:7 › @accessibility | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-A1103 keyboard Tab reaches an interactive element
+[1A[2K[25/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:6:7 › @edge | Contact Us - Amerisure › TC-EDG01 direct URL navigation lands on correct page
+[1A[2K[26/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:14:7 › @edge | Contact Us - Amerisure › TC-EDG02 back/forward browser navigation works
+[1A[2K[27/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:25:7 › @edge | Contact Us - Amerisure › TC-EDG03 special characters in input do not crash the page
+[1A[2K  1) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:25:7 › @edge | Contact Us - Amerisure › TC-EDG03 special characters in input do not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#input_1_14').first()[22m
+    [2m    - locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m    - fill("!@#$%^&*()_+-=[]{}|;':",./<>?")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    111 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      29 |     const field = page.locator('#input_1_14').first();
+      30 |     if (await field.count() > 0) {
+    > 31 |       await field.fill(edgeData.specialChars);
+         |                   ^
+      32 |       await page.waitForFunction(() => true);
+      33 |       await expect(page.locator('body')).toBeVisible();
+      34 |     }
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:31:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\edge-contact_us.edge--edge-cbb21-input-do-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\edge-contact_us.edge--edge-cbb21-input-do-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[28/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:37:7 › @edge | Contact Us - Amerisure › TC-EDG04 unicode input is handled gracefully
+  2) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:37:7 › @edge | Contact Us - Amerisure › TC-EDG04 unicode input is handled gracefully 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#input_1_14').first()[22m
+    [2m    - locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m    - fill("Ñoño résumé café naïve Ångström Ψυχή")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    111 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      41 |     const field = page.locator('#input_1_14').first();
+      42 |     if (await field.count() > 0) {
+    > 43 |       await field.fill(edgeData.unicode);
+         |                   ^
+      44 |       await page.waitForFunction(() => true);
+      45 |       await expect(page.locator('body')).toBeVisible();
+      46 |     }
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\edge\contact_us.edge.spec.ts:43:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\edge-contact_us.edge--edge-a7523-input-is-handled-gracefully-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\edge-contact_us.edge--edge-a7523-input-is-handled-gracefully-chromium\error-context.md
+
+
+[1A[2K[1A[2K[29/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:6:7 › @functional | Find an Agency - Amerisure › TC-FUN01 form fields are visible and interactive
+[1A[2K[30/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:13:7 › @functional | Find an Agency - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  3) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:13:7 › @functional | Find an Agency - Amerisure › TC-FUN02 input field accepts text 
+
+    Error: locator.fill: Error: Input of type "checkbox" cannot be filled
+    Call log:
+    [2m  - waiting for locator('input[type="checkbox"]')[22m
+    [2m    - locator resolved to <input type="checkbox"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[type="checkbox"]').fill('test input');
+         |                                                  ^
+      18 |     await expect(page.locator('input[type="checkbox"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:17:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-agency.function-ee963-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-agency.function-ee963-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[31/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:21:7 › @functional | Find an Agency - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  4) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:21:7 › @functional | Find an Agency - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\agency.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-agency.function-84b13-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-agency.function-84b13-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[32/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:6:7 › @functional | Careers - Amerisure › TC-FUN01 form fields are visible and interactive
+[1A[2K  5) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:6:7 › @functional | Careers - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input[name="s"]')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    9 × locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input[name="s"]')).toBeVisible();
+         |                                                   ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:10:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-e7339-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-e7339-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[33/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:13:7 › @functional | Careers - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  6) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:13:7 › @functional | Careers - Amerisure › TC-FUN02 input field accepts text 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    111 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[name="s"]').fill('test input');
+         |                                           ^
+      18 |     await expect(page.locator('input[name="s"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:17:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-f8085-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-f8085-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[34/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:21:7 › @functional | Careers - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  7) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:21:7 › @functional | Careers - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\careers.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-d0a70-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-careers.functio-d0a70-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[35/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:6:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN01 form fields are visible and interactive
+  8) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:6:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input[name="s"]')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    9 × locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input[name="s"]')).toBeVisible();
+         |                                                   ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:10:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-fdd92-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-fdd92-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[1A[2K[36/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:13:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  9) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:13:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN02 input field accepts text 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    112 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[name="s"]').fill('test input');
+         |                                           ^
+      18 |     await expect(page.locator('input[name="s"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:17:43
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-4d4a9-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-4d4a9-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[37/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:21:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  10) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:21:7 › @functional | Commercial Construction Insurance - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\construction.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-9b120-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-construction.fu-9b120-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[38/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:6:7 › @functional | Contact Us - Amerisure › TC-FUN01 form fields are visible and interactive
+[1A[2K  11) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:6:7 › @functional | Contact Us - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('#input_1_14')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('#input_1_14')[22m
+    [2m    8 × locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('#input_1_14')).toBeVisible();
+         |                                               ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:10:47
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-contact_us.func-65c0c-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-contact_us.func-65c0c-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[39/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:13:7 › @functional | Contact Us - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  12) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:13:7 › @functional | Contact Us - Amerisure › TC-FUN02 input field accepts text 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#input_1_14')[22m
+    [2m    - locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    111 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('#input_1_14').fill('test input');
+         |                                       ^
+      18 |     await expect(page.locator('#input_1_14')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:17:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-contact_us.func-1a34d-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-contact_us.func-1a34d-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[40/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\contact_us.functional.spec.ts:21:7 › @functional | Contact Us - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K[41/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:6:7 › @functional | File a Claim - Amerisure › TC-FUN01 form fields are visible and interactive
+  13) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:6:7 › @functional | File a Claim - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input[name="s"]')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    9 × locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input[name="s"]')).toBeVisible();
+         |                                                   ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:10:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-file_a_claim.fu-69c71-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-file_a_claim.fu-69c71-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[1A[2K[42/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:13:7 › @functional | File a Claim - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  14) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:13:7 › @functional | File a Claim - Amerisure › TC-FUN02 input field accepts text 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    13 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[name="s"]').fill('test input');
+         |                                           ^
+      18 |     await expect(page.locator('input[name="s"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:17:43
+
+
+[1A[2K[43/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:21:7 › @functional | File a Claim - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  15) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:21:7 › @functional | File a Claim - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\file_a_claim.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-file_a_claim.fu-05ec3-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-file_a_claim.fu-05ec3-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[44/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:6:7 › @functional | 403 Forbidden › TC-FUN01 H1 heading and main content are visible
+[1A[2K[45/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:14:7 › @functional | 403 Forbidden › TC-FUN02 footer is visible and page scrolls to bottom
+[1A[2K[46/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:26:7 › @functional | 403 Forbidden › TC-FUN03 all internal navigation links return HTTP 200
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:26:7 › @functional | 403 Forbidden › TC-FUN03 all internal navigation links return HTTP 200
+(node:28644) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K  16) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:26:7 › @functional | 403 Forbidden › TC-FUN03 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      28 |     await po.navigate();
+      29 |     await po.waitForPageLoad();
+    > 30 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      31 |     await checkInternalLinks(page);
+      32 |   });
+      33 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\home_1.functional.spec.ts:30:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-home_1.function-a97c6-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-home_1.function-a97c6-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[47/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN01 form fields are visible and interactive
+[1A[2K  17) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input[name="s"]')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    9 × locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input[name="s"]')).toBeVisible();
+         |                                                   ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:10:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-home.functional-dca7d-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-home.functional-dca7d-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[48/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  18) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN02 input field accepts text 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    16 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[name="s"]').fill('test input');
+         |                                           ^
+      18 |     await expect(page.locator('input[name="s"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:17:43
+
+
+[1A[2K[49/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  19) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Commercial Insurance Solutions - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\home.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-home.functional-0cc63-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-home.functional-0cc63-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[50/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:6:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN01 form fields are visible and interactive
+[1A[2K  20) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:6:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input[name="s"]')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    9 × locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input[name="s"]')).toBeVisible();
+         |                                                   ^
+      11 |   });
+      12 |
+      13 |   test('TC-FUN02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:10:51
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-industries.func-0a970-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-industries.func-0a970-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[51/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:13:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN02 input field accepts text
+[1A[2K  21) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:13:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN02 input field accepts text 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]')[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    7 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input[name="s"]').fill('test input');
+         |                                           ^
+      18 |     await expect(page.locator('input[name="s"]')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:17:43
+
+
+[1A[2K[52/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:21:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN03 submit button is present and enabled
+[1A[2K  22) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:21:7 › @functional | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-FUN03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\functional\industries.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\functional-industries.func-73705-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\functional-industries.func-73705-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[53/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\agency.negative.spec.ts:6:7 › @negative | Find an Agency - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[54/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\agency.negative.spec.ts:19:7 › @negative | Find an Agency - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K[55/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\careers.negative.spec.ts:6:7 › @negative | Careers - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[56/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\careers.negative.spec.ts:19:7 › @negative | Careers - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K  23) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\careers.negative.spec.ts:19:7 › @negative | Careers - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    101 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('input[name="s"]').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\careers.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-careers.negative--11453-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-careers.negative--11453-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[57/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\construction.negative.spec.ts:6:7 › @negative | Commercial Construction Insurance - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[58/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\construction.negative.spec.ts:19:7 › @negative | Commercial Construction Insurance - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K  24) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\construction.negative.spec.ts:19:7 › @negative | Commercial Construction Insurance - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    113 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('input[name="s"]').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\construction.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-construction.nega-df0c4-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-construction.nega-df0c4-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[59/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\contact_us.negative.spec.ts:6:7 › @negative | Contact Us - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[60/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\contact_us.negative.spec.ts:19:7 › @negative | Contact Us - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K  25) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\contact_us.negative.spec.ts:19:7 › @negative | Contact Us - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('#input_1_14').first()[22m
+    [2m    - locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    58 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('#input_1_14').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\contact_us.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-contact_us.negati-a6e41-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-contact_us.negati-a6e41-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[61/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\file_a_claim.negative.spec.ts:6:7 › @negative | File a Claim - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[62/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\file_a_claim.negative.spec.ts:19:7 › @negative | File a Claim - Amerisure › TC-NEG02 extremely long input does not crash the page
+  26) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\file_a_claim.negative.spec.ts:19:7 › @negative | File a Claim - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    91 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('input[name="s"]').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\file_a_claim.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-file_a_claim.nega-2f51f-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-file_a_claim.nega-2f51f-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[1A[2K[63/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\home.negative.spec.ts:6:7 › @negative | Commercial Insurance Solutions - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[64/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\home.negative.spec.ts:19:7 › @negative | Commercial Insurance Solutions - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K  27) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\home.negative.spec.ts:19:7 › @negative | Commercial Insurance Solutions - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    111 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('input[name="s"]').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\home.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-home.negative--ne-d966f-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-home.negative--ne-d966f-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[65/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\industries.negative.spec.ts:6:7 › @negative | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-NEG01 empty required fields trigger validation
+[1A[2K[66/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\industries.negative.spec.ts:19:7 › @negative | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-NEG02 extremely long input does not crash the page
+[1A[2K  28) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\negative\industries.negative.spec.ts:19:7 › @negative | Industry-Leading Commercial Insurance Solutions - Amerisure › TC-NEG02 extremely long input does not crash the page 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    113 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+      23 |     const field = page.locator('input[name="s"]').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\negative\industries.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\negative-industries.negati-d7527-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\negative-industries.negati-d7527-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[67/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:7:7 › @security | Find an Agency - Amerisure › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[68/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:16:7 › @security | Find an Agency - Amerisure › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:16:7 › @security | Find an Agency - Amerisure › TC-SEC02 security response headers are present
+[Advisory] No security headers on /agency/
+
+[1A[2K[69/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[70/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[71/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[72/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[73/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[74/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\agency.security.spec.ts:31:9 › @security | Find an Agency - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[75/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:7:7 › @security | Careers - Amerisure › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[76/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:16:7 › @security | Careers - Amerisure › TC-SEC02 security response headers are present
+[1A[2K
+[chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:16:7 › @security | Careers - Amerisure › TC-SEC02 security response headers are present
+[Advisory] No security headers on /careers/
+[1A[2K[77/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K  29) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("<script>alert("xss")</script>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    70 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-careers.security--b16d3-te-script-alert-xss-script--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-careers.security--b16d3-te-script-alert-xss-script--chromium\error-context.md
+
+
+[1A[2K[78/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K  30) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>" 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill(""><img src=x onerror=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    7 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+
+[1A[2K[79/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K  31) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("';alert('xss');//")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    99 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+
+[1A[2K[80/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K  32) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("<svg onload=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    110 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-careers.security--007ad-execute-svg-onload-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-careers.security--007ad-execute-svg-onload-alert-1--chromium\error-context.md
+
+
+[1A[2K[81/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K  33) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("{{7*7}}")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    110 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-careers.security--6c716-yload-does-not-execute-7-7--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-careers.security--6c716-yload-does-not-execute-7-7--chromium\error-context.md
+
+
+[1A[2K[82/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K  34) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("javascript:alert(1)")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    112 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\careers.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-careers.security--bb62b-execute-javascript-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-careers.security--bb62b-execute-javascript-alert-1--chromium\error-context.md
+
+
+[1A[2K[83/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:7:7 › @security | Commercial Construction Insurance - Amerisure › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[84/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:16:7 › @security | Commercial Construction Insurance - Amerisure › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:16:7 › @security | Commercial Construction Insurance - Amerisure › TC-SEC02 security response headers are present
+[Advisory] No security headers on /industries/construction/
+
+[1A[2K[85/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K  35) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("<script>alert("xss")</script>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    112 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-construction.secu-ae001-te-script-alert-xss-script--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-construction.secu-ae001-te-script-alert-xss-script--chromium\error-context.md
+
+
+[1A[2K[86/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K  36) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill(""><img src=x onerror=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    103 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-construction.secu-8e1a7--img-src-x-onerror-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-construction.secu-8e1a7--img-src-x-onerror-alert-1--chromium\error-context.md
+
+
+[1A[2K[87/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K  37) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("';alert('xss');//")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    104 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-construction.secu-04d09-does-not-execute-alert-xss--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-construction.secu-04d09-does-not-execute-alert-xss--chromium\error-context.md
+
+
+[1A[2K[88/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K  38) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>" 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("<svg onload=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    104 × waiting for element to be visible, enabled and editable[22m
+    [2m        - element is not visible[22m
+    [2m      - retrying fill action[22m
+    [2m        - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774869767197\test-results\security-construction.secu-be499-execute-svg-onload-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774869767197\test-results\security-construction.secu-be499-execute-svg-onload-alert-1--chromium\error-context.md
+
+
+[1A[2K[89/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K  39) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}" 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("{{7*7}}")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    65 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+
+[1A[2K[90/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K  40) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:31:9 › @security | Commercial Construction Insurance - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)" 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('input[name="s"]').first()[22m
+    [2m    - locator resolved to <input value="" name="s" type="search" title="Search for:" class="search-field" placeholder="Search …"/>[22m
+    [2m    - fill("javascript:alert(1)")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    14 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\construction.security.spec.ts:37:33
+
+
+[1A[2K[91/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:7:7 › @security | Contact Us - Amerisure › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K  41) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:7:7 › @security | Contact Us - Amerisure › TC-SEC01 URL does not expose sensitive parameters 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://amerisure.com/contact-us/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:174
+
+      172 |
+      173 |   async navigate(): Promise<void> {
+    > 174 |     await this.page.goto('/contact-us/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      175 |     await this.page.waitForLoadState('domcontentloaded');
+      176 |   }
+      177 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\pages\contact_us.page.ts:174:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:9:14
+
+
+[1A[2K[92/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:16:7 › @security | Contact Us - Amerisure › TC-SEC02 security response headers are present
+
+[1A[2K[chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:16:7 › @security | Contact Us - Amerisure › TC-SEC02 security response headers are present
+[Advisory] No security headers on /contact-us/
+[1A[2K[93/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+  42) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>" 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://amerisure.com/contact-us/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:174
+
+      172 |
+      173 |   async navigate(): Promise<void> {
+    > 174 |     await this.page.goto('/contact-us/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      175 |     await this.page.waitForLoadState('domcontentloaded');
+      176 |   }
+      177 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\pages\contact_us.page.ts:174:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:33:16
+
+
+[1A[2K[1A[2K[94/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K  43) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>" 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://amerisure.com/contact-us/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:174
+
+      172 |
+      173 |   async navigate(): Promise<void> {
+    > 174 |     await this.page.goto('/contact-us/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      175 |     await this.page.waitForLoadState('domcontentloaded');
+      176 |   }
+      177 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\pages\contact_us.page.ts:174:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:33:16
+
+
+[1A[2K[95/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K  44) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://amerisure.com/contact-us/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:174
+
+      172 |
+      173 |   async navigate(): Promise<void> {
+    > 174 |     await this.page.goto('/contact-us/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      175 |     await this.page.waitForLoadState('domcontentloaded');
+      176 |   }
+      177 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\pages\contact_us.page.ts:174:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:33:16
+
+
+[1A[2K[96/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+  45) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>" 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://amerisure.com/contact-us/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:174
+
+      172 |
+      173 |   async navigate(): Promise<void> {
+    > 174 |     await this.page.goto('/contact-us/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      175 |     await this.page.waitForLoadState('domcontentloaded');
+      176 |   }
+      177 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\pages\contact_us.page.ts:174:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:33:16
+
+
+[1A[2K[1A[2K[97/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K  46) [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "{{7*7}}" 
+
+    Error: locator.fill: Target page, context or browser has been closed
+    Call log:
+    [2m  - waiting for locator('#input_1_14').first()[22m
+    [2m    - locator resolved to <input value="" type="text" name="input_14" id="input_1_14" autocomplete="new-password"/>[22m
+    [2m    - fill("{{7*7}}")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 500ms[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     await page.waitForFunction(() => true);
+      23 |   }
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:37:33
+
+
+[1A[2K[98/148] [chromium] › .autotest-tmp\run_1774869767197\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Contact Us - Amerisure › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"

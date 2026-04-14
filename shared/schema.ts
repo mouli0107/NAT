@@ -1,0 +1,1546 @@
+import { sql } from "drizzle-orm";
+import { pgTable, text, varchar, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod";
+
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  username: text("username").notNull().unique(),
+  password: text("password").notNull(),
+});
+
+export const projects = pgTable("projects", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  type: text("type").notNull(),
+  domain: text("domain").default("insurance"),
+  productDescription: text("product_description"),
+  websiteUrl: text("website_url"),
+  applicationType: text("application_type").default("web_portal"),
+  adoEnabled: integer("ado_enabled").default(0),
+  adoConnectionId: varchar("ado_connection_id"),
+  adoProjectId: text("ado_project_id"),
+  adoProjectName: text("ado_project_name"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const testSessions = pgTable("test_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  figmaUrl: text("figma_url").notNull(),
+  websiteUrl: text("website_url").notNull(),
+  testScope: text("test_scope").notNull(),
+  browserTarget: text("browser_target").notNull(),
+  status: text("status").notNull().default("pending"),
+  tasks: jsonb("tasks").$type<AgentTask[]>().default([]),
+  metrics: jsonb("metrics").$type<LiveMetric[]>(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const testResults = pgTable("test_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => testSessions.id, { onDelete: "cascade" }),
+  completionTime: integer("completion_time").notNull(),
+  designCompliance: integer("design_compliance").notNull(),
+  accessibilityWarnings: integer("accessibility_warnings").notNull(),
+  testCasesGenerated: integer("test_cases_generated").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const visualDiffs = pgTable("visual_diffs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  resultId: varchar("result_id").notNull().references(() => testResults.id, { onDelete: "cascade" }),
+  area: text("area").notNull(),
+  count: integer("count").notNull(),
+  severity: text("severity").notNull(),
+  screenshotUrl: text("screenshot_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertTestSessionSchema = createInsertSchema(testSessions).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertTestResultSchema = createInsertSchema(testResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertVisualDiffSchema = createInsertSchema(visualDiffs).omit({
+  id: true,
+  createdAt: true,
+});
+
+// ─── Auto-Test Tables ────────────────────────────────────────────────────────
+
+export const autoTestRuns = pgTable("auto_test_runs", {
+  id: varchar("id").primaryKey(),
+  url: text("url").notNull(),
+  status: text("status").notNull().default("crawling"), // crawling | done | error
+  pageCount: integer("page_count").default(0),
+  errorMessage: text("error_message"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const autoTestPages = pgTable("auto_test_pages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").notNull().references(() => autoTestRuns.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  title: text("title"),
+  forms: integer("forms").default(0),
+  buttons: integer("buttons").default(0),
+  inputs: integer("inputs").default(0),
+  links: integer("links").default(0),
+  domData: jsonb("dom_data"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const autoTestCases = pgTable("auto_test_cases", {
+  id: varchar("id").primaryKey(),              // TC-001 etc
+  runId: varchar("run_id").notNull().references(() => autoTestRuns.id, { onDelete: "cascade" }),
+  title: text("title").notNull(),
+  priority: text("priority").notNull(),        // P0, P1, P2
+  category: text("category").notNull(),        // smoke, content, navigation, form, negative, workflow
+  pageUrl: text("page_url"),
+  description: text("description"),
+  steps: jsonb("steps").$type<string[]>().default([]),
+  expectedResult: text("expected_result"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const autoTestScripts = pgTable("auto_test_scripts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").notNull().references(() => autoTestRuns.id, { onDelete: "cascade" }),
+  content: text("content").notNull(),
+  testCaseIds: jsonb("test_case_ids").$type<string[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const autoTestExecutions = pgTable("auto_test_executions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").notNull().references(() => autoTestRuns.id, { onDelete: "cascade" }),
+  scriptId: varchar("script_id").references(() => autoTestScripts.id),
+  status: text("status").notNull().default("running"), // running | completed | failed
+  total: integer("total").default(0),
+  passed: integer("passed").default(0),
+  failed: integer("failed").default(0),
+  skipped: integer("skipped").default(0),
+  results: jsonb("results").$type<any[]>().default([]),
+  executedAt: timestamp("executed_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export type AutoTestRun = typeof autoTestRuns.$inferSelect;
+export type AutoTestPage = typeof autoTestPages.$inferSelect;
+export type AutoTestCase = typeof autoTestCases.$inferSelect;
+export type AutoTestScript = typeof autoTestScripts.$inferSelect;
+export type AutoTestExecution = typeof autoTestExecutions.$inferSelect;
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type InsertTestSession = z.infer<typeof insertTestSessionSchema>;
+export type TestSession = typeof testSessions.$inferSelect;
+export type InsertTestResult = z.infer<typeof insertTestResultSchema>;
+export type TestResult = typeof testResults.$inferSelect;
+export type InsertVisualDiff = z.infer<typeof insertVisualDiffSchema>;
+export type VisualDiff = typeof visualDiffs.$inferSelect;
+
+export interface TestSessionWithResults extends TestSession {
+  testResults?: {
+    completionTime: number;
+    designCompliance: number;
+    accessibilityWarnings: number;
+    testCasesGenerated: number;
+    visualDifferences: VisualDifference[];
+  };
+}
+
+export type TaskStatus = "pending" | "in-progress" | "completed";
+
+export interface AgentTask {
+  id: string;
+  taskName: string;
+  agentName: string;
+  status: TaskStatus;
+  progress: number;
+  details: string;
+  timestamp: string;
+}
+
+export interface LiveMetric {
+  id: string;
+  label: string;
+  emoji?: string;
+  currentValue: number;
+  targetValue: number;
+  unit?: string;
+}
+
+export interface VisualDifference {
+  area: string;
+  count: number;
+  severity: "minor" | "major";
+}
+
+export interface TestResults {
+  completionTime: number;
+  designCompliance: number;
+  accessibilityWarnings: number;
+  testCasesGenerated: number;
+  visualDifferences: VisualDifference[];
+}
+
+export interface TaskUpdate {
+  taskId: string;
+  taskName: string;
+  agentName: string;
+  status: TaskStatus;
+  progress: number;
+  details: string;
+  timestamp: string;
+  metrics?: LiveMetric[];
+  results?: TestResults;
+}
+
+export interface WorkflowStep {
+  action: string;
+  description: string;
+  selector?: string;
+  expectedOutcome?: string;
+}
+
+export interface CrawlProgress {
+  status: 'initializing' | 'fetching_sitemap' | 'probing_paths' | 'crawling' | 'analyzing' | 'generating_tests' | 'completed' | 'error';
+  pagesVisited: number;
+  pagesQueued: number;
+  formsFound: number;
+  buttonsFound: number;
+  inputsFound: number;
+  currentUrl?: string;
+  error?: string;
+}
+
+export const functionalTestSessions = pgTable("functional_test_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  url: text("url").notNull(),
+  testFocus: text("test_focus").notNull(),
+  crawlStatus: text("crawl_status").notNull().default("pending"),
+  pagesVisited: integer("pages_visited").default(0),
+  workflowsDiscovered: integer("workflows_discovered").default(0),
+  testCasesGenerated: integer("test_cases_generated").default(0),
+  testCasesPassed: integer("test_cases_passed").default(0),
+  testCasesFailed: integer("test_cases_failed").default(0),
+  crawlProgress: jsonb("crawl_progress").$type<CrawlProgress>(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const workflows = pgTable("workflows", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sessionId: varchar("session_id").notNull().references(() => functionalTestSessions.id, { onDelete: "cascade" }),
+  workflowId: text("workflow_id").notNull(),
+  name: text("name").notNull(),
+  type: text("type").notNull(),
+  entryPoint: text("entry_point").notNull(),
+  steps: jsonb("steps").$type<WorkflowStep[]>().notNull(),
+  confidence: integer("confidence").notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface TestStep {
+  step_number: number;
+  action: string;
+  expected_behavior: string;
+}
+
+export const testCases = pgTable("test_cases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  workflowId: varchar("workflow_id").notNull().references(() => workflows.id, { onDelete: "cascade" }),
+  testId: text("test_id").notNull(),
+  name: text("name").notNull(),
+  objective: text("objective").notNull(),
+  given: text("given").notNull(),
+  when: text("when").notNull(),
+  then: text("then").notNull(),
+  selector: text("selector"),
+  preconditions: jsonb("preconditions").$type<string[]>().default([]),
+  test_steps: jsonb("test_steps").$type<TestStep[]>().notNull(),
+  postconditions: jsonb("postconditions").$type<string[]>().default([]),
+  test_data: jsonb("test_data").$type<Record<string, any>>(),
+  test_type: text("test_type").notNull().default("Functional"),
+  status: text("status").notNull().default("pending"),
+  priority: text("priority").default("P2"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const executionResults = pgTable("execution_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  testCaseId: varchar("test_case_id").notNull().references(() => testCases.id, { onDelete: "cascade" }),
+  status: text("status").notNull(),
+  executionTime: integer("execution_time").notNull(),
+  screenshotUrl: text("screenshot_url"),
+  errorLog: text("error_log"),
+  consoleErrors: jsonb("console_errors").$type<string[]>(),
+  networkErrors: jsonb("network_errors").$type<string[]>(),
+  actualResult: text("actual_result"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertUserSchema = createInsertSchema(users).pick({
+  username: true,
+  password: true,
+});
+
+export const insertProjectSchema = createInsertSchema(projects).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertFunctionalTestSessionSchema = createInsertSchema(functionalTestSessions).pick({
+  url: true,
+  testFocus: true,
+  crawlProgress: true,
+  projectId: true,
+});
+
+export const insertWorkflowSchema = createInsertSchema(workflows).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTestCaseSchema = createInsertSchema(testCases).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
+export const insertExecutionResultSchema = createInsertSchema(executionResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type User = typeof users.$inferSelect;
+export type InsertProject = z.infer<typeof insertProjectSchema>;
+export type Project = typeof projects.$inferSelect;
+export type InsertFunctionalTestSession = z.infer<typeof insertFunctionalTestSessionSchema>;
+export type FunctionalTestSession = typeof functionalTestSessions.$inferSelect;
+export type InsertWorkflow = z.infer<typeof insertWorkflowSchema>;
+export type Workflow = typeof workflows.$inferSelect;
+export type InsertTestCase = z.infer<typeof insertTestCaseSchema>;
+export type TestCase = typeof testCases.$inferSelect;
+export type InsertExecutionResult = z.infer<typeof insertExecutionResultSchema>;
+export type ExecutionResult = typeof executionResults.$inferSelect;
+
+export type InsertRequirement = z.infer<typeof insertRequirementSchema>;
+export type Requirement = typeof requirements.$inferSelect;
+
+export const requirements = pgTable("requirements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const sprints = pgTable("sprints", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  goal: text("goal"),
+  startDate: timestamp("start_date"),
+  endDate: timestamp("end_date"),
+  status: text("status").default("planning"),
+  adoSyncEnabled: integer("ado_sync_enabled").default(0),
+  adoBacklogSource: text("ado_backlog_source").default("sprint_backlog"),
+  adoIterationPath: text("ado_iteration_path"),
+  adoAreaPath: text("ado_area_path"),
+  adoWiqlQuery: text("ado_wiql_query"),
+  adoWorkItemTypes: jsonb("ado_work_item_types").$type<string[]>().default(["User Story"]),
+  adoSyncFrequency: text("ado_sync_frequency").default("manual"),
+  adoLastSyncAt: timestamp("ado_last_sync_at"),
+  adoSyncStatus: text("ado_sync_status").default("not_synced"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSprintSchema = createInsertSchema(sprints).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSprint = z.infer<typeof insertSprintSchema>;
+export type Sprint = typeof sprints.$inferSelect;
+
+export const userStories = pgTable("user_stories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  requirementId: varchar("requirement_id").notNull().references(() => requirements.id, { onDelete: "cascade" }),
+  adoWorkItemId: integer("ado_work_item_id").unique(),
+  title: text("title").notNull(),
+  description: text("description"),
+  acceptanceCriteria: text("acceptance_criteria"),
+  state: text("state"),
+  assignedTo: text("assigned_to"),
+  sprint: text("sprint"),
+  areaPath: text("area_path"),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  adoUrl: text("ado_url"),
+  syncedAt: timestamp("synced_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Sprint User Stories - simplified user stories for Sprint Agent (no requirement dependency)
+export const sprintUserStories = pgTable("sprint_user_stories", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sprintId: varchar("sprint_id").notNull().references(() => sprints.id, { onDelete: "cascade" }),
+  adoWorkItemId: integer("ado_work_item_id"),
+  title: text("title").notNull(),
+  description: text("description"),
+  acceptanceCriteria: text("acceptance_criteria"),
+  storyPoints: integer("story_points"),
+  priority: text("priority").default("medium"),
+  status: text("status").default("new"),
+  source: text("source").default("manual"),
+  assignedTo: text("assigned_to"),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  adoUrl: text("ado_url"),
+  adoSyncStatus: text("ado_sync_status").default("not_synced"),
+  adoLastSyncAt: timestamp("ado_last_sync_at"),
+  attachments: jsonb("attachments").$type<{id: string; name: string; url: string}[]>().default([]),
+  additionalContext: text("additional_context"),
+  contextDocuments: jsonb("context_documents").$type<{id: string; name: string; content: string}[]>().default([]),
+  contextUrls: jsonb("context_urls").$type<{url: string; title?: string; content?: string}[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertSprintUserStorySchema = createInsertSchema(sprintUserStories).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertSprintUserStory = z.infer<typeof insertSprintUserStorySchema>;
+export type SprintUserStory = typeof sprintUserStories.$inferSelect;
+
+export const sprintTestCases = pgTable("sprint_test_cases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  sprintId: varchar("sprint_id").references(() => sprints.id, { onDelete: "cascade" }),
+  sprintUserStoryId: varchar("sprint_user_story_id").references(() => sprintUserStories.id, { onDelete: "cascade" }),
+  userStoryId: varchar("user_story_id").references(() => userStories.id, { onDelete: "cascade" }),
+  testCaseId: text("test_case_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  objective: text("objective"),
+  preconditions: jsonb("preconditions").$type<string[]>().default([]),
+  testSteps: jsonb("test_steps").$type<TestStep[]>().notNull(),
+  expectedResult: text("expected_result"),
+  postconditions: jsonb("postconditions").$type<string[]>().default([]),
+  testData: jsonb("test_data").$type<Record<string, any>>(),
+  testType: text("test_type").default("functional"),
+  category: text("category").notNull().default("functional"),
+  priority: text("priority").default("P2"),
+  status: text("status").default("draft"),
+  editStatus: text("edit_status").default("original"),
+  isEdited: integer("is_edited").default(0),
+  linkedAcceptanceCriteria: jsonb("linked_acceptance_criteria").$type<number[]>().default([]),
+  tags: jsonb("tags").$type<string[]>().default([]),
+  notes: text("notes"),
+  originalVersion: jsonb("original_version").$type<Record<string, any>>(),
+  changeHistory: jsonb("change_history").$type<{timestamp: string; field: string; oldValue: any; newValue: any}[]>().default([]),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertRequirementSchema = createInsertSchema(requirements).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserStorySchema = createInsertSchema(userStories).omit({
+  id: true,
+  syncedAt: true,
+  createdAt: true,
+  adoWorkItemId: true,
+});
+
+export const insertSprintTestCaseSchema = createInsertSchema(sprintTestCases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertUserStory = z.infer<typeof insertUserStorySchema>;
+export type UserStory = typeof userStories.$inferSelect;
+export type InsertSprintTestCase = z.infer<typeof insertSprintTestCaseSchema>;
+export type SprintTestCase = typeof sprintTestCases.$inferSelect;
+
+export const adoConfigurations = pgTable("ado_configurations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  organization: text("organization").notNull(),
+  project: text("project").notNull(),
+  pat: text("pat").notNull(),
+  isActive: integer("is_active").default(1),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAdoConfigurationSchema = createInsertSchema(adoConfigurations).omit({
+  id: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAdoConfiguration = z.infer<typeof insertAdoConfigurationSchema>;
+export type AdoConfiguration = typeof adoConfigurations.$inferSelect;
+
+// Functional Test Runs - stores history of functional test executions
+export const functionalTestRuns = pgTable("functional_test_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  websiteUrl: text("website_url").notNull(),
+  testFocus: text("test_focus").notNull().default("all"),
+  domain: text("domain").default("general"),
+  productContext: text("product_context"),
+  sampleMode: text("sample_mode").default("comprehensive"),
+  status: text("status").notNull().default("running"),
+  totalTestCases: integer("total_test_cases").default(0),
+  workflowCases: integer("workflow_cases").default(0),
+  functionalCases: integer("functional_cases").default(0),
+  negativeCases: integer("negative_cases").default(0),
+  edgeCases: integer("edge_cases").default(0),
+  textValidationCases: integer("text_validation_cases").default(0),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Functional Test Run Cases - stores individual test cases from a run
+export const functionalTestRunCases = pgTable("functional_test_run_cases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").notNull().references(() => functionalTestRuns.id, { onDelete: "cascade" }),
+  testId: text("test_id").notNull(),
+  category: text("category").notNull(),
+  name: text("name").notNull(),
+  objective: text("objective"),
+  preconditions: jsonb("preconditions").$type<string[]>().default([]),
+  testSteps: jsonb("test_steps").$type<TestStep[]>().notNull(),
+  expectedResult: text("expected_result").notNull(),
+  testData: jsonb("test_data").$type<Record<string, any>>(),
+  priority: text("priority").default("P2"),
+  status: text("status").default("generated"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertFunctionalTestRunSchema = createInsertSchema(functionalTestRuns).omit({
+  id: true,
+  status: true,
+  totalTestCases: true,
+  workflowCases: true,
+  functionalCases: true,
+  negativeCases: true,
+  edgeCases: true,
+  textValidationCases: true,
+  completedAt: true,
+  createdAt: true,
+});
+
+export const insertFunctionalTestRunCaseSchema = createInsertSchema(functionalTestRunCases).omit({
+  id: true,
+  status: true,
+  createdAt: true,
+});
+
+export type InsertFunctionalTestRun = z.infer<typeof insertFunctionalTestRunSchema>;
+export type FunctionalTestRun = typeof functionalTestRuns.$inferSelect;
+export type InsertFunctionalTestRunCase = z.infer<typeof insertFunctionalTestRunCaseSchema>;
+export type FunctionalTestRunCase = typeof functionalTestRunCases.$inferSelect;
+
+// Type for test run with cases
+export interface FunctionalTestRunWithCases extends FunctionalTestRun {
+  testCases: FunctionalTestRunCase[];
+}
+
+// Integration configurations for test management platforms
+export const integrationConfigs = pgTable("integration_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  platform: text("platform").notNull(), // azure_devops, jira, zephyr, testrail, qtest, qmetry
+  name: text("name").notNull(), // Display name
+  config: jsonb("config").$type<Record<string, any>>().notNull(), // Platform-specific configuration
+  status: text("status").notNull().default("not_configured"), // not_configured, connected, error
+  lastSyncedAt: timestamp("last_synced_at"),
+  lastError: text("last_error"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertIntegrationConfigSchema = createInsertSchema(integrationConfigs).omit({
+  id: true,
+  status: true,
+  lastSyncedAt: true,
+  lastError: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertIntegrationConfig = z.infer<typeof insertIntegrationConfigSchema>;
+export type IntegrationConfig = typeof integrationConfigs.$inferSelect;
+
+// Integration platform types
+export type IntegrationPlatform = 
+  | "azure_devops" 
+  | "jira" 
+  | "zephyr" 
+  | "testrail" 
+  | "qtest" 
+  | "qmetry";
+
+export type IntegrationStatus = "not_configured" | "connected" | "error";
+
+// Platform-specific configuration interfaces
+export interface AzureDevOpsConfig {
+  organizationUrl: string;
+  personalAccessToken: string;
+  defaultProject?: string;
+  apiVersion: string;
+  syncOptions: {
+    autoSyncUserStories: boolean;
+    syncWorkItemComments: boolean;
+    createWorkItemsForFailedTests: boolean;
+    linkTestCasesToWorkItems: boolean;
+  };
+  syncFrequency: string;
+}
+
+export interface JiraConfig {
+  instanceUrl: string;
+  authType: "api_token" | "pat" | "oauth";
+  email?: string;
+  apiToken: string;
+  defaultProjectKey?: string;
+  issueTypesToSync: string[];
+  customJqlFilter?: string;
+  syncOptions: {
+    autoSyncOnUpdate: boolean;
+    createJiraIssuesForFailedTests: boolean;
+    addTestExecutionLinks: boolean;
+    syncAttachments: boolean;
+  };
+}
+
+export interface ZephyrConfig {
+  product: "scale_cloud" | "scale_server" | "squad";
+  jiraInstanceUrl: string;
+  apiAccessToken: string;
+  accountId?: string;
+  defaultProject?: string;
+  testCycleSettings: {
+    autoCreateCycles: boolean;
+    cycleNamingPattern: string;
+    defaultCycleFolder?: string;
+  };
+  syncOptions: {
+    pushTestCases: boolean;
+    syncExecutionResults: boolean;
+    createTestCyclesAuto: boolean;
+    mapPriorities: boolean;
+  };
+}
+
+export interface TestRailConfig {
+  instanceUrl: string;
+  username: string;
+  apiKey: string;
+  defaultProject?: string;
+  defaultTestSuite?: string;
+  testRunSettings: {
+    autoCreateRuns: boolean;
+    runNamingPattern: string;
+    assignToUser?: string;
+    includeAllCases: boolean;
+  };
+  syncOptions: {
+    pushTestCases: boolean;
+    syncExecutionResults: boolean;
+    includeScreenshots: boolean;
+    includeStepResults: boolean;
+    createDefectsForFailures: boolean;
+  };
+}
+
+export interface QTestConfig {
+  managerUrl: string;
+  authMethod: "api_token" | "username_password" | "oauth";
+  apiToken?: string;
+  username?: string;
+  password?: string;
+  defaultProject?: string;
+  moduleFolder?: string;
+  testRunSettings: {
+    targetTestCycle?: string;
+    autoCreateSuites: boolean;
+    suiteNamingPattern: string;
+  };
+  automationSettings: {
+    linkToAutomationHost: boolean;
+    automationHostId?: string;
+    agentName?: string;
+  };
+  syncOptions: {
+    pushTestCases: boolean;
+    syncExecutionLogs: boolean;
+    includeAutomationResults: boolean;
+    uploadAttachments: boolean;
+    createDefectsForFailures: boolean;
+  };
+}
+
+export interface QMetryConfig {
+  instanceType: "jira_cloud" | "jira_server" | "standalone";
+  baseUrl: string;
+  apiKey: string;
+  jiraInstanceUrl?: string;
+  jiraApiToken?: string;
+  projectKey?: string;
+  defaultProject?: string;
+  testCycleConfig: {
+    folderPath: string;
+    cycleNamingConvention: string;
+    platform?: string;
+    buildVersion?: string;
+  };
+  automationSettings: {
+    enableAutomationSync: boolean;
+    automationFramework: string;
+    entityType: string;
+  };
+  syncOptions: {
+    syncTestCases: boolean;
+    pushExecutionResults: boolean;
+    includeStepResults: boolean;
+    attachEvidence: boolean;
+    createDefectsForFailures: boolean;
+    linkRequirements: boolean;
+  };
+}
+
+// ==========================================
+// Test Execution Mode - Execution Runs
+// ==========================================
+
+export interface ExecutionStepResult {
+  stepNumber: number;
+  action: string;
+  selector?: string;
+  expected: string;
+  actual: string;
+  status: "passed" | "failed" | "skipped" | "running";
+  duration: number;
+  screenshotPath?: string;
+  errorMessage?: string;
+  timestamp: string;
+}
+
+export interface ExecutionAgentLog {
+  agentName: string;
+  action: string;
+  message: string;
+  status: "thinking" | "working" | "completed" | "error";
+  timestamp: string;
+}
+
+// Main execution run session
+export const executionRuns = pgTable("execution_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  runName: text("run_name").notNull(),
+  browser: text("browser").notNull().default("chromium"), // chromium, firefox, webkit
+  executionMode: text("execution_mode").notNull().default("headless"), // headed, headless
+  status: text("status").notNull().default("pending"), // pending, running, completed, failed, cancelled
+  totalTests: integer("total_tests").notNull().default(0),
+  passedTests: integer("passed_tests").default(0),
+  failedTests: integer("failed_tests").default(0),
+  skippedTests: integer("skipped_tests").default(0),
+  duration: integer("duration").default(0), // in milliseconds
+  videoPath: text("video_path"),
+  agentLogs: jsonb("agent_logs").$type<ExecutionAgentLog[]>().default([]),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// Individual test case execution within a run
+export const executionRunTests = pgTable("execution_run_tests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").notNull().references(() => executionRuns.id, { onDelete: "cascade" }),
+  testCaseId: varchar("test_case_id").notNull(), // Can reference either testCases or sprintTestCases
+  testCaseSource: text("test_case_source").notNull().default("functional"), // functional, sprint
+  testName: text("test_name").notNull(),
+  category: text("category").notNull().default("functional"),
+  status: text("status").notNull().default("pending"), // pending, running, passed, failed, skipped
+  duration: integer("duration").default(0),
+  stepResults: jsonb("step_results").$type<ExecutionStepResult[]>().default([]),
+  finalScreenshotPath: text("final_screenshot_path"),
+  errorMessage: text("error_message"),
+  consoleErrors: jsonb("console_errors").$type<string[]>().default([]),
+  startedAt: timestamp("started_at"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+// BDD Feature Files
+export const bddFeatureFiles = pgTable("bdd_feature_files", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  testCaseId: varchar("test_case_id"), // Optional - can be for whole project or specific test
+  testCaseSource: text("test_case_source").default("functional"), // functional, sprint
+  featureName: text("feature_name").notNull(),
+  fileName: text("file_name").notNull(),
+  content: text("content").notNull(), // Gherkin feature file content
+  language: text("language").notNull().default("gherkin"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// BDD Step Definition Files
+export const bddStepDefinitions = pgTable("bdd_step_definitions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  featureFileId: varchar("feature_file_id").references(() => bddFeatureFiles.id, { onDelete: "cascade" }),
+  stepDefName: text("step_def_name").notNull(),
+  fileName: text("file_name").notNull(),
+  content: text("content").notNull(), // Playwright/TypeScript step definition code
+  language: text("language").notNull().default("typescript"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+// Insert schemas
+export const insertExecutionRunSchema = createInsertSchema(executionRuns).omit({
+  id: true,
+  passedTests: true,
+  failedTests: true,
+  skippedTests: true,
+  duration: true,
+  videoPath: true,
+  agentLogs: true,
+  startedAt: true,
+  completedAt: true,
+  createdAt: true,
+});
+
+export const insertExecutionRunTestSchema = createInsertSchema(executionRunTests).omit({
+  id: true,
+  status: true,
+  duration: true,
+  stepResults: true,
+  finalScreenshotPath: true,
+  errorMessage: true,
+  consoleErrors: true,
+  startedAt: true,
+  completedAt: true,
+  createdAt: true,
+});
+
+export const insertBddFeatureFileSchema = createInsertSchema(bddFeatureFiles).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertBddStepDefinitionSchema = createInsertSchema(bddStepDefinitions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types
+export type InsertExecutionRun = z.infer<typeof insertExecutionRunSchema>;
+export type ExecutionRun = typeof executionRuns.$inferSelect;
+export type InsertExecutionRunTest = z.infer<typeof insertExecutionRunTestSchema>;
+export type ExecutionRunTest = typeof executionRunTests.$inferSelect;
+export type InsertBddFeatureFile = z.infer<typeof insertBddFeatureFileSchema>;
+export type BddFeatureFile = typeof bddFeatureFiles.$inferSelect;
+export type InsertBddStepDefinition = z.infer<typeof insertBddStepDefinitionSchema>;
+export type BddStepDefinition = typeof bddStepDefinitions.$inferSelect;
+
+// Execution run with tests
+export interface ExecutionRunWithTests extends ExecutionRun {
+  tests: ExecutionRunTest[];
+}
+
+// Execution status type
+export type ExecutionStatus = "pending" | "running" | "completed" | "failed" | "cancelled";
+export type TestExecutionStatus = "pending" | "running" | "passed" | "failed" | "skipped";
+export type StepExecutionStatus = "passed" | "failed" | "skipped" | "running";
+
+// ============================================
+// Synthetic Data Generation Tables
+// ============================================
+
+// Synthetic Data Generation Jobs
+export const syntheticDataJobs = pgTable("synthetic_data_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  domain: text("domain").notNull(), // banking, insurance, healthcare, retail, telecom, manufacturing
+  subDomain: text("sub_domain").notNull(), // e.g., core_banking, auto_insurance, patients
+  recordCount: integer("record_count").notNull().default(100),
+  dataPrefix: text("data_prefix"),
+  maskingEnabled: integer("masking_enabled").notNull().default(0),
+  selectedFields: jsonb("selected_fields").$type<string[]>().default([]),
+  generatedData: jsonb("generated_data").$type<Record<string, any>[]>(),
+  metadata: jsonb("metadata").$type<SyntheticDataMetadata>(),
+  status: text("status").notNull().default("pending"), // pending, generating, completed, failed
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export interface SyntheticDataMetadata {
+  policyType?: string;
+  recordCount: number;
+  fieldCount: number;
+  generatedAt: string;
+  prefix?: string;
+  source: string;
+  processingTime?: number;
+  qualityScore?: number;
+}
+
+export const insertSyntheticDataJobSchema = createInsertSchema(syntheticDataJobs).omit({
+  id: true,
+  generatedData: true,
+  metadata: true,
+  status: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export type InsertSyntheticDataJob = z.infer<typeof insertSyntheticDataJobSchema>;
+export type SyntheticDataJob = typeof syntheticDataJobs.$inferSelect;
+
+// Domain and field definitions (used in frontend)
+export interface DomainDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  description: string;
+  subDomains: SubDomainDefinition[];
+}
+
+export interface SubDomainDefinition {
+  id: string;
+  name: string;
+  icon: string;
+  fields: string[];
+  fieldCount: number;
+}
+
+export interface GeneratedDataResult {
+  records: Record<string, any>[];
+  fields: string[];
+  metadata: SyntheticDataMetadata;
+}
+
+// ============================================
+// nRadiVerse Quality Engine - Visual Regression
+// ============================================
+
+export const visualRegressionBaselines = pgTable("visual_regression_baselines", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  url: text("url").notNull(),
+  viewport: text("viewport").notNull().default("desktop"),
+  viewportWidth: integer("viewport_width").default(1920),
+  viewportHeight: integer("viewport_height").default(1080),
+  baselineImageUrl: text("baseline_image_url"),
+  baselineImageData: text("baseline_image_data"),
+  metadata: jsonb("metadata").$type<{
+    version?: string;
+    environment?: string;
+    browser?: string;
+    capturedAt?: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const visualRegressionResults = pgTable("visual_regression_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  baselineId: varchar("baseline_id").references(() => visualRegressionBaselines.id, { onDelete: "cascade" }),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  status: text("status").notNull().default("pending"),
+  diffPercentage: integer("diff_percentage"),
+  ssimScore: integer("ssim_score"),
+  psnrScore: integer("psnr_score"),
+  mseScore: integer("mse_score"),
+  pixelsDifferent: integer("pixels_different"),
+  totalPixels: integer("total_pixels"),
+  currentImageData: text("current_image_data"),
+  diffImageData: text("diff_image_data"),
+  differences: jsonb("differences").$type<VisualDifferenceDetail[]>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface VisualDifferenceDetail {
+  region: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  severity: "critical" | "major" | "minor" | "cosmetic";
+  description?: string;
+}
+
+// ============================================
+// nRadiVerse Quality Engine - Accessibility
+// ============================================
+
+export const accessibilityScanResults = pgTable("accessibility_scan_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  status: text("status").notNull().default("pending"),
+  overallScore: integer("overall_score"),
+  violationsCount: integer("violations_count").default(0),
+  passesCount: integer("passes_count").default(0),
+  incompleteCount: integer("incomplete_count").default(0),
+  inapplicableCount: integer("inapplicable_count").default(0),
+  criticalCount: integer("critical_count").default(0),
+  seriousCount: integer("serious_count").default(0),
+  moderateCount: integer("moderate_count").default(0),
+  minorCount: integer("minor_count").default(0),
+  violations: jsonb("violations").$type<AccessibilityViolation[]>(),
+  passes: jsonb("passes").$type<AccessibilityRule[]>(),
+  incomplete: jsonb("incomplete").$type<AccessibilityRule[]>(),
+  wcagCriteria: jsonb("wcag_criteria").$type<WCAGCriterion[]>(),
+  metadata: jsonb("metadata").$type<{
+    browser?: string;
+    viewport?: string;
+    scanDuration?: number;
+    axeVersion?: string;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface AccessibilityViolation {
+  id: string;
+  impact: "critical" | "serious" | "moderate" | "minor";
+  description: string;
+  help: string;
+  helpUrl: string;
+  tags: string[];
+  nodes: {
+    html: string;
+    target: string[];
+    failureSummary: string;
+  }[];
+}
+
+export interface AccessibilityRule {
+  id: string;
+  description: string;
+  help: string;
+  helpUrl: string;
+  tags: string[];
+  nodes: number;
+}
+
+export interface WCAGCriterion {
+  id: string;
+  level: "A" | "AA" | "AAA";
+  principle: "perceivable" | "operable" | "understandable" | "robust";
+  status: "pass" | "fail" | "incomplete";
+  violations?: number;
+}
+
+// ============================================
+// nRadiVerse Quality Engine - Responsive Testing
+// ============================================
+
+export const responsiveTestResults = pgTable("responsive_test_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  status: text("status").notNull().default("pending"),
+  overallScore: integer("overall_score"),
+  devicesTestedCount: integer("devices_tested_count").default(0),
+  passedDevicesCount: integer("passed_devices_count").default(0),
+  failedDevicesCount: integer("failed_devices_count").default(0),
+  deviceResults: jsonb("device_results").$type<DeviceTestResult[]>(),
+  layoutIssues: jsonb("layout_issues").$type<LayoutIssue[]>(),
+  touchTargetIssues: jsonb("touch_target_issues").$type<TouchTargetIssue[]>(),
+  performanceMetrics: jsonb("performance_metrics").$type<ResponsivePerformanceMetrics>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface DeviceTestResult {
+  deviceName: string;
+  deviceType: "mobile" | "tablet" | "desktop";
+  viewport: { width: number; height: number };
+  orientation: "portrait" | "landscape";
+  browser: string;
+  status: "pass" | "fail" | "warning";
+  score: number;
+  screenshotData?: string;
+  issues: string[];
+}
+
+export interface LayoutIssue {
+  element: string;
+  issue: string;
+  device: string;
+  severity: "critical" | "major" | "minor";
+  suggestion?: string;
+}
+
+export interface TouchTargetIssue {
+  element: string;
+  currentSize: { width: number; height: number };
+  minimumSize: { width: number; height: number };
+  device: string;
+}
+
+export interface ResponsivePerformanceMetrics {
+  mobile?: {
+    fcp?: number;
+    lcp?: number;
+    tti?: number;
+    cls?: number;
+  };
+  tablet?: {
+    fcp?: number;
+    lcp?: number;
+    tti?: number;
+    cls?: number;
+  };
+  desktop?: {
+    fcp?: number;
+    lcp?: number;
+    tti?: number;
+    cls?: number;
+  };
+}
+
+// Insert schemas for nRadiVerse tables
+export const insertVisualRegressionBaselineSchema = createInsertSchema(visualRegressionBaselines).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertVisualRegressionResultSchema = createInsertSchema(visualRegressionResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAccessibilityScanResultSchema = createInsertSchema(accessibilityScanResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResponsiveTestResultSchema = createInsertSchema(responsiveTestResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertVisualRegressionBaseline = z.infer<typeof insertVisualRegressionBaselineSchema>;
+export type VisualRegressionBaseline = typeof visualRegressionBaselines.$inferSelect;
+export type InsertVisualRegressionResult = z.infer<typeof insertVisualRegressionResultSchema>;
+export type VisualRegressionResult = typeof visualRegressionResults.$inferSelect;
+export type InsertAccessibilityScanResult = z.infer<typeof insertAccessibilityScanResultSchema>;
+export type AccessibilityScanResult = typeof accessibilityScanResults.$inferSelect;
+export type InsertResponsiveTestResult = z.infer<typeof insertResponsiveTestResultSchema>;
+export type ResponsiveTestResult = typeof responsiveTestResults.$inferSelect;
+
+// SSRS to PowerBI Report Validation Tables
+export const reportValidations = pgTable("report_validations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull(),
+  sourceFilename: text("source_filename").notNull(),
+  targetFilename: text("target_filename").notNull(),
+  sourceFileType: text("source_file_type").notNull(), // 'excel' | 'pdf'
+  targetFileType: text("target_file_type").notNull(),
+  status: text("status").notNull().default("pending"), // pending, processing, completed, failed
+  result: text("result"), // pass, fail, warning
+  matchPercentage: integer("match_percentage"),
+  config: jsonb("config").$type<ValidationConfig>(),
+  summary: jsonb("summary").$type<ValidationSummary>(),
+  aiAnalysis: text("ai_analysis"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  completedAt: timestamp("completed_at"),
+});
+
+export const validationResults = pgTable("validation_results", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  validationId: varchar("validation_id").notNull().references(() => reportValidations.id, { onDelete: "cascade" }),
+  rowNumber: integer("row_number"),
+  columnName: text("column_name"),
+  sheetName: text("sheet_name"),
+  sourceValue: text("source_value"),
+  targetValue: text("target_value"),
+  difference: text("difference"),
+  percentDiff: text("percent_diff"),
+  matchStatus: text("match_status").notNull(), // exact, tolerance, mismatch
+  aiAnalysis: text("ai_analysis"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface ValidationConfig {
+  comparisonMode: 'strict' | 'tolerant' | 'smart';
+  numericTolerance: number;
+  percentageTolerance: number;
+  dateHandling: 'strict' | 'flexible';
+  ignoreColumns: string[];
+  caseSensitive: boolean;
+  whitespaceHandling: 'strict' | 'trim' | 'normalize';
+}
+
+export interface ValidationSummary {
+  totalCells: number;
+  matchedCells: number;
+  toleranceCells: number;
+  mismatchedCells: number;
+  sourceRowCount: number;
+  targetRowCount: number;
+  sourceColumnCount: number;
+  targetColumnCount: number;
+  criticalIssues: number;
+  warnings: number;
+}
+
+export const insertReportValidationSchema = createInsertSchema(reportValidations).omit({
+  id: true,
+  createdAt: true,
+  completedAt: true,
+});
+
+export const insertValidationResultSchema = createInsertSchema(validationResults).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertReportValidation = z.infer<typeof insertReportValidationSchema>;
+export type ReportValidation = typeof reportValidations.$inferSelect;
+export type InsertValidationResult = z.infer<typeof insertValidationResultSchema>;
+export type ValidationResult = typeof validationResults.$inferSelect;
+
+// API Baseline (Regression Testing) Tables
+export const apiBaselines = pgTable("api_baselines", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  method: text("method").notNull(),
+  endpoint: text("endpoint").notNull(),
+  requestHeaders: jsonb("request_headers").$type<Record<string, string>>(),
+  requestBody: text("request_body"),
+  baselineResponse: jsonb("baseline_response").$type<any>(),
+  baselineStatusCode: integer("baseline_status_code"),
+  baselineHeaders: jsonb("baseline_headers").$type<Record<string, string>>(),
+  responseSchema: jsonb("response_schema").$type<ApiFieldSchema[]>(),
+  lastExecutedAt: timestamp("last_executed_at"),
+  lastExecutionStatus: text("last_execution_status"), // pass, fail, warning
+  executionCount: integer("execution_count").default(0),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const apiBaselineExecutions = pgTable("api_baseline_executions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  baselineId: varchar("baseline_id").notNull().references(() => apiBaselines.id, { onDelete: "cascade" }),
+  status: text("status").notNull(), // pass, fail, warning
+  statusCode: integer("status_code"),
+  responseTime: integer("response_time"),
+  actualResponse: jsonb("actual_response").$type<any>(),
+  differences: jsonb("differences").$type<ApiDifference[]>(),
+  summary: jsonb("summary").$type<ApiComparisonSummary>(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export interface ApiFieldSchema {
+  path: string;
+  type: string;
+  required: boolean;
+  sampleValue?: any;
+  children?: ApiFieldSchema[];
+}
+
+export interface ApiDifference {
+  path: string;
+  type: 'missing' | 'added' | 'type_changed' | 'value_changed';
+  expectedValue?: any;
+  actualValue?: any;
+  expectedType?: string;
+  actualType?: string;
+  severity: 'critical' | 'warning' | 'info';
+}
+
+export interface ApiComparisonSummary {
+  totalFields: number;
+  matchedFields: number;
+  missingFields: number;
+  addedFields: number;
+  typeChanges: number;
+  valueChanges: number;
+  overallStatus: 'pass' | 'fail' | 'warning';
+}
+
+export const jiraTestCases = pgTable("jira_test_cases", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jiraProjectKey: text("jira_project_key").notNull(),
+  jiraBoardId: integer("jira_board_id"),
+  jiraSprintId: integer("jira_sprint_id"),
+  jiraStoryId: text("jira_story_id").notNull(),
+  jiraStoryTitle: text("jira_story_title").notNull(),
+  testCaseId: text("test_case_id").notNull(),
+  title: text("title").notNull(),
+  description: text("description"),
+  objective: text("objective"),
+  preconditions: jsonb("preconditions").$type<string[]>().default([]),
+  testSteps: jsonb("test_steps").$type<TestStep[]>().notNull(),
+  expectedResult: text("expected_result"),
+  postconditions: jsonb("postconditions").$type<string[]>().default([]),
+  testData: jsonb("test_data").$type<Record<string, any>>(),
+  testType: text("test_type").default("functional"),
+  category: text("category").notNull().default("functional"),
+  priority: text("priority").default("P2"),
+  playwrightScript: text("playwright_script"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertJiraTestCaseSchema = createInsertSchema(jiraTestCases).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertJiraTestCase = z.infer<typeof insertJiraTestCaseSchema>;
+export type JiraTestCase = typeof jiraTestCases.$inferSelect;
+
+export const insertApiBaselineSchema = createInsertSchema(apiBaselines).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  lastExecutedAt: true,
+  executionCount: true,
+});
+
+export const insertApiBaselineExecutionSchema = createInsertSchema(apiBaselineExecutions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertApiBaseline = z.infer<typeof insertApiBaselineSchema>;
+export type ApiBaseline = typeof apiBaselines.$inferSelect;
+export type InsertApiBaselineExecution = z.infer<typeof insertApiBaselineExecutionSchema>;
+export type ApiBaselineExecution = typeof apiBaselineExecutions.$inferSelect;
+
+// ==========================================
+// Auth Config interface (no password stored)
+// ==========================================
+export interface AuthConfig {
+  requiresAuth: boolean;
+  loginUrl?: string;
+  username?: string;
+  authType: 'form' | 'basic' | 'custom';
+  usernameSelector?: string;
+  passwordSelector?: string;
+  loginButtonSelector?: string;
+}
+
+// ==========================================
+// Extend CrawlProgress with login status
+// ==========================================
+// NOTE: The existing CrawlProgress interface at line ~152 needs 'logging_in' added to status union
+// and loginSuccess field. We handle this by extending separately in the crawler.
+
+// ==========================================
+// Extend functionalTestRuns with wizard fields
+// ==========================================
+// Add columns to functionalTestRuns table:
+export const functionalTestRunsWizardExtension = {
+  wizardStep: 1,
+  testingMode: 'ui',
+  designPattern: 'POM',
+  mermaidDiagram: null as string | null,
+} as const;
+
+// ==========================================
+// Automation Scripts Table
+// ==========================================
+export const automationScripts = pgTable("automation_scripts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").references(() => functionalTestRuns.id, { onDelete: "cascade" }),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  scriptType: text("script_type").notNull(), // "pom_class" | "bdd_feature" | "bdd_step_defs" | "playwright_config" | "cucumber_config"
+  pattern: text("pattern").notNull(), // "POM" | "BDD" | "both"
+  fileName: text("file_name").notNull(),
+  filePath: text("file_path").notNull(),
+  content: text("content").notNull(),
+  pageUrl: text("page_url"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export const insertAutomationScriptSchema = createInsertSchema(automationScripts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAutomationScript = z.infer<typeof insertAutomationScriptSchema>;
+export type AutomationScript = typeof automationScripts.$inferSelect;
+
+// ==========================================
+// API Discovery Runs Table
+// ==========================================
+export interface ApiEndpoint {
+  method: string;
+  path: string;
+  summary?: string;
+  parameters?: any[];
+  requestBody?: any;
+  responses?: any;
+  tags?: string[];
+}
+
+export const apiDiscoveryRuns = pgTable("api_discovery_runs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  runId: varchar("run_id").references(() => functionalTestRuns.id, { onDelete: "set null" }),
+  projectId: varchar("project_id").references(() => projects.id, { onDelete: "set null" }),
+  discoveryType: text("discovery_type").notNull(), // "har_capture" | "swagger_import"
+  sourceUrl: text("source_url"),
+  specContent: jsonb("spec_content").$type<Record<string, any>>(),
+  endpoints: jsonb("endpoints").$type<ApiEndpoint[]>().default([]),
+  status: text("status").notNull().default("pending"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const insertApiDiscoveryRunSchema = createInsertSchema(apiDiscoveryRuns).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertApiDiscoveryRun = z.infer<typeof insertApiDiscoveryRunSchema>;
+export type ApiDiscoveryRun = typeof apiDiscoveryRuns.$inferSelect;
+
+// ==========================================
+// HAR Captures Table
+// ==========================================
+export const harCaptures = pgTable("har_captures", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  discoveryRunId: varchar("discovery_run_id").references(() => apiDiscoveryRuns.id, { onDelete: "cascade" }),
+  url: text("url").notNull(),
+  method: text("method").notNull(),
+  requestHeaders: jsonb("request_headers").$type<Record<string, string>>(),
+  requestBody: text("request_body"),
+  statusCode: integer("status_code"),
+  responseHeaders: jsonb("response_headers").$type<Record<string, string>>(),
+  responseBody: text("response_body"),
+  duration: integer("duration"),
+  capturedAt: timestamp("captured_at").defaultNow().notNull(),
+});
+
+export const insertHarCaptureSchema = createInsertSchema(harCaptures).omit({
+  id: true,
+  capturedAt: true,
+});
+
+export type InsertHarCapture = z.infer<typeof insertHarCaptureSchema>;
+export type HarCapture = typeof harCaptures.$inferSelect;
+
+// ==========================================
+// Agent event types for SSE streaming
+// ==========================================
+export type AgentName =
+  | 'scout_agent'
+  | 'auth_agent'
+  | 'workflow_analyst'
+  | 'diagram_architect'
+  | 'test_strategist'
+  | 'test_writer'
+  | 'script_engineer'
+  | 'executor_agent'
+  | 'qa_analyst';
+
+export type AgentStatus = 'idle' | 'thinking' | 'working' | 'completed' | 'error';
+
+export interface AgentEvent {
+  type: 'agent';
+  agent: AgentName;
+  status: AgentStatus;
+  activity: string;
+  progress?: number;
+  detail?: any;
+}
+
+export interface WizardSSEEvent {
+  type: 'agent' | 'screenshot' | 'crawl_progress' | 'page_discovered' | 'workflow_found' | 'test_case' | 'script' | 'test_result' | 'complete' | 'error';
+  [key: string]: any;
+}
+
+// ==================== Framework Configuration ====================
+export const frameworkConfigs = pgTable("framework_configs", {
+  id: varchar("id").primaryKey(),
+  projectId: varchar("project_id"),
+  name: text("name").notNull(),
+  framework: text("framework").notNull(),
+  language: text("language").notNull(),
+  description: text("description"),
+  isGlobal: boolean("is_global").default(false),
+  baseClass: text("base_class"),
+  sampleScript: text("sample_script"),
+  detectedPattern: text("detected_pattern"),
+  detectedLanguage: text("detected_language"),
+  detectedTool: text("detected_tool"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const frameworkFunctions = pgTable("framework_functions", {
+  id: varchar("id").primaryKey(),
+  configId: varchar("config_id").notNull(),
+  name: text("name").notNull(),
+  signature: text("signature").notNull(),
+  description: text("description"),
+  category: text("category").notNull(),
+  returnType: text("return_type").default("void"),
+  parameters: jsonb("parameters").$type<Array<{name: string, type: string}>>().default([]),
+  sourceFile: text("source_file"),
+  className: text("class_name"),      // e.g. "LoginPage" — POM class the method belongs to
+  importPath: text("import_path"),    // e.g. "com.company.pages.LoginPage" or "./pages/LoginPage"
+  isCustom: boolean("is_custom").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const frameworkFiles = pgTable("framework_files", {
+  id: varchar("id").primaryKey(),
+  configId: varchar("config_id").notNull(),
+  filename: text("filename").notNull(),
+  fileHash: text("file_hash"),        // SHA-256 of content — used for de-duplication
+  content: text("content").notNull(),
+  fileType: text("file_type").notNull(),
+  parsedAt: timestamp("parsed_at").defaultNow(),
+});
+
+export type FrameworkConfig = typeof frameworkConfigs.$inferSelect;
+export type InsertFrameworkConfig = typeof frameworkConfigs.$inferInsert;
+export type FrameworkFunction = typeof frameworkFunctions.$inferSelect;
+export type InsertFrameworkFunction = typeof frameworkFunctions.$inferInsert;
+export type FrameworkFile = typeof frameworkFiles.$inferSelect;
+export type InsertFrameworkFile = typeof frameworkFiles.$inferInsert;

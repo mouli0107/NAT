@@ -1,0 +1,322 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - listbox [ref=e106]:
+    - text: 
+    - generic [ref=e108]:
+      - generic [ref=e113]:
+        - heading [level=2] [ref=e114]: Agile application development services
+        - paragraph [ref=e115]: Accelerate Agile software development by quickly responding to market opportunities.
+      - tabpanel [ref=e116]:
+        - generic [ref=e120]:
+          - heading "Agile software development consulting" [level=2] [ref=e121]
+          - paragraph [ref=e122]: Scale Agile across the enterprise to catalyze innovation and accelerate growth.
+      - tabpanel [ref=e123]:
+        - generic [ref=e127]:
+          - heading [level=2] [ref=e128]: Agile application development services
+          - paragraph [ref=e129]: Accelerate Agile software development by quickly responding to market opportunities.
+      - generic [ref=e134]:
+        - heading [level=2] [ref=e135]: Agile software development consulting
+        - paragraph [ref=e136]: Scale Agile across the enterprise to catalyze innovation and accelerate growth.
+      - generic [ref=e141]:
+        - heading [level=2] [ref=e142]: Agile application development services
+        - paragraph [ref=e143]: Accelerate Agile software development by quickly responding to market opportunities.
+    - text: 
+    - tablist [ref=e144]:
+      - tab "1 of 2" [selected] [ref=e145] [cursor=pointer]: "1"
+      - tab "2 of 2" [ref=e146] [cursor=pointer]: "2"
+  - generic [ref=e149]:
+    - generic [ref=e151]:
+      - heading "Deliver high-quality applications through Agile development services" [level=1] [ref=e152]
+      - paragraph [ref=e153]: Agile software development has become increasingly important in today’s rapidly changing business environment. Organizations adopt agile consulting services to improve time-to-market, reduce cost and quickly adapt to changes in their business and IT needs.
+      - paragraph [ref=e154]: With extensive experience in agile methodologies, we offer a tailored approach to agile development with the right tools and methods. We collaborate with distinctive groups across locations to execute critical project functions, facilitating group correspondence, issue detection and tracking, project deliverables, continuous improvement, and efficient project management. We offer an exclusive environment for better collaboration, coordination, and communication, along with suitable Agile Development Solutions.
+    - generic [ref=e158]:
+      - heading "Agile Consulting Services" [level=2] [ref=e159]
+      - generic [ref=e162]:
+        - heading [level=2]
+        - paragraph [ref=e163]: Transformation strategy and planning
+        - paragraph [ref=e164]: Agile readiness and maturity assessment
+        - paragraph [ref=e165]: Agile application development
+        - paragraph [ref=e166]: Agile training and coaching
+        - paragraph [ref=e167]: Tool assessment and process setup
+    - generic [ref=e171]:
+      - heading "Why Nous?" [level=2] [ref=e172]
+      - generic [ref=e174]:
+        - img "expertise in agile" [ref=e178]
+        - generic [ref=e180]:
+          - generic [ref=e181]:
+            - heading "Expertise in Agile consulting, development, and testing " [level=2] [ref=e182]:
+              - button "Expertise in Agile consulting, development, and testing " [expanded] [ref=e183] [cursor=pointer]
+            - generic "Expertise in Agile consulting, development, and testing " [ref=e184]:
+              - generic [ref=e185]: A team of seasoned Agile coaches and experts with a track record of driving successful Agile adoptions across diverse industries.
+          - heading "In-house developed framework and metrics " [level=2] [ref=e187]:
+            - button "In-house developed framework and metrics " [ref=e188] [cursor=pointer]
+          - heading "Best-in-class Agile tools " [level=2] [ref=e190]:
+            - button "Best-in-class Agile tools " [ref=e191] [cursor=pointer]
+          - heading "Well-devised release cycles " [level=2] [ref=e193]:
+            - button "Well-devised release cycles " [ref=e194] [cursor=pointer]
+          - heading "Customized Agile development services " [level=2] [ref=e196]:
+            - button "Customized Agile development services " [ref=e197] [cursor=pointer]
+    - generic [ref=e199]:
+      - heading "Resources" [level=2] [ref=e200]
+      - generic [ref=e208]:
+        - generic [ref=e210]: Case Study
+        - generic [ref=e211]:
+          - heading "Healthcare portal development for a leading global health and wellness provider" [level=4] [ref=e212]:
+            - link "Healthcare portal development for a leading global health and wellness provider" [ref=e213] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/insights/case-study/healthcare-portal-for-employee-assistance-program
+          - paragraph [ref=e214]: Enabled the customer to significantly improve the ease of use of employee assistance services and enhance employee engagement.
+          - link " Learn More" [ref=e216] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/insights/case-study/healthcare-portal-for-employee-assistance-program
+            - generic [ref=e217]: 
+            - text: Learn More
+  - generic [ref=e218]:
+    - generic [ref=e220]:
+      - heading "Ready to get started?" [level=2] [ref=e222]
+      - heading " Contact us" [level=2] [ref=e224] [cursor=pointer]:
+        - generic [ref=e225]:
+          - generic [ref=e226]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e227]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e228] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e230] [cursor=pointer]: 
+  - generic [ref=e231]:
+    - generic [ref=e238]:
+      - generic [ref=e239]:
+        - generic [ref=e240]:
+          - heading "Services" [level=2] [ref=e241]
+          - navigation "Services" [ref=e242]:
+            - list [ref=e243]:
+              - listitem [ref=e244]:
+                - link "Digital Product Engineering" [ref=e245] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e246]:
+                - link "Agile Development" [ref=e247] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e248]:
+                - link "Digital Application Services" [ref=e249] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e250]:
+                - link "Quality Engineering" [ref=e251] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e252]:
+                - link "Infrastructure Management" [ref=e253] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e254]:
+          - heading "Insights" [level=2] [ref=e255]
+          - navigation "Insights" [ref=e256]:
+            - list [ref=e257]:
+              - listitem [ref=e258]:
+                - link "Case Studies" [ref=e259] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e260]:
+                - link "Whitepapers" [ref=e261] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e262]:
+                - link "Brochures" [ref=e263] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e264]:
+                - link "Blogs" [ref=e265] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e266]:
+                - link "Webinars" [ref=e267] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e268]:
+        - generic [ref=e269]:
+          - heading "Competency" [level=2] [ref=e270]
+          - navigation "Competency" [ref=e271]:
+            - list [ref=e272]:
+              - listitem [ref=e273]:
+                - link "AI & Automation" [ref=e274] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e275]:
+                - link "Cloud" [ref=e276] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e277]:
+                - link "Data & Analytics" [ref=e278] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e279]:
+                - link "Digital" [ref=e280] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e281]:
+                - link "Quality Engineering" [ref=e282] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e283]:
+                - link "Infrastructure" [ref=e284] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e285]:
+          - heading "Company" [level=2] [ref=e286]
+          - navigation "Company" [ref=e287]:
+            - list [ref=e288]:
+              - listitem [ref=e289]:
+                - link "About Us" [ref=e290] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e291]:
+                - link "Partnerships" [ref=e292] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e293]:
+                - link "News" [ref=e294] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e295]:
+                - link "Events" [ref=e296] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e297]:
+                - link "Careers" [ref=e298] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e299]:
+                - link "CSR" [ref=e300] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e301]:
+                - link "Contact Us" [ref=e302] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e303]:
+        - generic [ref=e304]:
+          - heading "Industries" [level=2] [ref=e305]
+          - navigation "Industries" [ref=e306]:
+            - list [ref=e307]:
+              - listitem [ref=e308]:
+                - link "Banking & Financial Services" [ref=e309] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e310]:
+                - link "Insurance" [ref=e311] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e312]:
+                - link "Healthcare & Life Sciences" [ref=e313] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e314]:
+                - link "Retail" [ref=e315] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e316]:
+                - link "Travel & Logistics" [ref=e317] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e318]:
+          - heading "Support" [level=2] [ref=e319]
+          - navigation "Support" [ref=e320]:
+            - list [ref=e321]:
+              - listitem [ref=e322]:
+                - link "Disclaimer" [ref=e323] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e324]:
+                - link "Sitemap" [ref=e325] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e326]:
+                - link "Privacy Policy" [ref=e327] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e328]:
+        - heading "Newsletter" [level=2] [ref=e329]
+        - generic [ref=e331]:
+          - generic [ref=e332]:
+            - status
+            - list
+          - form "Contact form" [ref=e333]:
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - textbox [ref=e339]:
+                  - /placeholder: Email Address
+                - generic [ref=e340]:
+                  - button "." [ref=e341] [cursor=pointer]
+                  - generic [ref=e342]: 
+              - iframe [ref=e347]:
+                - generic [ref=f13e2]:
+                  - generic [ref=f13e3]:
+                    - checkbox "I'm not a robot" [ref=f13e7]
+                    - generic [ref=f13e11]: I'm not a robot
+                  - generic [ref=f13e12]:
+                    - generic [ref=f13e15]: reCAPTCHA
+                    - generic [ref=f13e16]:
+                      - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f13e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e349]:
+          - listitem [ref=e350]:
+            - link "" [ref=e351] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e352]: 
+          - listitem [ref=e353]:
+            - link [ref=e354] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e356]:
+            - link "" [ref=e357] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e358]: 
+          - listitem [ref=e359]:
+            - link "" [ref=e360] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e361]: 
+        - figure [ref=e362]
+    - generic [ref=e366]: ©2026 Nous Infosystems. All Rights Reserved.
+```

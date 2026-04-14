@@ -1,0 +1,1372 @@
+[Seed] Found 6 existing projects, skipping seed
+[Playwright Setup] System browser detected: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+6:08:37 PM [express] serving on port 5000
+6:09:07 PM [express] GET /api/sample-frameworks 200 in 9ms :: [{"name":"Java + Selenium + TestNG + P…
+6:09:15 PM [express] GET /api/framework-config 200 in 177ms :: [{"id":"fbcaffd1-4c72-4bb6-90cc-71ef1…
+6:09:49 PM [express] GET /api/framework-config 200 in 261ms :: [{"id":"fbcaffd1-4c72-4bb6-90cc-71ef1…
+6:09:54 PM [express] GET /api/framework-config 200 in 10ms :: [{"id":"fbcaffd1-4c72-4bb6-90cc-71ef12…
+[Upload] 1 received → 1 after ZIP extraction → 1 will be processed, 0 skipped
+[Framework Detection] "GS1": typescript + unknown + POM
+6:10:14 PM [express] POST /api/framework-config/fbcaffd1-4c72-4bb6-90cc-71ef12409d1e/upload-files 20…
+[Upload] 1 received → 1 after ZIP extraction → 0 will be processed, 1 skipped
+[Framework Detection] "GS1": typescript + unknown + POM
+6:10:44 PM [express] POST /api/framework-config/fbcaffd1-4c72-4bb6-90cc-71ef12409d1e/upload-files 20…
+6:11:10 PM [express] GET /api/sample-frameworks 200 in 1ms :: [{"name":"Java + Selenium + TestNG + P…
+
+A PostCSS plugin did not pass the `from` option to `postcss.parse`. This may cause imported assets to be incorrectly transformed. If you've recently added a PostCSS plugin that raised this warning, please contact the package author to fix the issue.
+6:15:35 PM [express] GET /api/sample-frameworks 304 in 1ms :: [{"name":"Java + Selenium + TestNG + P…
+6:15:35 PM [express] GET /api/framework-config 200 in 261ms :: [{"id":"3a8cb681-fe77-42a7-8cbb-3bc7e…
+6:15:36 PM [express] GET /api/framework-config/3a8cb681-fe77-42a7-8cbb-3bc7ed2b83d2 304 in 8ms :: {"…
+6:16:04 PM [express] POST /api/framework-config 201 in 13ms :: {"id":"165be9b4-791a-443e-bcd0-6d3d61…
+6:16:04 PM [express] GET /api/framework-config 200 in 91ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+6:16:04 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 200 in 6ms :: {"…
+[Upload] 4 received → 4 after ZIP extraction → 3 will be processed, 1 skipped
+[Framework Detection] "Amerisure Project": javascript + playwright + POM
+6:16:22 PM [express] POST /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1/upload-files 20…
+6:16:22 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 200 in 7ms :: {"…
+[2m6:21:00 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:21:00 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:21:04 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:21:42 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:21:49 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:22:05 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:22:13 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:22:22 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:22:30 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:22:57 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+6:24:46 PM [express] GET /api/sample-frameworks 304 in 2ms :: [{"name":"Java + Selenium + TestNG + P…
+6:24:46 PM [express] GET /api/framework-config 200 in 539ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+6:24:47 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 304 in 8ms :: {"…
+6:24:55 PM [express] GET /api/framework-config 200 in 5ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61a…
+6:25:08 PM [express] GET /api/framework-config 200 in 7ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61a…
+6:25:31 PM [express] POST /api/framework-config 201 in 7ms :: {"id":"e40920a1-3bdd-49dc-8f61-c21f2e9…
+6:25:32 PM [express] GET /api/framework-config 200 in 79ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+6:25:32 PM [express] GET /api/framework-config/e40920a1-3bdd-49dc-8f61-c21f2e9e6117 200 in 4ms :: {"…
+[Upload] 4 received → 4 after ZIP extraction → 3 will be processed, 1 skipped
+[Framework Detection] "Nous": javascript + playwright + POM
+6:25:40 PM [express] POST /api/framework-config/e40920a1-3bdd-49dc-8f61-c21f2e9e6117/upload-files 20…
+6:25:40 PM [express] GET /api/framework-config/e40920a1-3bdd-49dc-8f61-c21f2e9e6117 200 in 6ms :: {"…
+6:26:11 PM [express] GET /api/framework-config/3a8cb681-fe77-42a7-8cbb-3bc7ed2b83d2 304 in 94ms :: {…
+6:26:27 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 200 in 5ms :: {"…
+[2m6:34:09 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:34:09 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:34:11 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:34:26 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:34:27 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:34:28 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+6:34:40 PM [express] GET /api/projects 304 in 290ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+6:34:41 PM [express] GET /api/analytics/overview 304 in 350ms :: {"projects":{"total":6,"recent":[{"…
+6:34:49 PM [express] GET /api/ado/env/projects 400 in 2ms :: {"success":false,"error":"ADO environme…
+6:34:49 PM [express] GET /api/framework-config 200 in 144ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+6:34:53 PM [express] GET /api/projects/c71463b6-ebc0-436e-8b14-602c7185f375/sprints 304 in 10ms :: […
+6:34:55 PM [express] GET /api/sprints/b89c077d-71ea-48ac-b11f-6d9146c35030/user-stories 304 in 10ms …
+6:34:58 PM [express] GET /api/sprint-user-stories/cd72c12e-76d4-4640-8bf8-99de543d3ea0/test-cases 30…
+[SSE] Event sent: pipeline_stage, written: true
+[agentic-sprint-agent] MODULE LOADED v2 — rule-based fallback active
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: Enable GS1-Compliant Product Serialization for Healthcare Regulatory Submission
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+6:35:04 PM [express] GET /api/integrations/connected 304 in 6ms :: {"success":true,"integration":nul…
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: category_complete, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 56 test cases
+6:35:07 PM [express] POST /api/tests/sprint-generate 200 in 5505ms
+[SSE] Client disconnected
+[Playwright Export] Crawling https://your-app.com to discover elements (mode: xpath)...
+[Element Discovery] Found 0 navigation links on https://your-app.com
+[Element Discovery] Total: 58 elements across 1 pages
+[Playwright Export] Discovered 58 interactive elements
+[Playwright Export] Generated script for 56 test cases with 58 elements across 1 pages
+6:35:28 PM [express] POST /api/playwright/export-script 200 in 14818ms :: {"success":true,"files":{"…
+[2m6:35:39 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:35:47 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:36:46 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:36:51 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:37:22 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:37:22 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:37:24 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m6:37:35 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+6:39:46 PM [express] GET /api/sample-frameworks 304 in 1ms :: [{"name":"Java + Selenium + TestNG + P…
+6:39:46 PM [express] GET /api/framework-config 304 in 392ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+6:39:46 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 304 in 8ms :: {"…
+6:40:07 PM [express] POST /api/framework-config 201 in 35ms :: {"id":"4ba77f91-c3f1-4f1b-a0f3-e02039…
+6:40:07 PM [express] GET /api/framework-config 200 in 20ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+6:40:07 PM [express] GET /api/framework-config/4ba77f91-c3f1-4f1b-a0f3-e0203925ad78 200 in 5ms :: {"…
+[Upload] 63 received → 63 after ZIP extraction → 48 will be processed, 15 skipped
+[Framework Detection] "Capex": java + selenium + BDD
+6:40:35 PM [express] POST /api/framework-config/4ba77f91-c3f1-4f1b-a0f3-e0203925ad78/upload-files 20…
+6:40:35 PM [express] GET /api/framework-config/4ba77f91-c3f1-4f1b-a0f3-e0203925ad78 200 in 18ms :: {…
+6:40:59 PM [express] GET /api/framework-config 200 in 169ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+6:40:59 PM [express] GET /api/autotest/user-stories 304 in 9ms :: {"stories":[]}
+6:40:59 PM [express] GET /api/autotest/runs 304 in 9ms :: {"runs":[{"id":"run_1774727903794_oonb","u…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+6:41:11 PM [express] POST /api/autotest/crawl 200 in 35ms :: {"runId":"run_1774789871700_vihh"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774789871713
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://nousinfosystems.com/ (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774789886722.png
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/news (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/events (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/careers (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/contact-us (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/ (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-product-engineering (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/agile-development (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-application-services (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/quality-engineering (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 10 pages.
+[Playwright] Closed context: enhanced-crawl-1774789871713
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+6:42:01 PM [express] GET /api/autotest/stream/run_1774789871700_vihh 200 in 49316ms
+6:42:06 PM [express] POST /api/autotest/test-cases/run_1774789871700_vihh 200 in 130ms :: {"testCase…
+[autotest] Using framework: Capex (POM mode, 148 functions)
+6:42:10 PM [express] POST /api/autotest/scripts 200 in 57ms :: {"files":{"src/main/java/com/company/…
+6:42:35 PM [express] POST /api/autotest/execute 200 in 3086ms
+6:42:49 PM [express] POST /api/autotest/execute 200 in 2240ms
+6:42:57 PM [express] GET /api/autotest/scripts/782787f5-1389-4574-b96f-102f18a86730/download 200 in …
+6:58:08 PM [express] GET /api/framework-config 200 in 293ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+6:58:49 PM [express] GET /api/framework-config 200 in 301ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+7:19:50 PM [express] GET /api/framework-config 200 in 344ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+7:20:04 PM [express] GET /api/framework-config 200 in 7ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61a…
+7:20:32 PM [express] GET /api/framework-config 200 in 7ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61a…
+7:27:58 PM [express] GET /api/projects 304 in 117ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+7:27:58 PM [express] GET /api/analytics/overview 304 in 145ms :: {"projects":{"total":6,"recent":[{"…
+7:28:00 PM [express] GET /api/sample-frameworks 304 in 1ms :: [{"name":"Java + Selenium + TestNG + P…
+7:28:00 PM [express] GET /api/framework-config 304 in 112ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+7:28:00 PM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 304 in 3ms :: {"…
+7:28:03 PM [express] GET /api/autotest/runs 200 in 8ms :: {"runs":[{"id":"run_1774789871700_vihh","u…
+7:28:03 PM [express] GET /api/autotest/user-stories 304 in 9ms :: {"stories":[]}
+7:28:03 PM [express] GET /api/framework-config 304 in 13ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+7:28:16 PM [express] POST /api/autotest/crawl 200 in 8ms :: {"runId":"run_1774792696849_ffgi"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774792696856
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://nousinfosystems.com/ (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774792729076.png
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/news (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/events (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/careers (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/contact-us (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/ (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-product-engineering (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/agile-development (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-application-services (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/quality-engineering (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 10 pages.
+[Playwright] Closed context: enhanced-crawl-1774792696856
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+7:29:27 PM [express] GET /api/autotest/stream/run_1774792696849_ffgi 200 in 70557ms
+7:32:10 PM [express] POST /api/autotest/test-cases/run_1774792696849_ffgi 200 in 144ms :: {"testCase…
+[autotest] Using framework: Playwright BDD (POM mode, 0 functions)
+7:32:52 PM [express] POST /api/autotest/scripts 200 in 115ms :: {"files":{"package.json":"{\n  \"nam…
+[2m7:44:52 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m7:44:56 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/framework-config.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+7:59:04 PM [express] POST /api/autotest/execute 200 in 1522440ms
+9:05:17 AM [express] GET /api/autotest/runs 200 in 359ms :: {"runs":[{"id":"run_1774792696849_ffgi",…
+9:05:17 AM [express] GET /api/autotest/user-stories 304 in 395ms :: {"stories":[]}
+9:05:17 AM [express] GET /api/framework-config 304 in 731ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:05:28 AM [express] GET /api/projects 304 in 34ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298",…
+9:05:28 AM [express] GET /api/analytics/overview 304 in 114ms :: {"projects":{"total":6,"recent":[{"…
+9:06:59 AM [express] GET /api/autotest/runs 304 in 259ms :: {"runs":[{"id":"run_1774792696849_ffgi",…
+9:06:59 AM [express] GET /api/autotest/user-stories 304 in 9ms :: {"stories":[]}
+9:07:00 AM [express] GET /api/framework-config 304 in 560ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:07:21 AM [express] GET /api/framework-config 304 in 36ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+9:07:21 AM [express] GET /api/ado/env/projects 400 in 12ms :: {"success":false,"error":"ADO environm…
+9:07:55 AM [express] GET /api/autotest/runs 304 in 286ms :: {"runs":[{"id":"run_1774792696849_ffgi",…
+9:07:55 AM [express] GET /api/autotest/user-stories 304 in 14ms :: {"stories":[]}
+9:07:56 AM [express] GET /api/framework-config 304 in 768ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:08:30 AM [express] GET /api/ado/env/projects 400 in 3ms :: {"success":false,"error":"ADO environme…
+9:09:48 AM [express] GET /api/sample-frameworks 304 in 1ms :: [{"name":"Java + Selenium + TestNG + P…
+9:09:48 AM [express] GET /api/framework-config 304 in 765ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:09:48 AM [express] GET /api/framework-config/165be9b4-791a-443e-bcd0-6d3d61af14e1 304 in 17ms :: {…
+9:10:24 AM [express] GET /api/autotest/runs 304 in 305ms :: {"runs":[{"id":"run_1774792696849_ffgi",…
+9:10:24 AM [express] GET /api/autotest/user-stories 304 in 419ms :: {"stories":[]}
+9:10:25 AM [express] GET /api/framework-config 304 in 713ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:10:28 AM [express] GET /api/autotest/runs 304 in 11ms :: {"runs":[{"id":"run_1774792696849_ffgi","…
+9:10:28 AM [express] GET /api/autotest/user-stories 304 in 8ms :: {"stories":[]}
+9:10:28 AM [express] GET /api/framework-config 304 in 40ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+9:10:41 AM [express] GET /api/baselines 304 in 7ms :: {"success":true,"baselines":[]}
+9:16:04 AM [express] GET /api/autotest/runs 304 in 308ms :: {"runs":[{"id":"run_1774792696849_ffgi",…
+9:16:04 AM [express] GET /api/autotest/user-stories 304 in 490ms :: {"stories":[]}
+9:16:04 AM [express] GET /api/framework-config 304 in 784ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+9:16:09 AM [express] POST /api/autotest/crawl 200 in 30ms :: {"runId":"run_1774842369861_31at"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774842369882
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://demoqa.com/automation-practice-form (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774842382512.png
+[EnhancedCrawler] Visiting (link): https://demoqa.com/ (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/text-box (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/checkbox (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/radio-button (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/webtables (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/buttons (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/links (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/broken (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/upload-download (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 10 pages.
+[Playwright] Closed context: enhanced-crawl-1774842369882
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+9:17:01 AM [express] GET /api/autotest/stream/run_1774842369861_31at 200 in 51766ms
+9:17:06 AM [express] POST /api/autotest/test-cases/run_1774842369861_31at 200 in 165ms :: {"testCase…
+9:17:54 AM [express] POST /api/autotest/scripts 200 in 198ms :: {"files":{"package.json":"{\n  \"nam…
+9:24:26 AM [express] GET /api/projects 304 in 643ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+9:24:26 AM [express] GET /api/analytics/overview 304 in 725ms :: {"projects":{"total":6,"recent":[{"…
+9:25:09 AM [express] GET /api/autotest/runs 200 in 373ms :: {"runs":[{"id":"run_1774842369861_31at",…
+9:25:09 AM [express] GET /api/autotest/user-stories 304 in 597ms :: {"stories":[]}
+9:25:10 AM [express] GET /api/framework-config 304 in 980ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+9:25:13 AM [express] GET /api/autotest/runs/run_1774842369861_31at/load 200 in 144ms :: {"run":{"id"…
+[2m9:33:41 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m9:33:41 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m9:33:44 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+9:33:44 AM [express] GET /api/autotest/runs 304 in 401ms :: {"runs":[{"id":"run_1774842369861_31at",…
+9:33:44 AM [express] GET /api/autotest/user-stories 304 in 786ms :: {"stories":[]}
+9:33:44 AM [express] GET /api/framework-config 304 in 1107ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d…
+9:33:45 AM [express] GET /api/autotest/runs 304 in 7ms :: {"runs":[{"id":"run_1774842369861_31at","u…
+9:33:45 AM [express] GET /api/autotest/user-stories 304 in 9ms :: {"stories":[]}
+9:33:45 AM [express] GET /api/framework-config 304 in 24ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+[2m9:33:59 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+9:34:00 AM [express] GET /api/autotest/runs 304 in 9ms :: {"runs":[{"id":"run_1774842369861_31at","u…
+9:34:00 AM [express] GET /api/framework-config 304 in 25ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+9:34:00 AM [express] GET /api/autotest/user-stories 304 in 9ms :: {"stories":[]}
+[2m9:34:13 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+9:34:16 AM [express] GET /api/autotest/runs 304 in 10ms :: {"runs":[{"id":"run_1774842369861_31at","…
+9:34:16 AM [express] GET /api/framework-config 304 in 26ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+9:34:16 AM [express] GET /api/autotest/user-stories 304 in 7ms :: {"stories":[]}
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+9:37:47 AM [express] POST /api/autotest/crawl 200 in 223ms :: {"runId":"run_1774843666924_506x"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774843667142
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://demoqa.com/automation-practice-form (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774843685860.png
+[EnhancedCrawler] Visiting (link): https://demoqa.com/ (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/text-box (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/checkbox (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/radio-button (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/webtables (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/buttons (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/links (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/broken (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/upload-download (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 10 pages.
+[Playwright] Closed context: enhanced-crawl-1774843667142
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+9:38:53 AM [express] GET /api/autotest/stream/run_1774843666924_506x 200 in 66445ms
+9:38:58 AM [express] POST /api/autotest/test-cases/run_1774843666924_506x 200 in 109ms :: {"testCase…
+9:39:13 AM [express] POST /api/autotest/scripts 200 in 52ms :: {"files":{"package.json":"{\n  \"name…
+9:49:25 AM [express] POST /api/autotest/execute 200 in 1827663ms
+9:56:32 AM [express] GET /api/health 200 in 27ms
+9:57:42 AM [express] GET /api/projects 304 in 371ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+9:57:42 AM [express] GET /api/analytics/overview 304 in 454ms :: {"projects":{"total":6,"recent":[{"…
+[2m10:12:22 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:12:29 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:12:38 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:12:46 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:12:54 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:17:03 AM [express] GET /api/autotest/runs 200 in 349ms :: {"runs":[{"id":"run_1774843666924_506x",…
+10:17:03 AM [express] GET /api/autotest/user-stories 304 in 360ms :: {"stories":[]}
+10:17:03 AM [express] GET /api/framework-config 304 in 656ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+10:17:05 AM [express] GET /api/autotest/runs/run_1774843666924_506x/load 200 in 237ms :: {"run":{"id"…
+[2m10:27:30 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:27:33 AM [express] GET /api/autotest/runs 304 in 188ms :: {"runs":[{"id":"run_1774843666924_506x",…
+10:27:33 AM [express] GET /api/autotest/user-stories 304 in 297ms :: {"stories":[]}
+10:27:33 AM [express] GET /api/framework-config 304 in 484ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+[2m10:27:34 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:27:35 AM [express] GET /api/autotest/user-stories 304 in 3ms :: {"stories":[]}
+10:27:35 AM [express] GET /api/autotest/runs 304 in 8ms :: {"runs":[{"id":"run_1774843666924_506x","u…
+10:27:35 AM [express] GET /api/framework-config 304 in 27ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+10:30:09 AM [express] POST /api/autotest/scripts 200 in 206ms :: {"files":{"package.json":"{\n  \"nam…
+10:30:17 AM [express] GET /api/projects 304 in 33ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298",…
+10:30:17 AM [express] GET /api/analytics/overview 304 in 77ms :: {"projects":{"total":6,"recent":[{"i…
+10:30:23 AM [express] GET /api/projects 200 in 5ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298","…
+10:30:23 AM [express] GET /api/analytics/overview 200 in 34ms :: {"projects":{"total":6,"recent":[{"i…
+10:30:34 AM [express] GET /api/autotest/runs 304 in 6ms :: {"runs":[{"id":"run_1774843666924_506x","u…
+10:30:35 AM [express] GET /api/autotest/user-stories 304 in 11ms :: {"stories":[]}
+10:30:35 AM [express] GET /api/framework-config 304 in 515ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+10:30:53 AM [express] POST /api/autotest/crawl 200 in 18ms :: {"runId":"run_1774846853453_p0bg"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774846853463
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://nousinfosystems.com/ (depth: 0)
+[EnhancedCrawler] Error visiting https://nousinfosystems.com/: page.goto: Timeout 30000ms exceeded.
+Call log:
+[2m  - navigating to "https://nousinfosystems.com/", waiting until "load"[22m
+
+[EnhancedCrawler] Crawl complete. Visited 0 pages.
+[Playwright] Closed context: enhanced-crawl-1774846853463
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+10:31:38 AM [express] GET /api/autotest/stream/run_1774846853453_p0bg 200 in 45384ms
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+10:38:04 AM [express] POST /api/autotest/crawl 200 in 183ms :: {"runId":"run_1774847284355_rmdq"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774847284535
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://nousinfosystems.com/ (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774847307465.png
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/news (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/events (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/careers (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/contact-us (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 5 pages.
+[Playwright] Closed context: enhanced-crawl-1774847284535
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+10:39:11 AM [express] GET /api/autotest/runs/run_1774847284355_rmdq/load 200 in 196ms :: {"run":{"id"…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+10:39:35 AM [express] POST /api/autotest/crawl 200 in 16ms :: {"runId":"run_1774847375586_9qfl"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774847375600
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://demoqa.com/ (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774847390843.png
+[EnhancedCrawler] Visiting (link): https://demoqa.com/elements (depth: 1)
+[EnhancedCrawler] Visiting (link): https://demoqa.com/forms (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 3 pages.
+[Playwright] Closed context: enhanced-crawl-1774847375600
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+[2m10:44:13 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:44:15 AM [express] GET /api/autotest/runs 200 in 149ms :: {"runs":[{"id":"run_1774847375586_9qfl",…
+10:44:16 AM [express] GET /api/autotest/user-stories 304 in 356ms :: {"stories":[]}
+10:44:16 AM [express] GET /api/framework-config 304 in 513ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+10:46:05 AM [express] GET /api/projects 304 in 352ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+10:46:05 AM [express] GET /api/analytics/overview 304 in 443ms :: {"projects":{"total":6,"recent":[{"…
+[2m10:48:49 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/contexts/BrandingContext.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:48:53 AM [express] GET /api/projects 304 in 360ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+10:48:54 AM [express] GET /api/analytics/overview 304 in 570ms :: {"projects":{"total":6,"recent":[{"…
+[2m10:48:55 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/contexts/BrandingContext.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:48:56 am[22m [36m[1m[vite][22m[39m [33mhmr invalidate [39m[2m/src/contexts/BrandingContext.tsx[22m Could not Fast Refresh ("brandProfiles" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m10:48:56 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx?v=qzXwcbGW1djHAPaMlycm5, /src/index.css?v=qzXwcbGW1djHAPaMlycm5, /src/pages/landing.tsx, /src/pages/settings.tsx, /src/pages/import-export.tsx, /src/pages/agent-configurations.tsx, /src/pages/dashboard.tsx, /src/pages/synthetic-data.tsx, /src/pages/sprint-agent-v2.tsx, /src/components/dashboard/sidebar.tsx[22m
+[2m10:49:02 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/contexts/BrandingContext.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m10:49:02 am[22m [36m[1m[vite][22m[39m [33mhmr invalidate [39m[2m/src/contexts/BrandingContext.tsx[22m Could not Fast Refresh ("brandProfiles" export is incompatible). Learn more at https://github.com/vitejs/vite-plugin-react/tree/main/packages/plugin-react#consistent-components-exports
+[2m10:49:02 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/App.tsx?v=qzXwcbGW1djHAPaMlycm5, /src/index.css?v=qzXwcbGW1djHAPaMlycm5, /src/pages/landing.tsx, /src/pages/settings.tsx, /src/pages/import-export.tsx, /src/pages/agent-configurations.tsx, /src/pages/dashboard.tsx, /src/pages/synthetic-data.tsx, /src/pages/sprint-agent-v2.tsx, /src/components/dashboard/sidebar.tsx[22m
+[2m10:49:13 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/components/dashboard/sidebar.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+10:50:46 AM [express] GET /api/autotest/runs 304 in 376ms :: {"runs":[{"id":"run_1774847375586_9qfl",…
+10:50:46 AM [express] GET /api/autotest/user-stories 304 in 414ms :: {"stories":[]}
+10:50:46 AM [express] GET /api/framework-config 304 in 841ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150
+[autotest] crawler.config.headless=false
+[EnhancedCrawler] crawl() — headless=false, slowMo=200
+[Playwright] setHeadless(false, slowMo=200) — current: headless=true
+[Playwright] Attempting to launch browser with headless mode...
+[Playwright] Launching headed browser — Chrome: C:\Program Files (x86)\Google\Chrome\Application\chrome.exe
+10:51:00 AM [express] POST /api/autotest/crawl 200 in 47ms :: {"runId":"run_1774848060435_7spg"}
+[Playwright] Headed Chrome window launched successfully
+[Playwright] Browser initialized successfully
+[Playwright] Created context: enhanced-crawl-1774848060478
+[EnhancedCrawler] Browser ready — navigating to start URL immediately
+[EnhancedCrawler] Visiting (start): https://nousinfosystems.com/ (depth: 0)
+[EnhancedCrawler] Captured screenshot: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\screenshots\preview_1774848081328.png
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/news (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/events (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/careers (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/contact-us (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/ (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-product-engineering (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/agile-development (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/digital-application-services (depth: 1)
+[EnhancedCrawler] Visiting (link): https://www.nousinfosystems.com/services/quality-engineering (depth: 1)
+[EnhancedCrawler] Crawl complete. Visited 10 pages.
+[Playwright] Closed context: enhanced-crawl-1774848060478
+[Playwright] setHeadless(true, slowMo=undefined) — current: headless=false
+[Playwright] Closing existing browser for mode switch...
+10:52:27 AM [express] GET /api/autotest/stream/run_1774848060435_7spg 200 in 86562ms
+10:52:31 AM [express] POST /api/autotest/test-cases/run_1774848060435_7spg 200 in 312ms :: {"testCase…
+10:54:21 AM [express] POST /api/autotest/scripts 200 in 111ms :: {"files":{"package.json":"{\n  \"nam…
+[2m11:06:57 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/functional-testing.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+11:06:58 AM [express] GET /api/autotest/runs 200 in 108ms :: {"runs":[{"id":"run_1774848060435_7spg",…
+11:06:58 AM [express] GET /api/autotest/user-stories 304 in 16ms :: {"stories":[]}
+11:06:59 AM [express] GET /api/framework-config 304 in 277ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:10:05 AM [express] GET /api/projects 304 in 175ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298"…
+11:10:05 AM [express] GET /api/analytics/overview 304 in 263ms :: {"projects":{"total":6,"recent":[{"…
+11:10:08 AM [express] GET /api/projects 200 in 4ms :: [{"id":"ac15c8c2-cf9a-41e8-bbf9-e2115fcfd298","…
+11:10:08 AM [express] GET /api/analytics/overview 200 in 26ms :: {"projects":{"total":6,"recent":[{"i…
+11:10:15 AM [express] GET /api/framework-config 304 in 181ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:10:15 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:12:03 AM [express] POST /api/projects 200 in 106ms :: {"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e"…
+11:12:03 AM [express] GET /api/projects 200 in 3ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e","…
+11:12:03 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 200 in 3ms :: []
+11:12:10 AM [express] POST /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 200 in 10ms :: …
+11:12:10 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 200 in 2ms :: [{…
+11:12:10 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 5ms :…
+11:16:34 AM [express] POST /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 87ms…
+11:16:34 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 3ms :…
+11:16:34 AM [express] GET /api/sprint-user-stories/013e4bf2-94e8-4e23-adbd-8b1c58de4638/test-cases 20…
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: s a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+11:16:41 AM [express] GET /api/integrations/connected 304 in 8ms :: {"success":true,"integration":nul…
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:16:44 AM [express] POST /api/tests/sprint-generate 200 in 5412ms
+[SSE] Client disconnected
+[2m11:19:39 am[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/pages/sprint-agent.tsx[22m
+11:19:46 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:19:46 AM [express] GET /api/projects 304 in 68ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e",…
+11:19:46 AM [express] GET /api/framework-config 304 in 304ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:20:53 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 304 in 11ms :: […
+11:20:54 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 304 in 4ms :…
+11:20:57 AM [express] GET /api/sprint-user-stories/013e4bf2-94e8-4e23-adbd-8b1c58de4638/test-cases 30…
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: s a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+11:21:03 AM [express] GET /api/integrations/connected 304 in 3ms :: {"success":true,"integration":nul…
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:21:06 AM [express] POST /api/tests/sprint-generate 200 in 5420ms
+[SSE] Client disconnected
+[2m11:23:03 am[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/components/functional/test-cases-list.tsx[22m
+11:23:07 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:23:07 AM [express] GET /api/projects 304 in 77ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e",…
+11:23:07 AM [express] GET /api/framework-config 304 in 340ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+[2m11:23:16 am[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/components/functional/test-cases-list.tsx[22m
+11:23:20 AM [express] GET /api/projects 304 in 3ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e","…
+11:23:20 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:23:20 AM [express] GET /api/framework-config 304 in 9ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61a…
+[2m11:26:08 am[22m [36m[1m[vite][22m[39m [32mpage reload [39m[2msrc/pages/sprint-agent.tsx[22m
+11:26:12 AM [express] GET /api/ado/env/projects 400 in 0ms :: {"success":false,"error":"ADO environme…
+11:26:12 AM [express] GET /api/projects 304 in 76ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e",…
+11:26:13 AM [express] GET /api/framework-config 304 in 192ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:28:30 AM [express] GET /api/ado/env/projects 400 in 0ms :: {"success":false,"error":"ADO environme…
+11:28:30 AM [express] GET /api/projects 200 in 113ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e"…
+11:28:30 AM [express] GET /api/framework-config 200 in 255ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:28:36 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 304 in 10ms :: […
+11:28:37 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 304 in 5ms :…
+11:28:39 AM [express] GET /api/sprint-user-stories/013e4bf2-94e8-4e23-adbd-8b1c58de4638/test-cases 30…
+11:28:46 AM [express] POST /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 19ms…
+11:28:46 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 3ms :…
+11:28:46 AM [express] GET /api/sprint-user-stories/40ced6e2-a689-466b-a90c-f75aa9f96a03/test-cases 20…
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: s a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+11:28:50 AM [express] GET /api/integrations/connected 304 in 5ms :: {"success":true,"integration":nul…
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:28:53 AM [express] POST /api/tests/sprint-generate 200 in 5420ms
+[SSE] Client disconnected
+[2m11:30:40 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[2m11:30:47 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: s a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Heartbeat sent
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:31:41 AM [express] POST /api/tests/sprint-generate 200 in 5689ms
+[SSE] Client disconnected
+[2m11:34:27 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+11:35:15 AM [express] GET /api/projects 304 in 114ms :: [{"id":"d4b69a2c-1b9e-48a1-b820-3b029606190e"…
+11:35:15 AM [express] GET /api/analytics/overview 200 in 199ms :: {"projects":{"total":7,"recent":[{"…
+11:35:24 AM [express] GET /api/framework-config 304 in 234ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:35:24 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:35:27 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 304 in 7ms :: [{…
+11:35:29 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 304 in 4ms :…
+11:35:31 AM [express] GET /api/sprint-user-stories/40ced6e2-a689-466b-a90c-f75aa9f96a03/test-cases 30…
+11:35:35 AM [express] POST /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 20ms…
+11:35:35 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 2ms :…
+11:35:35 AM [express] GET /api/sprint-user-stories/8f62eee8-ea6a-4f74-b7ba-12576afc6b41/test-cases 20…
+11:36:13 AM [express] POST /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 87ms…
+11:36:13 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 3ms :…
+11:36:13 AM [express] GET /api/sprint-user-stories/4f71bfa3-5d4c-42a1-ba29-65e592d8aa15/test-cases 20…
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: As a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+11:36:18 AM [express] GET /api/integrations/connected 304 in 4ms :: {"success":true,"integration":nul…
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:36:21 AM [express] POST /api/tests/sprint-generate 200 in 5391ms
+[SSE] Client disconnected
+[2m11:40:13 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: As a Risk Consultant, I want to generate a loss prevention assessment report for a policyholder so that I can identify workplace hazards and recommend corrective actions before a claim occurs.
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 67 test cases
+11:41:02 AM [express] POST /api/tests/sprint-generate 200 in 5508ms
+[SSE] Client disconnected
+[2m11:44:26 am[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+11:46:37 AM [express] GET /api/baselines 304 in 2ms :: {"success":true,"baselines":[]}
+[Swagger Parser] Parsing specification, type: url
+11:46:48 AM [express] POST /api/swagger/parse 200 in 1922ms :: {"success":true,"apiInfo":{"title":"Sw…
+[API Testing] Executing batch tests for 20 endpoints
+11:47:04 AM [express] POST /api/swagger/execute-tests 200 in 7862ms :: {"success":true,"summary":{"to…
+[API Testing] Executing batch tests for 20 endpoints
+11:53:03 AM [express] POST /api/swagger/execute-tests 200 in 7903ms :: {"success":true,"summary":{"to…
+11:53:59 AM [express] GET /api/autotest/runs 304 in 109ms :: {"runs":[{"id":"run_1774848060435_7spg",…
+11:53:59 AM [express] GET /api/autotest/user-stories 304 in 130ms :: {"stories":[]}
+11:53:59 AM [express] GET /api/framework-config 304 in 203ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d6…
+11:54:03 AM [express] GET /api/analytics/overview 304 in 51ms :: {"projects":{"total":7,"recent":[{"i…
+11:54:04 AM [express] GET /api/ado/env/projects 400 in 1ms :: {"success":false,"error":"ADO environme…
+11:54:04 AM [express] GET /api/framework-config 304 in 14ms :: [{"id":"165be9b4-791a-443e-bcd0-6d3d61…
+11:54:08 AM [express] GET /api/projects/d4b69a2c-1b9e-48a1-b820-3b029606190e/sprints 304 in 7ms :: [{…
+11:54:09 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 304 in 5ms :…
+11:54:46 AM [express] POST /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 151m…
+11:54:46 AM [express] GET /api/sprints/22039eee-c879-46c3-af76-ef285b44db69/user-stories 200 in 4ms :…
+11:54:46 AM [express] GET /api/sprint-user-stories/a66eb888-9b19-49cc-bafd-38faf528c52a/test-cases 20…
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Calling runAgenticPipeline...
+[Agentic Pipeline] Starting for: As a policy holder i need to have flexibility to change the deductable
+[Agentic Pipeline] Sending initialization event...
+[SSE] Event sent: pipeline_stage, written: true
+[Agentic Pipeline] Sending orchestrator status...
+[SSE] Event sent: agent_status, written: true
+[Agentic Pipeline] Running rule-based generator (no AI, instant, no limits)...
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: coverage_summary, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: category_complete, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: category_complete, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+11:54:53 AM [express] GET /api/integrations/connected 304 in 8ms :: {"success":true,"integration":nul…
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: false
+[SSE] Event sent: category_complete, written: false
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: test_case, written: true
+[SSE] Event sent: category_complete, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: pipeline_stage, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: refined_test_cases, written: false
+[SSE] Event sent: pipeline_stage, written: false
+[SSE] Event sent: agent_status, written: false
+[SSE] Heartbeat sent
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: bdd_assets, written: true
+[SSE] Event sent: agent_status, written: true
+[SSE] Event sent: complete, written: true
+[Agentic Pipeline] Generated 36 test cases
+11:54:56 AM [express] POST /api/tests/sprint-generate 200 in 5513ms
+[SSE] Client disconnected
+11:56:07 AM [express] POST /api/generate/testcomplete 200 in 6ms :: {"files":[{"name":"Utils.js","con…
+11:58:34 AM [express] POST /api/export/bdd-assets/zip 200 in 36ms
+[BDD Export] ZIP archive created successfully: As_a_policy_holder_i_need_to_have_flexibility_to_change_the_deductable_BDD_Assets_2026-03-30T06-28-34.zip
+12:11:58 PM [express] POST /api/generate/testcomplete 200 in 4ms :: {"files":[{"name":"Utils.js","con…
+[2m12:29:00 pm[22m [36m[1m[vite][22m[39m [32mhmr update [39m[2m/src/pages/sprint-agent-v2.tsx, /src/index.css?v=qzXwcbGW1djHAPaMlycm5[22m
+12:41:04 PM [express] POST /api/export/bdd-assets/zip 400 in 1ms :: {"success":false,"error":"Missing…
+12:41:16 PM [express] POST /api/export/bdd-assets/zip 400 in 0ms :: {"success":false,"error":"Missing…
+12:41:24 PM [express] GET /api/export/bdd-assets/zip 200 in 124ms
+12:41:24 PM [express] GET /api/ 200 in 11ms
+12:46:17 PM [express] GET /api/export/bdd-assets/zip 200 in 11ms
+12:54:35 PM [express] POST /api/export/bdd-assets/zip 200 in 19ms
+[BDD Export] ZIP archive created successfully: Change_the_deductable_BDD_Assets_2026-03-30T07-24-35.zip

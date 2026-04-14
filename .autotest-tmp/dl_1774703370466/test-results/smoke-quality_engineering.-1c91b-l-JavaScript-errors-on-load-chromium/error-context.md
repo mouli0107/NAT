@@ -1,0 +1,407 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - listbox [ref=e106]:
+    - text: 
+    - generic [ref=e108]:
+      - generic [ref=e113]:
+        - heading [level=2] [ref=e114]: Build an effective test strategy with the right tools
+        - paragraph [ref=e115]: Identify and implement the right tools best suited to business-specific testing objectives.
+      - tabpanel [ref=e116]:
+        - generic [ref=e120]:
+          - heading "Shift left to reduce business risks" [level=2] [ref=e121]
+          - paragraph [ref=e122]: Test early and often to improve quality, enhance security, and accelerate delivery.
+      - tabpanel [ref=e123]:
+        - generic [ref=e127]:
+          - heading [level=2] [ref=e128]: Build an effective test strategy with the right tools
+          - paragraph [ref=e129]: Identify and implement the right tools best suited to business-specific testing objectives.
+      - generic [ref=e134]:
+        - heading [level=2] [ref=e135]: Shift left to reduce business risks
+        - paragraph [ref=e136]: Test early and often to improve quality, enhance security, and accelerate delivery.
+      - generic [ref=e141]:
+        - heading [level=2] [ref=e142]: Build an effective test strategy with the right tools
+        - paragraph [ref=e143]: Identify and implement the right tools best suited to business-specific testing objectives.
+    - text: 
+    - tablist [ref=e144]:
+      - tab "1 of 2" [selected] [ref=e145] [cursor=pointer]: "1"
+      - tab "2 of 2" [ref=e146] [cursor=pointer]: "2"
+  - generic [ref=e149]:
+    - generic [ref=e151]:
+      - heading "Scalable quality engineering services for accelerated digital transformation" [level=1] [ref=e152]
+      - paragraph [ref=e153]: Testree offers a wide range of quality engineering services for leading enterprises and ISVs across the globe. We enable global organizations to build consistent quality engineering strategies that accelerate digital transformation initiatives and ensure the development of secure and reliable software products by providing scalable quality engineering services .
+      - paragraph [ref=e154]: To address the growing needs of the market and ensure a flawless customer experience, organizations need robust quality engineering methodologies and a reliable quality engineering partner. As a partner of choice for many enterprises and ISVs (Independent Software Vendors), Testree, the independent software quality engineering division of Nous Infosystems, provides innovative quality engineering solutions to improve resilience and predictability.
+      - paragraph [ref=e155]: Transform testing with Testree’s quality engineering services. Focussed on the latest cutting-edge technology trends and testing needs, Nous has established strong expertise in functional testing, while strengthening our competence in technology testing areas including Mobility, Automation, Performance, Big Data, and AI-led testing. For over two decades, we have been empowering our clients to elevate their strategies through comprehensive quality engineering services, helping them achieve quality that delights customers and succeeds in the market.
+    - generic [ref=e157]:
+      - heading "Quality Engineering Services" [level=2] [ref=e158]
+      - generic [ref=e160]:
+        - generic [ref=e162]:
+          - img "Quality Assurance" [ref=e164]
+          - generic [ref=e165]:
+            - heading "Quality Assurance" [level=4] [ref=e166]
+            - paragraph [ref=e167]: Functional testing
+            - paragraph [ref=e168]: Performance testing
+            - paragraph [ref=e169]: Security testing
+            - paragraph [ref=e170]: Regulatory compliance testing
+          - link " Learn more" [ref=e171] [cursor=pointer]:
+            - /url: https://testree.com/services/quality-assurance/
+            - generic [ref=e172]: 
+            - text: Learn more
+        - generic [ref=e174]:
+          - img "Test Engineering" [ref=e176]
+          - generic [ref=e177]:
+            - heading "Test Engineering" [level=4] [ref=e178]
+            - paragraph [ref=e179]: Functional test automation
+            - paragraph [ref=e180]: Testing data management
+            - paragraph [ref=e181]: Test infrastructure management
+            - paragraph [ref=e182]: Testing tool management
+          - link " Learn more" [ref=e183] [cursor=pointer]:
+            - /url: https://testree.com/services/test-engineering/
+            - generic [ref=e184]: 
+            - text: Learn more
+        - generic [ref=e186]:
+          - img "Business Assurance" [ref=e188]
+          - generic [ref=e189]:
+            - heading "Business Assurance" [level=4] [ref=e190]
+            - paragraph [ref=e191]: Testing process assessment
+            - paragraph [ref=e192]: Test strategy advisory
+            - paragraph [ref=e193]: Continuous testing transformation
+            - paragraph [ref=e194]: Managed testing services
+          - link " Learn more" [ref=e195] [cursor=pointer]:
+            - /url: "https://testree.com/services/business-assurance/ "
+            - generic [ref=e196]: 
+            - text: Learn more
+    - generic [ref=e198]:
+      - heading "Innovative QE Solutions" [level=2] [ref=e199]
+      - generic [ref=e201]:
+        - generic [ref=e203]:
+          - heading "Technology Solutions" [level=4] [ref=e205]
+          - generic [ref=e206]:
+            - paragraph [ref=e207]: Test automation frameworks
+            - paragraph [ref=e208]: Tool migrators
+            - paragraph [ref=e209]: Test data manager
+            - paragraph [ref=e210]: Performance toolkit
+            - link " Learn more" [ref=e211] [cursor=pointer]:
+              - /url: https://testree.com/services/solutions/technology-solutions/
+              - generic [ref=e212]: 
+              - text: Learn more
+        - generic [ref=e214]:
+          - heading "COTS Testing Solutions" [level=4] [ref=e216]
+          - generic [ref=e217]:
+            - paragraph [ref=e218]: SAP testing
+            - paragraph [ref=e219]: Oracle EBS testing
+            - paragraph [ref=e220]: Salesforce testing
+          - link " Learn more" [ref=e221] [cursor=pointer]:
+            - /url: https://testree.com/services/solutions/cots-testing-solutions/
+            - generic [ref=e222]: 
+            - text: Learn more
+        - generic [ref=e224]:
+          - heading "Test Labs" [level=4] [ref=e226]
+          - generic [ref=e227]:
+            - paragraph [ref=e228]: Mobile test lab
+            - paragraph [ref=e229]: IoT test lab
+            - paragraph [ref=e230]: Security testing lab
+          - link " Learn more" [ref=e231] [cursor=pointer]:
+            - /url: https://testree.com/services/solutions/test-labs/
+            - generic [ref=e232]: 
+            - text: Learn more
+    - generic [ref=e236]:
+      - heading "nTestMigrate – Test Assets Migration Tool" [level=2] [ref=e237]
+      - generic [ref=e240]:
+        - paragraph [ref=e242]: Address the challenges of transitioning to newer, more capable quality engineering tools, ensuring efficient and risk-mitigated migration of test assets. Seamlessly upgrade to modern tools, optimizing efficiency and performance.
+        - link " Learn more" [ref=e243] [cursor=pointer]:
+          - /url: /services/quality-engineering/nous-test-migrator-tool
+          - generic [ref=e244]: 
+          - text: Learn more
+    - generic [ref=e248]:
+      - heading "Why Nous?" [level=2] [ref=e249]
+      - generic [ref=e251]:
+        - img "software industry" [ref=e255]
+        - generic [ref=e257]:
+          - generic [ref=e258]:
+            - heading "25+ years of experience in the software industry " [level=2] [ref=e259]:
+              - button "25+ years of experience in the software industry " [expanded] [ref=e260] [cursor=pointer]
+            - generic "25+ years of experience in the software industry " [ref=e261]:
+              - generic [ref=e262]: Extensive experience and expertise across industry domains to ensure applications meet the highest quality standards.
+          - heading "In-house R&D labs, test automation framework " [level=2] [ref=e264]:
+            - button "In-house R&D labs, test automation framework " [ref=e265] [cursor=pointer]
+          - heading "Strong partnership with best-in-class testing tools " [level=2] [ref=e267]:
+            - button "Strong partnership with best-in-class testing tools " [ref=e268] [cursor=pointer]
+          - heading "Reusable assets for the quick and easy adoption " [level=2] [ref=e270]:
+            - button "Reusable assets for the quick and easy adoption " [ref=e271] [cursor=pointer]
+          - heading "Flexible service packages " [level=2] [ref=e273]:
+            - button "Flexible service packages " [ref=e274] [cursor=pointer]
+    - generic [ref=e276]:
+      - heading "Resources" [level=2] [ref=e277]
+      - generic [ref=e281]:
+        - generic [ref=e285]:
+          - generic [ref=e287]: Webinar
+          - generic [ref=e288]:
+            - heading "SAP S/4HANA – Top 5 challenges and solutions" [level=4] [ref=e289]:
+              - link "SAP S/4HANA – Top 5 challenges and solutions" [ref=e290] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/insights/webinar/sap-s-4hana-top-5-challenges-and-solutions
+            - paragraph [ref=e291]: Hear Nous and Tricentis experts discuss the challenges in testing an S/4 HANA implementation and how they can be addressed.
+            - link " Learn More" [ref=e293] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/insights/webinar/sap-s-4hana-top-5-challenges-and-solutions
+              - generic [ref=e294]: 
+              - text: Learn More
+        - generic [ref=e298]:
+          - generic [ref=e300]: Webinar
+          - generic [ref=e301]:
+            - heading "How to scale your web and mobile apps with TestComplete and its cloud platforms" [level=4] [ref=e302]:
+              - link "How to scale your web and mobile apps with TestComplete and its cloud platforms" [ref=e303] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/insights/webinar/how-to-scale-your-web-and-mobile-apps-with-testcomplete-and-its-cloud-platforms
+            - paragraph [ref=e304]: Learn how teams can scale functional UI tests leveraging the TestComplete-CrossBrowserTesting-BitBar integration.
+            - link " Learn More" [ref=e306] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/insights/webinar/how-to-scale-your-web-and-mobile-apps-with-testcomplete-and-its-cloud-platforms
+              - generic [ref=e307]: 
+              - text: Learn More
+  - generic [ref=e308]:
+    - generic [ref=e310]:
+      - heading "Ready to get started?" [level=2] [ref=e312]
+      - heading " Contact us" [level=2] [ref=e314] [cursor=pointer]:
+        - generic [ref=e315]:
+          - generic [ref=e316]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e317]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e318] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e320] [cursor=pointer]: 
+  - generic [ref=e321]:
+    - generic [ref=e328]:
+      - generic [ref=e329]:
+        - generic [ref=e330]:
+          - heading "Services" [level=2] [ref=e331]
+          - navigation "Services" [ref=e332]:
+            - list [ref=e333]:
+              - listitem [ref=e334]:
+                - link "Digital Product Engineering" [ref=e335] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e336]:
+                - link "Agile Development" [ref=e337] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e338]:
+                - link "Digital Application Services" [ref=e339] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e340]:
+                - link "Quality Engineering" [ref=e341] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e342]:
+                - link "Infrastructure Management" [ref=e343] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e344]:
+          - heading "Insights" [level=2] [ref=e345]
+          - navigation "Insights" [ref=e346]:
+            - list [ref=e347]:
+              - listitem [ref=e348]:
+                - link "Case Studies" [ref=e349] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e350]:
+                - link "Whitepapers" [ref=e351] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e352]:
+                - link "Brochures" [ref=e353] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e354]:
+                - link "Blogs" [ref=e355] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e356]:
+                - link "Webinars" [ref=e357] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e358]:
+        - generic [ref=e359]:
+          - heading "Competency" [level=2] [ref=e360]
+          - navigation "Competency" [ref=e361]:
+            - list [ref=e362]:
+              - listitem [ref=e363]:
+                - link "AI & Automation" [ref=e364] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e365]:
+                - link "Cloud" [ref=e366] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e367]:
+                - link "Data & Analytics" [ref=e368] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e369]:
+                - link "Digital" [ref=e370] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e371]:
+                - link "Quality Engineering" [ref=e372] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e373]:
+                - link "Infrastructure" [ref=e374] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e375]:
+          - heading "Company" [level=2] [ref=e376]
+          - navigation "Company" [ref=e377]:
+            - list [ref=e378]:
+              - listitem [ref=e379]:
+                - link "About Us" [ref=e380] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e381]:
+                - link "Partnerships" [ref=e382] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e383]:
+                - link "News" [ref=e384] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e385]:
+                - link "Events" [ref=e386] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e387]:
+                - link "Careers" [ref=e388] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e389]:
+                - link "CSR" [ref=e390] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e391]:
+                - link "Contact Us" [ref=e392] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - heading "Industries" [level=2] [ref=e395]
+          - navigation "Industries" [ref=e396]:
+            - list [ref=e397]:
+              - listitem [ref=e398]:
+                - link "Banking & Financial Services" [ref=e399] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e400]:
+                - link "Insurance" [ref=e401] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e402]:
+                - link "Healthcare & Life Sciences" [ref=e403] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e404]:
+                - link "Retail" [ref=e405] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e406]:
+                - link "Travel & Logistics" [ref=e407] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e408]:
+          - heading "Support" [level=2] [ref=e409]
+          - navigation "Support" [ref=e410]:
+            - list [ref=e411]:
+              - listitem [ref=e412]:
+                - link "Disclaimer" [ref=e413] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e414]:
+                - link "Sitemap" [ref=e415] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e416]:
+                - link "Privacy Policy" [ref=e417] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e418]:
+        - heading "Newsletter" [level=2] [ref=e419]
+        - generic [ref=e421]:
+          - generic [ref=e422]:
+            - status
+            - list
+          - form "Contact form" [ref=e423]:
+            - generic [ref=e424]:
+              - generic [ref=e425]:
+                - textbox [ref=e429]:
+                  - /placeholder: Email Address
+                - generic [ref=e430]:
+                  - button "." [ref=e431] [cursor=pointer]
+                  - generic [ref=e432]: 
+              - iframe [ref=e437]:
+                - generic [ref=f13e2]:
+                  - generic [ref=f13e3]:
+                    - checkbox "I'm not a robot" [ref=f13e7]
+                    - generic [ref=f13e11]: I'm not a robot
+                  - generic [ref=f13e12]:
+                    - generic [ref=f13e15]: reCAPTCHA
+                    - generic [ref=f13e16]:
+                      - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f13e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e439]:
+          - listitem [ref=e440]:
+            - link "" [ref=e441] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e442]: 
+          - listitem [ref=e443]:
+            - link [ref=e444] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e446]:
+            - link "" [ref=e447] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e448]: 
+          - listitem [ref=e449]:
+            - link "" [ref=e450] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e451]: 
+        - figure [ref=e452]
+    - generic [ref=e456]: ©2026 Nous Infosystems. All Rights Reserved.
+```

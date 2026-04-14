@@ -1,0 +1,99 @@
+{
+  "url": "https://apolf-web-preprod.azurewebsites.net/RedikerAcademy",
+  "title": "AdminPlus Online Forms",
+  "headings": [
+    "Rediker Academy",
+    "First Time Visitor?",
+    "Apply Now",
+    "Login"
+  ],
+  "inputs": [
+    {
+      "type": "email",
+      "name": "email",
+      "id": "txtUserName",
+      "placeholder": "Enter your email",
+      "label": "Enter your email",
+      "required": false
+    },
+    {
+      "type": "password",
+      "name": "pwd",
+      "id": "txtUserPassword",
+      "placeholder": "Enter your password",
+      "label": "Enter your password",
+      "required": false
+    },
+    {
+      "type": "checkbox",
+      "name": "chkRememberme",
+      "id": "chkRememberme",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "sl",
+      "id": "goog-gt-votingInputSrcLang",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "tl",
+      "id": "goog-gt-votingInputTrgLang",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "query",
+      "id": "goog-gt-votingInputSrcText",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "gtrans",
+      "id": "goog-gt-votingInputTrgText",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "vote",
+      "id": "goog-gt-votingInputVote",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    }
+  ],
+  "selects": [],
+  "buttons": [
+    {
+      "text": "Apply Now\n                                                \n                                                \n                                                    Create Now",
+      "type": "submit"
+    },
+    {
+      "text": "Login",
+      "type": "submit"
+    },
+    {
+      "text": "",
+      "type": "button"
+    },
+    {
+      "text": "",
+      "type": "button"
+    }
+  ],
+  "labels": [
+    "Enter your email",
+    "Enter your password"
+  ]
+}

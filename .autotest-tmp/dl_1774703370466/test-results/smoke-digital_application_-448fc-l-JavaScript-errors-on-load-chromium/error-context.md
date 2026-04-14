@@ -1,0 +1,403 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - listbox [ref=e106]:
+    - text: 
+    - generic [ref=e108]:
+      - generic [ref=e113]:
+        - heading [level=2] [ref=e114]: Enterprise application modernization
+        - paragraph [ref=e115]: Upgrade time-tested legacy applications for newer, innovative computing approaches.
+        - link [ref=e117] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-application-services/application-modernization
+          - text:  Learn More
+      - tabpanel [ref=e118]:
+        - generic [ref=e122]:
+          - heading "End-to-end IT application services" [level=2] [ref=e123]
+          - paragraph [ref=e124]: Adopt an innovation-led approach to enabling business agility and innovation at scale.
+      - tabpanel [ref=e125]:
+        - generic [ref=e129]:
+          - heading [level=2] [ref=e130]: Custom application development services
+          - paragraph [ref=e131]: Create a robust foundation for building digital apps leveraging a modern technology stack.
+          - link [ref=e133] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/services/digital-application-services/application-development
+            - text:  Learn More
+      - tabpanel [ref=e134]:
+        - generic [ref=e138]:
+          - heading [level=2] [ref=e139]: Application maintenance and support
+          - paragraph [ref=e140]: Identify bottlenecks, find areas for improvement, minimize risks, and ensure high availability.
+          - link [ref=e142] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/services/digital-application-services/application-maintenance
+            - text:  Learn More
+      - tabpanel [ref=e143]:
+        - generic [ref=e147]:
+          - heading [level=2] [ref=e148]: Enterprise application integration services
+          - paragraph [ref=e149]: Connect enterprise applications, data, processes, and devices across the IT landscape.
+          - link [ref=e151] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/services/digital-application-services/application-integration
+            - text:  Learn More
+      - tabpanel [ref=e152]:
+        - generic [ref=e156]:
+          - heading [level=2] [ref=e157]: Enterprise application modernization
+          - paragraph [ref=e158]: Upgrade time-tested legacy applications for newer, innovative computing approaches.
+          - link [ref=e160] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/services/digital-application-services/application-modernization
+            - text:  Learn More
+      - generic [ref=e165]:
+        - heading [level=2] [ref=e166]: End-to-end IT application services
+        - paragraph [ref=e167]: Adopt an innovation-led approach to enabling business agility and innovation at scale.
+      - generic [ref=e172]:
+        - heading [level=2] [ref=e173]: Custom application development services
+        - paragraph [ref=e174]: Create a robust foundation for building digital apps leveraging a modern technology stack.
+        - link [ref=e176] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-application-services/application-development
+          - text:  Learn More
+      - generic [ref=e181]:
+        - heading [level=2] [ref=e182]: Application maintenance and support
+        - paragraph [ref=e183]: Identify bottlenecks, find areas for improvement, minimize risks, and ensure high availability.
+        - link [ref=e185] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-application-services/application-maintenance
+          - text:  Learn More
+      - generic [ref=e190]:
+        - heading [level=2] [ref=e191]: Enterprise application integration services
+        - paragraph [ref=e192]: Connect enterprise applications, data, processes, and devices across the IT landscape.
+        - link [ref=e194] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-application-services/application-integration
+          - text:  Learn More
+      - generic [ref=e199]:
+        - heading [level=2] [ref=e200]: Enterprise application modernization
+        - paragraph [ref=e201]: Upgrade time-tested legacy applications for newer, innovative computing approaches.
+        - link [ref=e203] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-application-services/application-modernization
+          - text:  Learn More
+    - text: 
+    - tablist [ref=e204]:
+      - tab "1 of 5" [selected] [ref=e205] [cursor=pointer]: "1"
+      - tab "2 of 5" [ref=e206] [cursor=pointer]: "2"
+      - tab "3 of 5" [ref=e207] [cursor=pointer]: "3"
+      - tab "4 of 5" [ref=e208] [cursor=pointer]: "4"
+      - tab "5 of 5" [ref=e209] [cursor=pointer]: "5"
+  - generic [ref=e212]:
+    - generic [ref=e214]:
+      - heading "Achieve digital success with reliable IT application services" [level=1] [ref=e215]
+      - paragraph [ref=e216]: Trending technologies like SMAC (Social, Media, Analytics, and Cloud) have created a more challenging and capable technology environment for developing intelligent, agile applications. Nous has consistently provided digital application services that meet critical business problems.
+      - paragraph [ref=e217]: Nous’ IT Application Services address business and technology challenges, helping organizations maximize ROI on their IT investments. With deep technology expertise, we provide comprehensive IT application lifecycle services to help design and build robust applications that define a business’s brand, efficiency, and success. We enable fast and secure deployment, management, and upgrading of applications to support long-term business objectives.
+    - generic [ref=e221]:
+      - heading "Application services" [level=2] [ref=e222]
+      - generic [ref=e225]:
+        - generic [ref=e227]:
+          - img "thumbnail" [ref=e229]
+          - generic [ref=e230]:
+            - heading "Application Development" [level=3] [ref=e231]
+            - paragraph [ref=e234]: Experience premium app development for advanced solutions and client success.
+            - link " Learn More" [ref=e235] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/services/digital-application-services/application-development
+              - generic [ref=e236]: 
+              - text: Learn More
+        - generic [ref=e238]:
+          - img "thumbnail" [ref=e240]
+          - generic [ref=e241]:
+            - heading "Application Maintenance" [level=3] [ref=e242]
+            - paragraph [ref=e245]: Access elite app maintenance for seamless functionality and peak performance.
+            - link " Learn More" [ref=e246] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/services/digital-application-services/application-maintenance
+              - generic [ref=e247]: 
+              - text: Learn More
+        - generic [ref=e249]:
+          - img "thumbnail" [ref=e251]
+          - generic [ref=e252]:
+            - heading "Application Integration" [level=3] [ref=e253]
+            - paragraph [ref=e256]: Advanced app integration seamlessly connects systems for optimal functionality.
+            - link " Learn More" [ref=e257] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/services/digital-application-services/application-integration
+              - generic [ref=e258]: 
+              - text: Learn More
+        - generic [ref=e260]:
+          - img "thumbnail" [ref=e262]
+          - generic [ref=e263]:
+            - heading "Application Modernization" [level=3] [ref=e264]
+            - paragraph [ref=e267]: Top-tier app modernization services, ensuring agile and future-ready solutions.
+            - link " Learn More" [ref=e268] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/services/digital-application-services/application-modernization
+              - generic [ref=e269]: 
+              - text: Learn More
+    - generic [ref=e273]:
+      - heading "Why Nous?" [level=2] [ref=e274]
+      - generic [ref=e276]:
+        - img "digital application services" [ref=e280]
+        - generic [ref=e282]:
+          - generic [ref=e283]:
+            - heading "25+ years of delivering digital application services " [level=2] [ref=e284]:
+              - button "25+ years of delivering digital application services " [expanded] [ref=e285] [cursor=pointer]
+            - generic "25+ years of delivering digital application services " [ref=e286]:
+              - generic [ref=e287]: Comprehensive IT application services covering the entire lifecycle – from design and development to deployment, maintenance, and support.
+          - heading "Partnerships with leading technologies and platforms " [level=2] [ref=e289]:
+            - button "Partnerships with leading technologies and platforms " [ref=e290] [cursor=pointer]
+          - heading "Flexible engagement models " [level=2] [ref=e292]:
+            - button "Flexible engagement models " [ref=e293] [cursor=pointer]
+          - heading "Access to a highly skilled talent pool " [level=2] [ref=e295]:
+            - button "Access to a highly skilled talent pool " [ref=e296] [cursor=pointer]
+          - heading "Governance model for application lifecycle management " [level=2] [ref=e298]:
+            - button "Governance model for application lifecycle management " [ref=e299] [cursor=pointer]
+    - generic [ref=e301]:
+      - heading "Resources" [level=2] [ref=e302]
+      - generic [ref=e310]:
+        - generic [ref=e312]: Case Study
+        - generic [ref=e313]:
+          - heading "Enhanced fund processing efficiency for a leading US-based bank" [level=4] [ref=e314]:
+            - link "Enhanced fund processing efficiency for a leading US-based bank" [ref=e315] [cursor=pointer]:
+              - /url: https://www.nousinfosystems.com/insights/case-study/enhanced-fund-processing-efficiency
+          - paragraph [ref=e316]: Redesigned existing web app to eliminate dependency on the legacy FX system, significantly improving performance.
+          - link " Learn More" [ref=e318] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/insights/case-study/enhanced-fund-processing-efficiency
+            - generic [ref=e319]: 
+            - text: Learn More
+  - generic [ref=e320]:
+    - generic [ref=e322]:
+      - heading "Ready to get started?" [level=2] [ref=e324]
+      - heading " Contact us" [level=2] [ref=e326] [cursor=pointer]:
+        - generic [ref=e327]:
+          - generic [ref=e328]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e329]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e330] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e332] [cursor=pointer]: 
+  - generic [ref=e333]:
+    - generic [ref=e340]:
+      - generic [ref=e341]:
+        - generic [ref=e342]:
+          - heading "Services" [level=2] [ref=e343]
+          - navigation "Services" [ref=e344]:
+            - list [ref=e345]:
+              - listitem [ref=e346]:
+                - link "Digital Product Engineering" [ref=e347] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e348]:
+                - link "Agile Development" [ref=e349] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e350]:
+                - link "Digital Application Services" [ref=e351] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e352]:
+                - link "Quality Engineering" [ref=e353] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e354]:
+                - link "Infrastructure Management" [ref=e355] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e356]:
+          - heading "Insights" [level=2] [ref=e357]
+          - navigation "Insights" [ref=e358]:
+            - list [ref=e359]:
+              - listitem [ref=e360]:
+                - link "Case Studies" [ref=e361] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e362]:
+                - link "Whitepapers" [ref=e363] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e364]:
+                - link "Brochures" [ref=e365] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e366]:
+                - link "Blogs" [ref=e367] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e368]:
+                - link "Webinars" [ref=e369] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e370]:
+        - generic [ref=e371]:
+          - heading "Competency" [level=2] [ref=e372]
+          - navigation "Competency" [ref=e373]:
+            - list [ref=e374]:
+              - listitem [ref=e375]:
+                - link "AI & Automation" [ref=e376] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e377]:
+                - link "Cloud" [ref=e378] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e379]:
+                - link "Data & Analytics" [ref=e380] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e381]:
+                - link "Digital" [ref=e382] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e383]:
+                - link "Quality Engineering" [ref=e384] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e385]:
+                - link "Infrastructure" [ref=e386] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e387]:
+          - heading "Company" [level=2] [ref=e388]
+          - navigation "Company" [ref=e389]:
+            - list [ref=e390]:
+              - listitem [ref=e391]:
+                - link "About Us" [ref=e392] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e393]:
+                - link "Partnerships" [ref=e394] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e395]:
+                - link "News" [ref=e396] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e397]:
+                - link "Events" [ref=e398] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e399]:
+                - link "Careers" [ref=e400] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e401]:
+                - link "CSR" [ref=e402] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e403]:
+                - link "Contact Us" [ref=e404] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e405]:
+        - generic [ref=e406]:
+          - heading "Industries" [level=2] [ref=e407]
+          - navigation "Industries" [ref=e408]:
+            - list [ref=e409]:
+              - listitem [ref=e410]:
+                - link "Banking & Financial Services" [ref=e411] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e412]:
+                - link "Insurance" [ref=e413] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e414]:
+                - link "Healthcare & Life Sciences" [ref=e415] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e416]:
+                - link "Retail" [ref=e417] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e418]:
+                - link "Travel & Logistics" [ref=e419] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e420]:
+          - heading "Support" [level=2] [ref=e421]
+          - navigation "Support" [ref=e422]:
+            - list [ref=e423]:
+              - listitem [ref=e424]:
+                - link "Disclaimer" [ref=e425] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e426]:
+                - link "Sitemap" [ref=e427] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e428]:
+                - link "Privacy Policy" [ref=e429] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e430]:
+        - heading "Newsletter" [level=2] [ref=e431]
+        - generic [ref=e433]:
+          - generic [ref=e434]:
+            - status
+            - list
+          - form "Contact form" [ref=e435]:
+            - generic [ref=e436]:
+              - generic [ref=e437]:
+                - textbox [ref=e441]:
+                  - /placeholder: Email Address
+                - generic [ref=e442]:
+                  - button "." [ref=e443] [cursor=pointer]
+                  - generic [ref=e444]: 
+              - iframe [ref=e449]:
+                - generic [ref=f13e2]:
+                  - generic [ref=f13e3]:
+                    - checkbox "I'm not a robot" [ref=f13e7]
+                    - generic [ref=f13e11]: I'm not a robot
+                  - generic [ref=f13e12]:
+                    - generic [ref=f13e15]: reCAPTCHA
+                    - generic [ref=f13e16]:
+                      - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f13e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e451]:
+          - listitem [ref=e452]:
+            - link "" [ref=e453] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e454]: 
+          - listitem [ref=e455]:
+            - link [ref=e456] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e458]:
+            - link "" [ref=e459] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e460]: 
+          - listitem [ref=e461]:
+            - link "" [ref=e462] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e463]: 
+        - figure [ref=e464]
+    - generic [ref=e468]: ©2026 Nous Infosystems. All Rights Reserved.
+```

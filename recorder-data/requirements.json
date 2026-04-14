@@ -1,0 +1,110 @@
+[
+  {
+    "id": "req-001",
+    "title": "User can log in with valid credentials",
+    "description": "As a user, I can enter my username and password and be redirected to the dashboard",
+    "source": "jira",
+    "ticketId": "APP-101",
+    "priority": "P0",
+    "createdAt": 1741996800000
+  },
+  {
+    "id": "req-002",
+    "title": "User can reset forgotten password",
+    "description": "As a user, I can click Forgot Password and receive a reset email",
+    "source": "jira",
+    "ticketId": "APP-102",
+    "priority": "P0",
+    "createdAt": 1741996800000
+  },
+  {
+    "id": "req-003",
+    "title": "User can view product catalogue",
+    "description": "As a user, I can browse all available products with filters",
+    "source": "jira",
+    "ticketId": "APP-201",
+    "priority": "P1",
+    "createdAt": 1742083200000
+  },
+  {
+    "id": "req-004",
+    "title": "User can add items to cart",
+    "description": "As a user, I can add products to my shopping cart and see the updated count",
+    "source": "jira",
+    "ticketId": "APP-202",
+    "priority": "P1",
+    "createdAt": 1742083200000
+  },
+  {
+    "id": "req-005",
+    "title": "User can complete checkout",
+    "description": "As a user, I can enter payment details and receive an order confirmation",
+    "source": "jira",
+    "ticketId": "APP-203",
+    "priority": "P0",
+    "createdAt": 1742083200000
+  },
+  {
+    "id": "req-006",
+    "title": "User can view order history",
+    "description": "As a user, I can see a list of my past orders with their statuses",
+    "source": "ado",
+    "ticketId": "WI-4401",
+    "priority": "P2",
+    "createdAt": 1742169600000
+  },
+  {
+    "id": "req-007",
+    "title": "Admin can manage user accounts",
+    "description": "As an admin, I can create, edit, and deactivate user accounts",
+    "source": "ado",
+    "ticketId": "WI-4402",
+    "priority": "P1",
+    "createdAt": 1742169600000
+  },
+  {
+    "id": "req-008",
+    "title": "Search returns relevant results",
+    "description": "As a user, I can search by keyword and get relevant products within 2 seconds",
+    "source": "manual",
+    "ticketId": null,
+    "priority": "P1",
+    "createdAt": 1742256000000
+  },
+  {
+    "id": "req-009",
+    "title": "Application loads within 3 seconds",
+    "description": "The home page must fully load within 3 seconds on a standard broadband connection",
+    "source": "manual",
+    "ticketId": null,
+    "priority": "P1",
+    "createdAt": 1742256000000
+  },
+  {
+    "id": "req-010",
+    "title": "Cookie consent banner is dismissible",
+    "description": "As a user, I can accept or decline cookies and the banner should not reappear",
+    "source": "jira",
+    "ticketId": "APP-305",
+    "priority": "P2",
+    "createdAt": 1742342400000
+  },
+  {
+    "id": "req-011",
+    "title": "User can update profile details",
+    "description": "As a user, I can edit my name, email, and avatar from the profile page",
+    "source": "jira",
+    "ticketId": "APP-401",
+    "priority": "P2",
+    "createdAt": 1742342400000
+  },
+  {
+    "id": "req-012",
+    "title": "Navigation links are accessible via keyboard",
+    "description": "All top-level navigation items must be reachable using Tab and Enter keys",
+    "source": "manual",
+    "ticketId": null,
+    "priority": "P2",
+    "createdAt": 1742428800000
+  }
+]

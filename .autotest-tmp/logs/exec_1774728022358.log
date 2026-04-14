@@ -1,0 +1,391 @@
+[exec_1774728022358] ▶  Writing 31 POM files to temp directory...
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://airtel.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774728022358.log
+✓  31 files written — 16 spec files across 6 test categories
+
+Running 41 tests using 1 worker
+
+[1A[2K[1/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  1) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 1 issue(s):
+      1. Page has no H1 heading
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\accessibility-alumni_web_p-6f97a-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\accessibility-alumni_web_p-6f97a-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[2/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:13:7 › @accessibility | Airtel Alum Hub › TC-A02 page has a descriptive non-empty title
+[1A[2K[3/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:22:7 › @accessibility | Airtel Alum Hub › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[4/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  2) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 1 issue(s):
+      1. Page has no H1 heading
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\accessibility-alumni_web_p-c70d2-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\accessibility-alumni_web_p-c70d2-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[5/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:13:7 › @accessibility | Airtel Alum Hub › TC-A02 page has a descriptive non-empty title
+[1A[2K[6/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:22:7 › @accessibility | Airtel Alum Hub › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[7/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:6:7 › @accessibility | Airtel Careers › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  3) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:6:7 › @accessibility | Airtel Careers › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 1 issue(s):
+      1. Page has no H1 heading
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\accessibility-home_1.a11y--1cfa6-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\accessibility-home_1.a11y--1cfa6-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[8/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:13:7 › @accessibility | Airtel Careers › TC-A02 page has a descriptive non-empty title
+[1A[2K[9/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:22:7 › @accessibility | Airtel Careers › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[10/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  4) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 1 issue(s):
+      1. Page has no H1 heading
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\accessibility-home.a11y--a-90436-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\accessibility-home.a11y--a-90436-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[11/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:13:7 › @accessibility | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-A02 page has a descriptive non-empty title
+[1A[2K[12/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:22:7 › @accessibility | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[13/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible
+[1A[2K  5) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('main, [role="main"], body > *').first()
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('main, [role="main"], body > *').first()[22m
+    [2m    9 × locator resolved to <noscript>You need to enable JavaScript to run this app.</noscript>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('main, [role="main"], body > *').first()).toBeVisible();
+         |                                                                         ^
+      11 |   });
+      12 |
+      13 |   test('TC-F02 all internal navigation links return HTTP 200', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:10:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-4baea-F01-main-content-is-visible-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-4baea-F01-main-content-is-visible-chromium\error-context.md
+
+
+[1A[2K[14/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200
+
+[chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200
+(node:19264) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K[1A[2K  6) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-fd124-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-fd124-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[15/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible
+  7) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('main, [role="main"], body > *').first()
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('main, [role="main"], body > *').first()[22m
+    [2m    9 × locator resolved to <noscript>You need to enable JavaScript to run this app.</noscript>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('main, [role="main"], body > *').first()).toBeVisible();
+         |                                                                         ^
+      11 |   });
+      12 |
+      13 |   test('TC-F02 all internal navigation links return HTTP 200', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:10:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-fd31a-F01-main-content-is-visible-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-fd31a-F01-main-content-is-visible-chromium\error-context.md
+
+
+[1A[2K[1A[2K[16/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200
+[1A[2K[chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200
+(node:3024) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K  8) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-f9d68-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-alumni_web_port-f9d68-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[17/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:6:7 › @functional | Airtel Careers › TC-F01 main content is visible
+[1A[2K  9) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:6:7 › @functional | Airtel Careers › TC-F01 main content is visible 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('main, [role="main"], body > *').first()
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('main, [role="main"], body > *').first()[22m
+    [2m    8 × locator resolved to <noscript>You need to enable JavaScript to run this app.</noscript>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('main, [role="main"], body > *').first()).toBeVisible();
+         |                                                                         ^
+      11 |   });
+      12 |
+      13 |   test('TC-F02 all internal navigation links return HTTP 200', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:10:73
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-home_1.function-2d41d-F01-main-content-is-visible-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-home_1.function-2d41d-F01-main-content-is-visible-chromium\error-context.md
+
+
+[1A[2K[18/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:13:7 › @functional | Airtel Careers › TC-F02 all internal navigation links return HTTP 200
+[1A[2K[chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:13:7 › @functional | Airtel Careers › TC-F02 all internal navigation links return HTTP 200
+(node:25448) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K  10) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:13:7 › @functional | Airtel Careers › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-home_1.function-4b909-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-home_1.function-4b909-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[19/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F01 form fields are visible and interactive
+[1A[2K[20/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F02 input field accepts text
+[1A[2K  11) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F02 input field accepts text 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoHaveValue[2m([22m[32mexpected[39m[2m)[22m failed
+
+    Locator:  locator('#rechargeInput')
+    Expected: [32m"test input"[39m
+    Received: [31m""[39m
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toHaveValue" with timeout 5000ms[22m
+    [2m  - waiting for locator('#rechargeInput')[22m
+    [2m    9 × locator resolved to <input value="" type="tel" maxlength="10" inputmode="tel" id="rechargeInput" name="rechargeInput" autocomplete="tel-national" aria-label="enter mobile number" placeholder="Enter mobile number"/>[22m
+    [2m      - unexpected value ""[22m
+
+
+      16 |     await po.waitForPageLoad();
+      17 |     await page.locator('#rechargeInput').fill('test input');
+    > 18 |     await expect(page.locator('#rechargeInput')).toHaveValue('test input');
+         |                                                  ^
+      19 |   });
+      20 |
+      21 |   test('TC-F03 submit button is present and enabled', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:18:50
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-home.functional-45268-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-home.functional-45268-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[21/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F03 submit button is present and enabled
+[1A[2K  12) [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774728022359\test-results\functional-home.functional-63e1a-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774728022359\test-results\functional-home.functional-63e1a-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[22/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\alumni_web_portal_1.security.spec.ts:7:7 › @security | Airtel Alum Hub › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[23/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\alumni_web_portal_1.security.spec.ts:16:7 › @security | Airtel Alum Hub › TC-SEC02 security response headers are present
+[1A[2K[24/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\alumni_web_portal.security.spec.ts:7:7 › @security | Airtel Alum Hub › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[25/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\alumni_web_portal.security.spec.ts:16:7 › @security | Airtel Alum Hub › TC-SEC02 security response headers are present
+[1A[2K[26/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\home_1.security.spec.ts:7:7 › @security | Airtel Careers › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[27/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\home_1.security.spec.ts:16:7 › @security | Airtel Careers › TC-SEC02 security response headers are present
+[1A[2K[28/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\home.security.spec.ts:7:7 › @security | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[29/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\security\home.security.spec.ts:16:7 › @security | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-SEC02 security response headers are present
+[1A[2K[30/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal_1.smoke.spec.ts:5:7 › @smoke | Airtel Alum Hub › TC-S01 page returns HTTP 2xx status
+[1A[2K[31/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal_1.smoke.spec.ts:12:7 › @smoke | Airtel Alum Hub › TC-S02 body is visible and contains text
+[1A[2K[32/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal_1.smoke.spec.ts:21:7 › @smoke | Airtel Alum Hub › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[33/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal.smoke.spec.ts:5:7 › @smoke | Airtel Alum Hub › TC-S01 page returns HTTP 2xx status
+[1A[2K[34/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal.smoke.spec.ts:12:7 › @smoke | Airtel Alum Hub › TC-S02 body is visible and contains text
+[1A[2K[35/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\alumni_web_portal.smoke.spec.ts:21:7 › @smoke | Airtel Alum Hub › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[36/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home_1.smoke.spec.ts:5:7 › @smoke | Airtel Careers › TC-S01 page returns HTTP 2xx status
+[1A[2K[37/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home_1.smoke.spec.ts:12:7 › @smoke | Airtel Careers › TC-S02 body is visible and contains text
+[1A[2K[38/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home_1.smoke.spec.ts:21:7 › @smoke | Airtel Careers › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[39/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home.smoke.spec.ts:5:7 › @smoke | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-S01 page returns HTTP 2xx status
+[1A[2K[40/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home.smoke.spec.ts:12:7 › @smoke | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-S02 body is visible and contains text
+[1A[2K[41/41] [chromium] › .autotest-tmp\run_1774728022359\tests\specs\smoke\home.smoke.spec.ts:21:7 › @smoke | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K  12 failed
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal_1.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\alumni_web_portal.a11y.spec.ts:6:7 › @accessibility | Airtel Alum Hub › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home_1.a11y.spec.ts:6:7 › @accessibility | Airtel Careers › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal_1.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:6:7 › @functional | Airtel Alum Hub › TC-F01 main content is visible 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\alumni_web_portal.functional.spec.ts:13:7 › @functional | Airtel Alum Hub › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:6:7 › @functional | Airtel Careers › TC-F01 main content is visible 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home_1.functional.spec.ts:13:7 › @functional | Airtel Careers › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774728022359\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Airtel: Wi-Fi, Postpaid, Prepaid, DTH, Bank & Business › TC-F03 submit button is present and enabled 
+  29 passed (4.4m)
+✓ 29 passed  ✗ 12 failed  — exit 1

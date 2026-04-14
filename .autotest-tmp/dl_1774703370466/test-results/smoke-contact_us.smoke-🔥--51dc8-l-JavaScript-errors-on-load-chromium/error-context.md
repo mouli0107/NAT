@@ -1,0 +1,465 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - heading "Contact Us" [level=1] [ref=e106]
+  - generic [ref=e107]:
+    - generic [ref=e109]:
+      - generic [ref=e112]:
+        - generic [ref=e113]:
+          - paragraph [ref=e114]: Give us a call or drop by anytime. We endeavor to answer all inquiries within 24 hours on business days. We will be happy to answer your questions.
+          - generic [ref=e115]:
+            - generic [ref=e116]:
+              - heading " Address" [level=3] [ref=e117]:
+                - generic [ref=e118]: 
+                - text: Address
+              - paragraph [ref=e119]: 200 Metroplex Drive, Suite 302, Edison, NJ 08817
+            - generic [ref=e120]:
+              - heading " Mailbox" [level=3] [ref=e121]:
+                - generic [ref=e122]: 
+                - text: Mailbox
+              - paragraph [ref=e123]: info@nousinfo.com
+            - generic [ref=e124]:
+              - heading " Phone" [level=3] [ref=e125]:
+                - generic [ref=e126]: 
+                - text: Phone
+              - paragraph [ref=e127]: +1 732 985 9533
+        - generic [ref=e128]:
+          - heading "Contact Us" [level=2] [ref=e129]
+          - paragraph [ref=e130]: Required fields are marked *
+          - generic [ref=e131]:
+            - generic [ref=e132]:
+              - status
+              - list
+            - form "Contact form" [ref=e133]:
+              - generic [ref=e134]:
+                - textbox [ref=e138]:
+                  - /placeholder: Name*
+                - textbox [ref=e142]:
+                  - /placeholder: Email*
+                - textbox [ref=e146]:
+                  - /placeholder: Phone Number
+                - textbox [ref=e150]:
+                  - /placeholder: Company Name*
+                - textbox [ref=e154]:
+                  - /placeholder: Message
+                - generic [ref=e159]:
+                  - checkbox "By submitting this form, you agree to be contacted by NOUS Infosystems via email, phone, and SMS. By opting in for text messages, you consent to receive appointment reminders and updates at the number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to unsubscribe or HELP for help. View our Privacy Policy and T&C for details." [ref=e160]
+                  - text: By
+                  - generic [ref=e161]:
+                    - text: submitting this form, you agree to be contacted by NOUS Infosystems via email, phone, and SMS. By opting in for text messages, you consent to receive appointment reminders and updates at the number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to unsubscribe or HELP for help. View our
+                    - link "Privacy Policy" [ref=e162] [cursor=pointer]:
+                      - /url: /privacy-policy
+                    - text: and
+                    - link "T&C" [ref=e163] [cursor=pointer]:
+                      - /url: /terms-and-conditions
+                    - text: for details.
+                - iframe [ref=e169]:
+                  - generic [ref=f12e2]:
+                    - generic [ref=f12e3]:
+                      - checkbox "I'm not a robot" [ref=f12e7]
+                      - generic [ref=f12e11]: I'm not a robot
+                    - generic [ref=f12e12]:
+                      - generic [ref=f12e15]: reCAPTCHA
+                      - generic [ref=f12e16]:
+                        - link "Privacy" [ref=f12e17] [cursor=pointer]:
+                          - /url: https://www.google.com/intl/en/policies/privacy/
+                        - text: "-"
+                        - link "Terms" [ref=f12e18] [cursor=pointer]:
+                          - /url: https://www.google.com/intl/en/policies/terms/
+                - generic [ref=e170]:
+                  - generic [ref=e171]: 
+                  - button "Submit" [ref=e172] [cursor=pointer]
+      - generic [ref=e174]:
+        - heading "Locations" [level=2] [ref=e176]
+        - generic [ref=e179]:
+          - generic [ref=e180]:
+            - heading "North America" [level=3] [ref=e181]
+            - generic [ref=e184] [cursor=pointer]:
+              - img "USA" [ref=e187]
+              - generic [ref=e189]:
+                - heading "USA" [level=3] [ref=e190]
+                - paragraph [ref=e191]: 200 Metroplex Drive,
+                - paragraph [ref=e192]: Suite 302,
+                - paragraph [ref=e193]: Edison, NJ 08817
+                - paragraph [ref=e194]:
+                  - generic [ref=e195]: 
+                  - text: info@nousinfo.com
+                - paragraph [ref=e196]:
+                  - generic [ref=e197]: 
+                  - text: +1 732 985 9533
+                - generic [ref=e198]:
+                  - generic [ref=e199]: 
+                  - text: Map
+            - generic [ref=e202] [cursor=pointer]:
+              - img "USA" [ref=e205]
+              - generic [ref=e207]:
+                - heading "USA" [level=3] [ref=e208]
+                - paragraph [ref=e209]: 4695 Chabot Drive,
+                - paragraph [ref=e210]: Suite 200,
+                - paragraph [ref=e211]: Pleasanton, CA 94588
+                - paragraph [ref=e212]:
+                  - generic [ref=e213]: 
+                  - text: info@nousinfo.com
+                - generic [ref=e214]:
+                  - generic [ref=e215]: 
+                  - text: Map
+            - generic [ref=e218] [cursor=pointer]:
+              - img "Canada" [ref=e221]
+              - generic [ref=e223]:
+                - heading "Canada" [level=3] [ref=e224]
+                - paragraph [ref=e225]: 251 Consumers Rd.,
+                - paragraph [ref=e226]: Suite 1209,
+                - paragraph [ref=e227]: Toronto, ON M2J 4R3
+                - paragraph [ref=e228]:
+                  - generic [ref=e229]: 
+                  - text: info@nousinfo.com
+                - generic [ref=e230]:
+                  - generic [ref=e231]: 
+                  - text: Map
+          - generic [ref=e232]:
+            - heading "Europe" [level=3] [ref=e233]
+            - generic [ref=e236] [cursor=pointer]:
+              - img "UK" [ref=e239]
+              - generic [ref=e241]:
+                - heading "UK" [level=3] [ref=e242]
+                - paragraph [ref=e243]: Profile West,
+                - paragraph [ref=e244]: 950, Great West Road,
+                - paragraph [ref=e245]: Brentford, Greater London,
+                - paragraph [ref=e246]: TW8 9ES
+                - paragraph [ref=e247]:
+                  - generic [ref=e248]: 
+                  - text: info@nousinfo.com
+                - generic [ref=e249]:
+                  - generic [ref=e250]: 
+                  - text: Map
+            - generic [ref=e253] [cursor=pointer]:
+              - img "Germany" [ref=e256]
+              - generic [ref=e258]:
+                - heading "Germany" [level=3] [ref=e259]
+                - paragraph [ref=e260]: Chemnitzer Strasse 46,
+                - paragraph [ref=e261]: Dresden, De,
+                - paragraph [ref=e262]: Sachsen, 01187
+                - paragraph [ref=e263]:
+                  - generic [ref=e264]: 
+                  - text: info@nousinfo.com
+                - generic [ref=e265]:
+                  - generic [ref=e266]: 
+                  - text: Map
+            - generic [ref=e269] [cursor=pointer]:
+              - img "Serbia" [ref=e272]
+              - generic [ref=e274]:
+                - heading "Serbia" [level=3] [ref=e275]
+                - paragraph [ref=e276]: Gospodara Vučića 145,
+                - paragraph [ref=e277]: Belgrade, 11000
+                - paragraph [ref=e278]:
+                  - generic [ref=e279]: 
+                  - text: info@nousinfo.com
+                - generic [ref=e280]:
+                  - generic [ref=e281]: 
+                  - text: Map
+          - generic [ref=e282]:
+            - heading "APAC" [level=3] [ref=e283]
+            - generic [ref=e286] [cursor=pointer]:
+              - img "Bangalore" [ref=e289]
+              - generic [ref=e291]:
+                - heading "INDIA - Bengaluru" [level=3] [ref=e292]
+                - paragraph [ref=e293]:
+                  - text: "#983-985, 7"
+                  - superscript [ref=e294]: th
+                  - text: Cross,
+                - paragraph [ref=e295]:
+                  - text: "24"
+                  - superscript [ref=e296]: th
+                  - text: Main HSR 1
+                  - superscript [ref=e297]: st
+                  - text: Sector,
+                - paragraph [ref=e298]: Bengaluru – 560 102
+                - paragraph [ref=e299]:
+                  - generic [ref=e300]: 
+                  - text: info@nousinfo.com
+                - paragraph [ref=e301]:
+                  - generic [ref=e302]: 
+                  - text: +91 80 42603000
+                - generic [ref=e303]:
+                  - generic [ref=e304]: 
+                  - text: Map
+            - generic [ref=e307] [cursor=pointer]:
+              - img "Coimbatore" [ref=e310]
+              - generic [ref=e312]:
+                - heading "INDIA - Coimbatore" [level=3] [ref=e313]
+                - paragraph [ref=e314]: Rathinam Techno Park,
+                - paragraph [ref=e315]: Pollachi Main Road,
+                - paragraph [ref=e316]: Coimbatore – 641 021
+                - paragraph [ref=e317]:
+                  - generic [ref=e318]: 
+                  - text: info@nousinfo.com
+                - paragraph [ref=e319]:
+                  - generic [ref=e320]: 
+                  - text: +91 422 4300300
+                - generic [ref=e321]:
+                  - generic [ref=e322]: 
+                  - text: Map
+        - generic [ref=e325]:
+          - generic:
+            - region "Map" [ref=e326]
+            - generic "Map marker" [ref=e327]:
+              - img [ref=e328]
+            - generic "Map marker" [ref=e333]:
+              - img [ref=e334]
+            - generic "Map marker" [ref=e339]:
+              - img [ref=e340]
+            - generic "Map marker" [ref=e345]:
+              - img [ref=e346]
+            - generic "Map marker" [ref=e351]:
+              - img [ref=e352]
+            - generic "Map marker" [ref=e357]:
+              - img [ref=e358]
+            - generic "Map marker" [ref=e363]:
+              - img [ref=e364]
+            - generic "Map marker" [ref=e369]:
+              - img [ref=e370]
+          - generic [ref=e375]:
+            - button "Zoom in" [ref=e376] [cursor=pointer]
+            - button "Zoom out" [ref=e378] [cursor=pointer]
+            - button "Reset bearing to north" [ref=e380]
+    - generic [ref=e382]:
+      - text: By continuing to use this website, you agree to our cookie and privacy policy.
+      - link "Learn More" [ref=e383] [cursor=pointer]:
+        - /url: /privacy-policy
+      - generic [ref=e385] [cursor=pointer]: 
+    - generic [ref=e386]:
+      - generic [ref=e393]:
+        - generic [ref=e394]:
+          - generic [ref=e395]:
+            - heading "Services" [level=2] [ref=e396]
+            - navigation "Services" [ref=e397]:
+              - list [ref=e398]:
+                - listitem [ref=e399]:
+                  - link "Digital Product Engineering" [ref=e400] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+                - listitem [ref=e401]:
+                  - link "Agile Development" [ref=e402] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/agile-development
+                - listitem [ref=e403]:
+                  - link "Digital Application Services" [ref=e404] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/digital-application-services
+                - listitem [ref=e405]:
+                  - link "Quality Engineering" [ref=e406] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/quality-engineering
+                - listitem [ref=e407]:
+                  - link "Infrastructure Management" [ref=e408] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/infrastructure-management
+          - generic [ref=e409]:
+            - heading "Insights" [level=2] [ref=e410]
+            - navigation "Insights" [ref=e411]:
+              - list [ref=e412]:
+                - listitem [ref=e413]:
+                  - link "Case Studies" [ref=e414] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/insights/case-study
+                - listitem [ref=e415]:
+                  - link "Whitepapers" [ref=e416] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/insights/whitepaper
+                - listitem [ref=e417]:
+                  - link "Brochures" [ref=e418] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/insights/brochure
+                - listitem [ref=e419]:
+                  - link "Blogs" [ref=e420] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/insights/blog
+                - listitem [ref=e421]:
+                  - link "Webinars" [ref=e422] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/insights/webinar
+        - generic [ref=e423]:
+          - generic [ref=e424]:
+            - heading "Competency" [level=2] [ref=e425]
+            - navigation "Competency" [ref=e426]:
+              - list [ref=e427]:
+                - listitem [ref=e428]:
+                  - link "AI & Automation" [ref=e429] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/competency/ai-automation
+                - listitem [ref=e430]:
+                  - link "Cloud" [ref=e431] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/competency/cloud
+                - listitem [ref=e432]:
+                  - link "Data & Analytics" [ref=e433] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/competency/data-analytics
+                - listitem [ref=e434]:
+                  - link "Digital" [ref=e435] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/competency/digital
+                - listitem [ref=e436]:
+                  - link "Quality Engineering" [ref=e437] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/quality-engineering
+                - listitem [ref=e438]:
+                  - link "Infrastructure" [ref=e439] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/services/infrastructure-management
+          - generic [ref=e440]:
+            - heading "Company" [level=2] [ref=e441]
+            - navigation "Company" [ref=e442]:
+              - list [ref=e443]:
+                - listitem [ref=e444]:
+                  - link "About Us" [ref=e445] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/company
+                - listitem [ref=e446]:
+                  - link "Partnerships" [ref=e447] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/company/partnerships
+                - listitem [ref=e448]:
+                  - link "News" [ref=e449] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/news
+                - listitem [ref=e450]:
+                  - link "Events" [ref=e451] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/events
+                - listitem [ref=e452]:
+                  - link "Careers" [ref=e453] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/careers
+                - listitem [ref=e454]:
+                  - link "CSR" [ref=e455] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+                - listitem [ref=e456]:
+                  - link "Contact Us" [ref=e457] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/contact-us
+        - generic [ref=e458]:
+          - generic [ref=e459]:
+            - heading "Industries" [level=2] [ref=e460]
+            - navigation "Industries" [ref=e461]:
+              - list [ref=e462]:
+                - listitem [ref=e463]:
+                  - link "Banking & Financial Services" [ref=e464] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+                - listitem [ref=e465]:
+                  - link "Insurance" [ref=e466] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/industries/insurance
+                - listitem [ref=e467]:
+                  - link "Healthcare & Life Sciences" [ref=e468] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/industries/healthcare
+                - listitem [ref=e469]:
+                  - link "Retail" [ref=e470] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/industries/retail
+                - listitem [ref=e471]:
+                  - link "Travel & Logistics" [ref=e472] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+          - generic [ref=e473]:
+            - heading "Support" [level=2] [ref=e474]
+            - navigation "Support" [ref=e475]:
+              - list [ref=e476]:
+                - listitem [ref=e477]:
+                  - link "Disclaimer" [ref=e478] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/disclaimer
+                - listitem [ref=e479]:
+                  - link "Sitemap" [ref=e480] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/sitemap
+                - listitem [ref=e481]:
+                  - link "Privacy Policy" [ref=e482] [cursor=pointer]:
+                    - /url: https://www.nousinfosystems.com/privacy-policy
+        - generic [ref=e483]:
+          - heading "Newsletter" [level=2] [ref=e484]
+          - generic [ref=e486]:
+            - generic [ref=e487]:
+              - status
+              - list
+            - form "Contact form" [ref=e488]:
+              - generic [ref=e489]:
+                - generic [ref=e490]:
+                  - textbox [ref=e494]:
+                    - /placeholder: Email Address
+                  - generic [ref=e495]:
+                    - button "." [ref=e496] [cursor=pointer]
+                    - generic [ref=e497]: 
+                - iframe [ref=e502]:
+                  - generic [ref=f13e2]:
+                    - generic [ref=f13e3]:
+                      - checkbox "I'm not a robot" [ref=f13e7]
+                      - generic [ref=f13e11]: I'm not a robot
+                    - generic [ref=f13e12]:
+                      - generic [ref=f13e15]: reCAPTCHA
+                      - generic [ref=f13e16]:
+                        - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                          - /url: https://www.google.com/intl/en/policies/privacy/
+                        - text: "-"
+                        - link "Terms" [ref=f13e18] [cursor=pointer]:
+                          - /url: https://www.google.com/intl/en/policies/terms/
+          - list [ref=e504]:
+            - listitem [ref=e505]:
+              - link "" [ref=e506] [cursor=pointer]:
+                - /url: https://www.linkedin.com/company/nousinfosystems
+                - generic [ref=e507]: 
+            - listitem [ref=e508]:
+              - link [ref=e509] [cursor=pointer]:
+                - /url: https://twitter.com/nousinfosystems
+            - listitem [ref=e511]:
+              - link "" [ref=e512] [cursor=pointer]:
+                - /url: https://www.facebook.com/NousInfosystems
+                - generic [ref=e513]: 
+            - listitem [ref=e514]:
+              - link "" [ref=e515] [cursor=pointer]:
+                - /url: https://www.youtube.com/user/NousInfosystems
+                - generic [ref=e516]: 
+          - figure [ref=e517]
+      - generic [ref=e521]: ©2026 Nous Infosystems. All Rights Reserved.
+```

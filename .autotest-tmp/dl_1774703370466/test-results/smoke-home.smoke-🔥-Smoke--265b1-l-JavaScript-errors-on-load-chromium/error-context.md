@@ -1,0 +1,890 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - listbox [ref=e106]:
+    - button "Previous" [ref=e107] [cursor=pointer]:  Previous
+    - generic [ref=e109]:
+      - generic [ref=e114]:
+        - heading [level=2] [ref=e115]: Leader in the QE Specialist Services PEAK Matrix® assessment 2023
+        - paragraph [ref=e116]: Committed to achieving excellence in Quality Engineering and consistently delivering outstanding services.
+        - link [ref=e118] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-leader-in-quality-engineering-specialist-services-by-everest-groups-peak-matrix-assessment-2023
+          - text:  Learn More
+      - tabpanel [ref=e119]:
+        - generic [ref=e123]:
+          - heading "Digital product engineering services driven by innovation and success" [level=2] [ref=e124]
+          - paragraph [ref=e125]: Discover meticulously crafted digital products that redefine standards to deliver unparalleled excellence.
+          - link " Learn More" [ref=e127] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+      - tabpanel [ref=e128]:
+        - generic [ref=e132]:
+          - heading [level=2] [ref=e133]: Go cloud-first with seamless and comprehensive cloud solutions
+          - paragraph [ref=e134]: Experience a paradigm shift in cloud solutions with robust infrastructure and dynamic scalability.
+          - link [ref=e136] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/competency/cloud
+            - text:  Learn More
+      - tabpanel [ref=e137]:
+        - generic [ref=e141]:
+          - heading [level=2] [ref=e142]: Redefining success as a top digital partner for Global 2000 companies
+          - paragraph [ref=e143]: Crafting tailored digital solutions that precisely meet the unique requirements of innovative businesses.
+          - link [ref=e145] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/competency/digital
+            - text:  Learn More
+      - tabpanel [ref=e146]:
+        - generic [ref=e150]:
+          - heading [level=2] [ref=e151]: Navigate data complexities and gain insights seamlessly
+          - paragraph [ref=e152]: Transform data into actionable insights through comprehensive end-to-end analytics services.
+          - link [ref=e154] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/competency/data-analytics
+            - text:  Learn More
+      - tabpanel [ref=e155]:
+        - generic [ref=e159]:
+          - heading [level=2] [ref=e160]: Drive innovation and improve efficiency through AI & Automation solutions
+          - paragraph [ref=e161]: Seamless integration, heightened efficiency, and future readiness - experience it all through AI.
+          - link [ref=e163] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/competency/ai-automation
+            - text:  Learn More
+      - tabpanel [ref=e164]:
+        - generic [ref=e168]:
+          - heading [level=2] [ref=e169]: Leader in the QE Specialist Services PEAK Matrix® assessment 2023
+          - paragraph [ref=e170]: Committed to achieving excellence in Quality Engineering and consistently delivering outstanding services.
+          - link [ref=e172] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-leader-in-quality-engineering-specialist-services-by-everest-groups-peak-matrix-assessment-2023
+            - text:  Learn More
+      - generic [ref=e177]:
+        - heading [level=2] [ref=e178]: Digital product engineering services driven by innovation and success
+        - paragraph [ref=e179]: Discover meticulously crafted digital products that redefine standards to deliver unparalleled excellence.
+        - link [ref=e181] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+          - text:  Learn More
+      - generic [ref=e186]:
+        - heading [level=2] [ref=e187]: Go cloud-first with seamless and comprehensive cloud solutions
+        - paragraph [ref=e188]: Experience a paradigm shift in cloud solutions with robust infrastructure and dynamic scalability.
+        - link [ref=e190] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/competency/cloud
+          - text:  Learn More
+      - generic [ref=e195]:
+        - heading [level=2] [ref=e196]: Redefining success as a top digital partner for Global 2000 companies
+        - paragraph [ref=e197]: Crafting tailored digital solutions that precisely meet the unique requirements of innovative businesses.
+        - link [ref=e199] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/competency/digital
+          - text:  Learn More
+      - generic [ref=e204]:
+        - heading [level=2] [ref=e205]: Navigate data complexities and gain insights seamlessly
+        - paragraph [ref=e206]: Transform data into actionable insights through comprehensive end-to-end analytics services.
+        - link [ref=e208] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/competency/data-analytics
+          - text:  Learn More
+      - generic [ref=e213]:
+        - heading [level=2] [ref=e214]: Drive innovation and improve efficiency through AI & Automation solutions
+        - paragraph [ref=e215]: Seamless integration, heightened efficiency, and future readiness - experience it all through AI.
+        - link [ref=e217] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/competency/ai-automation
+          - text:  Learn More
+      - generic [ref=e222]:
+        - heading [level=2] [ref=e223]: Leader in the QE Specialist Services PEAK Matrix® assessment 2023
+        - paragraph [ref=e224]: Committed to achieving excellence in Quality Engineering and consistently delivering outstanding services.
+        - link [ref=e226] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-leader-in-quality-engineering-specialist-services-by-everest-groups-peak-matrix-assessment-2023
+          - text:  Learn More
+    - button "Next" [ref=e227] [cursor=pointer]:  Next
+    - tablist [ref=e228]:
+      - tab "1 of 6" [selected] [ref=e229] [cursor=pointer]: Digital Product Engineering 1
+      - tab "2 of 6" [ref=e230] [cursor=pointer]: Cloud Solutions 2
+      - tab "3 of 6" [ref=e231] [cursor=pointer]: Digital Services 3
+      - tab "4 of 6" [ref=e232] [cursor=pointer]: Data & Analytics 4
+      - tab "5 of 6" [ref=e233] [cursor=pointer]: AI & Automation 5
+      - tab "6 of 6" [ref=e234] [cursor=pointer]: QE Specialist Leader 6
+  - generic [ref=e237]:
+    - generic [ref=e239]:
+      - heading "Global digital business transformation & modernization partner providing innovative IT services and solutions" [level=1] [ref=e240]
+      - generic [ref=e241]:
+        - generic [ref=e247]:
+          - figure [ref=e248]
+          - generic [ref=e249]:
+            - heading "AI & Automation" [level=4] [ref=e250]
+            - paragraph [ref=e252]: Empower business by seamlessly integrating cutting-edge AI technologies to enhance efficiency, drive innovation, and unlock unparalleled growth.
+            - list [ref=e254]:
+              - listitem [ref=e255]:
+                - link "Generative AI" [ref=e256] [cursor=pointer]:
+                  - /url: competency/ai-automation/generative-ai
+              - listitem [ref=e257]:
+                - link "Agentic AI" [ref=e258] [cursor=pointer]:
+                  - /url: competency/ai-automation/agentic-ai
+              - listitem [ref=e259]:
+                - link "AI Powered Business" [ref=e260] [cursor=pointer]:
+                  - /url: competency/ai-automation/ai-powered-business
+              - listitem [ref=e261]:
+                - link "Intelligent Automation" [ref=e262] [cursor=pointer]:
+                  - /url: competency/ai-automation/intelligent-automation
+              - listitem [ref=e263]:
+                - link "Machine Learning & Data Science" [ref=e264] [cursor=pointer]:
+                  - /url: competency/ai-automation/machine-learning-data-science
+              - listitem [ref=e265]
+            - link " Learn More" [ref=e266] [cursor=pointer]:
+              - /url: competency/ai-automation
+              - generic [ref=e267]: 
+              - text: Learn More
+            - paragraph
+        - generic [ref=e273]:
+          - figure [ref=e274]
+          - generic [ref=e275]:
+            - heading "Cloud" [level=4] [ref=e276]
+            - paragraph [ref=e278]: Imagine new business models, respond to changes faster, enhance agility, lower costs, and unlock growth through effective cloud transformation.
+            - list [ref=e280]:
+              - listitem [ref=e281]:
+                - link "Azure" [ref=e282] [cursor=pointer]:
+                  - /url: competency/cloud/azure
+              - listitem [ref=e283]:
+                - link "AWS" [ref=e284] [cursor=pointer]:
+                  - /url: competency/cloud/aws
+              - listitem [ref=e285]:
+                - link "GCP" [ref=e286] [cursor=pointer]:
+                  - /url: competency/cloud/gcp
+              - listitem [ref=e287]:
+                - link "Salesforce" [ref=e288] [cursor=pointer]:
+                  - /url: competency/cloud/salesforce
+              - listitem [ref=e289]:
+                - link [ref=e290] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e291]
+            - link " Learn More" [ref=e292] [cursor=pointer]:
+              - /url: competency/cloud
+              - generic [ref=e293]: 
+              - text: Learn More
+            - paragraph
+        - generic [ref=e299]:
+          - figure [ref=e300]
+          - generic [ref=e301]:
+            - heading "Data & Analytics" [level=4] [ref=e302]
+            - paragraph [ref=e304]: Transform the way data is collected, consumed, and applied to gain insights, drive intelligent decision-making, and optimize business outcomes.
+            - list [ref=e306]:
+              - listitem [ref=e307]:
+                - link "Data Visualization" [ref=e308] [cursor=pointer]:
+                  - /url: competency/data-analytics/data-visualization
+              - listitem [ref=e309]:
+                - link "Data Integration & Migration" [ref=e310] [cursor=pointer]:
+                  - /url: competency/data-analytics/data-integration-and-migration
+              - listitem [ref=e311]:
+                - link "Database Modernization & Optimization" [ref=e312] [cursor=pointer]:
+                  - /url: competency/data-analytics/database-modernization-and-optimization
+              - listitem [ref=e313]:
+                - link "Modern Data Platforms" [ref=e314] [cursor=pointer]:
+                  - /url: competency/data-analytics/modern-data-platforms
+              - listitem [ref=e315]:
+                - link "Advanced Analytics" [ref=e316] [cursor=pointer]:
+                  - /url: competency/data-analytics/advanced-analytics
+              - listitem [ref=e317]
+            - link " Learn More" [ref=e318] [cursor=pointer]:
+              - /url: competency/data-analytics
+              - generic [ref=e319]: 
+              - text: Learn More
+            - paragraph
+      - generic [ref=e320]:
+        - generic [ref=e326]:
+          - figure [ref=e327]
+          - generic [ref=e328]:
+            - heading "Digital" [level=4] [ref=e329]
+            - paragraph [ref=e331]: Gain a digital-powered competitive edge and foster business transformation by tapping into the power of today’s innovative digital capabilities.
+            - list [ref=e333]:
+              - listitem [ref=e334]:
+                - link "Digital Experience" [ref=e335] [cursor=pointer]:
+                  - /url: competency/digital/digital-experience
+              - listitem [ref=e336]:
+                - link "Integration Services" [ref=e337] [cursor=pointer]:
+                  - /url: competency/digital/integration-services
+              - listitem [ref=e338]:
+                - link "CRM" [ref=e339] [cursor=pointer]:
+                  - /url: competency/digital/crm
+              - listitem [ref=e340]:
+                - link "DevOps" [ref=e341] [cursor=pointer]:
+                  - /url: competency/devops
+              - listitem [ref=e342]:
+                - link "Workday Services" [ref=e343] [cursor=pointer]:
+                  - /url: competency/digital/workday-services
+              - listitem [ref=e344]
+            - link " Learn More" [ref=e345] [cursor=pointer]:
+              - /url: competency/digital
+              - generic [ref=e346]: 
+              - text: Learn More
+            - paragraph
+        - generic [ref=e352]:
+          - figure [ref=e353]
+          - generic [ref=e354]:
+            - heading "Quality Engineering" [level=4] [ref=e355]
+            - paragraph [ref=e357]: Accelerate digital transformation and development of secure, reliable applications leveraging deep expertise in quality assurance and testing.
+            - list [ref=e359]:
+              - listitem [ref=e360]:
+                - link "Quality Assurance" [ref=e361] [cursor=pointer]:
+                  - /url: https://www.testree.com/services/quality-assurance
+              - listitem [ref=e362]:
+                - link "Test Engineering" [ref=e363] [cursor=pointer]:
+                  - /url: https://www.testree.com/services/test-engineering
+              - listitem [ref=e364]:
+                - link "Business Assurance" [ref=e365] [cursor=pointer]:
+                  - /url: https://www.testree.com/services/business-assurance
+              - listitem [ref=e366]:
+                - link "Technology Solutions" [ref=e367] [cursor=pointer]:
+                  - /url: https://www.testree.com/solutions/technology-solutions
+              - listitem [ref=e368]:
+                - link "COTS Testing Solutions" [ref=e369] [cursor=pointer]:
+                  - /url: https://www.testree.com/solutions/cots-testing-solutions
+              - listitem [ref=e370]:
+                - link "Test Labs" [ref=e371] [cursor=pointer]:
+                  - /url: https://www.testree.com/solutions/test-labs
+            - link " Learn More" [ref=e372] [cursor=pointer]:
+              - /url: services/quality-engineering
+              - generic [ref=e373]: 
+              - text: Learn More
+            - paragraph
+        - generic [ref=e379]:
+          - figure [ref=e380]
+          - generic [ref=e381]:
+            - heading "Infrastructure" [level=4] [ref=e382]
+            - paragraph [ref=e384]: Optimize operations, drive performance, and achieve digital transformation goals with an always-on IT infrastructure built for the digital era.
+            - list [ref=e386]:
+              - listitem [ref=e387]:
+                - link "Cloud Automation" [ref=e388] [cursor=pointer]:
+                  - /url: competency/cloud-automation
+              - listitem [ref=e389]:
+                - link "ServiceNow" [ref=e390] [cursor=pointer]:
+                  - /url: competency/servicenow
+              - listitem [ref=e391]:
+                - link "Managed Services" [ref=e392] [cursor=pointer]:
+                  - /url: competency/managed-services
+              - listitem [ref=e393]:
+                - link "Predictive Monitoring" [ref=e394] [cursor=pointer]:
+                  - /url: competency/predictive-monitoring
+              - listitem [ref=e395]:
+                - link [ref=e396] [cursor=pointer]:
+                  - /url: /
+              - listitem [ref=e397]
+            - link " Learn More" [ref=e398] [cursor=pointer]:
+              - /url: services/infrastructure-management
+              - generic [ref=e399]: 
+              - text: Learn More
+            - paragraph
+    - generic [ref=e402]:
+      - generic [ref=e407]:
+        - generic [ref=e409]:
+          - heading "Innovation Driven" [level=3] [ref=e410]
+          - paragraph
+        - generic [ref=e412]:
+          - heading "Delivery Excellence" [level=3] [ref=e413]
+          - paragraph
+        - generic [ref=e415]:
+          - heading "Customer Success" [level=3] [ref=e416]
+          - paragraph
+      - generic [ref=e417]:
+        - heading "About Us" [level=5] [ref=e418]
+        - heading "Partner for Software Innovation" [level=2] [ref=e419]
+        - paragraph [ref=e420]: Nous Infosystems is a global leader in digital solutions and product engineering, enabling global enterprises and ISVs to harness the power of technology. Through an innovative portfolio of services and next-gen technology solutions, we help organizations transform their business models, operations, and experiences to drive growth. Nous is Great Place to Work® Certified™, reflecting a corporate culture dedicated to creating a positive and rewarding work environment.
+        - link " Learn More" [ref=e421] [cursor=pointer]:
+          - /url: /company
+          - generic [ref=e422]: 
+          - text: Learn More
+    - generic [ref=e425]:
+      - generic [ref=e426]:
+        - heading [level=5]
+        - heading "29+" [level=3] [ref=e427]
+        - paragraph [ref=e428]: Years of Experience
+      - generic [ref=e429]:
+        - heading [level=5]
+        - heading "Level 5" [level=3] [ref=e430]
+        - paragraph [ref=e431]: CMMI V3.0 SVC + SEC + SPM + PPL Appraised
+      - generic [ref=e432]:
+        - heading [level=5]
+        - heading "2,000+" [level=3] [ref=e433]
+        - paragraph [ref=e434]: Enterprise Applications and Product Releases
+      - generic [ref=e435]:
+        - heading [level=5]
+        - heading "90%" [level=3] [ref=e436]
+        - paragraph [ref=e437]: Repeat Business Worldwide
+    - generic [ref=e441]:
+      - heading "Success Stories" [level=2] [ref=e442]
+      - listbox [ref=e443]:
+        - button "Previous" [ref=e444] [cursor=pointer]:  Previous
+        - generic [ref=e446]:
+          - generic [ref=e448] [cursor=pointer]:
+            - img [ref=e449]
+            - generic [ref=e450]:
+              - heading [level=3] [ref=e451]: Streamlining ServiceNow operations and implementing ITAM and Agile 2.0
+              - text: 
+          - generic [ref=e453] [cursor=pointer]:
+            - img [ref=e454]
+            - generic [ref=e455]:
+              - heading [level=3] [ref=e456]: Development of a ‘Request-A-Team’ App using Power Apps
+              - text: 
+          - generic [ref=e458] [cursor=pointer]:
+            - img [ref=e459]
+            - generic [ref=e460]:
+              - heading [level=3] [ref=e461]: Over 40% improvement in test coverage leveraging test automation framework
+              - text: 
+          - generic [ref=e463] [cursor=pointer]:
+            - img "Carousel" [ref=e464]
+            - generic [ref=e465]:
+              - heading "Affiliate marketing support & transaction monitoring services" [level=3] [ref=e466]
+              - text: 
+          - generic [ref=e468] [cursor=pointer]:
+            - img "Carousel" [ref=e469]
+            - generic [ref=e470]:
+              - heading "Technical assistance centre implementation for uninterrupted support" [level=3] [ref=e471]
+              - text: 
+          - generic [ref=e473] [cursor=pointer]:
+            - img "Carousel" [ref=e474]
+            - generic [ref=e475]:
+              - heading "Comprehensive test automation solution leveraging Tricentis tosca tool for a leading bank" [level=3] [ref=e476]
+              - text: 
+          - generic [ref=e478] [cursor=pointer]:
+            - img [ref=e479]
+            - generic [ref=e480]:
+              - heading [level=3] [ref=e481]: Optimizing daily tasks using ServiceNow IT Service Management
+              - text: 
+          - generic [ref=e483] [cursor=pointer]:
+            - img [ref=e484]
+            - generic [ref=e485]:
+              - heading [level=3] [ref=e486]: Streamlining ServiceNow operations with SNOW Desk
+              - text: 
+          - generic [ref=e488] [cursor=pointer]:
+            - img [ref=e489]
+            - generic [ref=e490]:
+              - heading [level=3] [ref=e491]: Streamlining ServiceNow operations and implementing ITAM and Agile 2.0
+              - text: 
+          - generic [ref=e493] [cursor=pointer]:
+            - img [ref=e494]
+            - generic [ref=e495]:
+              - heading [level=3] [ref=e496]: Development of a ‘Request-A-Team’ App using Power Apps
+              - text: 
+          - generic [ref=e498] [cursor=pointer]:
+            - img [ref=e499]
+            - generic [ref=e500]:
+              - heading [level=3] [ref=e501]: Over 40% improvement in test coverage leveraging test automation framework
+              - text: 
+          - generic [ref=e503] [cursor=pointer]:
+            - img [ref=e504]
+            - generic [ref=e505]:
+              - heading [level=3] [ref=e506]: Affiliate marketing support & transaction monitoring services
+              - text: 
+          - generic [ref=e508] [cursor=pointer]:
+            - img [ref=e509]
+            - generic [ref=e510]:
+              - heading [level=3] [ref=e511]: Technical assistance centre implementation for uninterrupted support
+              - text: 
+          - generic [ref=e513] [cursor=pointer]:
+            - img [ref=e514]
+            - generic [ref=e515]:
+              - heading [level=3] [ref=e516]: Comprehensive test automation solution leveraging Tricentis tosca tool for a leading bank
+              - text: 
+          - generic [ref=e518] [cursor=pointer]:
+            - img [ref=e519]
+            - generic [ref=e520]:
+              - heading [level=3] [ref=e521]: Optimizing daily tasks using ServiceNow IT Service Management
+              - text: 
+          - generic [ref=e523] [cursor=pointer]:
+            - img [ref=e524]
+            - generic [ref=e525]:
+              - heading [level=3] [ref=e526]: Streamlining ServiceNow operations with SNOW Desk
+              - text: 
+          - generic [ref=e528] [cursor=pointer]:
+            - img [ref=e529]
+            - generic [ref=e530]:
+              - heading [level=3] [ref=e531]: Streamlining ServiceNow operations and implementing ITAM and Agile 2.0
+              - text: 
+          - generic [ref=e533] [cursor=pointer]:
+            - img [ref=e534]
+            - generic [ref=e535]:
+              - heading [level=3] [ref=e536]: Development of a ‘Request-A-Team’ App using Power Apps
+              - text: 
+          - generic [ref=e538] [cursor=pointer]:
+            - img [ref=e539]
+            - generic [ref=e540]:
+              - heading [level=3] [ref=e541]: Over 40% improvement in test coverage leveraging test automation framework
+              - text: 
+        - button "Next" [ref=e542] [cursor=pointer]:  Next
+    - generic [ref=e546]:
+      - heading "Partners" [level=2] [ref=e547]
+      - listbox [ref=e548]:
+        - button "Previous" [ref=e549] [cursor=pointer]:  Previous
+        - generic [ref=e551]:
+          - generic [ref=e552]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/nintex
+              - img
+          - generic [ref=e553]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/gitlab
+              - img
+          - generic [ref=e554]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/atlassian
+              - img
+          - generic [ref=e555]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/heal
+              - img
+          - link [ref=e557] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/venafi
+            - img [ref=e558]
+          - link "Carousel" [ref=e560] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/microsoft
+            - img "Carousel" [ref=e561]
+          - link "Carousel" [ref=e563] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/aws
+            - img "Carousel" [ref=e564]
+          - link "Carousel" [ref=e566] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/google-cloud-platform
+            - img "Carousel" [ref=e567]
+          - generic [ref=e568]:
+            - link "Carousel":
+              - /url: https://www.nousinfosystems.com/company/partnerships/salesforce
+              - img "Carousel"
+          - generic [ref=e569]:
+            - link "Carousel":
+              - /url: https://www.nousinfosystems.com/company/partnerships/mulesoft-partner
+              - img "Carousel"
+          - generic [ref=e570]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/oracle
+              - img
+          - link [ref=e572] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/servicenow
+            - img [ref=e573]
+          - link [ref=e575] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/tricentis
+            - img [ref=e576]
+          - link [ref=e578] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/smartbear
+            - img [ref=e579]
+          - link [ref=e581] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/databricks
+            - img [ref=e582]
+          - link [ref=e584] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/snowflake
+            - img [ref=e585]
+          - generic [ref=e586]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/ataccama
+              - img
+          - link [ref=e588] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/hyland
+            - img [ref=e589]
+          - generic [ref=e590]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/optimizely
+              - img
+          - link [ref=e592] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/zengines
+            - img [ref=e593]
+          - generic [ref=e594]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/ui-path
+              - img
+          - generic [ref=e595]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/appian
+              - img
+          - generic [ref=e596]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/coherent
+              - img
+          - generic [ref=e597]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/qlik
+              - img
+          - generic [ref=e598]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/thoughtspot
+              - img
+          - generic [ref=e599]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/nintex
+              - img
+          - generic [ref=e600]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/gitlab
+              - img
+          - generic [ref=e601]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/atlassian
+              - img
+          - generic [ref=e602]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/heal
+              - img
+          - link [ref=e604] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/venafi
+            - img [ref=e605]
+          - link [ref=e607] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/microsoft
+            - img [ref=e608]
+          - link [ref=e610] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/aws
+            - img [ref=e611]
+          - link [ref=e613] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/google-cloud-platform
+            - img [ref=e614]
+          - generic [ref=e615]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/salesforce
+              - img
+          - generic [ref=e616]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/mulesoft-partner
+              - img
+          - generic [ref=e617]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/oracle
+              - img
+          - link [ref=e619] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/servicenow
+            - img [ref=e620]
+          - link [ref=e622] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/tricentis
+            - img [ref=e623]
+          - link [ref=e625] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/smartbear
+            - img [ref=e626]
+          - link [ref=e628] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/databricks
+            - img [ref=e629]
+          - link [ref=e631] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/snowflake
+            - img [ref=e632]
+          - generic [ref=e633]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/ataccama
+              - img
+          - link [ref=e635] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/hyland
+            - img [ref=e636]
+          - generic [ref=e637]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/optimizely
+              - img
+          - link [ref=e639] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/zengines
+            - img [ref=e640]
+          - generic [ref=e641]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/ui-path
+              - img
+          - generic [ref=e642]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/appian
+              - img
+          - generic [ref=e643]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/coherent
+              - img
+          - generic [ref=e644]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/qlik
+              - img
+          - generic [ref=e645]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/thoughtspot
+              - img
+          - generic [ref=e646]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/nintex
+              - img
+          - generic [ref=e647]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/gitlab
+              - img
+          - generic [ref=e648]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/atlassian
+              - img
+          - generic [ref=e649]:
+            - link:
+              - /url: https://www.nousinfosystems.com/company/partnerships/heal
+              - img
+          - link [ref=e651] [cursor=pointer]:
+            - /url: https://www.nousinfosystems.com/company/partnerships/venafi
+            - img [ref=e652]
+        - button "Next" [ref=e653] [cursor=pointer]:  Next
+  - generic [ref=e654]:
+    - generic "Close" [ref=e655] [cursor=pointer]: 
+    - generic [ref=e656]:
+      - heading "Contact Us" [level=2] [ref=e657]
+      - heading "How can we help you?" [level=3] [ref=e658]
+      - generic [ref=e659]:
+        - paragraph
+        - form "Contact form" [ref=e661]:
+          - generic [ref=e662]:
+            - textbox [ref=e666]:
+              - /placeholder: Name*
+            - textbox [ref=e670]:
+              - /placeholder: Email*
+            - textbox [ref=e674]:
+              - /placeholder: Phone Number
+            - textbox [ref=e678]:
+              - /placeholder: Company Name*
+            - textbox [ref=e682]:
+              - /placeholder: Message
+            - generic [ref=e687]:
+              - checkbox "By submitting this form, you agree to be contacted by NOUS Infosystems via email, phone, and SMS. By opting in for text messages, you consent to receive appointment reminders and updates at the number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to unsubscribe or HELP for help. View our Privacy Policy and T&C for details." [ref=e688]
+              - text: By
+              - generic [ref=e689]:
+                - text: submitting this form, you agree to be contacted by NOUS Infosystems via email, phone, and SMS. By opting in for text messages, you consent to receive appointment reminders and updates at the number provided. Message frequency varies. Msg & data rates may apply. Reply STOP to unsubscribe or HELP for help. View our
+                - link "Privacy Policy" [ref=e690] [cursor=pointer]:
+                  - /url: /privacy-policy
+                - text: and
+                - link "T&C" [ref=e691] [cursor=pointer]:
+                  - /url: /terms-and-conditions
+                - text: for details.
+            - iframe [ref=e697]:
+              - generic [ref=f12e2]:
+                - generic [ref=f12e3]:
+                  - checkbox "I'm not a robot" [ref=f12e7]
+                  - generic [ref=f12e11]: I'm not a robot
+                - generic [ref=f12e12]:
+                  - generic [ref=f12e15]: reCAPTCHA
+                  - generic [ref=f12e16]:
+                    - link "Privacy" [ref=f12e17] [cursor=pointer]:
+                      - /url: https://www.google.com/intl/en/policies/privacy/
+                    - text: "-"
+                    - link "Terms" [ref=f12e18] [cursor=pointer]:
+                      - /url: https://www.google.com/intl/en/policies/terms/
+            - generic [ref=e698]:
+              - generic: 
+              - button "Submit" [ref=e699] [cursor=pointer]
+        - paragraph
+  - generic [ref=e701]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e702] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e704] [cursor=pointer]: 
+  - generic [ref=e705]:
+    - generic [ref=e712]:
+      - generic [ref=e713]:
+        - generic [ref=e714]:
+          - heading "Services" [level=2] [ref=e715]
+          - navigation "Services" [ref=e716]:
+            - list [ref=e717]:
+              - listitem [ref=e718]:
+                - link "Digital Product Engineering" [ref=e719] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e720]:
+                - link "Agile Development" [ref=e721] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e722]:
+                - link "Digital Application Services" [ref=e723] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e724]:
+                - link "Quality Engineering" [ref=e725] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e726]:
+                - link "Infrastructure Management" [ref=e727] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e728]:
+          - heading "Insights" [level=2] [ref=e729]
+          - navigation "Insights" [ref=e730]:
+            - list [ref=e731]:
+              - listitem [ref=e732]:
+                - link "Case Studies" [ref=e733] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e734]:
+                - link "Whitepapers" [ref=e735] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e736]:
+                - link "Brochures" [ref=e737] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e738]:
+                - link "Blogs" [ref=e739] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e740]:
+                - link "Webinars" [ref=e741] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e742]:
+        - generic [ref=e743]:
+          - heading "Competency" [level=2] [ref=e744]
+          - navigation "Competency" [ref=e745]:
+            - list [ref=e746]:
+              - listitem [ref=e747]:
+                - link "AI & Automation" [ref=e748] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e749]:
+                - link "Cloud" [ref=e750] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e751]:
+                - link "Data & Analytics" [ref=e752] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e753]:
+                - link "Digital" [ref=e754] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e755]:
+                - link "Quality Engineering" [ref=e756] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e757]:
+                - link "Infrastructure" [ref=e758] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e759]:
+          - heading "Company" [level=2] [ref=e760]
+          - navigation "Company" [ref=e761]:
+            - list [ref=e762]:
+              - listitem [ref=e763]:
+                - link "About Us" [ref=e764] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e765]:
+                - link "Partnerships" [ref=e766] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e767]:
+                - link "News" [ref=e768] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e769]:
+                - link "Events" [ref=e770] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e771]:
+                - link "Careers" [ref=e772] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e773]:
+                - link "CSR" [ref=e774] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e775]:
+                - link "Contact Us" [ref=e776] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e777]:
+        - generic [ref=e778]:
+          - heading "Industries" [level=2] [ref=e779]
+          - navigation "Industries" [ref=e780]:
+            - list [ref=e781]:
+              - listitem [ref=e782]:
+                - link "Banking & Financial Services" [ref=e783] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e784]:
+                - link "Insurance" [ref=e785] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e786]:
+                - link "Healthcare & Life Sciences" [ref=e787] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e788]:
+                - link "Retail" [ref=e789] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e790]:
+                - link "Travel & Logistics" [ref=e791] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e792]:
+          - heading "Support" [level=2] [ref=e793]
+          - navigation "Support" [ref=e794]:
+            - list [ref=e795]:
+              - listitem [ref=e796]:
+                - link "Disclaimer" [ref=e797] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e798]:
+                - link "Sitemap" [ref=e799] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e800]:
+                - link "Privacy Policy" [ref=e801] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e802]:
+        - heading "Newsletter" [level=2] [ref=e803]
+        - form "Contact form" [ref=e806]:
+          - generic [ref=e807]:
+            - generic [ref=e808]:
+              - textbox [ref=e812]:
+                - /placeholder: Email Address
+              - generic [ref=e813]:
+                - button "." [ref=e814] [cursor=pointer]
+                - generic [ref=e815]: 
+            - iframe [ref=e820]:
+              - generic [ref=f13e2]:
+                - generic [ref=f13e3]:
+                  - checkbox "I'm not a robot" [ref=f13e7]
+                  - generic [ref=f13e11]: I'm not a robot
+                - generic [ref=f13e12]:
+                  - generic [ref=f13e15]: reCAPTCHA
+                  - generic [ref=f13e16]:
+                    - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                      - /url: https://www.google.com/intl/en/policies/privacy/
+                    - text: "-"
+                    - link "Terms" [ref=f13e18] [cursor=pointer]:
+                      - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e823]:
+          - listitem [ref=e824]:
+            - link "" [ref=e825] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e826]: 
+          - listitem [ref=e827]:
+            - link [ref=e828] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e830]:
+            - link "" [ref=e831] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e832]: 
+          - listitem [ref=e833]:
+            - link "" [ref=e834] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e835]: 
+        - figure [ref=e836]
+    - generic [ref=e840]: ©2026 Nous Infosystems. All Rights Reserved.
+```

@@ -1,0 +1,120 @@
+{
+  "inputs": [
+    {
+      "type": "hidden",
+      "name": "hdnBackgroundColor",
+      "id": "hdnBackgroundColor",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "hidden",
+      "name": "hdnTokenVal",
+      "id": "hdnTokenVal",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "hidden",
+      "name": "__RequestVerificationToken",
+      "id": "",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "email",
+      "name": "email",
+      "id": "txtUserName",
+      "placeholder": "Enter your email",
+      "label": "Enter your email"
+    },
+    {
+      "type": "password",
+      "name": "pwd",
+      "id": "txtUserPassword",
+      "placeholder": "Enter your password",
+      "label": "Enter your password"
+    },
+    {
+      "type": "checkbox",
+      "name": "chkRememberme",
+      "id": "chkRememberme",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "text",
+      "name": "sl",
+      "id": "goog-gt-votingInputSrcLang",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "text",
+      "name": "tl",
+      "id": "goog-gt-votingInputTrgLang",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "text",
+      "name": "query",
+      "id": "goog-gt-votingInputSrcText",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "text",
+      "name": "gtrans",
+      "id": "goog-gt-votingInputTrgText",
+      "placeholder": "",
+      "label": null
+    },
+    {
+      "type": "text",
+      "name": "vote",
+      "id": "goog-gt-votingInputVote",
+      "placeholder": "",
+      "label": null
+    }
+  ],
+  "buttons": [
+    {
+      "tag": "BUTTON",
+      "text": "Apply Now\n                                                \n ",
+      "type": "submit"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Login",
+      "type": "submit"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "type": "button"
+    },
+    {
+      "tag": "BUTTON",
+      "text": "",
+      "type": "button"
+    }
+  ],
+  "links": [
+    {
+      "text": "Forgot your password?",
+      "href": "https://apolf-web-preprod.azurewebsites.net/Account/SendForgotPasswordLink"
+    },
+    {
+      "text": "Select Language​▼",
+      "href": "https://apolf-web-preprod.azurewebsites.net/RedikerAcademy#"
+    }
+  ],
+  "headings": [
+    "Rediker Academy",
+    "First Time Visitor?",
+    "Login"
+  ],
+  "url": "https://apolf-web-preprod.azurewebsites.net/RedikerAcademy",
+  "title": "AdminPlus Online Forms"
+}

@@ -1,0 +1,12 @@
+[exec_1774727771143] ▶  Writing 2 POM files to temp directory...
+✓  2 files written — 1 spec files across 6 test categories
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://valuelabs.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727771143
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774727771143.log
+
+Running 1 test using 1 worker
+
+[1A[2K[1/1] [chromium] › .autotest-tmp\run_1774727771143\tests\specs\smoke\home.smoke.spec.ts:3:3 › @smoke | Home › TC-S01 page returns HTTP 2xx
+[1A[2K  1 passed (7.8s)
+✓ 1 passed  ✗ 0 failed  — exit 0

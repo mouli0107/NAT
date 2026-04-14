@@ -1,0 +1,339 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - heading "Build What’s Next. Grow, Learn, Lead at Nous" [level=1] [ref=e106]:
+    - generic [ref=e107]:
+      - text: Build What’s Next.
+      - text: Grow, Learn, Lead at Nous
+  - generic [ref=e110]:
+    - navigation [ref=e111]:
+      - generic [ref=e112]:
+        - link "Why Nous" [ref=e113] [cursor=pointer]:
+          - /url: "#why-nous"
+        - link "Opportunities" [ref=e114] [cursor=pointer]:
+          - /url: "#opportunities"
+        - link "Join the Network That Build Leaders" [ref=e115] [cursor=pointer]:
+          - /url: "#join-network"
+        - link "People first and Progress Always" [ref=e116] [cursor=pointer]:
+          - /url: "#people-first"
+    - generic [ref=e118]:
+      - generic [ref=e120]:
+        - paragraph [ref=e121]: At Nous, bold isn’t a buzzword it’s how we work every day. We challenge assumptions, move fast with purpose, and take ownership from idea to impact.
+        - paragraph [ref=e122]: Our teams experiment fearlessly, learn continuously, and collaborate openly across roles and geographies. We value clarity over complexity, outcomes over activity, and trust over hierarchy so you’re empowered to make decisions, lead from where you are, and build what’s next with confidence.
+      - generic [ref=e124]:
+        - heading "Values" [level=2] [ref=e125]
+        - generic [ref=e128]:
+          - generic [ref=e130]:
+            - img "Build with Purpose" [ref=e132]
+            - generic [ref=e133]:
+              - text: Build with
+              - text: Purpose
+          - generic [ref=e135]:
+            - img "Own the Outcome" [ref=e137]
+            - generic [ref=e138]:
+              - text: Own the
+              - text: Outcome
+          - generic [ref=e140]:
+            - img "Learn Relentlessly" [ref=e142]
+            - generic [ref=e143]:
+              - text: Learn
+              - text: Relentlessly
+          - generic [ref=e145]:
+            - img "Be Bold" [ref=e147]
+            - generic [ref=e148]:
+              - text: Be Bold, Act
+              - text: Thoughtfully
+          - generic [ref=e150]:
+            - img "Collaborate Openly" [ref=e152]
+            - generic [ref=e153]:
+              - text: Collaborate
+              - text: Openly
+          - generic [ref=e155]:
+            - img "Lead with Integrity" [ref=e157]
+            - generic [ref=e158]:
+              - text: Lead with
+              - text: Integrity
+    - generic [ref=e160]:
+      - heading "Your Skills. Our Opportunities. A Perfect Match" [level=2] [ref=e161]
+      - generic [ref=e162]:
+        - button "Experienced Professionals +" [ref=e164] [cursor=pointer]:
+          - heading "Experienced Professionals" [level=2] [ref=e165]
+          - generic [ref=e166]: +
+        - generic [ref=e167]:
+          - button "Early Careers and Campus Program +" [ref=e168] [cursor=pointer]:
+            - heading "Early Careers and Campus Program" [level=2] [ref=e169]
+            - generic [ref=e170]: +
+          - text:     
+    - generic [ref=e174]: "*Disclaimer: At Nous Infosystems, we uphold uncompromising integrity in every hiring process. We never charge fees, never involve third parties, and all official communication comes exclusively from @nousinfo.com. Verify authenticity through our official channels – your trust matters."
+    - generic [ref=e176]:
+      - generic [ref=e178]:
+        - heading "Join the Network That Builds Leaders" [level=2] [ref=e179]
+        - paragraph [ref=e180]: We’re not just imagining the future, we’re engineering it. If you’re ready to create, disrupt, and lead with cutting-edge technology, join us and work on innovations that transform industries. Submit your resume today and let’s make history together.
+        - generic [ref=e182] [cursor=pointer]: Transmit Your Resume
+      - text: 
+    - generic [ref=e184]:
+      - heading "People first and Progress Always" [level=2] [ref=e185]
+      - paragraph [ref=e186]: Step into a culture built on openness, collaboration, and trust where creativity thrives and personal growth is a priority. Here, bold ideas aren’t just welcomed, they are celebrated. We believe in empowering every individual to bring their best self to work, because when you grow, we grow. This is a place for doers, thinkers, and builders who want to make an impact with conviction. At Nous, you don’t just join a company, you become part of a movement shaping what’s next.
+      - generic [ref=e188]:
+        - generic [ref=e190] [cursor=pointer]:
+          - generic [ref=e191]: Built for Doers
+          - generic [ref=e192]: Turn ambition into action.
+        - generic [ref=e194] [cursor=pointer]:
+          - generic [ref=e195]: Where Bold Minds Belong
+          - generic: Dare to think big and where fearless ideas thrive.
+        - generic [ref=e197] [cursor=pointer]:
+          - generic [ref=e198]: Made for Builders
+          - generic: Build with purpose, create with impact.
+        - generic [ref=e200] [cursor=pointer]:
+          - generic [ref=e201]: Work With Conviction
+          - generic: Lead with clarity, act with confidence, and make every move matter.
+  - generic [ref=e202]:
+    - generic [ref=e204]:
+      - heading "Ready to get started?" [level=2] [ref=e206]
+      - heading " Contact us" [level=2] [ref=e208] [cursor=pointer]:
+        - generic [ref=e209]:
+          - generic [ref=e210]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e211]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e212] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e214] [cursor=pointer]: 
+  - generic [ref=e215]:
+    - generic [ref=e222]:
+      - generic [ref=e223]:
+        - generic [ref=e224]:
+          - heading "Services" [level=2] [ref=e225]
+          - navigation "Services" [ref=e226]:
+            - list [ref=e227]:
+              - listitem [ref=e228]:
+                - link "Digital Product Engineering" [ref=e229] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e230]:
+                - link "Agile Development" [ref=e231] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e232]:
+                - link "Digital Application Services" [ref=e233] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e234]:
+                - link "Quality Engineering" [ref=e235] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e236]:
+                - link "Infrastructure Management" [ref=e237] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e238]:
+          - heading "Insights" [level=2] [ref=e239]
+          - navigation "Insights" [ref=e240]:
+            - list [ref=e241]:
+              - listitem [ref=e242]:
+                - link "Case Studies" [ref=e243] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e244]:
+                - link "Whitepapers" [ref=e245] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e246]:
+                - link "Brochures" [ref=e247] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e248]:
+                - link "Blogs" [ref=e249] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e250]:
+                - link "Webinars" [ref=e251] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e252]:
+        - generic [ref=e253]:
+          - heading "Competency" [level=2] [ref=e254]
+          - navigation "Competency" [ref=e255]:
+            - list [ref=e256]:
+              - listitem [ref=e257]:
+                - link "AI & Automation" [ref=e258] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e259]:
+                - link "Cloud" [ref=e260] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e261]:
+                - link "Data & Analytics" [ref=e262] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e263]:
+                - link "Digital" [ref=e264] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e265]:
+                - link "Quality Engineering" [ref=e266] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e267]:
+                - link "Infrastructure" [ref=e268] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e269]:
+          - heading "Company" [level=2] [ref=e270]
+          - navigation "Company" [ref=e271]:
+            - list [ref=e272]:
+              - listitem [ref=e273]:
+                - link "About Us" [ref=e274] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e275]:
+                - link "Partnerships" [ref=e276] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e277]:
+                - link "News" [ref=e278] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e279]:
+                - link "Events" [ref=e280] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e281]:
+                - link "Careers" [ref=e282] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e283]:
+                - link "CSR" [ref=e284] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e285]:
+                - link "Contact Us" [ref=e286] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e287]:
+        - generic [ref=e288]:
+          - heading "Industries" [level=2] [ref=e289]
+          - navigation "Industries" [ref=e290]:
+            - list [ref=e291]:
+              - listitem [ref=e292]:
+                - link "Banking & Financial Services" [ref=e293] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e294]:
+                - link "Insurance" [ref=e295] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e296]:
+                - link "Healthcare & Life Sciences" [ref=e297] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e298]:
+                - link "Retail" [ref=e299] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e300]:
+                - link "Travel & Logistics" [ref=e301] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e302]:
+          - heading "Support" [level=2] [ref=e303]
+          - navigation "Support" [ref=e304]:
+            - list [ref=e305]:
+              - listitem [ref=e306]:
+                - link "Disclaimer" [ref=e307] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e308]:
+                - link "Sitemap" [ref=e309] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e310]:
+                - link "Privacy Policy" [ref=e311] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e312]:
+        - heading "Newsletter" [level=2] [ref=e313]
+        - generic [ref=e315]:
+          - generic [ref=e316]:
+            - status
+            - list
+          - form "Contact form" [ref=e317]:
+            - generic [ref=e318]:
+              - generic [ref=e319]:
+                - textbox [ref=e323]:
+                  - /placeholder: Email Address
+                - generic [ref=e324]:
+                  - button "." [ref=e325] [cursor=pointer]
+                  - generic [ref=e326]: 
+              - iframe [ref=e331]:
+                - generic [ref=f19e2]:
+                  - generic [ref=f19e3]:
+                    - checkbox "I'm not a robot" [ref=f19e7]
+                    - generic [ref=f19e11]: I'm not a robot
+                  - generic [ref=f19e12]:
+                    - generic [ref=f19e15]: reCAPTCHA
+                    - generic [ref=f19e16]:
+                      - link "Privacy" [ref=f19e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f19e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e333]:
+          - listitem [ref=e334]:
+            - link "" [ref=e335] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e336]: 
+          - listitem [ref=e337]:
+            - link [ref=e338] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e340]:
+            - link "" [ref=e341] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e342]: 
+          - listitem [ref=e343]:
+            - link "" [ref=e344] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e345]: 
+        - figure [ref=e346]
+    - generic [ref=e350]: ©2026 Nous Infosystems. All Rights Reserved.
+```

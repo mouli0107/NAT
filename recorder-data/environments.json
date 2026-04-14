@@ -1,0 +1,34 @@
+[
+  {
+    "id": "env-001",
+    "name": "Development",
+    "baseUrl": "http://localhost:3000",
+    "type": "dev",
+    "isDefault": false,
+    "createdAt": 1743292800000
+  },
+  {
+    "id": "env-002",
+    "name": "Staging",
+    "baseUrl": "https://staging.app.example.com",
+    "type": "staging",
+    "isDefault": true,
+    "createdAt": 1743292800000
+  },
+  {
+    "id": "env-003",
+    "name": "Production",
+    "baseUrl": "https://app.example.com",
+    "type": "production",
+    "isDefault": false,
+    "createdAt": 1743292800000
+  },
+  {
+    "id": "env-004",
+    "name": "QA",
+    "baseUrl": "https://qa.app.example.com",
+    "type": "custom",
+    "isDefault": false,
+    "createdAt": 1743292800000
+  }
+]

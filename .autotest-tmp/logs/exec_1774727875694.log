@@ -1,0 +1,109 @@
+[exec_1774727875694] ▶  Writing 73 POM files to temp directory...
+✓  73 files written — 53 spec files across 6 test categories
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://valuelabs.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774727875694.log
+SyntaxError: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\pages\home.page.ts: Unterminated string constant. (28:33)
+
+[0m [90m 26 |[39m   readonly aide_idea_to_launch_2_btn [33m=[39m [36mthis[39m[33m.[39mpage[33m.[39mlocator([32m'#v-pills-home-tab-3'[39m)[33m.[39mfirst()[33m;[39m
+ [90m 27 |[39m
+[31m[1m>[22m[39m[90m 28 |[39m   [36masync[39m verifyHeading(expected [33m=[39m [32m'Custom Agentic AI Solutions.[39m
+ [90m    |[39m                                  [31m[1m^[22m[39m
+ [90m 29 |[39m                         [33mBuilt[39m [36mfor[39m [33mYour[39m [33mEnterprise[39m[33m.[39m [33mCo[39m[33m-[39mcreated [33mLive[39m[33m.[39m[32m'): Promise<void> {[39m
+ [90m 30 |[39m     [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mwaitFor({ state[33m:[39m [32m'visible'[39m[33m,[39m timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 31 |[39m     [36mconst[39m text [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mtextContent()[33m;[39m[0m
+
+   at accessibility\home.a11y.spec.ts:28
+
+  26 |     await page.keyboard.press('Tab');
+  27 |     const focusedTag = await page.evaluate(
+> 28 |       () => document.activeElement?.tagName ?? 'BODY',
+     |                                 ^
+  29 |     );
+  30 |     expect(['A', 'BUTTON', 'INPUT', 'SELECT', 'TEXTAREA', 'BODY']).toContain(
+  31 |       focusedTag,
+    at Object.<anonymous> (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\specs\accessibility\home.a11y.spec.ts:2:1)
+
+SyntaxError: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\pages\home.page.ts: Unterminated string constant. (28:33)
+
+[0m [90m 26 |[39m   readonly aide_idea_to_launch_2_btn [33m=[39m [36mthis[39m[33m.[39mpage[33m.[39mlocator([32m'#v-pills-home-tab-3'[39m)[33m.[39mfirst()[33m;[39m
+ [90m 27 |[39m
+[31m[1m>[22m[39m[90m 28 |[39m   [36masync[39m verifyHeading(expected [33m=[39m [32m'Custom Agentic AI Solutions.[39m
+ [90m    |[39m                                  [31m[1m^[22m[39m
+ [90m 29 |[39m                         [33mBuilt[39m [36mfor[39m [33mYour[39m [33mEnterprise[39m[33m.[39m [33mCo[39m[33m-[39mcreated [33mLive[39m[33m.[39m[32m'): Promise<void> {[39m
+ [90m 30 |[39m     [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mwaitFor({ state[33m:[39m [32m'visible'[39m[33m,[39m timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 31 |[39m     [36mconst[39m text [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mtextContent()[33m;[39m[0m
+
+   at functional\home.functional.spec.ts:28
+
+  26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+  27 |   });
+> 28 | });
+     |              ^
+  29 |
+    at Object.<anonymous> (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\specs\functional\home.functional.spec.ts:2:1)
+
+SyntaxError: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\pages\home.page.ts: Unterminated string constant. (28:33)
+
+[0m [90m 26 |[39m   readonly aide_idea_to_launch_2_btn [33m=[39m [36mthis[39m[33m.[39mpage[33m.[39mlocator([32m'#v-pills-home-tab-3'[39m)[33m.[39mfirst()[33m;[39m
+ [90m 27 |[39m
+[31m[1m>[22m[39m[90m 28 |[39m   [36masync[39m verifyHeading(expected [33m=[39m [32m'Custom Agentic AI Solutions.[39m
+ [90m    |[39m                                  [31m[1m^[22m[39m
+ [90m 29 |[39m                         [33mBuilt[39m [36mfor[39m [33mYour[39m [33mEnterprise[39m[33m.[39m [33mCo[39m[33m-[39mcreated [33mLive[39m[33m.[39m[32m'): Promise<void> {[39m
+ [90m 30 |[39m     [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mwaitFor({ state[33m:[39m [32m'visible'[39m[33m,[39m timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 31 |[39m     [36mconst[39m text [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mtextContent()[33m;[39m[0m
+
+   at negative\home.negative.spec.ts:28
+
+  26 |       await expect(page.locator('body')).toBeVisible();
+  27 |     }
+> 28 |   });
+     |                ^
+  29 | });
+  30 |
+    at Object.<anonymous> (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\specs\negative\home.negative.spec.ts:2:1)
+
+SyntaxError: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\pages\home.page.ts: Unterminated string constant. (28:33)
+
+[0m [90m 26 |[39m   readonly aide_idea_to_launch_2_btn [33m=[39m [36mthis[39m[33m.[39mpage[33m.[39mlocator([32m'#v-pills-home-tab-3'[39m)[33m.[39mfirst()[33m;[39m
+ [90m 27 |[39m
+[31m[1m>[22m[39m[90m 28 |[39m   [36masync[39m verifyHeading(expected [33m=[39m [32m'Custom Agentic AI Solutions.[39m
+ [90m    |[39m                                  [31m[1m^[22m[39m
+ [90m 29 |[39m                         [33mBuilt[39m [36mfor[39m [33mYour[39m [33mEnterprise[39m[33m.[39m [33mCo[39m[33m-[39mcreated [33mLive[39m[33m.[39m[32m'): Promise<void> {[39m
+ [90m 30 |[39m     [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mwaitFor({ state[33m:[39m [32m'visible'[39m[33m,[39m timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 31 |[39m     [36mconst[39m text [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mtextContent()[33m;[39m[0m
+
+   at security\home.security.spec.ts:28
+
+  26 |     }
+  27 |     // Advisory only — do not hard-fail (CDN/proxy may strip headers)
+> 28 |   });
+     |                ^
+  29 |
+  30 |   for (const payload of xssPayloads) {
+  31 |     test(`TC-SEC03 XSS payload does not execute: "${payload.substring(0, 40)}"`, async ({ page }) => {
+    at Object.<anonymous> (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\specs\security\home.security.spec.ts:2:1)
+
+SyntaxError: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\pages\home.page.ts: Unterminated string constant. (28:33)
+
+[0m [90m 26 |[39m   readonly aide_idea_to_launch_2_btn [33m=[39m [36mthis[39m[33m.[39mpage[33m.[39mlocator([32m'#v-pills-home-tab-3'[39m)[33m.[39mfirst()[33m;[39m
+ [90m 27 |[39m
+[31m[1m>[22m[39m[90m 28 |[39m   [36masync[39m verifyHeading(expected [33m=[39m [32m'Custom Agentic AI Solutions.[39m
+ [90m    |[39m                                  [31m[1m^[22m[39m
+ [90m 29 |[39m                         [33mBuilt[39m [36mfor[39m [33mYour[39m [33mEnterprise[39m[33m.[39m [33mCo[39m[33m-[39mcreated [33mLive[39m[33m.[39m[32m'): Promise<void> {[39m
+ [90m 30 |[39m     [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mwaitFor({ state[33m:[39m [32m'visible'[39m[33m,[39m timeout[33m:[39m [35m10000[39m })[33m;[39m
+ [90m 31 |[39m     [36mconst[39m text [33m=[39m [36mawait[39m [36mthis[39m[33m.[39mheading[33m.[39mtextContent()[33m;[39m[0m
+
+   at smoke\home.smoke.spec.ts:28
+
+  26 |     await po.waitForPageLoad();
+  27 |     await page.waitForLoadState('domcontentloaded');
+> 28 |     const jsErrors = errors.filter(e =>
+     |                                 ^
+  29 |       (e.includes('TypeError') || e.includes('ReferenceError') || e.includes('SyntaxError') || e.includes('Uncaught'))
+  30 |       && !e.includes('Failed to load resource') && !e.includes('net::ERR')
+  31 |     );
+    at Object.<anonymous> (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774727875694\tests\specs\smoke\home.smoke.spec.ts:2:1)
+
+[1A[2K✓ 0 passed  ✗ 0 failed  — exit 1

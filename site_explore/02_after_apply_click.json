@@ -1,0 +1,120 @@
+{
+  "url": "https://apolf-web-preprod.azurewebsites.net/Account/UserRegistration?",
+  "title": "AdminPlus Online Forms",
+  "headings": [
+    "Online Forms: Create an account"
+  ],
+  "inputs": [
+    {
+      "type": "text",
+      "name": "FirstName",
+      "id": "FirstName",
+      "placeholder": "Your First Name",
+      "label": "Your First Name",
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "LastName",
+      "id": "LastName",
+      "placeholder": "Your Last Name",
+      "label": "Your Last Name",
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "LoginName",
+      "id": "LoginName",
+      "placeholder": "E-Mail Address",
+      "label": "E-Mail Address",
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "ReTypeLoginName",
+      "id": "ReTypeLoginName",
+      "placeholder": "Re-type E-Mail Address",
+      "label": "Re-type E-Mail Address",
+      "required": false
+    },
+    {
+      "type": "password",
+      "name": "Password",
+      "id": "Password",
+      "placeholder": "Password",
+      "label": "Password",
+      "required": false
+    },
+    {
+      "type": "password",
+      "name": "ReTypePassword",
+      "id": "ReTypePassword",
+      "placeholder": "Re-type Password",
+      "label": "Re-type Password",
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "sl",
+      "id": "goog-gt-votingInputSrcLang",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "tl",
+      "id": "goog-gt-votingInputTrgLang",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "query",
+      "id": "goog-gt-votingInputSrcText",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "gtrans",
+      "id": "goog-gt-votingInputTrgText",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    },
+    {
+      "type": "text",
+      "name": "vote",
+      "id": "goog-gt-votingInputVote",
+      "placeholder": "",
+      "label": null,
+      "required": false
+    }
+  ],
+  "selects": [],
+  "buttons": [
+    {
+      "text": "Create account",
+      "type": "submit"
+    },
+    {
+      "text": "",
+      "type": "button"
+    },
+    {
+      "text": "",
+      "type": "button"
+    }
+  ],
+  "labels": [
+    "Your First Name",
+    "Your Last Name",
+    "E-Mail Address",
+    "Re-type E-Mail Address",
+    "Password",
+    "Re-type Password"
+  ]
+}

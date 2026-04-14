@@ -1,0 +1,9 @@
+[exec_1774789967524] ▶  Writing 18 POM files to temp directory...
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://nousinfosystems.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774789967524
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774789967524.log
+✓  18 files written — 0 spec files across 6 test categories
+Error: No tests found
+
+[1A[2K✓ 0 passed  ✗ 0 failed  — exit 1

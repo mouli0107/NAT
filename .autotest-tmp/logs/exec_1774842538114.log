@@ -1,0 +1,1000 @@
+[exec_1774842538114] ▶  Writing 66 POM files to temp directory...
+✓  66 files written — 45 spec files across 6 test categories
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://demoqa.com/automation-practice-form
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774842538114.log
+
+Running 138 tests using 1 worker
+
+[1A[2K[1/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  1) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 3 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 5 input(s) without accessible label
+      3. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-automation_p-9d1c2-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-automation_p-9d1c2-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[2/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[3/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[4/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  2) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 3 image(s) missing alt: Toolsqa-DZdwt2ul.jpg, Toolsqa.jpg, Toolsqa_1.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-broken.a11y--a4f50-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-broken.a11y--a4f50-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[5/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[6/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[7/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  3) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-buttons.a11y-7114d-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-buttons.a11y-7114d-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[8/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[9/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[10/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  4) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-checkbox.a11-4a92e-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-checkbox.a11-4a92e-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[11/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[12/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[13/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  5) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. Page has no H1 heading
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-home.a11y--a-de02b-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-home.a11y--a-de02b-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[14/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[15/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[16/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  6) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-links.a11y---5bb79-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-links.a11y---5bb79-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[17/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[18/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[19/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  7) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-radio_button-db0ee-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-radio_button-db0ee-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[20/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[21/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[22/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  8) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-text_box.a11-7b046-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-text_box.a11-7b046-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[23/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[24/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[25/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  9) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 3 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 1 input(s) without accessible label
+      3. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-upload_downl-90f69-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-upload_downl-90f69-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[26/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[27/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[28/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  10) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 image(s) missing alt: Toolsqa-DZdwt2ul.jpg
+      2. 2 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\accessibility-webtables.a1-535a8-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\accessibility-webtables.a1-535a8-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[29/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:13:7 › @accessibility | demosite › TC-A02 page has a descriptive non-empty title
+[1A[2K[30/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:22:7 › @accessibility | demosite › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[31/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\automation_practice_form.edge.spec.ts:6:7 › @edge | demosite › TC-E01 direct URL navigation lands on correct page
+[1A[2K[32/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\automation_practice_form.edge.spec.ts:14:7 › @edge | demosite › TC-E02 back/forward browser navigation works
+[1A[2K[33/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\automation_practice_form.edge.spec.ts:25:7 › @edge | demosite › TC-E03 special characters in input do not crash the page
+[1A[2K[34/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\automation_practice_form.edge.spec.ts:37:7 › @edge | demosite › TC-E04 unicode input is handled gracefully
+[1A[2K[35/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\text_box.edge.spec.ts:6:7 › @edge | demosite › TC-E01 direct URL navigation lands on correct page
+[1A[2K[36/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\text_box.edge.spec.ts:14:7 › @edge | demosite › TC-E02 back/forward browser navigation works
+[1A[2K[37/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\text_box.edge.spec.ts:25:7 › @edge | demosite › TC-E03 special characters in input do not crash the page
+[1A[2K[38/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\edge\text_box.edge.spec.ts:37:7 › @edge | demosite › TC-E04 unicode input is handled gracefully
+[1A[2K[39/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\automation_practice_form.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K[40/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\automation_practice_form.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K[41/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\automation_practice_form.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K[42/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:6:7 › @functional | demosite › TC-F01 main content is visible
+[1A[2K[43/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+(node:27660) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K  11) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-broken.function-f8e30-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-broken.function-f8e30-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[44/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:6:7 › @functional | demosite › TC-F01 main content is visible
+[1A[2K[45/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+(node:30956) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K  12) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-buttons.functio-84733-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-buttons.functio-84733-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[46/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K  13) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator:  locator('input')
+    Expected: visible
+    Received: hidden
+    Timeout:  5000ms
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('input')[22m
+    [2m    8 × locator resolved to <input value="" tabindex="0" aria-label="for screen reader"/>[22m
+    [2m      - unexpected value "hidden"[22m
+
+
+       8 |     await po.navigate();
+       9 |     await po.waitForPageLoad();
+    > 10 |     await expect(page.locator('input')).toBeVisible();
+         |                                         ^
+      11 |   });
+      12 |
+      13 |   test('TC-F02 input field accepts text', async ({ page }) => {
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:10:41
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-7de32-are-visible-and-interactive-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-7de32-are-visible-and-interactive-chromium\error-context.md
+
+
+[1A[2K[47/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K  14) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+
+    [31mTest timeout of 60000ms exceeded.[39m
+
+    Error: locator.fill: Test timeout of 60000ms exceeded.
+    Call log:
+    [2m  - waiting for locator('input')[22m
+    [2m    - locator resolved to <input value="" tabindex="0" aria-label="for screen reader"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m    - waiting 20ms[22m
+    [2m    2 × waiting for element to be visible, enabled and editable[22m
+    [2m      - element is not visible[22m
+    [2m    - retrying fill action[22m
+    [2m      - waiting 100ms[22m
+    [2m    95 × waiting for element to be visible, enabled and editable[22m
+    [2m       - element is not visible[22m
+    [2m     - retrying fill action[22m
+    [2m       - waiting 500ms[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('input').fill('test input');
+         |                                 ^
+      18 |     await expect(page.locator('input')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:17:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-ea6a8-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-ea6a8-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[48/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K  15) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-a5590-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-checkbox.functi-a5590-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[49/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | demosite › TC-F01 main content is visible
+[1A[2K[50/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+(node:33108) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1A[2K  16) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-home.functional-e409e-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-home.functional-e409e-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[51/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:6:7 › @functional | demosite › TC-F01 main content is visible
+[1A[2K[52/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200
+(node:35924) Warning: Failed to load the ES module: C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\nav.helper.ts. Make sure to set "type": "module" in the nearest package.json file or use the .mjs extension.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1A[2K  17) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+
+    SyntaxError: Cannot use import statement outside a module
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     const { checkInternalLinks } = await import('../../helpers/nav.helper');
+         |                                    ^
+      18 |     await checkInternalLinks(page);
+      19 |   });
+      20 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:17:36
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-links.functiona-9772f-ation-links-return-HTTP-200-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-links.functiona-9772f-ation-links-return-HTTP-200-chromium\error-context.md
+
+
+[1A[2K[53/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K[54/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K  18) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+
+    Error: locator.fill: Error: Input of type "radio" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#yesRadio')[22m
+    [2m    - locator resolved to <input name="like" type="radio" id="yesRadio" class="form-check-input"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('#yesRadio').fill('test input');
+         |                                     ^
+      18 |     await expect(page.locator('#yesRadio')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:17:37
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-radio_button.fu-de5b6-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-radio_button.fu-de5b6-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[55/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K  19) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: Target page, context or browser has been closed
+    Call log:
+    [2m  - navigating to "https://demoqa.com/radio-button", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\radio_button.page.ts:43
+
+      41 |
+      42 |   async navigate(): Promise<void> {
+    > 43 |     await this.page.goto('/radio-button', { waitUntil: 'domcontentloaded' });
+         |                     ^
+      44 |     await this.page.waitForLoadState('domcontentloaded');
+      45 |   }
+      46 |
+        at RadioButtonPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\pages\radio_button.page.ts:43:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:23:14
+
+
+[1A[2K[56/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\text_box.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K[57/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\text_box.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K[58/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\text_box.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K[59/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K[60/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K  20) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile')[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("test input")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+      15 |     await po.navigate();
+      16 |     await po.waitForPageLoad();
+    > 17 |     await page.locator('#uploadFile').fill('test input');
+         |                                       ^
+      18 |     await expect(page.locator('#uploadFile')).toHaveValue('test input');
+      19 |   });
+      20 |
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:17:39
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-upload_download-b1025-02-input-field-accepts-text-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-upload_download-b1025-02-input-field-accepts-text-chromium\error-context.md
+
+
+[1A[2K[61/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K  21) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-upload_download-6039d-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-upload_download-6039d-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[62/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive
+[1A[2K[63/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text
+[1A[2K[64/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled
+[1A[2K  22) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+
+    Error: [2mexpect([22m[31mlocator[39m[2m).[22mtoBeVisible[2m([22m[2m)[22m failed
+
+    Locator: locator('button[type="submit"]')
+    Expected: visible
+    Timeout: 5000ms
+    Error: element(s) not found
+
+    Call log:
+    [2m  - Expect "toBeVisible" with timeout 5000ms[22m
+    [2m  - waiting for locator('button[type="submit"]')[22m
+
+
+      23 |     await po.navigate();
+      24 |     await po.waitForPageLoad();
+    > 25 |     await expect(page.locator('button[type="submit"]')).toBeVisible();
+         |                                                         ^
+      26 |     await expect(page.locator('button[type="submit"]')).toBeEnabled();
+      27 |   });
+      28 | });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:25:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\functional-webtables.funct-d29ff-tton-is-present-and-enabled-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\functional-webtables.funct-d29ff-tton-is-present-and-enabled-chromium\error-context.md
+
+
+[1A[2K[65/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\automation_practice_form.negative.spec.ts:6:7 › @negative | demosite › TC-N01 empty required fields trigger validation
+[1A[2K[66/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\automation_practice_form.negative.spec.ts:19:7 › @negative | demosite › TC-N02 extremely long input does not crash the page
+[1A[2K[67/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\text_box.negative.spec.ts:6:7 › @negative | demosite › TC-N01 empty required fields trigger validation
+[1A[2K[68/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\text_box.negative.spec.ts:19:7 › @negative | demosite › TC-N02 extremely long input does not crash the page
+[1A[2K[69/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\upload_download.negative.spec.ts:6:7 › @negative | demosite › TC-N01 empty required fields trigger validation
+[1A[2K[70/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\upload_download.negative.spec.ts:19:7 › @negative | demosite › TC-N02 extremely long input does not crash the page
+[1A[2K  23) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\upload_download.negative.spec.ts:19:7 › @negative | demosite › TC-N02 extremely long input does not crash the page 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+      23 |     const field = page.locator('#uploadFile').first();
+      24 |     if (await field.count() > 0) {
+    > 25 |       await field.fill('A'.repeat(500));
+         |                   ^
+      26 |       await expect(page.locator('body')).toBeVisible();
+      27 |     }
+      28 |   });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\negative\upload_download.negative.spec.ts:25:19
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\negative-upload_download.n-2c038-put-does-not-crash-the-page-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\negative-upload_download.n-2c038-put-does-not-crash-the-page-chromium\error-context.md
+
+
+[1A[2K[71/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[72/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /automation-practice-form
+[1A[2K[73/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[74/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[75/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[76/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[77/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[78/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\automation_practice_form.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[79/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\broken.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[80/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\broken.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\broken.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /broken
+
+[1A[2K[81/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\buttons.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[82/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\buttons.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\buttons.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /buttons
+
+[1A[2K[83/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\checkbox.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[84/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\checkbox.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\checkbox.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /checkbox
+
+[1A[2K[85/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\home.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[86/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\home.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\home.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /
+
+[1A[2K[87/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\links.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[88/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\links.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\links.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /links
+[1A[2K[89/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\radio_button.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[90/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\radio_button.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\radio_button.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /radio-button
+[1A[2K[91/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[92/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /text-box
+[1A[2K[93/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[94/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[95/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[96/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[97/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[98/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\text_box.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[99/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[100/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+
+[1A[2K[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /upload-download
+[1A[2K[101/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K  24) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("<script>alert("xss")</script>")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-5995f-te-script-alert-xss-script--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-5995f-te-script-alert-xss-script--chromium\error-context.md
+
+
+[1A[2K[102/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K  25) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill(""><img src=x onerror=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-0bda5--img-src-x-onerror-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-0bda5--img-src-x-onerror-alert-1--chromium\error-context.md
+
+
+[1A[2K[103/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K  26) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("';alert('xss');//")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-c3891-does-not-execute-alert-xss--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-c3891-does-not-execute-alert-xss--chromium\error-context.md
+
+
+[1A[2K[104/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+  27) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("<svg onload=alert(1)>")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-86972-execute-svg-onload-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-86972-execute-svg-onload-alert-1--chromium\error-context.md
+
+
+[1A[2K[1A[2K[105/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K  28) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "{{7*7}}" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("{{7*7}}")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-54ab7-yload-does-not-execute-7-7--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-54ab7-yload-does-not-execute-7-7--chromium\error-context.md
+
+
+[1A[2K[106/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K  29) [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "javascript:alert(1)" 
+
+    Error: locator.fill: Error: Input of type "file" cannot be filled
+    Call log:
+    [2m  - waiting for locator('#uploadFile').first()[22m
+    [2m    - locator resolved to <input lang="en" type="file" id="uploadFile" class="form-control" label="Select a File"/>[22m
+    [2m    - fill("javascript:alert(1)")[22m
+    [2m  - attempting fill action[22m
+    [2m    - waiting for element to be visible, enabled and editable[22m
+
+
+       at ..\helpers\security.helper.ts:20
+
+      18 |
+      19 |   for (const payload of payloads) {
+    > 20 |     await fieldLocator.fill(payload);
+         |                        ^
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+      23 |     await page.waitForFunction(() => true); // yield to event loop
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\helpers\security.helper.ts:20:24)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:37:33
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-01392-execute-javascript-alert-1--chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774842538114\test-results\security-upload_download.s-01392-execute-javascript-alert-1--chromium\error-context.md
+
+
+[1A[2K[107/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\webtables.security.spec.ts:7:7 › @security | demosite › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[108/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\webtables.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[1A[2K
+[chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\webtables.security.spec.ts:16:7 › @security | demosite › TC-SEC02 security response headers are present
+[Advisory] No security headers on /webtables
+[1A[2K[109/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\automation_practice_form.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[110/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\automation_practice_form.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[111/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\automation_practice_form.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[112/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\broken.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[113/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\broken.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[114/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\broken.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[115/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\buttons.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[116/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\buttons.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[117/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\buttons.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[118/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\checkbox.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[119/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\checkbox.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[120/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\checkbox.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[121/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\home.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[122/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\home.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[123/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\home.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[124/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\links.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[125/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\links.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[126/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\links.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[127/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\radio_button.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[128/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\radio_button.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[129/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\radio_button.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[130/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\text_box.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[131/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\text_box.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[132/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\text_box.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[133/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\upload_download.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[134/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\upload_download.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[135/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\upload_download.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[136/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\webtables.smoke.spec.ts:5:7 › @smoke | demosite › TC-S01 page returns HTTP 2xx status
+[1A[2K[137/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\webtables.smoke.spec.ts:12:7 › @smoke | demosite › TC-S02 body is visible and contains text
+[1A[2K[138/138] [chromium] › .autotest-tmp\run_1774842538114\tests\specs\smoke\webtables.smoke.spec.ts:21:7 › @smoke | demosite › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K  29 failed
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\automation_practice_form.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\broken.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\buttons.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\checkbox.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\links.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\radio_button.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\text_box.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\upload_download.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\accessibility\webtables.a11y.spec.ts:6:7 › @accessibility | demosite › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\broken.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\buttons.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:6:7 › @functional | demosite › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\checkbox.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\links.functional.spec.ts:13:7 › @functional | demosite › TC-F02 all internal navigation links return HTTP 200 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\radio_button.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:13:7 › @functional | demosite › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\upload_download.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\functional\webtables.functional.spec.ts:21:7 › @functional | demosite › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\negative\upload_download.negative.spec.ts:19:7 › @negative | demosite › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>" 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>" 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>" 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "{{7*7}}" 
+    [chromium] › .autotest-tmp\run_1774842538114\tests\specs\security\upload_download.security.spec.ts:31:9 › @security | demosite › TC-SEC03 XSS payload does not execute: "javascript:alert(1)" 
+  109 passed (30.4m)
+✓ 109 passed  ✗ 28 failed  — exit 1

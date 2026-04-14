@@ -1,0 +1,49 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - img "Rediker" [ref=e4]
+    - generic [ref=e5] [cursor=pointer]:
+      - heading "Welcome David Hall" [level=4] [ref=e6]:
+        - text: Welcome
+        - strong [ref=e7]: David Hall
+      - generic [ref=e9]: 
+  - generic [ref=e10]:
+    - navigation [ref=e12]:
+      - list [ref=e13]:
+        - listitem [ref=e14]:
+          - link "My Forms" [ref=e15] [cursor=pointer]:
+            - /url: /Applicant/Landing
+        - listitem [ref=e16]:
+          - link "My Payments" [ref=e17] [cursor=pointer]:
+            - /url: /Invoice/Invoice
+        - listitem [ref=e18]:
+          - link "My Invoices" [ref=e19] [cursor=pointer]:
+            - /url: /Invoice/FinacsInvoice
+    - generic [ref=e20]:
+      - generic:
+        - list
+      - generic [ref=e21]:
+        - strong [ref=e22]: Translate
+        - link "Select Language" [ref=e27] [cursor=pointer]:
+          - /url: "#"
+          - text: Select Language▼
+  - generic [ref=e31]:
+    - list [ref=e32]:
+      - listitem
+      - listitem [ref=e33]:
+        - generic [ref=e34]:
+          - generic [ref=e36]:
+            - checkbox "Show Closed Invoice" [checked] [ref=e37]
+            - generic [ref=e38]: Show Closed Invoice
+          - button "Enable Auto Pay" [ref=e39] [cursor=pointer]
+          - button "Disable Auto Pay" [ref=e40] [cursor=pointer]
+          - button "Change Auto Pay Account" [ref=e41] [cursor=pointer]
+        - button "Pay Now" [ref=e42] [cursor=pointer]
+        - button [ref=e44] [cursor=pointer]:
+          - img [ref=e45]
+    - generic [ref=e46]: No Invoices Found
+  - img [ref=e49]
+  - text:  
+```

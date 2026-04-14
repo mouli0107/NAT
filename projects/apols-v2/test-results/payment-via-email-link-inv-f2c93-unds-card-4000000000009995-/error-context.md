@@ -1,0 +1,85 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - img "Rediker" [ref=e4]
+    - generic [ref=e5] [cursor=pointer]:
+      - heading "Welcome David Hall" [level=4] [ref=e6]:
+        - text: Welcome
+        - strong [ref=e7]: David Hall
+      - generic [ref=e9]: 
+  - generic [ref=e10]:
+    - navigation [ref=e12]:
+      - list [ref=e13]:
+        - listitem [ref=e14]:
+          - link "My Forms" [ref=e15] [cursor=pointer]:
+            - /url: /Applicant/Landing
+        - listitem [ref=e16]:
+          - link "My Payments" [ref=e17] [cursor=pointer]:
+            - /url: /Invoice/Invoice
+        - listitem [ref=e18]:
+          - link "My Invoices" [ref=e19] [cursor=pointer]:
+            - /url: /Invoice/FinacsInvoice
+    - generic [ref=e20]:
+      - generic:
+        - list
+      - generic [ref=e21]:
+        - strong [ref=e22]: Translate
+        - link "Select Language" [ref=e27] [cursor=pointer]:
+          - /url: "#"
+          - text: Select Language▼
+  - generic [ref=e31]:
+    - list [ref=e32]:
+      - listitem
+      - listitem [ref=e33]:
+        - generic [ref=e36]:
+          - checkbox "Show Closed Invoice" [ref=e37]
+          - generic [ref=e38]: Show Closed Invoice
+        - button "Pay Now" [ref=e39] [cursor=pointer]
+        - button [ref=e41] [cursor=pointer]:
+          - img [ref=e42]
+    - generic [ref=e43]:
+      - menu [ref=e44]:
+        - 'menuitem "Ria Lince School: OXFORD ACADEMY BANGALORE Grade: 1 Year: 2025-26 No Data Available" [expanded] [ref=e45]':
+          - 'link "Ria Lince School: OXFORD ACADEMY BANGALORE Grade: 1 Year: 2025-26" [ref=e46] [cursor=pointer]':
+            - /url: "#panelbar-1"
+            - generic [ref=e47]: Ria Lince
+            - generic [ref=e48]:
+              - generic [ref=e50]: "School: OXFORD ACADEMY BANGALORE"
+              - generic [ref=e52]:
+                - generic [ref=e53]: "Grade: 1"
+                - generic [ref=e55]: "Year: 2025-26"
+          - region [ref=e57]:
+            - generic [ref=e59]:
+              - grid [ref=e62]:
+                - rowgroup [ref=e75]:
+                  - 'row "Invoice # Description Invoice Date Due Date Invoice Amount Payments/Credits Amount Due Amount to Pay Payment Status Auto Pay" [ref=e76]':
+                    - columnheader [ref=e77]
+                    - 'columnheader "Invoice #" [ref=e79]':
+                      - generic [ref=e80]: "Invoice #"
+                    - columnheader "Description" [ref=e81]:
+                      - generic [ref=e82]: Description
+                    - columnheader "Invoice Date" [ref=e83]:
+                      - generic [ref=e84]: Invoice Date
+                    - columnheader "Due Date" [ref=e85]:
+                      - generic [ref=e86]: Due Date
+                    - columnheader "Invoice Amount" [ref=e87]:
+                      - generic [ref=e88]: Invoice Amount
+                    - columnheader "Payments/Credits" [ref=e89]:
+                      - generic [ref=e90]: Payments/Credits
+                    - columnheader "Amount Due" [ref=e91]:
+                      - generic [ref=e92]: Amount Due
+                    - columnheader "Amount to Pay" [ref=e93]:
+                      - generic [ref=e94]: Amount to Pay
+                    - columnheader "Payment Status" [ref=e95]:
+                      - generic [ref=e96]: Payment Status
+                    - columnheader "Auto Pay" [ref=e97]:
+                      - generic [ref=e98]: Auto Pay
+              - generic [ref=e99]:
+                - grid:
+                  - rowgroup
+                - generic [ref=e101]: No Data Available
+      - text: "'"
+  - img [ref=e104]
+```

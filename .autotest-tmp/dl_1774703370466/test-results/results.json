@@ -1,0 +1,5493 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\chandramouli\\Downloads\\Nat20-main\\Nat20-main\\.autotest-tmp\\dl_1774703370466\\playwright.config.ts",
+    "rootDir": "C:/Users/chandramouli/Downloads/Nat20-main/Nat20-main/.autotest-tmp/dl_1774703370466/tests/specs",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {},
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/chandramouli/Downloads/Nat20-main/Nat20-main/.autotest-tmp/dl_1774703370466/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {},
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/chandramouli/Downloads/Nat20-main/Nat20-main/.autotest-tmp/dl_1774703370466/tests/specs",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 30000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "html",
+        {
+          "open": "never",
+          "outputFolder": "playwright-report"
+        }
+      ],
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "test-results/results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "runAgents": "none",
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.58.2",
+    "workers": 4,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "accessibility\\agile_development.a11y.spec.ts",
+      "file": "accessibility/agile_development.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Agile Consulting Services, Agile Software Development Company",
+          "file": "accessibility/agile_development.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cac1d51267566d358b6c-0768059ff4778f5369e1",
+              "file": "accessibility/agile_development.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cac1d51267566d358b6c-02fa842a612103244912",
+              "file": "accessibility/agile_development.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cac1d51267566d358b6c-0dde3347def8a91e9259",
+              "file": "accessibility/agile_development.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cac1d51267566d358b6c-8fdd1b9547fb9ffead70",
+              "file": "accessibility/agile_development.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "cac1d51267566d358b6c-1bd12be589796eaa342b",
+              "file": "accessibility/agile_development.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\careers.a11y.spec.ts",
+      "file": "accessibility/careers.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Careers - Nous",
+          "file": "accessibility/careers.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4674b94b44a9c0df07bb-00b1dcf9e96af4221309",
+              "file": "accessibility/careers.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4674b94b44a9c0df07bb-a0826cf560ef94cdd300",
+              "file": "accessibility/careers.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4674b94b44a9c0df07bb-d0befa807dbbef8f2ab1",
+              "file": "accessibility/careers.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4674b94b44a9c0df07bb-c9018c5bf358b1be2d8f",
+              "file": "accessibility/careers.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "4674b94b44a9c0df07bb-ecf7b352e7a5f3bda4d2",
+              "file": "accessibility/careers.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\contact_us.a11y.spec.ts",
+      "file": "accessibility/contact_us.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Nous Contact Details | Contact Nous Infosystems",
+          "file": "accessibility/contact_us.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ccb28c65b2515f54bb51-45bd930e0b73fe3947be",
+              "file": "accessibility/contact_us.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ccb28c65b2515f54bb51-34e3bcc61a23413dbaf2",
+              "file": "accessibility/contact_us.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ccb28c65b2515f54bb51-def255d881d5e7bc91a7",
+              "file": "accessibility/contact_us.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ccb28c65b2515f54bb51-35fc2b5bceb71427dd16",
+              "file": "accessibility/contact_us.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ccb28c65b2515f54bb51-32c62c1e56be6044cb38",
+              "file": "accessibility/contact_us.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\digital_application_services.a11y.spec.ts",
+      "file": "accessibility/digital_application_services.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Digital Application Services, Application Lifecycle Services",
+          "file": "accessibility/digital_application_services.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3161f85f013813da574b-73d9072b90924d1688ed",
+              "file": "accessibility/digital_application_services.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3161f85f013813da574b-ca070cf825328405dc61",
+              "file": "accessibility/digital_application_services.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3161f85f013813da574b-0e734e7ef4f295d25787",
+              "file": "accessibility/digital_application_services.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3161f85f013813da574b-6df1ba6d4ac7be93dd33",
+              "file": "accessibility/digital_application_services.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3161f85f013813da574b-3fe02f0eed7c4eaed005",
+              "file": "accessibility/digital_application_services.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\digital_product_engineering.a11y.spec.ts",
+      "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Digital Product Engineering Services, Product Engineering Company",
+          "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d54d06b5901f1397cec3-50f64d7be6d50d1caec2",
+              "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d54d06b5901f1397cec3-5f485ee4da3136445991",
+              "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d54d06b5901f1397cec3-d7e150e1355c92b2ebea",
+              "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d54d06b5901f1397cec3-2427f8f9c2e86d0d12c9",
+              "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d54d06b5901f1397cec3-aba72e2154f37e3583eb",
+              "file": "accessibility/digital_product_engineering.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\events.a11y.spec.ts",
+      "file": "accessibility/events.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Events - Nous",
+          "file": "accessibility/events.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14b4125aff5afcf9c2d3-21647d610f7abae713d3",
+              "file": "accessibility/events.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14b4125aff5afcf9c2d3-3259553f1e6360305c07",
+              "file": "accessibility/events.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14b4125aff5afcf9c2d3-178d79ddf4bcff05272d",
+              "file": "accessibility/events.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14b4125aff5afcf9c2d3-db42fddee7b484e62639",
+              "file": "accessibility/events.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "14b4125aff5afcf9c2d3-9e6da1646e9988d94936",
+              "file": "accessibility/events.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\home.a11y.spec.ts",
+      "file": "accessibility/home.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "accessibility/home.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "075cc7639bb7e4a8957b-3277450ee6aee5dbef62",
+              "file": "accessibility/home.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "075cc7639bb7e4a8957b-e3f8b6c68a127aeacffa",
+              "file": "accessibility/home.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "075cc7639bb7e4a8957b-f874cdd8246325902dc7",
+              "file": "accessibility/home.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "075cc7639bb7e4a8957b-293000e64ed71abd2007",
+              "file": "accessibility/home.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "075cc7639bb7e4a8957b-8d2740b669e1077bf011",
+              "file": "accessibility/home.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\news.a11y.spec.ts",
+      "file": "accessibility/news.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | News - Nous",
+          "file": "accessibility/news.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f5bc22d7f503f3ae678-664b038bb56980a38551",
+              "file": "accessibility/news.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f5bc22d7f503f3ae678-3fe946e9066971e8c8b1",
+              "file": "accessibility/news.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f5bc22d7f503f3ae678-0103fd48ce11b4549c5e",
+              "file": "accessibility/news.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f5bc22d7f503f3ae678-13d485f9876a9c68e176",
+              "file": "accessibility/news.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7f5bc22d7f503f3ae678-fea86f5de149a209e521",
+              "file": "accessibility/news.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "accessibility\\quality_engineering.a11y.spec.ts",
+      "file": "accessibility/quality_engineering.a11y.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "♿ Accessibility | Quality Engineering Services | Software Quality Engineering",
+          "file": "accessibility/quality_engineering.a11y.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-A01 page has a descriptive, non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f73b508b82f32749e768-80b3edb33acdee0b3217",
+              "file": "accessibility/quality_engineering.a11y.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-A02 page has at least one H1 heading",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f73b508b82f32749e768-2d671f8b98b89d578e70",
+              "file": "accessibility/quality_engineering.a11y.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-A03 all images have alt text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f73b508b82f32749e768-1752dad8a01ada5ecda1",
+              "file": "accessibility/quality_engineering.a11y.spec.ts",
+              "line": 23,
+              "column": 7
+            },
+            {
+              "title": "TC-A04 keyboard Tab reaches an interactive element",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f73b508b82f32749e768-b26d57f01fe086603d5a",
+              "file": "accessibility/quality_engineering.a11y.spec.ts",
+              "line": 36,
+              "column": 7
+            },
+            {
+              "title": "TC-A05 form fields have associated labels or aria attributes",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f73b508b82f32749e768-f157745e6790d070108f",
+              "file": "accessibility/quality_engineering.a11y.spec.ts",
+              "line": 45,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\agile_development.edge.spec.ts",
+      "file": "edge/agile_development.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Agile Consulting Services, Agile Software Development Company",
+          "file": "edge/agile_development.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e4a9df233740be50debd-b73ccfd15558909429c3",
+              "file": "edge/agile_development.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e4a9df233740be50debd-28bf6bc929a7b47a6990",
+              "file": "edge/agile_development.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e4a9df233740be50debd-c30ffd982e181ff47dd2",
+              "file": "edge/agile_development.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e4a9df233740be50debd-1811be10e24e24e12f66",
+              "file": "edge/agile_development.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e4a9df233740be50debd-2b034e9a73239eb6ab5a",
+              "file": "edge/agile_development.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\careers.edge.spec.ts",
+      "file": "edge/careers.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Careers - Nous",
+          "file": "edge/careers.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ef5c758351b3a9c656d5-ccfd05b67ec1add0e117",
+              "file": "edge/careers.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ef5c758351b3a9c656d5-50a0996ce883970fad19",
+              "file": "edge/careers.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ef5c758351b3a9c656d5-7c5f96f39bf4ba7e3408",
+              "file": "edge/careers.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ef5c758351b3a9c656d5-bba96a40ed0018233f9e",
+              "file": "edge/careers.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ef5c758351b3a9c656d5-98b9471ca83a59bafa1a",
+              "file": "edge/careers.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\contact_us.edge.spec.ts",
+      "file": "edge/contact_us.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Nous Contact Details | Contact Nous Infosystems",
+          "file": "edge/contact_us.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ddeb9035d86a72c7a433-44da6ce80f97f7e5c261",
+              "file": "edge/contact_us.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ddeb9035d86a72c7a433-7ddb8674e1acd30ef90c",
+              "file": "edge/contact_us.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ddeb9035d86a72c7a433-b67978ae8c55cf546c47",
+              "file": "edge/contact_us.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ddeb9035d86a72c7a433-56b433fbb302f578d75e",
+              "file": "edge/contact_us.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ddeb9035d86a72c7a433-5965603e426c022f6327",
+              "file": "edge/contact_us.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\digital_application_services.edge.spec.ts",
+      "file": "edge/digital_application_services.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Digital Application Services, Application Lifecycle Services",
+          "file": "edge/digital_application_services.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "71c63145b2eb5f049cb6-3dfbd52aa71b0e9b5390",
+              "file": "edge/digital_application_services.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "71c63145b2eb5f049cb6-feb53f38dac5534fe441",
+              "file": "edge/digital_application_services.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "71c63145b2eb5f049cb6-977544e0b4c8a505ca3e",
+              "file": "edge/digital_application_services.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "71c63145b2eb5f049cb6-98e0940881b58ebd6f99",
+              "file": "edge/digital_application_services.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "71c63145b2eb5f049cb6-122ec505d67411a00a16",
+              "file": "edge/digital_application_services.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\digital_product_engineering.edge.spec.ts",
+      "file": "edge/digital_product_engineering.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Digital Product Engineering Services, Product Engineering Company",
+          "file": "edge/digital_product_engineering.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bbabe69084ae291ce96-c0ebf62e0b0b509e5d5d",
+              "file": "edge/digital_product_engineering.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bbabe69084ae291ce96-7eb59035f652e0c24d51",
+              "file": "edge/digital_product_engineering.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bbabe69084ae291ce96-c26f0d8f6124f485eb8f",
+              "file": "edge/digital_product_engineering.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bbabe69084ae291ce96-8e088a522a7571170f5d",
+              "file": "edge/digital_product_engineering.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7bbabe69084ae291ce96-44045f8da5dc110980ea",
+              "file": "edge/digital_product_engineering.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\events.edge.spec.ts",
+      "file": "edge/events.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Events - Nous",
+          "file": "edge/events.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b05f8d1f3a226df3f1b4-7cb1706078f50d2a927c",
+              "file": "edge/events.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b05f8d1f3a226df3f1b4-f47597406aa06c771d2b",
+              "file": "edge/events.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b05f8d1f3a226df3f1b4-a98ca896d6d6d5880e07",
+              "file": "edge/events.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b05f8d1f3a226df3f1b4-37cea6b29f35f7e0ab73",
+              "file": "edge/events.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b05f8d1f3a226df3f1b4-f7b7cf5898523c3040ee",
+              "file": "edge/events.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\home.edge.spec.ts",
+      "file": "edge/home.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "edge/home.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59c80dc6b7285287ce2f-b4fd3fbe4c9daf54f2d9",
+              "file": "edge/home.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59c80dc6b7285287ce2f-00f9990504cad42c9987",
+              "file": "edge/home.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59c80dc6b7285287ce2f-dfd37ee10aed10ae073c",
+              "file": "edge/home.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59c80dc6b7285287ce2f-2a94051e1e90e1dcd86f",
+              "file": "edge/home.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59c80dc6b7285287ce2f-416f4e3ab36b45d2374a",
+              "file": "edge/home.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\news.edge.spec.ts",
+      "file": "edge/news.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | News - Nous",
+          "file": "edge/news.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fd63a1de04bf4b34cbdd-54295df4b5f9b99ad3e6",
+              "file": "edge/news.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fd63a1de04bf4b34cbdd-e9bcefb1f80b3f046df1",
+              "file": "edge/news.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fd63a1de04bf4b34cbdd-500c643c8e5373a298bb",
+              "file": "edge/news.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fd63a1de04bf4b34cbdd-1bd7fff3f7878ceb2305",
+              "file": "edge/news.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "fd63a1de04bf4b34cbdd-3654a9d766f848973668",
+              "file": "edge/news.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "edge\\quality_engineering.edge.spec.ts",
+      "file": "edge/quality_engineering.edge.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "⚡ Edge Cases | Quality Engineering Services | Software Quality Engineering",
+          "file": "edge/quality_engineering.edge.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-E01 direct URL navigation lands on correct page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3b64d6b346188bb030bf-281b4147d139bbd7a3e7",
+              "file": "edge/quality_engineering.edge.spec.ts",
+              "line": 6,
+              "column": 7
+            },
+            {
+              "title": "TC-E02 back/forward browser navigation works",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3b64d6b346188bb030bf-59a2fdd10da4b441e481",
+              "file": "edge/quality_engineering.edge.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-E03 page reload retains content",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3b64d6b346188bb030bf-d031843837f8dbcb7691",
+              "file": "edge/quality_engineering.edge.spec.ts",
+              "line": 21,
+              "column": 7
+            },
+            {
+              "title": "TC-E04 special characters in text fields do not crash page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3b64d6b346188bb030bf-86c8bb485f75d34cf658",
+              "file": "edge/quality_engineering.edge.spec.ts",
+              "line": 28,
+              "column": 7
+            },
+            {
+              "title": "TC-E05 unicode input is handled gracefully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3b64d6b346188bb030bf-f8a66cc701ea81463873",
+              "file": "edge/quality_engineering.edge.spec.ts",
+              "line": 38,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\agile_development.functional.spec.ts",
+      "file": "functional/agile_development.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Agile Consulting Services, Agile Software Development Company",
+          "file": "functional/agile_development.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2720a5dc935667dfd4df-232e4ca5ec4971dc04b7",
+              "file": "functional/agile_development.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2720a5dc935667dfd4df-76f170ebe8be09efdc29",
+              "file": "functional/agile_development.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2720a5dc935667dfd4df-91fdabe4e0f3a3426898",
+              "file": "functional/agile_development.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2720a5dc935667dfd4df-031579d2eede84915006",
+              "file": "functional/agile_development.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\careers.functional.spec.ts",
+      "file": "functional/careers.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Careers - Nous",
+          "file": "functional/careers.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c6868b857fd12ecc5df9-37f2e903f52e6c9555cf",
+              "file": "functional/careers.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c6868b857fd12ecc5df9-d9965b834e0931ac5134",
+              "file": "functional/careers.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c6868b857fd12ecc5df9-a03c67225c1e9d06c2f6",
+              "file": "functional/careers.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c6868b857fd12ecc5df9-4710ede70018d77c0363",
+              "file": "functional/careers.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\contact_us.functional.spec.ts",
+      "file": "functional/contact_us.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Nous Contact Details | Contact Nous Infosystems",
+          "file": "functional/contact_us.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5c9671c818eee633795b-067223c73127025f4f3a",
+              "file": "functional/contact_us.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5c9671c818eee633795b-67760f63cc628863b991",
+              "file": "functional/contact_us.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5c9671c818eee633795b-963b28952c8012b64a0d",
+              "file": "functional/contact_us.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5c9671c818eee633795b-3fe0e8085d21bf3ccd22",
+              "file": "functional/contact_us.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\digital_application_services.functional.spec.ts",
+      "file": "functional/digital_application_services.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Digital Application Services, Application Lifecycle Services",
+          "file": "functional/digital_application_services.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e9c86a9e393f961a2785-57cce7ae5c7c37211396",
+              "file": "functional/digital_application_services.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e9c86a9e393f961a2785-4f78d3e6f62ce9118f07",
+              "file": "functional/digital_application_services.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e9c86a9e393f961a2785-c796f0f8166cecb2dd1d",
+              "file": "functional/digital_application_services.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e9c86a9e393f961a2785-13b6d4231865d7f3975f",
+              "file": "functional/digital_application_services.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\digital_product_engineering.functional.spec.ts",
+      "file": "functional/digital_product_engineering.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Digital Product Engineering Services, Product Engineering Company",
+          "file": "functional/digital_product_engineering.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9f9a834319d7f9049eee-11cdc9b8abe45415f60f",
+              "file": "functional/digital_product_engineering.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9f9a834319d7f9049eee-0be6f053b1814e3f4bab",
+              "file": "functional/digital_product_engineering.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9f9a834319d7f9049eee-8e32b85c8d8da27cf12f",
+              "file": "functional/digital_product_engineering.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "9f9a834319d7f9049eee-4aea5c25ca5dd870deb2",
+              "file": "functional/digital_product_engineering.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\events.functional.spec.ts",
+      "file": "functional/events.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Events - Nous",
+          "file": "functional/events.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b2a03a7cf2f5c14c9915-ce775b5465cee135b5c5",
+              "file": "functional/events.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b2a03a7cf2f5c14c9915-87e1b50c2f9a8a1a4a2b",
+              "file": "functional/events.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b2a03a7cf2f5c14c9915-a4c2296ccda27e8ea4b0",
+              "file": "functional/events.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "b2a03a7cf2f5c14c9915-c08ebf10bf633f0e42d0",
+              "file": "functional/events.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\home.functional.spec.ts",
+      "file": "functional/home.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "functional/home.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e1f9ee2b90c3b056b919-355b7e80ee5e8082ae63",
+              "file": "functional/home.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e1f9ee2b90c3b056b919-a85ae7cef088881f2be9",
+              "file": "functional/home.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e1f9ee2b90c3b056b919-a1cc1a4ccfd885572c0d",
+              "file": "functional/home.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "e1f9ee2b90c3b056b919-76b5a2e4a98426a7c35f",
+              "file": "functional/home.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\news.functional.spec.ts",
+      "file": "functional/news.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | News - Nous",
+          "file": "functional/news.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0ba172932d4784885673-0253419da39323e2c2bd",
+              "file": "functional/news.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0ba172932d4784885673-35ee5e35b479837f34d9",
+              "file": "functional/news.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0ba172932d4784885673-40a3ff49fad8c5bca601",
+              "file": "functional/news.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "0ba172932d4784885673-03963c137ad72a784378",
+              "file": "functional/news.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "functional\\quality_engineering.functional.spec.ts",
+      "file": "functional/quality_engineering.functional.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "✅ Functional | Quality Engineering Services | Software Quality Engineering",
+          "file": "functional/quality_engineering.functional.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-F01 page renders visible content and scrolls fully",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "34103ebfe525da34a431-ea5d68fcae832c783dcd",
+              "file": "functional/quality_engineering.functional.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-F02 internal links return HTTP 2xx",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "34103ebfe525da34a431-a8d6dd63d735f5a60ea6",
+              "file": "functional/quality_engineering.functional.spec.ts",
+              "line": 22,
+              "column": 7
+            },
+            {
+              "title": "TC-F03 form accepts valid data and submits without crash",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "34103ebfe525da34a431-0d57693084de557b05e9",
+              "file": "functional/quality_engineering.functional.spec.ts",
+              "line": 41,
+              "column": 7
+            },
+            {
+              "title": "TC-F04 form fields have visible labels or placeholders",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "34103ebfe525da34a431-290665af7a0b5c0254cc",
+              "file": "functional/quality_engineering.functional.spec.ts",
+              "line": 62,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\agile_development.negative.spec.ts",
+      "file": "negative/agile_development.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Agile Consulting Services, Agile Software Development Company",
+          "file": "negative/agile_development.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2e457f11eb6c3a60ea85-52a3cc43f790aa78c4bc",
+              "file": "negative/agile_development.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2e457f11eb6c3a60ea85-e22ca498cf268e30a6a7",
+              "file": "negative/agile_development.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "2e457f11eb6c3a60ea85-f88ecd2bc4adaea26ff0",
+              "file": "negative/agile_development.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\careers.negative.spec.ts",
+      "file": "negative/careers.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Careers - Nous",
+          "file": "negative/careers.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "807a035539074d12c291-66c279a92eb92db15d05",
+              "file": "negative/careers.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "807a035539074d12c291-a8ae3bf471f2a4e357d3",
+              "file": "negative/careers.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "807a035539074d12c291-7d02c364e6a7d7edf7be",
+              "file": "negative/careers.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\contact_us.negative.spec.ts",
+      "file": "negative/contact_us.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Nous Contact Details | Contact Nous Infosystems",
+          "file": "negative/contact_us.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8089f0f70e562c067ef0-9a1172f2b98dc61f749e",
+              "file": "negative/contact_us.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8089f0f70e562c067ef0-41ff3b601a5b901d261a",
+              "file": "negative/contact_us.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8089f0f70e562c067ef0-d719afe7d2a9052a3465",
+              "file": "negative/contact_us.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\digital_application_services.negative.spec.ts",
+      "file": "negative/digital_application_services.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Digital Application Services, Application Lifecycle Services",
+          "file": "negative/digital_application_services.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "65ec382a3f71dea9969b-e72dc36a3ac6013336bf",
+              "file": "negative/digital_application_services.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "65ec382a3f71dea9969b-b50929fa707d2e538297",
+              "file": "negative/digital_application_services.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "65ec382a3f71dea9969b-8d2ef7cb1caa470045ba",
+              "file": "negative/digital_application_services.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\digital_product_engineering.negative.spec.ts",
+      "file": "negative/digital_product_engineering.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Digital Product Engineering Services, Product Engineering Company",
+          "file": "negative/digital_product_engineering.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d4b9385ad5e73a20fd0f-d361a17abff9d4272b39",
+              "file": "negative/digital_product_engineering.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d4b9385ad5e73a20fd0f-c0c3427d89f0d49f4b2a",
+              "file": "negative/digital_product_engineering.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d4b9385ad5e73a20fd0f-b2f4ea774960da30ba7d",
+              "file": "negative/digital_product_engineering.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\events.negative.spec.ts",
+      "file": "negative/events.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Events - Nous",
+          "file": "negative/events.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1124821cc640cc720a90-e97c2e163afd1e1da5f6",
+              "file": "negative/events.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1124821cc640cc720a90-fa07e7bd6490f81a97d2",
+              "file": "negative/events.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1124821cc640cc720a90-5dd08c2e5b8128b8e593",
+              "file": "negative/events.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\home.negative.spec.ts",
+      "file": "negative/home.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "negative/home.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1d87024b850cd6e841c8-54aee583f99cf22ce663",
+              "file": "negative/home.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1d87024b850cd6e841c8-9e240030e0fb1a640c4f",
+              "file": "negative/home.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "1d87024b850cd6e841c8-5b0d77a7dc4f44d72f88",
+              "file": "negative/home.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\news.negative.spec.ts",
+      "file": "negative/news.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | News - Nous",
+          "file": "negative/news.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "12c875752843c32ba5b3-eacc07c759adc89fa9db",
+              "file": "negative/news.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "12c875752843c32ba5b3-f0102808fc06675e9c8b",
+              "file": "negative/news.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "12c875752843c32ba5b3-8993c5e5d97ff5e19b78",
+              "file": "negative/news.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "negative\\quality_engineering.negative.spec.ts",
+      "file": "negative/quality_engineering.negative.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "❌ Negative | Quality Engineering Services | Software Quality Engineering",
+          "file": "negative/quality_engineering.negative.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-N01 submitting empty form shows validation feedback",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e57f52caa2264ebeaba-2f02f776ae0f91ea7aed",
+              "file": "negative/quality_engineering.negative.spec.ts",
+              "line": 13,
+              "column": 7
+            },
+            {
+              "title": "TC-N02 invalid email format triggers validation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e57f52caa2264ebeaba-828e6502587595b6f7d3",
+              "file": "negative/quality_engineering.negative.spec.ts",
+              "line": 27,
+              "column": 7
+            },
+            {
+              "title": "TC-N03 very long input does not crash the page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "6e57f52caa2264ebeaba-81bef3fb272832cd4375",
+              "file": "negative/quality_engineering.negative.spec.ts",
+              "line": 41,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\agile_development.security.spec.ts",
+      "file": "security/agile_development.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Agile Consulting Services, Agile Software Development Company",
+          "file": "security/agile_development.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f1b0203ad7a4c55aa8ce-3979540009d623368f64",
+              "file": "security/agile_development.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f1b0203ad7a4c55aa8ce-0fbe121678091d7229ab",
+              "file": "security/agile_development.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f1b0203ad7a4c55aa8ce-82b2c9a8dff356e94419",
+              "file": "security/agile_development.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "f1b0203ad7a4c55aa8ce-d9ad9760a7096a4bd4aa",
+              "file": "security/agile_development.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\careers.security.spec.ts",
+      "file": "security/careers.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Careers - Nous",
+          "file": "security/careers.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5dd7c6e44dc3d4e14eaf-49a5b80dc080e0f66d36",
+              "file": "security/careers.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5dd7c6e44dc3d4e14eaf-489e97e14d10395ccdb6",
+              "file": "security/careers.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5dd7c6e44dc3d4e14eaf-64ffd44d18003e4598de",
+              "file": "security/careers.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5dd7c6e44dc3d4e14eaf-a7e104d24d7729170c3e",
+              "file": "security/careers.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\contact_us.security.spec.ts",
+      "file": "security/contact_us.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Nous Contact Details | Contact Nous Infosystems",
+          "file": "security/contact_us.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "dbe6eabf20e24f1e9968-3152457a7efd1dbcb14d",
+              "file": "security/contact_us.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "dbe6eabf20e24f1e9968-1eb9eb03740edeb3fc87",
+              "file": "security/contact_us.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "dbe6eabf20e24f1e9968-a4d1e34a4a5e26bef9a0",
+              "file": "security/contact_us.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "dbe6eabf20e24f1e9968-401b77d9d53a01b30421",
+              "file": "security/contact_us.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\digital_application_services.security.spec.ts",
+      "file": "security/digital_application_services.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Digital Application Services, Application Lifecycle Services",
+          "file": "security/digital_application_services.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d8317f15950c569b2297-2ebfcf7336f1ae7319c9",
+              "file": "security/digital_application_services.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d8317f15950c569b2297-f921eaa8023acb0963bc",
+              "file": "security/digital_application_services.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d8317f15950c569b2297-9493086ed0be5cdb69f7",
+              "file": "security/digital_application_services.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "d8317f15950c569b2297-93d83e6390ee0d7f85c3",
+              "file": "security/digital_application_services.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\digital_product_engineering.security.spec.ts",
+      "file": "security/digital_product_engineering.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Digital Product Engineering Services, Product Engineering Company",
+          "file": "security/digital_product_engineering.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ad1866764a247d9573ee-c90a911dbaf1ac8c0140",
+              "file": "security/digital_product_engineering.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ad1866764a247d9573ee-d5a37029f0dfb95bef9c",
+              "file": "security/digital_product_engineering.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ad1866764a247d9573ee-6933e3bbd333ae512175",
+              "file": "security/digital_product_engineering.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ad1866764a247d9573ee-40ede02cbaf281713d01",
+              "file": "security/digital_product_engineering.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\events.security.spec.ts",
+      "file": "security/events.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Events - Nous",
+          "file": "security/events.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "741b7b7a47a319d4687b-cdbb2a9c491cc6c23bdd",
+              "file": "security/events.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "741b7b7a47a319d4687b-3b5bcf1e59852bf22d48",
+              "file": "security/events.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "741b7b7a47a319d4687b-ca459d01141881255645",
+              "file": "security/events.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "741b7b7a47a319d4687b-d470e0fabc3771367b99",
+              "file": "security/events.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\home.security.spec.ts",
+      "file": "security/home.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "security/home.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7a2b2a5121bda60eda11-8d778422d73870d46ee6",
+              "file": "security/home.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7a2b2a5121bda60eda11-9af7b0947bcf7aa81c82",
+              "file": "security/home.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7a2b2a5121bda60eda11-43cf481e72d53a541f79",
+              "file": "security/home.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "7a2b2a5121bda60eda11-4a1e61a6bc829731e196",
+              "file": "security/home.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\news.security.spec.ts",
+      "file": "security/news.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | News - Nous",
+          "file": "security/news.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "60f21fe058c09aea7197-8c7796687072a4ee5883",
+              "file": "security/news.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "60f21fe058c09aea7197-a45674ef8c38f946bb69",
+              "file": "security/news.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "60f21fe058c09aea7197-bc80ef6075896024ed88",
+              "file": "security/news.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "60f21fe058c09aea7197-df8256d1b96374c6b2e9",
+              "file": "security/news.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "security\\quality_engineering.security.spec.ts",
+      "file": "security/quality_engineering.security.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔒 Security | Quality Engineering Services | Software Quality Engineering",
+          "file": "security/quality_engineering.security.spec.ts",
+          "line": 5,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-SEC01 no sensitive data exposed in URL",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c23f37c9081c0cf9adb4-6b1ad58f275fd2b3a1f2",
+              "file": "security/quality_engineering.security.spec.ts",
+              "line": 11,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC02 response includes at least one security header",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c23f37c9081c0cf9adb4-f83e8c5612c36e61778d",
+              "file": "security/quality_engineering.security.spec.ts",
+              "line": 19,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC03 XSS payload is not reflected unescaped in page",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c23f37c9081c0cf9adb4-f477ae6241d1d35a4379",
+              "file": "security/quality_engineering.security.spec.ts",
+              "line": 30,
+              "column": 7
+            },
+            {
+              "title": "TC-SEC04 SQL injection payload does not cause server error",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c23f37c9081c0cf9adb4-a89ba7fb8739d5aa2997",
+              "file": "security/quality_engineering.security.spec.ts",
+              "line": 40,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\agile_development.smoke.spec.ts",
+      "file": "smoke/agile_development.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Agile Consulting Services, Agile Software Development Company",
+          "file": "smoke/agile_development.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59050dc767c9355fda87-3a74a2bd52e45af472ff",
+              "file": "smoke/agile_development.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59050dc767c9355fda87-aa05ece12b17ab06e0c5",
+              "file": "smoke/agile_development.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59050dc767c9355fda87-c9fb0c70cffc3e2932ac",
+              "file": "smoke/agile_development.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "59050dc767c9355fda87-fd76915633afe22fe461",
+              "file": "smoke/agile_development.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\careers.smoke.spec.ts",
+      "file": "smoke/careers.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Careers - Nous",
+          "file": "smoke/careers.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "29252c67fcf4bf63689c-d9bf62bd17835edb76f2",
+              "file": "smoke/careers.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "29252c67fcf4bf63689c-47341a46e7a383679139",
+              "file": "smoke/careers.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "29252c67fcf4bf63689c-899dc4b69aafc58ebf63",
+              "file": "smoke/careers.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "29252c67fcf4bf63689c-de932ab11733ba64f023",
+              "file": "smoke/careers.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\contact_us.smoke.spec.ts",
+      "file": "smoke/contact_us.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Nous Contact Details | Contact Nous Infosystems",
+          "file": "smoke/contact_us.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8fb7eb3dbf271b9d8305-2e0c8437251e6e4ac3cf",
+              "file": "smoke/contact_us.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8fb7eb3dbf271b9d8305-93c65e1dc568d9c0918f",
+              "file": "smoke/contact_us.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8fb7eb3dbf271b9d8305-fffb6656668dc450dd38",
+              "file": "smoke/contact_us.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "8fb7eb3dbf271b9d8305-940e664ba04f40eebf91",
+              "file": "smoke/contact_us.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\digital_application_services.smoke.spec.ts",
+      "file": "smoke/digital_application_services.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Digital Application Services, Application Lifecycle Services",
+          "file": "smoke/digital_application_services.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5aee624c5d04c80a2664-027376a207c0af417bfa",
+              "file": "smoke/digital_application_services.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5aee624c5d04c80a2664-0361362d3a8d4018c799",
+              "file": "smoke/digital_application_services.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5aee624c5d04c80a2664-359682b609e3b04cd8ba",
+              "file": "smoke/digital_application_services.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "5aee624c5d04c80a2664-a446ee4daa9e607cdb02",
+              "file": "smoke/digital_application_services.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\digital_product_engineering.smoke.spec.ts",
+      "file": "smoke/digital_product_engineering.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Digital Product Engineering Services, Product Engineering Company",
+          "file": "smoke/digital_product_engineering.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3c2e6741c787b8fed70f-15e783d37d239a00ecf6",
+              "file": "smoke/digital_product_engineering.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3c2e6741c787b8fed70f-c5a73501d9a46dd5d60c",
+              "file": "smoke/digital_product_engineering.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3c2e6741c787b8fed70f-64d41a740f5318053a55",
+              "file": "smoke/digital_product_engineering.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "3c2e6741c787b8fed70f-68520a2e7fafa1a32c0b",
+              "file": "smoke/digital_product_engineering.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\events.smoke.spec.ts",
+      "file": "smoke/events.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Events - Nous",
+          "file": "smoke/events.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ac240664516d1c02fe0d-34dbf0e15a2b0077e7ba",
+              "file": "smoke/events.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ac240664516d1c02fe0d-43b81a802510622c376c",
+              "file": "smoke/events.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ac240664516d1c02fe0d-62e2f5b9e1265bcd2799",
+              "file": "smoke/events.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "ac240664516d1c02fe0d-e0b9d29adb4b32dc761a",
+              "file": "smoke/events.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\home.smoke.spec.ts",
+      "file": "smoke/home.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Digital Transformation Solutions, IT Consulting | Nous Infosystems",
+          "file": "smoke/home.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55deb4a1fcc6cc5f7a2c-267b6ef96eb3636b9a1f",
+              "file": "smoke/home.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55deb4a1fcc6cc5f7a2c-50505e7056da1486a338",
+              "file": "smoke/home.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55deb4a1fcc6cc5f7a2c-94e1523256e75e727ac9",
+              "file": "smoke/home.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "55deb4a1fcc6cc5f7a2c-a009ebb62ac4f5a41b63",
+              "file": "smoke/home.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\news.smoke.spec.ts",
+      "file": "smoke/news.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | News - Nous",
+          "file": "smoke/news.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c31136eef119d6a004a6-3d6cd537ff0cb3ae8476",
+              "file": "smoke/news.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c31136eef119d6a004a6-89ca35e176b4cdc791fd",
+              "file": "smoke/news.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c31136eef119d6a004a6-c13077e2e34a5d51d537",
+              "file": "smoke/news.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "c31136eef119d6a004a6-8cf79a0e9bde72e715ed",
+              "file": "smoke/news.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "smoke\\quality_engineering.smoke.spec.ts",
+      "file": "smoke/quality_engineering.smoke.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "🔥 Smoke | Quality Engineering Services | Software Quality Engineering",
+          "file": "smoke/quality_engineering.smoke.spec.ts",
+          "line": 4,
+          "column": 6,
+          "specs": [
+            {
+              "title": "TC-S01 page loads with HTTP 2xx and non-empty title",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9bd7410daf4d9202a1f-7a055c763091c92db554",
+              "file": "smoke/quality_engineering.smoke.spec.ts",
+              "line": 12,
+              "column": 7
+            },
+            {
+              "title": "TC-S02 body is visible and contains text",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9bd7410daf4d9202a1f-c1b03cfd5d82d85365e3",
+              "file": "smoke/quality_engineering.smoke.spec.ts",
+              "line": 18,
+              "column": 7
+            },
+            {
+              "title": "TC-S03 no critical JavaScript errors on load",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9bd7410daf4d9202a1f-687a819ce23a4f25ec08",
+              "file": "smoke/quality_engineering.smoke.spec.ts",
+              "line": 24,
+              "column": 7
+            },
+            {
+              "title": "TC-S04 no broken images",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 30000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [],
+                  "status": "skipped"
+                }
+              ],
+              "id": "a9bd7410daf4d9202a1f-340f927ca156439c5ccf",
+              "file": "smoke/quality_engineering.smoke.spec.ts",
+              "line": 37,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-03-28T14:04:00.376Z",
+    "duration": 703.2709999999997,
+    "expected": 0,
+    "skipped": 225,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

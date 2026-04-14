@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>NAT 2.0 — Test Generation from User Stories</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f1f5f9;
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .slide {
+    width: 1160px;
+    background: #ffffff;
+    border-radius: 16px;
+    box-shadow: 0 4px 40px rgba(79,70,229,0.12), 0 1px 4px rgba(0,0,0,0.06);
+    overflow: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    background: linear-gradient(135deg, #4f46e5 0%, #6366f1 55%, #3b82f6 100%);
+    padding: 30px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 14px; }
+  .header-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(255,255,255,0.18);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .header-title { color: #fff; font-size: 24px; font-weight: 800; line-height: 1.2; }
+  .header-sub { color: rgba(255,255,255,0.75); font-size: 12.5px; margin-top: 3px; }
+  .header-badge {
+    background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3);
+    color: #fff; border-radius: 20px; padding: 5px 14px;
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.04em;
+  }
+
+  /* ── BODY ── */
+  .body { padding: 28px 40px 24px; }
+
+  /* Source banner */
+  .source-banner {
+    display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(90deg, #eef2ff, #f0f9ff);
+    border: 1.5px solid #c7d2fe; border-radius: 10px;
+    padding: 12px 18px; margin-bottom: 24px;
+  }
+  .source-icon { font-size: 22px; }
+  .source-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: #6366f1; font-weight: 700; }
+  .source-title { font-size: 14px; font-weight: 700; color: #1e1b4b; }
+  .source-fields { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .field-pill {
+    background: #fff; border: 1px solid #c7d2fe; border-radius: 6px;
+    padding: 2px 10px; font-size: 11px; color: #4f46e5; font-weight: 500;
+  }
+  .arrow-big {
+    margin-left: auto; font-size: 28px; color: #6366f1; font-weight: 900;
+  }
+
+  /* TWO pipeline columns */
+  .pipelines { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 22px; }
+
+  .pipe-col {
+    border: 1.5px solid #e5e7eb; border-radius: 12px; overflow: hidden;
+  }
+  .pipe-col-header {
+    padding: 12px 16px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .pipe-col-icon { font-size: 18px; }
+  .pipe-col-title { font-size: 13px; font-weight: 800; }
+  .pipe-col-badge {
+    margin-left: auto; border-radius: 10px;
+    padding: 2px 9px; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+
+  .pipe-steps { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .pipe-step-row {
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .step-num {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-content {}
+  .step-title { font-size: 12px; font-weight: 700; color: #111827; }
+  .step-desc { font-size: 11px; color: #6b7280; line-height: 1.4; margin-top: 1px; }
+
+  .pipe-output {
+    background: #f9fafb; border-top: 1px solid #e5e7eb;
+    padding: 12px 16px;
+  }
+  .output-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: #9ca3af; font-weight: 700; margin-bottom: 8px; }
+  .output-items { display: flex; flex-direction: column; gap: 5px; }
+  .output-item { display: flex; align-items: center; gap: 8px; }
+  .output-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .output-text { font-size: 11.5px; color: #374151; }
+  .output-tag {
+    margin-left: auto; padding: 1px 8px; border-radius: 8px;
+    font-size: 10px; font-weight: 600;
+  }
+
+  /* SHARED AI box */
+  .ai-bar {
+    display: flex; align-items: center; gap: 10px;
+    background: linear-gradient(90deg, #f5f3ff, #eef2ff);
+    border: 1.5px solid #ddd6fe; border-radius: 10px;
+    padding: 10px 16px; margin-bottom: 22px;
+  }
+  .ai-icon { font-size: 20px; }
+  .ai-text { font-size: 12px; color: #4c1d95; font-weight: 600; }
+  .ai-sub { font-size: 11px; color: #7c3aed; font-weight: 400; margin-top: 2px; }
+  .ai-model {
+    margin-left: auto; background: #7c3aed; color: #fff;
+    border-radius: 8px; padding: 4px 12px; font-size: 11px; font-weight: 700;
+  }
+
+  /* Mapping table */
+  .map-section { margin-bottom: 20px; }
+  .map-title {
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
+    color: #6b7280; font-weight: 700; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .map-grid { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr; gap: 0; align-items: stretch; }
+  .map-box {
+    background: #f8faff; border: 1.5px solid #e0e7ff;
+    border-radius: 10px; padding: 12px 14px;
+  }
+  .map-arrow { display: flex; align-items: center; justify-content: center; padding: 0 8px; font-size: 20px; color: #6366f1; font-weight: 900; }
+  .map-box-title { font-size: 11px; font-weight: 700; color: #1e1b4b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .map-box-item { font-size: 11px; color: #374151; padding: 3px 0; border-bottom: 1px dashed #e0e7ff; }
+  .map-box-item:last-child { border-bottom: none; }
+  .kw { display: inline-block; padding: 1px 7px; border-radius: 6px; font-size: 10px; font-weight: 700; margin-right: 4px; }
+
+  /* FOOTER */
+  .footer {
+    background: #f8faff; border-top: 1px solid #e0e7ff;
+    padding: 13px 40px;
+    display: flex; align-items: center; gap: 0;
+  }
+  .footer-stat {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 11.5px; color: #6b7280; flex: 1; justify-content: center;
+  }
+  .footer-stat strong { color: #4f46e5; font-size: 16px; font-weight: 800; }
+  .footer-div { width: 1px; height: 26px; background: #ddd6fe; }
+  .footer-brand {
+    font-size: 12px; font-weight: 700; color: #4f46e5;
+    display: flex; align-items: center; gap: 5px;
+  }
+</style>
+</head>
+<body>
+<div class="slide">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-left">
+      <div class="header-icon">🧪</div>
+      <div>
+        <div class="header-title">Test Case Generation from User Stories</div>
+        <div class="header-sub">How NAT 2.0 generates Manual Test Cases &amp; Playwright Automation Scripts using AI</div>
+      </div>
+    </div>
+    <div class="header-badge">NAT 2.0 — Sprint Agent</div>
+  </div>
+
+  <!-- BODY -->
+  <div class="body">
+
+    <!-- SOURCE: USER STORY -->
+    <div class="source-banner">
+      <div class="source-icon">📋</div>
+      <div>
+        <div class="source-label">Input Source</div>
+        <div class="source-title">User Story / Jira Ticket</div>
+        <div class="source-fields">
+          <span class="field-pill">Title</span>
+          <span class="field-pill">Description</span>
+          <span class="field-pill">Acceptance Criteria</span>
+          <span class="field-pill">Domain (Insurance / Healthcare / Finance…)</span>
+          <span class="field-pill">Product Context</span>
+        </div>
+      </div>
+      <div class="arrow-big">⬇</div>
+    </div>
+
+    <!-- AI ENGINE -->
+    <div class="ai-bar">
+      <div class="ai-icon">🤖</div>
+      <div>
+        <div class="ai-text">AI Generation Engine — Claude Sonnet 4.5</div>
+        <div class="ai-sub">Context enrichment → Rule-based analysis → 5 category-specific AI prompts (Functional · Negative · Edge Case · Security · Accessibility)</div>
+      </div>
+      <div class="ai-model">Claude Sonnet 4.5</div>
+    </div>
+
+    <!-- TWO PIPELINES SIDE BY SIDE -->
+    <div class="pipelines">
+
+      <!-- LEFT: Manual Test Cases -->
+      <div class="pipe-col">
+        <div class="pipe-col-header" style="background:#eef2ff; border-bottom:1.5px solid #c7d2fe;">
+          <div class="pipe-col-icon">📝</div>
+          <div class="pipe-col-title" style="color:#3730a3;">Pipeline 1 — Manual Test Cases</div>
+          <div class="pipe-col-badge" style="background:#4f46e5;color:#fff;">BDD-Ready</div>
+        </div>
+
+        <div class="pipe-steps">
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#4f46e5;">1</div>
+            <div class="step-content">
+              <div class="step-title">Context Enrichment</div>
+              <div class="step-desc">Repo indexer scans golden codebase — extracts real API endpoints, field names, risk areas from source code</div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#6366f1;">2</div>
+            <div class="step-content">
+              <div class="step-title">Rule-Based Analysis</div>
+              <div class="step-desc">Acceptance criteria parsed → testable requirements, coverage gaps, regression areas identified</div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#7c3aed;">3</div>
+            <div class="step-content">
+              <div class="step-title">AI Prompt (×5 categories)</div>
+              <div class="step-desc">Category-specific prompts enforce: story traceability, exact terminology, 6 mandatory steps, P0–P3 priority assignment</div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#8b5cf6;">4</div>
+            <div class="step-content">
+              <div class="step-title">Structured JSON Output</div>
+              <div class="step-desc">Each test case: title, objective, preconditions, 6 action steps, expected result, test data, traceability link</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pipe-output">
+          <div class="output-label">Output Artifacts</div>
+          <div class="output-items">
+            <div class="output-item">
+              <div class="output-dot" style="background:#4f46e5;"></div>
+              <div class="output-text">30–50 structured test cases in JSON</div>
+              <div class="output-tag" style="background:#eef2ff;color:#4f46e5;">Per Story</div>
+            </div>
+            <div class="output-item">
+              <div class="output-dot" style="background:#6366f1;"></div>
+              <div class="output-text">Categorised: Functional, Negative, Edge Case, Security, Accessibility</div>
+            </div>
+            <div class="output-item">
+              <div class="output-dot" style="background:#7c3aed;"></div>
+              <div class="output-text">P0–P3 priority with full traceability to user story</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Playwright Scripts -->
+      <div class="pipe-col">
+        <div class="pipe-col-header" style="background:#f0fdf4; border-bottom:1.5px solid #bbf7d0;">
+          <div class="pipe-col-icon">🎭</div>
+          <div class="pipe-col-title" style="color:#14532d;">Pipeline 2 — Playwright Automation</div>
+          <div class="pipe-col-badge" style="background:#16a34a;color:#fff;">Auto-Executable</div>
+        </div>
+
+        <div class="pipe-steps">
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#16a34a;">1</div>
+            <div class="step-content">
+              <div class="step-title">Element Discovery (Live Crawl)</div>
+              <div class="step-desc">Playwright crawls target URL — captures XPaths, CSS selectors, labels, placeholders for all interactive elements</div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#15803d;">2</div>
+            <div class="step-content">
+              <div class="step-title">Gherkin Feature File Generation</div>
+              <div class="step-desc">Preconditions → <strong>Given</strong> · Steps 1–5 → <strong>When</strong> · Step 6 → <strong>Then</strong> · Scenario per test case</div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#166534;">3</div>
+            <div class="step-content">
+              <div class="step-title">Playwright .spec.ts Generation</div>
+              <div class="step-desc">test.describe blocks, beforeEach navigation hooks, named element locators (ELEMENT_MAP), per-step assertions via <code style="background:#f3f4f6;padding:1px 4px;border-radius:3px;font-size:10px;">expect()</code></div>
+            </div>
+          </div>
+          <div class="pipe-step-row">
+            <div class="step-num" style="background:#14532d;">4</div>
+            <div class="step-content">
+              <div class="step-title">Step Definitions Binding</div>
+              <div class="step-desc">Cucumber + Playwright step defs auto-wired: click, fill, navigate, select, assert — reusable across all test scenarios</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="pipe-output" style="background:#f0fdf4;">
+          <div class="output-label">Output Artifacts</div>
+          <div class="output-items">
+            <div class="output-item">
+              <div class="output-dot" style="background:#16a34a;"></div>
+              <div class="output-text">Playwright <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:10px;">.spec.ts</code> file — runnable with <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:10px;">npx playwright test</code></div>
+              <div class="output-tag" style="background:#dcfce7;color:#166534;">TypeScript</div>
+            </div>
+            <div class="output-item">
+              <div class="output-dot" style="background:#15803d;"></div>
+              <div class="output-text">Gherkin <code style="background:#f3f4f6;padding:1px 5px;border-radius:3px;font-size:10px;">.feature</code> file with Scenario per test case</div>
+            </div>
+            <div class="output-item">
+              <div class="output-dot" style="background:#166534;"></div>
+              <div class="output-text">Step definitions + HTML execution report</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- STEP MAPPING -->
+    <div class="map-section">
+      <div class="map-title">
+        <span>🔄</span> How Manual Test Steps Map to Playwright + Gherkin
+      </div>
+      <div class="map-grid">
+        <div class="map-box">
+          <div class="map-box-title">Manual Test Case</div>
+          <div class="map-box-item">Preconditions (state setup)</div>
+          <div class="map-box-item">Steps 1–5 (user actions)</div>
+          <div class="map-box-item">Step 6 (verify final state)</div>
+          <div class="map-box-item">Test data fields</div>
+        </div>
+        <div class="map-arrow">→</div>
+        <div class="map-box">
+          <div class="map-box-title">Gherkin (BDD)</div>
+          <div class="map-box-item"><span class="kw" style="background:#dcfce7;color:#166534;">Given</span> the application is ready</div>
+          <div class="map-box-item"><span class="kw" style="background:#dbeafe;color:#1e40af;">When</span> I click / fill / navigate</div>
+          <div class="map-box-item"><span class="kw" style="background:#fce7f3;color:#9d174d;">Then</span> I should see expected result</div>
+          <div class="map-box-item">Scenario outline with examples</div>
+        </div>
+        <div class="map-arrow">→</div>
+        <div class="map-box">
+          <div class="map-box-title">Playwright Code</div>
+          <div class="map-box-item"><code style="font-size:10px;">page.goto() · waitForLoadState()</code></div>
+          <div class="map-box-item"><code style="font-size:10px;">locator.click() · fill() · select()</code></div>
+          <div class="map-box-item"><code style="font-size:10px;">expect(locator).toContainText()</code></div>
+          <div class="map-box-item"><code style="font-size:10px;">ELEMENT_MAP[name].xpath</code></div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <!-- FOOTER -->
+  <div class="footer">
+    <div class="footer-stat"><strong>30–50</strong>&nbsp;test cases generated per user story</div>
+    <div class="footer-div"></div>
+    <div class="footer-stat"><strong>5</strong>&nbsp;test categories covered automatically</div>
+    <div class="footer-div"></div>
+    <div class="footer-stat"><strong>3</strong>&nbsp;output artifacts: .spec.ts · .feature · step-defs</div>
+    <div class="footer-div"></div>
+    <div class="footer-stat"><strong>Zero</strong>&nbsp;manual coding required</div>
+    <div class="footer-div"></div>
+    <div class="footer-brand">🧪 NAT 2.0 &nbsp;·&nbsp; Sprint Agent</div>
+  </div>
+
+</div>
+</body>
+</html>

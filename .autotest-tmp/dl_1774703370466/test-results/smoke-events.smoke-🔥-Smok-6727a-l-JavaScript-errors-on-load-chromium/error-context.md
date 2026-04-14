@@ -1,0 +1,370 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - heading "Events" [level=1] [ref=e106]
+  - generic [ref=e111]:
+    - generic [ref=e113]:
+      - generic [ref=e115]: Events
+      - generic [ref=e116]:
+        - heading "FabCon Atlanta 2026" [level=4] [ref=e117]:
+          - link "FabCon Atlanta 2026":
+            - /url: https://www.nousinfosystems.com/events/fabcon-atlanta-2026
+        - heading "March 17-20, 2026 | Atlanta, GA" [level=5] [ref=e118]
+        - paragraph [ref=e119]: Meet Team Nous at FabCon Atlanta. Explore AI-ready data foundations and see our accelerators in action.
+        - link " Learn More" [ref=e121] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/fabcon-atlanta-2026
+          - generic [ref=e122]: 
+          - text: Learn More
+    - generic [ref=e124]:
+      - generic [ref=e126]: Events
+      - generic [ref=e127]:
+        - heading "Meet us at AWS re:Invent 2025" [level=4] [ref=e128]:
+          - link "Meet us at AWS re:Invent 2025":
+            - /url: https://www.nousinfosystems.com/events/aws-reinvent-2025
+        - heading "December 1-5, 2025 | Las Vegas, Nevada" [level=5] [ref=e129]
+        - paragraph [ref=e130]: Explore how our cutting-edge solutions and expertise in cloud, data, and AI on AWS are helping accelerate digital transformation.
+        - link " Learn More" [ref=e132] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/aws-reinvent-2025
+          - generic [ref=e133]: 
+          - text: Learn More
+    - generic [ref=e135]:
+      - generic [ref=e137]: Events
+      - generic [ref=e138]:
+        - heading "Join us at the Tricentis India Partner Kickoff 2025" [level=4] [ref=e139]:
+          - link "Join us at the Tricentis India Partner Kickoff 2025":
+            - /url: https://www.nousinfosystems.com/events/tricentis-india-partner-kickoff-2025
+        - heading "April 23-24, 2025 | JW Marriott, Bengaluru" [level=5] [ref=e140]
+        - paragraph [ref=e141]: Connect with Nous at the Tricentis India Partner Kickoff 2025 to explore cutting-edge test automation and quality engineering.
+        - link " Learn More" [ref=e143] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/tricentis-india-partner-kickoff-2025
+          - generic [ref=e144]: 
+          - text: Learn More
+    - generic [ref=e146]:
+      - generic [ref=e148]: Events
+      - generic [ref=e149]:
+        - heading "Meet Us at the ServiceNow Put AI to Work Summit" [level=4] [ref=e150]:
+          - link "Meet Us at the ServiceNow Put AI to Work Summit":
+            - /url: https://www.nousinfosystems.com/events/servicenow-put-ai-to-work-summit
+        - heading "February 18, 2025 | JW Marriott, Bengaluru" [level=5] [ref=e151]
+        - paragraph [ref=e152]: Discover AI-powered transformation with Nous at the ServiceNow Put AI to Work Summit. Connect, learn, and innovate with us!
+        - link " Learn More" [ref=e154] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/servicenow-put-ai-to-work-summit
+          - generic [ref=e155]: 
+          - text: Learn More
+    - generic [ref=e157]:
+      - generic [ref=e159]: Events
+      - generic [ref=e160]:
+        - heading "Meet us at the ServiceNow Sales Kick-off | Partner Kick-off 2025" [level=4] [ref=e161]:
+          - link "Meet us at the ServiceNow Sales Kick-off | Partner Kick-off 2025":
+            - /url: https://www.nousinfosystems.com/events/servicenow-sales-kick-off-2025
+        - heading "January 21-23, 2025 | Las Vegas" [level=5] [ref=e162]
+        - paragraph [ref=e163]: Join us at the ServiceNow Sales Kick-off 2025! Explore AI-driven innovations & platform expertise with Nous Infosystems.
+        - link " Learn More" [ref=e165] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/servicenow-sales-kick-off-2025
+          - generic [ref=e166]: 
+          - text: Learn More
+    - generic [ref=e168]:
+      - generic [ref=e170]: Events
+      - generic [ref=e171]:
+        - heading "AWS re:Invent 2024" [level=4] [ref=e172]:
+          - link "AWS re:Invent 2024":
+            - /url: https://www.nousinfosystems.com/events/aws-reinvent-2024
+        - paragraph [ref=e173]: Meet us at AWS re:Invent 2024. Explore how we drive cloud transformation with AWS consulting, Data & AI, and DevOps.
+        - link " Learn More" [ref=e175] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/aws-reinvent-2024
+          - generic [ref=e176]: 
+          - text: Learn More
+    - generic [ref=e178]:
+      - generic [ref=e180]: Events
+      - generic [ref=e181]:
+        - heading "ServiceNow World Forum – Toronto" [level=4] [ref=e182]:
+          - link "ServiceNow World Forum – Toronto":
+            - /url: https://www.nousinfosystems.com/events/servicenow-world-forum-toronto
+        - heading "November 13, 2024 | Toronto" [level=5] [ref=e183]
+        - paragraph [ref=e184]: Join us at ServiceNow World Forum 2024 in Toronto to explore how AI is transforming enterprise service management.
+        - link " Learn More" [ref=e186] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/servicenow-world-forum-toronto
+          - generic [ref=e187]: 
+          - text: Learn More
+    - generic [ref=e189]:
+      - generic [ref=e191]: Events
+      - generic [ref=e192]:
+        - heading "ServiceNow World Forum – New York" [level=4] [ref=e193]:
+          - link "ServiceNow World Forum – New York":
+            - /url: https://www.nousinfosystems.com/events/servicenow-world-forum-new-york
+        - heading "November 7, 2024 | New York" [level=5] [ref=e194]
+        - paragraph [ref=e195]: Join us at the ServiceNow World Forum 2024 in New York to explore AI-powered solutions transforming enterprise service management.
+        - link " Learn More" [ref=e197] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/servicenow-world-forum-new-york
+          - generic [ref=e198]: 
+          - text: Learn More
+    - generic [ref=e200]:
+      - generic [ref=e202]: Events
+      - generic [ref=e203]:
+        - heading "Join us at the 2024 NMSDC Annual Conference & Exchange" [level=4] [ref=e204]:
+          - link "Join us at the 2024 NMSDC Annual Conference & Exchange":
+            - /url: https://www.nousinfosystems.com/events/join-us-at-the-2024-nmsdc-annual-conference-exchange
+        - heading "October 20-23, 2024 | Atlanta" [level=5] [ref=e205]
+        - paragraph [ref=e206]: Join us at the NMSDC 2024 Conference. Explore AI-powered digital solutions driving the future of digital innovation.
+        - link " Learn More" [ref=e208] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/events/join-us-at-the-2024-nmsdc-annual-conference-exchange
+          - generic [ref=e209]: 
+          - text: Learn More
+    - generic [ref=e210]:
+      - generic [ref=e211]: "1"
+      - link "2" [ref=e212] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/events/page/2
+      - link "Next " [ref=e213] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/events/page/2
+        - text: Next
+        - generic [ref=e214]: 
+  - generic [ref=e218]:
+    - generic [ref=e220]:
+      - heading "Ready to get started?" [level=2] [ref=e222]
+      - heading " Contact us" [level=2] [ref=e224] [cursor=pointer]:
+        - generic [ref=e225]:
+          - generic [ref=e226]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e227]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e228] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e230] [cursor=pointer]: 
+  - generic [ref=e231]:
+    - generic [ref=e238]:
+      - generic [ref=e239]:
+        - generic [ref=e240]:
+          - heading "Services" [level=2] [ref=e241]
+          - navigation "Services" [ref=e242]:
+            - list [ref=e243]:
+              - listitem [ref=e244]:
+                - link "Digital Product Engineering" [ref=e245] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e246]:
+                - link "Agile Development" [ref=e247] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e248]:
+                - link "Digital Application Services" [ref=e249] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e250]:
+                - link "Quality Engineering" [ref=e251] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e252]:
+                - link "Infrastructure Management" [ref=e253] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e254]:
+          - heading "Insights" [level=2] [ref=e255]
+          - navigation "Insights" [ref=e256]:
+            - list [ref=e257]:
+              - listitem [ref=e258]:
+                - link "Case Studies" [ref=e259] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e260]:
+                - link "Whitepapers" [ref=e261] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e262]:
+                - link "Brochures" [ref=e263] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e264]:
+                - link "Blogs" [ref=e265] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e266]:
+                - link "Webinars" [ref=e267] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e268]:
+        - generic [ref=e269]:
+          - heading "Competency" [level=2] [ref=e270]
+          - navigation "Competency" [ref=e271]:
+            - list [ref=e272]:
+              - listitem [ref=e273]:
+                - link "AI & Automation" [ref=e274] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e275]:
+                - link "Cloud" [ref=e276] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e277]:
+                - link "Data & Analytics" [ref=e278] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e279]:
+                - link "Digital" [ref=e280] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e281]:
+                - link "Quality Engineering" [ref=e282] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e283]:
+                - link "Infrastructure" [ref=e284] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e285]:
+          - heading "Company" [level=2] [ref=e286]
+          - navigation "Company" [ref=e287]:
+            - list [ref=e288]:
+              - listitem [ref=e289]:
+                - link "About Us" [ref=e290] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e291]:
+                - link "Partnerships" [ref=e292] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e293]:
+                - link "News" [ref=e294] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e295]:
+                - link "Events" [ref=e296] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e297]:
+                - link "Careers" [ref=e298] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e299]:
+                - link "CSR" [ref=e300] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e301]:
+                - link "Contact Us" [ref=e302] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e303]:
+        - generic [ref=e304]:
+          - heading "Industries" [level=2] [ref=e305]
+          - navigation "Industries" [ref=e306]:
+            - list [ref=e307]:
+              - listitem [ref=e308]:
+                - link "Banking & Financial Services" [ref=e309] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e310]:
+                - link "Insurance" [ref=e311] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e312]:
+                - link "Healthcare & Life Sciences" [ref=e313] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e314]:
+                - link "Retail" [ref=e315] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e316]:
+                - link "Travel & Logistics" [ref=e317] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e318]:
+          - heading "Support" [level=2] [ref=e319]
+          - navigation "Support" [ref=e320]:
+            - list [ref=e321]:
+              - listitem [ref=e322]:
+                - link "Disclaimer" [ref=e323] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e324]:
+                - link "Sitemap" [ref=e325] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e326]:
+                - link "Privacy Policy" [ref=e327] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e328]:
+        - heading "Newsletter" [level=2] [ref=e329]
+        - generic [ref=e331]:
+          - generic [ref=e332]:
+            - status
+            - list
+          - form "Contact form" [ref=e333]:
+            - generic [ref=e334]:
+              - generic [ref=e335]:
+                - textbox [ref=e339]:
+                  - /placeholder: Email Address
+                - generic [ref=e340]:
+                  - button "." [ref=e341] [cursor=pointer]
+                  - generic [ref=e342]: 
+              - iframe [ref=e347]:
+                - generic [ref=f13e2]:
+                  - generic [ref=f13e3]:
+                    - checkbox "I'm not a robot" [ref=f13e7]
+                    - generic [ref=f13e11]: I'm not a robot
+                  - generic [ref=f13e12]:
+                    - generic [ref=f13e15]: reCAPTCHA
+                    - generic [ref=f13e16]:
+                      - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f13e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e349]:
+          - listitem [ref=e350]:
+            - link "" [ref=e351] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e352]: 
+          - listitem [ref=e353]:
+            - link [ref=e354] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e356]:
+            - link "" [ref=e357] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e358]: 
+          - listitem [ref=e359]:
+            - link "" [ref=e360] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e361]: 
+        - figure [ref=e362]
+    - generic [ref=e366]: ©2026 Nous Infosystems. All Rights Reserved.
+```

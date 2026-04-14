@@ -1,0 +1,418 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e5]:
+      - list [ref=e9]:
+        - listitem [ref=e10]:
+          - link "" [ref=e11] [cursor=pointer]:
+            - /url: https://www.linkedin.com/company/nousinfosystems
+            - generic [ref=e12]: 
+        - listitem [ref=e13]:
+          - link [ref=e14] [cursor=pointer]:
+            - /url: https://twitter.com/nousinfosystems
+        - listitem [ref=e16]:
+          - link "" [ref=e17] [cursor=pointer]:
+            - /url: https://www.facebook.com/NousInfosystems
+            - generic [ref=e18]: 
+      - generic [ref=e19]:
+        - search [ref=e21]:
+          - generic [ref=e22]: Search
+          - generic [ref=e23]:
+            - searchbox "Search" [ref=e24]
+            - button "Search" [ref=e25] [cursor=pointer]:
+              - img [ref=e26]
+        - navigation "Menu" [ref=e29]:
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "News" [ref=e32] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/news
+            - listitem [ref=e33]:
+              - link "Events" [ref=e34] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/events
+            - listitem [ref=e35]:
+              - link "Careers" [ref=e36] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/careers
+            - listitem [ref=e37]:
+              - link "Contact Us" [ref=e38] [cursor=pointer]:
+                - /url: https://www.nousinfosystems.com/contact-us
+    - navigation [ref=e39]:
+      - generic [ref=e41]:
+        - link [ref=e43] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com
+          - img [ref=e44]
+        - text: + + + + + + + + + + +
+        - list [ref=e90]:
+          - listitem [ref=e91] [cursor=pointer]:
+            - link "Services ":
+              - /url: https://www.nousinfosystems.com/services
+              - text: Services
+              - generic [ref=e92]: 
+          - listitem [ref=e93]:
+            - link "Industries ":
+              - /url: https://www.nousinfosystems.com/industries
+              - text: Industries
+              - generic [ref=e94]: 
+          - listitem [ref=e95]:
+            - link "Competency ":
+              - /url: https://www.nousinfosystems.com/competency
+              - text: Competency
+              - generic [ref=e96]: 
+          - listitem [ref=e97]:
+            - link "Insights ":
+              - /url: https://www.nousinfosystems.com/insights
+              - text: Insights
+              - generic [ref=e98]: 
+          - listitem [ref=e99]:
+            - link "Company ":
+              - /url: https://www.nousinfosystems.com/company
+              - text: Company
+              - generic [ref=e100]: 
+  - heading "News" [level=1] [ref=e106]
+  - generic [ref=e111]:
+    - generic [ref=e113]:
+      - link "Thumb" [ref=e115] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/ai-application-development-services-everest-group-recognition-2025
+        - img "Thumb" [ref=e116]
+      - generic [ref=e117]:
+        - link "Nous Named Major Contender in Everest Group’s Application Development Services for AI Applications – PEAK Matrix® Assessment 2025" [ref=e119] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/ai-application-development-services-everest-group-recognition-2025
+        - generic [ref=e120]:
+          - generic [ref=e121]: 
+          - text: September 30, 2025
+        - paragraph [ref=e123]: Nous Infosystems has been recognized as a Major Contender in Everest Group’s Application Development Services for AI Applications PEAK Matrix® Assessment 2025, highlighting its strong capabilities in delivering scalable and enterprise-ready AI solutions.
+        - link " Learn More" [ref=e124] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/ai-application-development-services-everest-group-recognition-2025
+          - generic [ref=e125]: 
+          - text: Learn More
+    - generic [ref=e127]:
+      - link "Thumb" [ref=e129] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-achieves-aws-generative-ai-competency-recognition
+        - img "Thumb" [ref=e130]
+      - generic [ref=e131]:
+        - link "Nous Infosystems achieves AWS Generative AI Competency Recognition" [ref=e133] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-achieves-aws-generative-ai-competency-recognition
+        - generic [ref=e134]:
+          - generic [ref=e135]: 
+          - text: September 15, 2025
+        - paragraph [ref=e137]: Nous Infosystems has achieved the AWS Generative AI Competency, a recognition that validates its expertise in designing and deploying secure, production-grade AI solutions on AWS. This milestone highlights the company’s commitment to innovation, responsibility and delivering measurable business impact.
+        - link " Learn More" [ref=e138] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-achieves-aws-generative-ai-competency-recognition
+          - generic [ref=e139]: 
+          - text: Learn More
+    - generic [ref=e141]:
+      - link "Thumb" [ref=e143] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-appraised-cmmi-v3-maturity-level-5
+        - img "Thumb" [ref=e144]
+      - generic [ref=e145]:
+        - link "Nous Infosystems Appraised at CMMI® V3.0 Maturity Level 5" [ref=e147] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-appraised-cmmi-v3-maturity-level-5
+        - generic [ref=e148]:
+          - generic [ref=e149]: 
+          - text: August 1, 2025
+        - paragraph [ref=e151]: Nous Infosystems, along with its business units, has been appraised at Maturity Level 5 of the CMMI® V3.0 model for Services, Security, People, and Suppliers. This prestigious appraisal reflects the organization’s commitment to performance excellence, innovation, and continuous process improvement.
+        - link " Learn More" [ref=e152] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-appraised-cmmi-v3-maturity-level-5
+          - generic [ref=e153]: 
+          - text: Learn More
+    - generic [ref=e155]:
+      - link "Thumb" [ref=e157] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-appoints-milan-bhatt-as-ceo
+        - img "Thumb" [ref=e158]
+      - generic [ref=e159]:
+        - link "Nous Infosystems Appoints Milan Bhatt as Chief Executive Officer" [ref=e161] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-appoints-milan-bhatt-as-ceo
+        - generic [ref=e162]:
+          - generic [ref=e163]: 
+          - text: July 16, 2025
+        - paragraph [ref=e165]: Milan joins Nous from Hexaware Technologies, where he served as President and Global Head of Cloud, Data & AI Services, and the Healthcare & Insurance vertical. He brings over 20 years of global experience across AI, data, cloud, and industry-focused tech services.
+        - link " Learn More" [ref=e166] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-appoints-milan-bhatt-as-ceo
+          - generic [ref=e167]: 
+          - text: Learn More
+    - generic [ref=e169]:
+      - link "Thumb" [ref=e171] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-partners-with-coherent-global-to-accelerate-innovation-in-bfsi
+        - img "Thumb" [ref=e172]
+      - generic [ref=e173]:
+        - link "Nous Infosystems Partners with Coherent Global to Accelerate Innovation in Banking, Financial Services, and Insurance" [ref=e175] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-partners-with-coherent-global-to-accelerate-innovation-in-bfsi
+        - generic [ref=e176]:
+          - generic [ref=e177]: 
+          - text: June 30, 2025
+        - paragraph [ref=e179]: Nous Infosystems has partnered with Coherent Global to deliver smarter, faster domain-specific solutions. This strategic collaboration will enhance Nous’ capabilities in banking, financial services, and insurance, enabling clients to modernize business logic, streamline operations, and accelerate digital transformation using Coherent’s powerful SaaS platform.
+        - link " Learn More" [ref=e180] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-partners-with-coherent-global-to-accelerate-innovation-in-bfsi
+          - generic [ref=e181]: 
+          - text: Learn More
+    - generic [ref=e183]:
+      - link "Thumb" [ref=e185] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-microsoft-fabric-featured-partner
+        - img "Thumb" [ref=e186]
+      - generic [ref=e187]:
+        - link "Nous Infosystems Recognized as a Microsoft Fabric Featured Partner" [ref=e189] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-microsoft-fabric-featured-partner
+        - generic [ref=e190]:
+          - generic [ref=e191]: 
+          - text: June 16, 2025
+        - paragraph [ref=e193]: Nous Infosystems has been named a Microsoft Fabric Featured Partner, recognized for its excellence in delivering data and AI solutions using Microsoft’s unified data analytics platform. This distinction highlights Nous’s proven success in transforming enterprise data ecosystems and advancing digital innovation.
+        - link " Learn More" [ref=e194] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-as-a-microsoft-fabric-featured-partner
+          - generic [ref=e195]: 
+          - text: Learn More
+    - generic [ref=e197]:
+      - link "Thumb" [ref=e199] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-as-major-contender-in-everest-groups-bfs-it-services-specialists
+        - img "Thumb" [ref=e200]
+      - generic [ref=e201]:
+        - link "Nous Recognized as a Major Contender in Everest Group’s BFS IT Services Specialists PEAK Matrix® Assessment 2025" [ref=e203] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-as-major-contender-in-everest-groups-bfs-it-services-specialists
+        - generic [ref=e204]:
+          - generic [ref=e205]: 
+          - text: April 17, 2025
+        - paragraph [ref=e207]: Nous Infosystems has been recognized as a Major Contender by Everest Group for its deep BFS domain expertise, agile delivery, and ability to drive digital transformation for financial institutions navigating rapid change.
+        - link " Learn More" [ref=e208] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-as-major-contender-in-everest-groups-bfs-it-services-specialists
+          - generic [ref=e209]: 
+          - text: Learn More
+    - generic [ref=e211]:
+      - link "Thumb" [ref=e213] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/major-contender-in-everest-groups-data-ai-services-2025
+        - img "Thumb" [ref=e214]
+      - generic [ref=e215]:
+        - link "Nous Recognized as a Major Contender in Everest Group’s Data & AI Services for Mid-market Enterprises PEAK Matrix® Assessment 2025" [ref=e217] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/major-contender-in-everest-groups-data-ai-services-2025
+        - generic [ref=e218]:
+          - generic [ref=e219]: 
+          - text: March 18, 2025
+        - paragraph [ref=e221]: Nous Infosystems has been recognized as a Major Contender in Everest Group's Data & AI Services for Mid-market Enterprises PEAK Matrix® Assessment 2025. This recognition highlights Nous' expertise in delivering AI-driven data solutions that enable enterprises to build AI-ready ecosystems, enhance operational efficiency, and drive business growth.
+        - link " Learn More" [ref=e222] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/major-contender-in-everest-groups-data-ai-services-2025
+          - generic [ref=e223]: 
+          - text: Learn More
+    - generic [ref=e225]:
+      - link "Thumb" [ref=e227] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/ta-announces-strategic-investment-nous-infosystems-support-continued-growth-innovation
+        - img "Thumb" [ref=e228]
+      - generic [ref=e229]:
+        - link "TA Announces Strategic Investment in Nous Infosystems to Support Continued Growth and Innovation" [ref=e231] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/ta-announces-strategic-investment-nous-infosystems-support-continued-growth-innovation
+        - generic [ref=e232]:
+          - generic [ref=e233]: 
+          - text: March 17, 2025
+        - paragraph [ref=e235]: Nous Infosystems is thrilled to announce a strategic growth investment from TA Associates, a leading global private equity firm. This partnership marks a significant milestone, reinforcing Nous’ commitment to delivering cutting-edge AI-powered solutions while scaling new heights in digital transformation.
+        - link " Learn More" [ref=e236] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/ta-announces-strategic-investment-nous-infosystems-support-continued-growth-innovation
+          - generic [ref=e237]: 
+          - text: Learn More
+    - generic [ref=e239]:
+      - link "Thumb" [ref=e241] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-among-top-50-indias-best-workplaces-in-it-it-bpm-2024
+        - img "Thumb" [ref=e242]
+      - generic [ref=e243]:
+        - link "Nous Infosystems Recognized Among Top 50 India’s Best Workplaces™ in IT & IT-BPM 2024" [ref=e245] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-among-top-50-indias-best-workplaces-in-it-it-bpm-2024
+        - generic [ref=e246]:
+          - generic [ref=e247]: 
+          - text: December 13, 2024
+        - paragraph [ref=e249]: Nous Infosystems has been recognized among Top 50 India’s Best Workplaces™ in IT & IT-BPM 2024 by Great Place to Work®, highlighting its vibrant, employee-centric, and collaborative work culture.
+        - link " Learn More" [ref=e250] [cursor=pointer]:
+          - /url: https://www.nousinfosystems.com/news/nous-infosystems-recognized-among-top-50-indias-best-workplaces-in-it-it-bpm-2024
+          - generic [ref=e251]: 
+          - text: Learn More
+    - generic [ref=e252]:
+      - generic [ref=e253]: "1"
+      - link "2" [ref=e254] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/page/2
+      - link "3" [ref=e255] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/page/3
+      - generic [ref=e256] [cursor=pointer]: …
+      - link "7" [ref=e257] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/page/7
+      - link "Next " [ref=e258] [cursor=pointer]:
+        - /url: https://www.nousinfosystems.com/news/page/2
+        - text: Next
+        - generic [ref=e259]: 
+  - generic [ref=e260]:
+    - generic [ref=e262]:
+      - heading "Ready to get started?" [level=2] [ref=e264]
+      - heading " Contact us" [level=2] [ref=e266] [cursor=pointer]:
+        - generic [ref=e267]:
+          - generic [ref=e268]: 
+          - text: Contact us
+        - text: 
+    - text: 
+  - generic [ref=e269]:
+    - text: By continuing to use this website, you agree to our cookie and privacy policy.
+    - link "Learn More" [ref=e270] [cursor=pointer]:
+      - /url: /privacy-policy
+    - generic [ref=e272] [cursor=pointer]: 
+  - generic [ref=e273]:
+    - generic [ref=e280]:
+      - generic [ref=e281]:
+        - generic [ref=e282]:
+          - heading "Services" [level=2] [ref=e283]
+          - navigation "Services" [ref=e284]:
+            - list [ref=e285]:
+              - listitem [ref=e286]:
+                - link "Digital Product Engineering" [ref=e287] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-product-engineering
+              - listitem [ref=e288]:
+                - link "Agile Development" [ref=e289] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/agile-development
+              - listitem [ref=e290]:
+                - link "Digital Application Services" [ref=e291] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/digital-application-services
+              - listitem [ref=e292]:
+                - link "Quality Engineering" [ref=e293] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e294]:
+                - link "Infrastructure Management" [ref=e295] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e296]:
+          - heading "Insights" [level=2] [ref=e297]
+          - navigation "Insights" [ref=e298]:
+            - list [ref=e299]:
+              - listitem [ref=e300]:
+                - link "Case Studies" [ref=e301] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/case-study
+              - listitem [ref=e302]:
+                - link "Whitepapers" [ref=e303] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/whitepaper
+              - listitem [ref=e304]:
+                - link "Brochures" [ref=e305] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/brochure
+              - listitem [ref=e306]:
+                - link "Blogs" [ref=e307] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/blog
+              - listitem [ref=e308]:
+                - link "Webinars" [ref=e309] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/insights/webinar
+      - generic [ref=e310]:
+        - generic [ref=e311]:
+          - heading "Competency" [level=2] [ref=e312]
+          - navigation "Competency" [ref=e313]:
+            - list [ref=e314]:
+              - listitem [ref=e315]:
+                - link "AI & Automation" [ref=e316] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/ai-automation
+              - listitem [ref=e317]:
+                - link "Cloud" [ref=e318] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/cloud
+              - listitem [ref=e319]:
+                - link "Data & Analytics" [ref=e320] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/data-analytics
+              - listitem [ref=e321]:
+                - link "Digital" [ref=e322] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/competency/digital
+              - listitem [ref=e323]:
+                - link "Quality Engineering" [ref=e324] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/quality-engineering
+              - listitem [ref=e325]:
+                - link "Infrastructure" [ref=e326] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/services/infrastructure-management
+        - generic [ref=e327]:
+          - heading "Company" [level=2] [ref=e328]
+          - navigation "Company" [ref=e329]:
+            - list [ref=e330]:
+              - listitem [ref=e331]:
+                - link "About Us" [ref=e332] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company
+              - listitem [ref=e333]:
+                - link "Partnerships" [ref=e334] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/partnerships
+              - listitem [ref=e335]:
+                - link "News" [ref=e336] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/news
+              - listitem [ref=e337]:
+                - link "Events" [ref=e338] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/events
+              - listitem [ref=e339]:
+                - link "Careers" [ref=e340] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/careers
+              - listitem [ref=e341]:
+                - link "CSR" [ref=e342] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/company/corporate-social-responsibility
+              - listitem [ref=e343]:
+                - link "Contact Us" [ref=e344] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/contact-us
+      - generic [ref=e345]:
+        - generic [ref=e346]:
+          - heading "Industries" [level=2] [ref=e347]
+          - navigation "Industries" [ref=e348]:
+            - list [ref=e349]:
+              - listitem [ref=e350]:
+                - link "Banking & Financial Services" [ref=e351] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/banking-and-finance-services
+              - listitem [ref=e352]:
+                - link "Insurance" [ref=e353] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/insurance
+              - listitem [ref=e354]:
+                - link "Healthcare & Life Sciences" [ref=e355] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/healthcare
+              - listitem [ref=e356]:
+                - link "Retail" [ref=e357] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/retail
+              - listitem [ref=e358]:
+                - link "Travel & Logistics" [ref=e359] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/industries/travel-and-logistics
+        - generic [ref=e360]:
+          - heading "Support" [level=2] [ref=e361]
+          - navigation "Support" [ref=e362]:
+            - list [ref=e363]:
+              - listitem [ref=e364]:
+                - link "Disclaimer" [ref=e365] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/disclaimer
+              - listitem [ref=e366]:
+                - link "Sitemap" [ref=e367] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/sitemap
+              - listitem [ref=e368]:
+                - link "Privacy Policy" [ref=e369] [cursor=pointer]:
+                  - /url: https://www.nousinfosystems.com/privacy-policy
+      - generic [ref=e370]:
+        - heading "Newsletter" [level=2] [ref=e371]
+        - generic [ref=e373]:
+          - generic [ref=e374]:
+            - status
+            - list
+          - form "Contact form" [ref=e375]:
+            - generic [ref=e376]:
+              - generic [ref=e377]:
+                - textbox [ref=e381]:
+                  - /placeholder: Email Address
+                - generic [ref=e382]:
+                  - button "." [ref=e383] [cursor=pointer]
+                  - generic [ref=e384]: 
+              - iframe [ref=e389]:
+                - generic [ref=f13e2]:
+                  - generic [ref=f13e3]:
+                    - checkbox "I'm not a robot" [ref=f13e7]
+                    - generic [ref=f13e11]: I'm not a robot
+                  - generic [ref=f13e12]:
+                    - generic [ref=f13e15]: reCAPTCHA
+                    - generic [ref=f13e16]:
+                      - link "Privacy" [ref=f13e17] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/privacy/
+                      - text: "-"
+                      - link "Terms" [ref=f13e18] [cursor=pointer]:
+                        - /url: https://www.google.com/intl/en/policies/terms/
+        - list [ref=e391]:
+          - listitem [ref=e392]:
+            - link "" [ref=e393] [cursor=pointer]:
+              - /url: https://www.linkedin.com/company/nousinfosystems
+              - generic [ref=e394]: 
+          - listitem [ref=e395]:
+            - link [ref=e396] [cursor=pointer]:
+              - /url: https://twitter.com/nousinfosystems
+          - listitem [ref=e398]:
+            - link "" [ref=e399] [cursor=pointer]:
+              - /url: https://www.facebook.com/NousInfosystems
+              - generic [ref=e400]: 
+          - listitem [ref=e401]:
+            - link "" [ref=e402] [cursor=pointer]:
+              - /url: https://www.youtube.com/user/NousInfosystems
+              - generic [ref=e403]: 
+        - figure [ref=e404]
+    - generic [ref=e408]: ©2026 Nous Infosystems. All Rights Reserved.
+```

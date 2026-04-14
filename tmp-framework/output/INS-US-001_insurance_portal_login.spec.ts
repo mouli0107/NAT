@@ -1,0 +1,228 @@
+/**
+ * ============================================================
+ *  Test Suite  : Insurance Portal Login
+ *  Story ID    : INS-US-001
+ *  Epic        : Policyholder Authentication
+ *  Framework   : Playwright + TypeScript (Page Object Model)
+ *  Source Repo : github.com/idavidov13/Playwright-Framework
+ *  Generated   : 2026-03-24 by NAT (NaT20 AI Test Platform)
+ * ============================================================
+ *
+ *  Story:
+ *  As a policyholder, I want to log in to the insurance portal
+ *  using my registered email and password, so that I can securely access
+ *  my policy details, claims, and account settings.
+ *
+ *  Acceptance Criteria:
+  *    AC1: Valid credentials → redirect to personalised home dashboard with user name visible in nav
+ *    AC2: Invalid password → sign-in page stays visible with error message
+ *    AC3: Empty email/password → form validation prevents submission
+ *    AC4: Authenticated user clicks Logout → redirected to guest home page
+ *    AC5: Navigating directly to Sign-In URL → sign-in page title visible
+ *
+ *  Test Cases Covered:
+  *    [FUN][P1] TC-001: Login with valid credentials
+ *    [NEG][P1] TC-002: Login with invalid password
+ *    [NEG][P2] TC-003: Login with empty email
+ *    [NEG][P2] TC-004: Login with empty password
+ *    [FUN][P1] TC-005: Logout after successful login
+ *    [FUN][P2] TC-006: Navigate to Sign-In page directly
+ *    [REG][P2] TC-007: Session persists on home page reload
+ * ============================================================
+ */
+
+import { test, expect }  from '../fixtures/page-object-fixture';
+
+// ─── Test Data ────────────────────────────────────────────────────────────────
+const VALID_USER = {
+  email    : process.env.EMAIL    ?? 'policyholder@insurance.com',
+  password : process.env.PASSWORD ?? 'SecureP@ssw0rd',
+  userName : process.env.USER_NAME ?? 'John Policyholder',
+};
+
+const INVALID_CREDS = {
+  email   : 'policyholder@insurance.com',
+  password: 'WrongPassword123!',
+};
+
+// ─── Test Suite ───────────────────────────────────────────────────────────────
+test.describe('INS-US-001 — Insurance Portal Login', () => {
+
+  /**
+   * TC-001 [FUN][P1]
+   * Verify that a policyholder can log in with valid credentials
+   * and is redirected to the personalised home dashboard.
+   *
+   * AC1: Valid credentials → redirect to personalised home dashboard
+   *      with user name visible in the navigation bar.
+   */
+  test('TC-001: Login with valid credentials', async ({ homePage, navPage }) => {
+    // Step 1 — Navigate to the home page as a guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Navigate to the Sign-In page from the nav bar
+    await navPage.navigateToSignInPage();
+
+    // Step 3 — Assert the Sign-In page is displayed
+    await navPage.verifySignInPageIsDisplayed();
+
+    // Step 4 — Log in with valid policyholder credentials
+    await navPage.logIn(VALID_USER.email, VALID_USER.password);
+
+    // Step 5 — Verify the user is now logged in (user name visible in nav)
+    await navPage.verifyUserIsLoggedIn(VALID_USER.userName);
+
+    // Step 6 — Verify the authenticated home page is displayed
+    await homePage.navigateToHomePageUser();
+  });
+
+  /**
+   * TC-002 [NEG][P1]
+   * Verify that login fails gracefully when an invalid password is provided.
+   *
+   * AC2: Invalid password → sign-in page stays visible with an error message.
+   */
+  test('TC-002: Login with invalid password', async ({ homePage, navPage, page }) => {
+    // Step 1 — Navigate to the home page as a guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Navigate to the Sign-In page
+    await navPage.navigateToSignInPage();
+
+    // Step 3 — Attempt login with incorrect password
+    await page.getByRole('textbox', { name: 'Email' }).fill(INVALID_CREDS.email);
+    await page.getByRole('textbox', { name: 'Password' }).fill(INVALID_CREDS.password);
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    // Step 4 — Verify the Sign-In page is still displayed (login rejected)
+    await navPage.verifySignInPageIsDisplayed();
+
+    // Step 5 — Verify an error message is visible to the user
+    await expect(
+      page.locator('[data-testid="login-error"], .error-messages, .alert-danger').first()
+    ).toBeVisible({ timeout: 5000 });
+  });
+
+  /**
+   * TC-003 [NEG][P2]
+   * Verify that the login form rejects submission when email is empty.
+   *
+   * AC3: Empty email → form validation prevents submission.
+   */
+  test('TC-003: Login with empty email field', async ({ homePage, navPage, page }) => {
+    // Step 1 — Navigate to the home page as a guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Navigate to Sign-In page
+    await navPage.navigateToSignInPage();
+
+    // Step 3 — Fill only the password, leave email empty
+    await page.getByRole('textbox', { name: 'Password' }).fill(VALID_USER.password);
+
+    // Step 4 — Attempt to click Sign in
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    // Step 5 — Verify Sign-In page is still visible (not redirected)
+    await navPage.verifySignInPageIsDisplayed();
+
+    // Step 6 — Email field should still be empty / invalid
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeEmpty();
+  });
+
+  /**
+   * TC-004 [NEG][P2]
+   * Verify that the login form rejects submission when password is empty.
+   *
+   * AC3: Empty password → form validation prevents submission.
+   */
+  test('TC-004: Login with empty password field', async ({ homePage, navPage, page }) => {
+    // Step 1 — Navigate to the home page as a guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Navigate to Sign-In page
+    await navPage.navigateToSignInPage();
+
+    // Step 3 — Fill only the email, leave password empty
+    await page.getByRole('textbox', { name: 'Email' }).fill(VALID_USER.email);
+
+    // Step 4 — Attempt to click Sign in
+    await page.getByRole('button', { name: 'Sign in' }).click();
+
+    // Step 5 — Verify Sign-In page is still visible
+    await navPage.verifySignInPageIsDisplayed();
+
+    // Step 6 — Password field should still be empty / invalid
+    await expect(page.getByRole('textbox', { name: 'Password' })).toBeEmpty();
+  });
+
+  /**
+   * TC-005 [FUN][P1]
+   * Verify that an authenticated user can log out successfully
+   * and is redirected back to the guest home page.
+   *
+   * AC4: Authenticated user clicks Logout → redirected to guest home page.
+   */
+  test('TC-005: Logout after successful login', async ({ homePage, navPage }) => {
+    // Step 1 — Navigate to home as guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Log in with valid credentials
+    await navPage.logIn(VALID_USER.email, VALID_USER.password);
+
+    // Step 3 — Verify user is logged in
+    await navPage.verifyUserIsLoggedIn(VALID_USER.userName);
+
+    // Step 4 — Perform logout via Settings → Logout
+    await navPage.logOut();
+
+    // Step 5 — Verify the guest home banner is visible (unauthenticated state)
+    await homePage.verifyHomeBannerIsVisible();
+  });
+
+  /**
+   * TC-006 [FUN][P2]
+   * Verify that navigating directly to the Sign-In page displays the
+   * sign-in form with the correct page title.
+   *
+   * AC5: Navigating directly to Sign-In URL → sign-in page title visible.
+   */
+  test('TC-006: Navigate directly to Sign-In page', async ({ navPage, page }) => {
+    // Step 1 — Navigate directly to Sign-In URL
+    await page.goto(`${process.env.URL}/login`, { waitUntil: 'networkidle' });
+
+    // Step 2 — Verify the Sign-In page title is displayed
+    await navPage.verifySignInPageIsDisplayed();
+
+    // Step 3 — Verify the Email and Password inputs are present
+    await expect(page.getByRole('textbox', { name: 'Email' })).toBeVisible();
+    await expect(page.getByRole('textbox', { name: 'Password' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Sign in' })).toBeEnabled();
+  });
+
+  /**
+   * TC-007 [REG][P2]
+   * Verify that the authenticated session persists when the home page is reloaded.
+   *
+   * Regression guard: session cookie / storage must survive a page reload.
+   */
+  test('TC-007: Session persists after page reload', async ({ homePage, navPage, page }) => {
+    // Step 1 — Navigate to home as guest
+    await homePage.navigateToHomePageGuest();
+
+    // Step 2 — Log in with valid credentials
+    await navPage.logIn(VALID_USER.email, VALID_USER.password);
+
+    // Step 3 — Verify authenticated state
+    await navPage.verifyUserIsLoggedIn(VALID_USER.userName);
+
+    // Step 4 — Reload the page
+    await page.reload({ waitUntil: 'networkidle' });
+
+    // Step 5 — Verify user is still authenticated after reload
+    await navPage.verifyUserIsLoggedIn(VALID_USER.userName);
+
+    // Step 6 — Verify authenticated home page (personalised feed visible)
+    await homePage.navigateToHomePageUser();
+  });
+
+});

@@ -1,0 +1,14 @@
+[
+  { "requirementId": "req-001", "testId": "login-flow",       "testName": "Login Flow",              "linkedAt": 1742601600000 },
+  { "requirementId": "req-002", "testId": "password-reset",   "testName": "Password Reset Flow",     "linkedAt": 1742601600000 },
+  { "requirementId": "req-003", "testId": "product-catalogue","testName": "Product Catalogue Browse", "linkedAt": 1742688000000 },
+  { "requirementId": "req-004", "testId": "cart-add-item",    "testName": "Cart Add Item",           "linkedAt": 1742688000000 },
+  { "requirementId": "req-004", "testId": "cart-remove-item", "testName": "Cart Remove Item",        "linkedAt": 1742774400000 },
+  { "requirementId": "req-005", "testId": "checkout-flow",    "testName": "Checkout Flow",           "linkedAt": 1742688000000 },
+  { "requirementId": "req-006", "testId": "order-history",    "testName": "Order History Page",      "linkedAt": 1742774400000 },
+  { "requirementId": "req-007", "testId": "admin-user-mgmt",  "testName": "Admin User Management",   "linkedAt": 1742860800000 },
+  { "requirementId": "req-008", "testId": "product-search",   "testName": "Product Search",          "linkedAt": 1742860800000 },
+  { "requirementId": "req-010", "testId": "cookie-consent",   "testName": "Cookie Consent Banner",   "linkedAt": 1742947200000 },
+  { "requirementId": "req-011", "testId": "profile-update",   "testName": "Profile Update",          "linkedAt": 1742947200000 },
+  { "requirementId": "req-012", "testId": "keyboard-nav",     "testName": "Keyboard Navigation",     "linkedAt": 1743033600000 }
+]

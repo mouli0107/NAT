@@ -1,0 +1,1389 @@
+[exec_1774848277501] ▶  Writing 70 POM files to temp directory...
+✓  70 files written — 50 spec files across 6 test categories
+▶  Starting Playwright execution (headed Chrome)...
+   baseURL: https://nousinfosystems.com
+   tmpDir:  C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501
+   log:     C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\logs\exec_1774848277501.log
+
+Running 191 tests using 1 worker
+
+[1A[2K[1/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:6:7 › @accessibility | Agile Consulting Services, Agile Software Development Company › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  1) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:6:7 › @accessibility | Agile Consulting Services, Agile Software Development Company › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-agile_develo-3c27d-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-agile_develo-3c27d-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[2/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:13:7 › @accessibility | Agile Consulting Services, Agile Software Development Company › TC-A02 page has a descriptive non-empty title
+[1A[2K[3/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:22:7 › @accessibility | Agile Consulting Services, Agile Software Development Company › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[4/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:6:7 › @accessibility | Careers - Nous › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  2) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:6:7 › @accessibility | Careers - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 2 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-careers.a11y-b9085-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-careers.a11y-b9085-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[5/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:13:7 › @accessibility | Careers - Nous › TC-A02 page has a descriptive non-empty title
+[1A[2K[6/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:22:7 › @accessibility | Careers - Nous › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[7/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:6:7 › @accessibility | Nous Contact Details | Contact Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  3) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:6:7 › @accessibility | Nous Contact Details | Contact Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-contact_us.a-98507-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-contact_us.a-98507-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[8/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:13:7 › @accessibility | Nous Contact Details | Contact Nous Infosystems › TC-A02 page has a descriptive non-empty title
+[1A[2K[9/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:22:7 › @accessibility | Nous Contact Details | Contact Nous Infosystems › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[10/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:6:7 › @accessibility | Digital Application Services, Application Lifecycle Services › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  4) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:6:7 › @accessibility | Digital Application Services, Application Lifecycle Services › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-digital_appl-47574-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-digital_appl-47574-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[11/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:13:7 › @accessibility | Digital Application Services, Application Lifecycle Services › TC-A02 page has a descriptive non-empty title
+[1A[2K[12/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:22:7 › @accessibility | Digital Application Services, Application Lifecycle Services › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[13/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:6:7 › @accessibility | Digital Product Engineering Services, Product Engineering Company › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  5) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:6:7 › @accessibility | Digital Product Engineering Services, Product Engineering Company › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-digital_prod-a7826-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-digital_prod-a7826-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[14/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:13:7 › @accessibility | Digital Product Engineering Services, Product Engineering Company › TC-A02 page has a descriptive non-empty title
+[1A[2K[15/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:22:7 › @accessibility | Digital Product Engineering Services, Product Engineering Company › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[16/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:6:7 › @accessibility | Events - Nous › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  6) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:6:7 › @accessibility | Events - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-events.a11y--1554b-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-events.a11y--1554b-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[17/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:13:7 › @accessibility | Events - Nous › TC-A02 page has a descriptive non-empty title
+[1A[2K[18/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:22:7 › @accessibility | Events - Nous › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[19/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  7) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-home.a11y--a-18d08-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-home.a11y--a-18d08-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[20/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:13:7 › @accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-A02 page has a descriptive non-empty title
+[1A[2K[21/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:22:7 › @accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[22/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:6:7 › @accessibility | News - Nous › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  8) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:6:7 › @accessibility | News - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-news.a11y--a-92477-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-news.a11y--a-92477-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[23/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:13:7 › @accessibility | News - Nous › TC-A02 page has a descriptive non-empty title
+[1A[2K[24/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:22:7 › @accessibility | News - Nous › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[25/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:6:7 › @accessibility | Quality Engineering Services | Software Quality Engineering › TC-A01 WCAG 2.1 AA baseline checks pass
+[1A[2K  9) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:6:7 › @accessibility | Quality Engineering Services | Software Quality Engineering › TC-A01 WCAG 2.1 AA baseline checks pass 
+
+    Error: WCAG 2.1 AA — 2 issue(s):
+      1. 1 input(s) without accessible label
+      2. 1 button(s) without accessible text
+
+       at ..\helpers\accessibility.helper.ts:84
+
+      82 |
+      83 |   if (failures.length > 0) {
+    > 84 |     throw new Error(
+         |           ^
+      85 |       `WCAG 2.1 AA — ${failures.length} issue(s):\n` +
+      86 |         failures.map((f, i) => `  ${i + 1}. ${f}`).join('\n'),
+      87 |     );
+        at assertWCAGBaseline (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\accessibility.helper.ts:84:11)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:10:5
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\accessibility-quality_engi-7e31a-2-1-AA-baseline-checks-pass-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\accessibility-quality_engi-7e31a-2-1-AA-baseline-checks-pass-chromium\error-context.md
+
+
+[1A[2K[26/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:13:7 › @accessibility | Quality Engineering Services | Software Quality Engineering › TC-A02 page has a descriptive non-empty title
+[1A[2K[27/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:22:7 › @accessibility | Quality Engineering Services | Software Quality Engineering › TC-A03 keyboard Tab reaches an interactive element
+[1A[2K[28/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\careers.edge.spec.ts:6:7 › @edge | Careers - Nous › TC-E01 direct URL navigation lands on correct page
+[1A[2K[29/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\careers.edge.spec.ts:14:7 › @edge | Careers - Nous › TC-E02 back/forward browser navigation works
+[1A[2K[30/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\careers.edge.spec.ts:25:7 › @edge | Careers - Nous › TC-E03 special characters in input do not crash the page
+[1A[2K[31/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\careers.edge.spec.ts:37:7 › @edge | Careers - Nous › TC-E04 unicode input is handled gracefully
+[1A[2K[32/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\contact_us.edge.spec.ts:6:7 › @edge | Nous Contact Details | Contact Nous Infosystems › TC-E01 direct URL navigation lands on correct page
+[1A[2K[33/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\contact_us.edge.spec.ts:14:7 › @edge | Nous Contact Details | Contact Nous Infosystems › TC-E02 back/forward browser navigation works
+[1A[2K[34/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\contact_us.edge.spec.ts:25:7 › @edge | Nous Contact Details | Contact Nous Infosystems › TC-E03 special characters in input do not crash the page
+[1A[2K[35/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\contact_us.edge.spec.ts:37:7 › @edge | Nous Contact Details | Contact Nous Infosystems › TC-E04 unicode input is handled gracefully
+[1A[2K[36/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\digital_product_engineering.edge.spec.ts:6:7 › @edge | Digital Product Engineering Services, Product Engineering Company › TC-E01 direct URL navigation lands on correct page
+[1A[2K[37/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\digital_product_engineering.edge.spec.ts:14:7 › @edge | Digital Product Engineering Services, Product Engineering Company › TC-E02 back/forward browser navigation works
+[1A[2K[38/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\digital_product_engineering.edge.spec.ts:25:7 › @edge | Digital Product Engineering Services, Product Engineering Company › TC-E03 special characters in input do not crash the page
+[1A[2K[39/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\digital_product_engineering.edge.spec.ts:37:7 › @edge | Digital Product Engineering Services, Product Engineering Company › TC-E04 unicode input is handled gracefully
+[1A[2K[40/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\events.edge.spec.ts:6:7 › @edge | Events - Nous › TC-E01 direct URL navigation lands on correct page
+[1A[2K[41/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\events.edge.spec.ts:14:7 › @edge | Events - Nous › TC-E02 back/forward browser navigation works
+[1A[2K[42/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\events.edge.spec.ts:25:7 › @edge | Events - Nous › TC-E03 special characters in input do not crash the page
+[1A[2K[43/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\events.edge.spec.ts:37:7 › @edge | Events - Nous › TC-E04 unicode input is handled gracefully
+[1A[2K[44/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:6:7 › @edge | News - Nous › TC-E01 direct URL navigation lands on correct page
+[1A[2K  10) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:6:7 › @edge | News - Nous › TC-E01 direct URL navigation lands on correct page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:8:14
+
+
+[1A[2K[45/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:14:7 › @edge | News - Nous › TC-E02 back/forward browser navigation works
+[1A[2K  11) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:14:7 › @edge | News - Nous › TC-E02 back/forward browser navigation works 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/", waiting until "domcontentloaded"[22m
+
+
+      14 |   test('TC-E02 back/forward browser navigation works', async ({ page }) => {
+      15 |     const po = new NewsPage(page);
+    > 16 |     await page.goto('/', { waitUntil: 'domcontentloaded' });
+         |                ^
+      17 |     await po.navigate();
+      18 |     await po.waitForPageLoad();
+      19 |     await page.goBack({ waitUntil: 'domcontentloaded' });
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:16:16
+
+
+[1A[2K[46/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:25:7 › @edge | News - Nous › TC-E03 special characters in input do not crash the page
+[1A[2K  12) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:25:7 › @edge | News - Nous › TC-E03 special characters in input do not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:27:14
+
+
+[1A[2K[47/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:37:7 › @edge | News - Nous › TC-E04 unicode input is handled gracefully
+[1A[2K  13) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:37:7 › @edge | News - Nous › TC-E04 unicode input is handled gracefully 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:39:14
+
+
+[1A[2K[48/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:6:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F01 form fields are visible and interactive
+[1A[2K  14) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:6:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/agile-development", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\agile_development.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/agile-development', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at AgileDevelopmentPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\agile_development.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:8:14
+
+
+[1A[2K[49/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:13:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F02 input field accepts text
+[1A[2K  15) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:13:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/agile-development", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\agile_development.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/agile-development', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at AgileDevelopmentPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\agile_development.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:15:14
+
+
+[1A[2K[50/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:21:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F03 submit button is present and enabled
+[1A[2K  16) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:21:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/agile-development", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\agile_development.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/agile-development', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at AgileDevelopmentPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\agile_development.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:23:14
+
+
+[1A[2K[51/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:6:7 › @functional | Careers - Nous › TC-F01 form fields are visible and interactive
+[1A[2K  17) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:6:7 › @functional | Careers - Nous › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/careers", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\careers.page.ts:176
+
+      174 |
+      175 |   async navigate(): Promise<void> {
+    > 176 |     await this.page.goto('/careers', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      177 |     await this.page.waitForLoadState('domcontentloaded');
+      178 |   }
+      179 |
+        at CareersPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\careers.page.ts:176:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:8:14
+
+
+[1A[2K[52/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:13:7 › @functional | Careers - Nous › TC-F02 input field accepts text
+[1A[2K  18) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:13:7 › @functional | Careers - Nous › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/careers", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\careers.page.ts:176
+
+      174 |
+      175 |   async navigate(): Promise<void> {
+    > 176 |     await this.page.goto('/careers', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      177 |     await this.page.waitForLoadState('domcontentloaded');
+      178 |   }
+      179 |
+        at CareersPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\careers.page.ts:176:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:15:14
+
+
+[1A[2K[53/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:21:7 › @functional | Careers - Nous › TC-F03 submit button is present and enabled
+[1A[2K  19) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:21:7 › @functional | Careers - Nous › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/careers", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\careers.page.ts:176
+
+      174 |
+      175 |   async navigate(): Promise<void> {
+    > 176 |     await this.page.goto('/careers', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      177 |     await this.page.waitForLoadState('domcontentloaded');
+      178 |   }
+      179 |
+        at CareersPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\careers.page.ts:176:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:23:14
+
+
+[1A[2K[54/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:6:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F01 form fields are visible and interactive
+[1A[2K  20) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:6:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/contact-us", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/contact-us', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\contact_us.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:8:14
+
+
+[1A[2K[55/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:13:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F02 input field accepts text
+  21) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:13:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/contact-us", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/contact-us', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\contact_us.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:15:14
+
+
+[1A[2K[1A[2K[56/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:21:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F03 submit button is present and enabled
+[1A[2K  22) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:21:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/contact-us", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/contact-us', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\contact_us.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:23:14
+
+
+[1A[2K[57/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:6:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F01 form fields are visible and interactive
+[1A[2K  23) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:6:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-application-services", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_application_services.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-application-services', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalApplicationServicesPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_application_services.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:8:14
+
+
+[1A[2K[58/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:13:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F02 input field accepts text
+[1A[2K  24) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:13:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-application-services", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_application_services.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-application-services', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalApplicationServicesPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_application_services.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:15:14
+
+
+[1A[2K[59/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:21:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F03 submit button is present and enabled
+[1A[2K  25) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:21:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-application-services", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_application_services.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-application-services', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalApplicationServicesPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_application_services.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:23:14
+
+
+[1A[2K[60/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:6:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F01 form fields are visible and interactive
+[1A[2K  26) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:6:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-product-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_product_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-product-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalProductEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_product_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:8:14
+
+
+[1A[2K[61/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:13:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F02 input field accepts text
+[1A[2K  27) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:13:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-product-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_product_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-product-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalProductEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_product_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:15:14
+
+
+[1A[2K[62/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:21:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F03 submit button is present and enabled
+[1A[2K  28) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:21:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-product-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_product_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-product-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalProductEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_product_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:23:14
+
+
+[1A[2K[63/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:6:7 › @functional | Events - Nous › TC-F01 form fields are visible and interactive
+[1A[2K[64/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:13:7 › @functional | Events - Nous › TC-F02 input field accepts text
+[1A[2K  29) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:13:7 › @functional | Events - Nous › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/events", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\events.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/events', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at EventsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\events.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:15:14
+
+
+[1A[2K[65/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:21:7 › @functional | Events - Nous › TC-F03 submit button is present and enabled
+[1A[2K  30) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:21:7 › @functional | Events - Nous › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: Target page, context or browser has been closed
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/events", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\events.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/events', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at EventsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\events.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:23:14
+
+
+[1A[2K[66/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F01 form fields are visible and interactive
+[1A[2K  31) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: Target page, context or browser has been closed
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\home.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at HomePage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\home.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:8:14
+
+
+[1A[2K[67/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F02 input field accepts text
+[1A[2K  32) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\home.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at HomePage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\home.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:15:14
+
+
+[1A[2K[68/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F03 submit button is present and enabled
+[1A[2K  33) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\home.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at HomePage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\home.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:23:14
+
+
+[1A[2K[69/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:6:7 › @functional | News - Nous › TC-F01 form fields are visible and interactive
+[1A[2K  34) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:6:7 › @functional | News - Nous › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:8:14
+
+
+[1A[2K[70/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:13:7 › @functional | News - Nous › TC-F02 input field accepts text
+[1A[2K  35) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:13:7 › @functional | News - Nous › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:15:14
+
+
+[1A[2K[71/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:21:7 › @functional | News - Nous › TC-F03 submit button is present and enabled
+[1A[2K  36) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:21:7 › @functional | News - Nous › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/news", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\news.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/news', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at NewsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\news.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:23:14
+
+
+[1A[2K[72/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:6:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F01 form fields are visible and interactive
+[1A[2K  37) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:6:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F01 form fields are visible and interactive 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/quality-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\quality_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/quality-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at QualityEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\quality_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:8:14
+
+
+[1A[2K[73/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:13:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F02 input field accepts text
+[1A[2K  38) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:13:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F02 input field accepts text 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/quality-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\quality_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/quality-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at QualityEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\quality_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:15:14
+
+
+[1A[2K[74/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:21:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F03 submit button is present and enabled
+[1A[2K  39) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:21:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F03 submit button is present and enabled 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/quality-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\quality_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/quality-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at QualityEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\quality_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:23:14
+
+
+[1A[2K[75/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:6:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N01 empty required fields trigger validation
+[1A[2K  40) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:6:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/agile-development", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\agile_development.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/agile-development', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at AgileDevelopmentPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\agile_development.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:8:14
+
+
+[1A[2K[76/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:19:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N02 extremely long input does not crash the page
+[1A[2K  41) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:19:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N02 extremely long input does not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/agile-development", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\agile_development.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/agile-development', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at AgileDevelopmentPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\agile_development.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:21:14
+
+
+[1A[2K[77/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:6:7 › @negative | Careers - Nous › TC-N01 empty required fields trigger validation
+[1A[2K  42) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:6:7 › @negative | Careers - Nous › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/careers", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\careers.page.ts:176
+
+      174 |
+      175 |   async navigate(): Promise<void> {
+    > 176 |     await this.page.goto('/careers', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      177 |     await this.page.waitForLoadState('domcontentloaded');
+      178 |   }
+      179 |
+        at CareersPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\careers.page.ts:176:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:8:14
+
+
+[1A[2K[78/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:19:7 › @negative | Careers - Nous › TC-N02 extremely long input does not crash the page
+[1A[2K  43) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:19:7 › @negative | Careers - Nous › TC-N02 extremely long input does not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/careers", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\careers.page.ts:176
+
+      174 |
+      175 |   async navigate(): Promise<void> {
+    > 176 |     await this.page.goto('/careers', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      177 |     await this.page.waitForLoadState('domcontentloaded');
+      178 |   }
+      179 |
+        at CareersPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\careers.page.ts:176:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:21:14
+
+
+[1A[2K[79/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:6:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N01 empty required fields trigger validation
+[1A[2K  44) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:6:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/contact-us", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/contact-us', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\contact_us.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:8:14
+
+
+[1A[2K[80/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:19:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N02 extremely long input does not crash the page
+[1A[2K  45) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:19:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N02 extremely long input does not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/contact-us", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\contact_us.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/contact-us', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at ContactUsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\contact_us.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:21:14
+
+
+[1A[2K[81/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:6:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N01 empty required fields trigger validation
+[1A[2K  46) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:6:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-application-services", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_application_services.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-application-services', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalApplicationServicesPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_application_services.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:8:14
+
+
+[1A[2K[82/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:19:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N02 extremely long input does not crash the page
+[1A[2K  47) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:19:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N02 extremely long input does not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-application-services", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_application_services.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-application-services', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalApplicationServicesPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_application_services.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:21:14
+
+
+[1A[2K[83/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:6:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N01 empty required fields trigger validation
+  48) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:6:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-product-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_product_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-product-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalProductEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_product_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:8:14
+
+
+[1A[2K[1A[2K[84/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:19:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N02 extremely long input does not crash the page
+[1A[2K  49) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:19:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N02 extremely long input does not crash the page 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/services/digital-product-engineering", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\digital_product_engineering.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/services/digital-product-engineering', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at DigitalProductEngineeringPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\digital_product_engineering.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:21:14
+
+
+[1A[2K[85/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\events.negative.spec.ts:6:7 › @negative | Events - Nous › TC-N01 empty required fields trigger validation
+[1A[2K  50) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\events.negative.spec.ts:6:7 › @negative | Events - Nous › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: net::ERR_ABORTED; maybe frame was detached?
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/events", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\events.page.ts:130
+
+      128 |
+      129 |   async navigate(): Promise<void> {
+    > 130 |     await this.page.goto('/events', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      131 |     await this.page.waitForLoadState('domcontentloaded');
+      132 |   }
+      133 |
+        at EventsPage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\events.page.ts:130:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\events.negative.spec.ts:8:14
+
+
+[1A[2K[86/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\events.negative.spec.ts:19:7 › @negative | Events - Nous › TC-N02 extremely long input does not crash the page
+[1A[2K[87/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\home.negative.spec.ts:6:7 › @negative | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-N01 empty required fields trigger validation
+[1A[2K  51) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\home.negative.spec.ts:6:7 › @negative | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-N01 empty required fields trigger validation 
+
+    Error: page.goto: Target page, context or browser has been closed
+    Call log:
+    [2m  - navigating to "https://nousinfosystems.com/", waiting until "domcontentloaded"[22m
+
+
+       at ..\pages\home.page.ts:166
+
+      164 |
+      165 |   async navigate(): Promise<void> {
+    > 166 |     await this.page.goto('/', { waitUntil: 'domcontentloaded' });
+          |                     ^
+      167 |     await this.page.waitForLoadState('domcontentloaded');
+      168 |   }
+      169 |
+        at HomePage.navigate (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\pages\home.page.ts:166:21)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\home.negative.spec.ts:8:14
+
+
+[1A[2K[88/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\home.negative.spec.ts:19:7 › @negative | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-N02 extremely long input does not crash the page
+[1A[2K[89/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\news.negative.spec.ts:6:7 › @negative | News - Nous › TC-N01 empty required fields trigger validation
+[1A[2K  52) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\news.negative.spec.ts:6:7 › @negative | News - Nous › TC-N01 empty required fields trigger validation 
+
+    Error: locator.click: Error: strict mode violation: locator('button[type="submit"], input[type="submit"]') resolved to 3 elements:
+        1) <button type="submit" aria-label="Search" class="wp-block-search__button has-small-font-size has-icon wp-element-button">…</button> aka getByRole('button', { name: 'Search' })
+        2) <input type="submit" value="Submit" class="wpcf7-form-control has-spinner wpcf7-submit form-submit"/> aka getByText('Submit', { exact: true })
+        3) <input value="." type="submit" class="wpcf7-form-control has-spinner wpcf7-submit form-submit"/> aka getByRole('button', { name: '.' })
+
+    Call log:
+    [2m  - waiting for locator('button[type="submit"], input[type="submit"]')[22m
+
+
+      10 |     const submitBtnEl = page.locator('button[type="submit"], input[type="submit"]');
+      11 |     if (await submitBtnEl.count() > 0) {
+    > 12 |       await submitBtnEl.click();
+         |                         ^
+      13 |       const error = page.locator('[class*="error"], [aria-invalid="true"], .alert, [role="alert"], [required]:invalid');
+      14 |       // At least some validation feedback should appear
+      15 |       await expect(page.locator('body')).toBeVisible();
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\negative\news.negative.spec.ts:12:25
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    .autotest-tmp\run_1774848277501\test-results\negative-news.negative--ne-647da-d-fields-trigger-validation-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: .autotest-tmp\run_1774848277501\test-results\negative-news.negative--ne-647da-d-fields-trigger-validation-chromium\error-context.md
+
+
+[1A[2K[90/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\news.negative.spec.ts:19:7 › @negative | News - Nous › TC-N02 extremely long input does not crash the page
+[1A[2K[91/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\quality_engineering.negative.spec.ts:6:7 › @negative | Quality Engineering Services | Software Quality Engineering › TC-N01 empty required fields trigger validation
+[1A[2K[92/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\quality_engineering.negative.spec.ts:19:7 › @negative | Quality Engineering Services | Software Quality Engineering › TC-N02 extremely long input does not crash the page
+[1A[2K[93/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:7:7 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[94/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:16:7 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:16:7 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC02 security response headers are present
+[Advisory] No security headers on /services/agile-development
+
+[1A[2K[95/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[96/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[97/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[98/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[99/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[100/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\agile_development.security.spec.ts:31:9 › @security | Agile Consulting Services, Agile Software Development Company › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[101/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:7:7 › @security | Careers - Nous › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[102/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:16:7 › @security | Careers - Nous › TC-SEC02 security response headers are present
+
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:16:7 › @security | Careers - Nous › TC-SEC02 security response headers are present
+[Advisory] No security headers on /careers
+[1A[2K[103/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[104/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[105/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K  53) [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+
+    Error: page.waitForFunction: Target page, context or browser has been closed
+
+       at ..\helpers\security.helper.ts:23
+
+      21 |     await fieldLocator.blur();
+      22 |     // Short deterministic wait — enough for synchronous XSS to fire
+    > 23 |     await page.waitForFunction(() => true); // yield to event loop
+         |                ^
+      24 |   }
+      25 |
+      26 |   expect(
+        at assertNoXSSExecution (C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\helpers\security.helper.ts:23:16)
+        at C:\Users\chandramouli\Downloads\Nat20-main\Nat20-main\.autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:37:7
+
+
+[1A[2K[106/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[107/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[108/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[109/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:7:7 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[110/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:16:7 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:16:7 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC02 security response headers are present
+[Advisory] No security headers on /contact-us
+
+[1A[2K[111/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[112/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[113/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[114/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[115/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[116/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\contact_us.security.spec.ts:31:9 › @security | Nous Contact Details | Contact Nous Infosystems › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[117/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:7:7 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[118/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:16:7 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:16:7 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC02 security response headers are present
+[Advisory] No security headers on /services/digital-application-services
+
+[1A[2K[119/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[120/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[121/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[122/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[123/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[124/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_application_services.security.spec.ts:31:9 › @security | Digital Application Services, Application Lifecycle Services › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[125/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:7:7 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[126/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:16:7 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:16:7 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC02 security response headers are present
+[Advisory] No security headers on /services/digital-product-engineering
+
+[1A[2K[127/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[128/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[129/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[130/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[131/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[132/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\digital_product_engineering.security.spec.ts:31:9 › @security | Digital Product Engineering Services, Product Engineering Company › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[133/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:7:7 › @security | Events - Nous › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[134/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:16:7 › @security | Events - Nous › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:16:7 › @security | Events - Nous › TC-SEC02 security response headers are present
+[Advisory] No security headers on /events
+
+[1A[2K[135/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[136/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[137/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[138/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[139/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[140/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\events.security.spec.ts:31:9 › @security | Events - Nous › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[141/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:7:7 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[142/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:16:7 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:16:7 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC02 security response headers are present
+[Advisory] No security headers on /
+
+[1A[2K[143/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[144/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[145/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[146/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[147/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[148/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\home.security.spec.ts:31:9 › @security | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[149/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:7:7 › @security | News - Nous › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[150/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:16:7 › @security | News - Nous › TC-SEC02 security response headers are present
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:16:7 › @security | News - Nous › TC-SEC02 security response headers are present
+[Advisory] No security headers on /news
+
+[1A[2K[151/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[152/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[153/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[154/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[155/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[156/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\news.security.spec.ts:31:9 › @security | News - Nous › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[157/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:7:7 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC01 URL does not expose sensitive parameters
+[1A[2K[158/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:16:7 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC02 security response headers are present
+
+[1A[2K[chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:16:7 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC02 security response headers are present
+[Advisory] No security headers on /services/quality-engineering
+[1A[2K[159/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: "<script>alert("xss")</script>"
+[1A[2K[160/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: ""><img src=x onerror=alert(1)>"
+[1A[2K[161/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: "';alert('xss');//"
+[1A[2K[162/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: "<svg onload=alert(1)>"
+[1A[2K[163/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: "{{7*7}}"
+[1A[2K[164/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\quality_engineering.security.spec.ts:31:9 › @security | Quality Engineering Services | Software Quality Engineering › TC-SEC03 XSS payload does not execute: "javascript:alert(1)"
+[1A[2K[165/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\agile_development.smoke.spec.ts:5:7 › @smoke | Agile Consulting Services, Agile Software Development Company › TC-S01 page returns HTTP 2xx status
+[1A[2K[166/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\agile_development.smoke.spec.ts:12:7 › @smoke | Agile Consulting Services, Agile Software Development Company › TC-S02 body is visible and contains text
+[1A[2K[167/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\agile_development.smoke.spec.ts:21:7 › @smoke | Agile Consulting Services, Agile Software Development Company › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[168/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\careers.smoke.spec.ts:5:7 › @smoke | Careers - Nous › TC-S01 page returns HTTP 2xx status
+[1A[2K[169/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\careers.smoke.spec.ts:12:7 › @smoke | Careers - Nous › TC-S02 body is visible and contains text
+[1A[2K[170/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\careers.smoke.spec.ts:21:7 › @smoke | Careers - Nous › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[171/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\contact_us.smoke.spec.ts:5:7 › @smoke | Nous Contact Details | Contact Nous Infosystems › TC-S01 page returns HTTP 2xx status
+[1A[2K[172/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\contact_us.smoke.spec.ts:12:7 › @smoke | Nous Contact Details | Contact Nous Infosystems › TC-S02 body is visible and contains text
+[1A[2K[173/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\contact_us.smoke.spec.ts:21:7 › @smoke | Nous Contact Details | Contact Nous Infosystems › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[174/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_application_services.smoke.spec.ts:5:7 › @smoke | Digital Application Services, Application Lifecycle Services › TC-S01 page returns HTTP 2xx status
+[1A[2K[175/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_application_services.smoke.spec.ts:12:7 › @smoke | Digital Application Services, Application Lifecycle Services › TC-S02 body is visible and contains text
+[1A[2K[176/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_application_services.smoke.spec.ts:21:7 › @smoke | Digital Application Services, Application Lifecycle Services › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[177/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_product_engineering.smoke.spec.ts:5:7 › @smoke | Digital Product Engineering Services, Product Engineering Company › TC-S01 page returns HTTP 2xx status
+[1A[2K[178/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_product_engineering.smoke.spec.ts:12:7 › @smoke | Digital Product Engineering Services, Product Engineering Company › TC-S02 body is visible and contains text
+[1A[2K[179/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\digital_product_engineering.smoke.spec.ts:21:7 › @smoke | Digital Product Engineering Services, Product Engineering Company › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[180/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\events.smoke.spec.ts:5:7 › @smoke | Events - Nous › TC-S01 page returns HTTP 2xx status
+[1A[2K[181/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\events.smoke.spec.ts:12:7 › @smoke | Events - Nous › TC-S02 body is visible and contains text
+[1A[2K[182/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\events.smoke.spec.ts:21:7 › @smoke | Events - Nous › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[183/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\home.smoke.spec.ts:5:7 › @smoke | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-S01 page returns HTTP 2xx status
+[1A[2K[184/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\home.smoke.spec.ts:12:7 › @smoke | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-S02 body is visible and contains text
+[1A[2K[185/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\home.smoke.spec.ts:21:7 › @smoke | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[186/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\news.smoke.spec.ts:5:7 › @smoke | News - Nous › TC-S01 page returns HTTP 2xx status
+[1A[2K[187/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\news.smoke.spec.ts:12:7 › @smoke | News - Nous › TC-S02 body is visible and contains text
+[1A[2K[188/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\news.smoke.spec.ts:21:7 › @smoke | News - Nous › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K[189/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\quality_engineering.smoke.spec.ts:5:7 › @smoke | Quality Engineering Services | Software Quality Engineering › TC-S01 page returns HTTP 2xx status
+[1A[2K[190/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\quality_engineering.smoke.spec.ts:12:7 › @smoke | Quality Engineering Services | Software Quality Engineering › TC-S02 body is visible and contains text
+[1A[2K[191/191] [chromium] › .autotest-tmp\run_1774848277501\tests\specs\smoke\quality_engineering.smoke.spec.ts:21:7 › @smoke | Quality Engineering Services | Software Quality Engineering › TC-S03 no critical JavaScript runtime errors on load
+[1A[2K  53 failed
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\agile_development.a11y.spec.ts:6:7 › @accessibility | Agile Consulting Services, Agile Software Development Company › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\careers.a11y.spec.ts:6:7 › @accessibility | Careers - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\contact_us.a11y.spec.ts:6:7 › @accessibility | Nous Contact Details | Contact Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_application_services.a11y.spec.ts:6:7 › @accessibility | Digital Application Services, Application Lifecycle Services › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\digital_product_engineering.a11y.spec.ts:6:7 › @accessibility | Digital Product Engineering Services, Product Engineering Company › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\events.a11y.spec.ts:6:7 › @accessibility | Events - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\home.a11y.spec.ts:6:7 › @accessibility | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\news.a11y.spec.ts:6:7 › @accessibility | News - Nous › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\accessibility\quality_engineering.a11y.spec.ts:6:7 › @accessibility | Quality Engineering Services | Software Quality Engineering › TC-A01 WCAG 2.1 AA baseline checks pass 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:6:7 › @edge | News - Nous › TC-E01 direct URL navigation lands on correct page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:14:7 › @edge | News - Nous › TC-E02 back/forward browser navigation works 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:25:7 › @edge | News - Nous › TC-E03 special characters in input do not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\edge\news.edge.spec.ts:37:7 › @edge | News - Nous › TC-E04 unicode input is handled gracefully 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:6:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:13:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\agile_development.functional.spec.ts:21:7 › @functional | Agile Consulting Services, Agile Software Development Company › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:6:7 › @functional | Careers - Nous › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:13:7 › @functional | Careers - Nous › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\careers.functional.spec.ts:21:7 › @functional | Careers - Nous › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:6:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:13:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\contact_us.functional.spec.ts:21:7 › @functional | Nous Contact Details | Contact Nous Infosystems › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:6:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:13:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_application_services.functional.spec.ts:21:7 › @functional | Digital Application Services, Application Lifecycle Services › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:6:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:13:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\digital_product_engineering.functional.spec.ts:21:7 › @functional | Digital Product Engineering Services, Product Engineering Company › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:13:7 › @functional | Events - Nous › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\events.functional.spec.ts:21:7 › @functional | Events - Nous › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:6:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:13:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\home.functional.spec.ts:21:7 › @functional | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:6:7 › @functional | News - Nous › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:13:7 › @functional | News - Nous › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\news.functional.spec.ts:21:7 › @functional | News - Nous › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:6:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F01 form fields are visible and interactive 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:13:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F02 input field accepts text 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\functional\quality_engineering.functional.spec.ts:21:7 › @functional | Quality Engineering Services | Software Quality Engineering › TC-F03 submit button is present and enabled 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:6:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\agile_development.negative.spec.ts:19:7 › @negative | Agile Consulting Services, Agile Software Development Company › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:6:7 › @negative | Careers - Nous › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\careers.negative.spec.ts:19:7 › @negative | Careers - Nous › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:6:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\contact_us.negative.spec.ts:19:7 › @negative | Nous Contact Details | Contact Nous Infosystems › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:6:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_application_services.negative.spec.ts:19:7 › @negative | Digital Application Services, Application Lifecycle Services › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:6:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\digital_product_engineering.negative.spec.ts:19:7 › @negative | Digital Product Engineering Services, Product Engineering Company › TC-N02 extremely long input does not crash the page 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\events.negative.spec.ts:6:7 › @negative | Events - Nous › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\home.negative.spec.ts:6:7 › @negative | Digital Transformation Solutions, IT Consulting | Nous Infosystems › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\negative\news.negative.spec.ts:6:7 › @negative | News - Nous › TC-N01 empty required fields trigger validation 
+    [chromium] › .autotest-tmp\run_1774848277501\tests\specs\security\careers.security.spec.ts:31:9 › @security | Careers - Nous › TC-SEC03 XSS payload does not execute: "';alert('xss');//" 
+  138 passed (25.8m)
+✓ 138 passed  ✗ 53 failed  — exit 1
