@@ -1,35 +1,39 @@
 # ─── NAT 2.0 ASTRA — Dockerfile ───────────────────────────────────────────────
 # Multi-stage build.
-# Stage 1 (builder): compile React frontend + bundle Express server
-# Stage 2 (runner):  node:20-slim + chromium system deps + playwright + app
 #
-# WHY node:20-slim not node:20-alpine:
-#   Alpine uses musl libc. Chromium requires glibc system libraries
-#   (libnss3, libatk, libdrm, etc.) that are only available on Debian/Ubuntu.
+# Stage 1 (builder):
+#   - Installs ALL deps (including devDeps like @playwright/test)
+#   - The postinstall hook automatically downloads Chromium to /root/.cache/ms-playwright/
+#   - Runs Vite + esbuild to produce dist/
 #
-# WHY playwright install is in the runner (not builder):
-#   Browsers must be present in the final image that actually runs the server.
+# Stage 2 (runner):
+#   - node:20-slim with Chromium system libs installed via apt
+#   - Copies dist/ and node_modules (prod only) from builder
+#   - Copies the already-downloaded Chromium from builder (no re-download needed)
+#   - PLAYWRIGHT_BROWSERS_PATH points to the copied Chromium location
 
-# ── Stage 1: Build ────────────────────────────────────────────────────────────
+# ── Stage 1: Build + Download Chromium ────────────────────────────────────────
 FROM node:20-slim AS builder
 
 WORKDIR /app
 
 COPY package*.json ./
-RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci
+# Full install: devDeps included so @playwright/test is present.
+# The postinstall hook runs "npx playwright install chromium" and downloads
+# Chromium to /root/.cache/ms-playwright/ — we'll copy this to the runner.
+RUN npm ci
 
 COPY . .
 
 ENV NODE_ENV=production
-ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 RUN npm run build
 
-# ── Stage 2: Production runner with Playwright + Chromium ─────────────────────
+# ── Stage 2: Production runner ─────────────────────────────────────────────────
 FROM node:20-slim AS runner
 
 WORKDIR /app
 
-# Chromium system dependencies (required by Playwright's bundled Chromium)
+# Chromium system dependencies (required by Playwright's bundled Chromium binary)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libnss3 \
@@ -54,28 +58,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
-# Store browsers inside the image (persists, no re-download on restart)
+# Tell Playwright where to find the browsers we copy below
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Install production dependencies.
-# --ignore-scripts skips the postinstall hook (which runs "npx playwright install chromium")
-# because playwright binary isn't available yet during --omit=dev install.
-# We install chromium manually in the next step instead.
+# Install production node_modules only.
+# --ignore-scripts prevents the postinstall from trying "npx playwright install chromium"
+# again (it would fail since @playwright/test is excluded by --omit=dev).
 COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
-# Download Playwright's Chromium binary into /ms-playwright.
-# Use npx --yes with explicit version so npx fetches playwright without needing
-# it installed locally (it's a devDependency, excluded by --omit=dev above).
-RUN npx --yes playwright@1.56.1 install chromium
-
-# Copy built frontend + bundled server from builder stage
+# Copy built frontend + server from builder
 COPY --from=builder /app/dist ./dist
 
-# Runtime directories the app writes to
+# Copy the Chromium that was already downloaded during builder's npm ci.
+# This avoids any re-download or playwright binary dependency in the runner.
+COPY --from=builder /root/.cache/ms-playwright /ms-playwright
+
+# Runtime directories the app writes to at runtime
 RUN mkdir -p projects recorder-data screenshots test-results
 
-# Azure App Service sets PORT automatically; fallback to 5000 locally
+# Azure App Service injects PORT automatically; fallback to 5000 locally
 EXPOSE 5000
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
