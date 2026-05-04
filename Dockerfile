@@ -57,12 +57,15 @@ ENV NODE_ENV=production
 # Store browsers inside the image (persists, no re-download on restart)
 ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 
-# Install production dependencies
+# Install production dependencies.
+# --ignore-scripts skips the postinstall hook (which runs "npx playwright install chromium")
+# because playwright binary isn't available yet during --omit=dev install.
+# We install chromium manually in the next step instead.
 COPY package*.json ./
-RUN PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 npm ci --omit=dev && npm cache clean --force
+RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
-# Download Playwright's Chromium binary into the image
-# System deps are already installed above, so we skip --with-deps
+# Download Playwright's Chromium binary into /ms-playwright
+# PLAYWRIGHT_BROWSERS_PATH is already set above so the binary lands in the right place
 RUN npx playwright install chromium
 
 # Copy built frontend + bundled server from builder stage
