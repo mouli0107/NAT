@@ -3,7 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Play, ArrowLeft, Share2, Copy, Check } from "lucide-react";
 import { Link } from "wouter";
-import productTourVideo from "@assets/Introducing_NAT_2.0__The_Next_Generation_of_Autonomous_Testing_1767190448585.mp4";
+// Video served from public CDN or Azure Blob Storage — not bundled by Vite
+const productTourVideo = "/attached_assets/Introducing_NAT_2.0__The_Next_Generation_of_Autonomous_Testing_1767190448585.mp4";
 
 const playbackSpeeds = [
   { value: 1, label: '1x' },
