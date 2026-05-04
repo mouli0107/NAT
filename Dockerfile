@@ -64,9 +64,10 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 COPY package*.json ./
 RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
-# Download Playwright's Chromium binary into /ms-playwright
-# PLAYWRIGHT_BROWSERS_PATH is already set above so the binary lands in the right place
-RUN npx playwright install chromium
+# Download Playwright's Chromium binary into /ms-playwright.
+# Use npx --yes with explicit version so npx fetches playwright without needing
+# it installed locally (it's a devDependency, excluded by --omit=dev above).
+RUN npx --yes playwright@1.56.1 install chromium
 
 # Copy built frontend + bundled server from builder stage
 COPY --from=builder /app/dist ./dist
