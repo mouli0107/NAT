@@ -16,7 +16,7 @@ import {
   ArrowRight, FileText, Globe, Settings, Shield, Code2, Layers, GitBranch,
   Upload, Download, Sparkles, Clock, Users, X, List, Hash
 } from "lucide-react";
-import productTourVideo from "@assets/Introducing_NAT_2.0__The_Next_Generation_of_Autonomous_Testing_1767190448585.mp4";
+const productTourVideo = "/attached_assets/Introducing_NAT_2.0__The_Next_Generation_of_Autonomous_Testing_1767190448585.mp4";
 
 /* ─────────────────── DOCUMENTATION CONTENT ─────────────────── */
 
@@ -791,7 +791,7 @@ export default function HelpPage() {
         <DashboardHeader />
 
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-5xl mx-auto space-y-8">
+          <div className="w-full space-y-8">
 
             {/* PAGE HEADER */}
             <div className="text-center">
@@ -799,7 +799,7 @@ export default function HelpPage() {
                 <HelpCircle className="w-9 h-9 text-indigo-500" />
                 Help & Guidance
               </h1>
-              <p className="text-muted-foreground mt-2 max-w-2xl mx-auto">
+              <p className="text-muted-foreground mt-2">
                 Comprehensive guides, step-by-step walkthroughs, and answers to common questions
               </p>
             </div>
