@@ -440,7 +440,7 @@ function runSingleTest(
 ): Promise<LibraryRunResult> {
   return new Promise(resolve => {
     const nodeBin = process.execPath;
-    const pwCli = path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+    const pwCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
     const relScript = path.relative(PROJECT_ROOT, scriptPath).replace(/\\/g, '/');
 
     const proc = spawn(nodeBin, [pwCli, 'test', relScript, '--reporter=list', '--headed', '--config', PW_CONFIG], {

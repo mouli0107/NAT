@@ -21,6 +21,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as os from 'os';
 import { fileURLToPath } from 'url';
+import * as XLSX from 'xlsx';
 import Anthropic from '@anthropic-ai/sdk';
 import type { Browser, BrowserContext, Page as PwPage } from 'playwright';
 import { UNIVERSAL_HELPERS_CONTENT } from './universal-helpers-content';
@@ -159,6 +160,17 @@ function toNaturalLanguage(event: RecordingEvent, stepNum: number): string | nul
       // Skip internal browser pages — they are not meaningful steps
       const pageUrl = event.url || '';
       if (!pageUrl || pageUrl.startsWith('about:') || pageUrl.startsWith('data:') || pageUrl === 'srcdoc') return null;
+      // Skip third-party page_load events — these are background redirects
+      // from tracking/analytics/chat tools (Intellimize, Qualified, etc.)
+      // They are NOT user-initiated navigations and should never appear in NL steps
+      const sessionStartUrl = (event as any).sessionStartUrl as string | undefined;
+      if (sessionStartUrl) {
+        try {
+          const startOrigin = new URL(sessionStartUrl).hostname.split('.').slice(-2).join('.');
+          const loadOrigin  = new URL(pageUrl).hostname.split('.').slice(-2).join('.');
+          if (loadOrigin !== startOrigin) return null; // third-party — skip silently
+        } catch {}
+      }
       return `Step ${stepNum}: Page loaded — "${event.pageTitle || pageUrl}"`;
     }
     case 'api_call': {
@@ -1592,6 +1604,14 @@ export function registerRecorderRoutes(app: Express) {
   // ── Assert Mode ──────────────────────────────────────────────────────────────
   var _assertMode = false;
 
+  // Exposed as a global so pw.page.evaluate() can toggle assert mode directly
+  // without relying on MessageEvent dispatch (which can be unreliable cross-Playwright versions).
+  window.__dxqe_setAssertMode = function(on) {
+    _assertMode = !!on;
+    document.body.style.cursor = on ? 'crosshair' : '';
+    if (!on) { var old = document.getElementById('__dxqe_hl'); if (old) old.remove(); }
+  };
+
   function _getAssertElInfo(el) {
     var tag = el.tagName.toLowerCase();
     var text = (el.innerText || el.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 120);
@@ -1709,6 +1729,21 @@ export function registerRecorderRoutes(app: Express) {
           [...popupPages].some(pu => eventUrl.startsWith(new URL(pu).origin));
 
         const seq = session.events.length + 1;
+        // Detect if this event is from an iframe (different origin than session start)
+        const sessionStartUrl = session.events.length > 0
+          ? String((session.events[0] as any).url || '')
+          : eventUrl;
+        let inIframe = false;
+        let iframeOrigin = '';
+        try {
+          const startOrigin = new URL(sessionStartUrl).origin;
+          const evOrigin    = new URL(eventUrl).origin;
+          if (evOrigin !== startOrigin && !isFromPopup) {
+            inIframe = true;
+            iframeOrigin = evOrigin;
+          }
+        } catch {}
+
         const ev: RecordingEvent = {
           sequence: seq,
           timestamp: Date.now(),
@@ -1718,6 +1753,8 @@ export function registerRecorderRoutes(app: Express) {
           pageTitle: String(eventData.pageTitle || ''),
           ...eventData,
           ...(isFromPopup ? { isPopup: true } : {}),
+          ...(inIframe ? { inIframe: true, iframeOrigin } : {}),
+          sessionStartUrl,
         };
         // Add natural-language step
         const nl = toNaturalLanguage(ev, seq);
@@ -1742,9 +1779,11 @@ export function registerRecorderRoutes(app: Express) {
         const last = session.events[session.events.length - 1];
         if (last?.url === navUrl && last?.type === 'page_load') return;
         const seq = session.events.length + 1;
+        const sessionStartUrl = session.events.length > 0 ? String((session.events[0] as any).url || navUrl) : navUrl;
         const ev: RecordingEvent = {
           sequence: seq, timestamp: Date.now(), sessionId: sid,
           type: 'page_load', url: navUrl, pageTitle: '',
+          sessionStartUrl,
           naturalLanguage: `Step ${seq}: Navigate to ${navUrl}`,
         };
         session.events.push(ev);
@@ -1856,18 +1895,147 @@ export function registerRecorderRoutes(app: Express) {
 
     const sid = (sessionId as string).toUpperCase();
     const pw = pwBrowsers.get(sid);
-    if (!pw) return res.status(404).json({ error: 'No active Playwright browser' });
+    if (!pw) {
+      // Browser not registered in this server instance (e.g. server restarted).
+      // Return 200 so the client banner stays visible — user just needs to
+      // Stop Playwright and re-open to re-register the session.
+      return res.json({ success: false, mode, warning: 'No active Playwright browser — stop and re-open Playwright to reconnect' });
+    }
+
+    // Diagnostic: check page state first
+    try {
+      const pageUrl = pw.page.url();
+      console.log(`[Assert] mode=${mode} page=${pageUrl} closed=${pw.page.isClosed()}`);
+    } catch(e: any) {
+      console.error('[Assert] page check failed:', e.message);
+      return res.status(500).json({ error: 'Playwright page is unavailable: ' + e.message });
+    }
+
+    // The JS snippet injected into the live Playwright page.
+    // Plain JS — no TypeScript syntax — safe for page.evaluate serialisation.
+    const ASSERT_JS = `(function() {
+  if (typeof window.__dxqe_assertOff === 'function') window.__dxqe_assertOff();
+
+  function setHL(el) {
+    var old = document.getElementById('__dxqe_hl');
+    if (old) old.remove();
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    var d = document.createElement('div');
+    d.id = '__dxqe_hl';
+    d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;' +
+      'border:3px solid #f59e0b;border-radius:3px;background:rgba(245,158,11,0.15);' +
+      'box-shadow:0 0 0 3000px rgba(0,0,0,0.28);transition:all 0.08s ease;';
+    d.style.top    = (r.top    - 2) + 'px';
+    d.style.left   = (r.left   - 2) + 'px';
+    d.style.width  = (r.width  + 4) + 'px';
+    d.style.height = (r.height + 4) + 'px';
+    document.body.appendChild(d);
+  }
+
+  function getInfo(el) {
+    var tag  = el.tagName.toLowerCase();
+    var text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+    var val  = el.value || '';
+    var ph   = el.getAttribute('placeholder') || '';
+    var al   = el.getAttribute('aria-label') || el.getAttribute('aria-labelledby') && '' || '';
+    // Try aria-label attribute first
+    al = el.getAttribute('aria-label') || '';
+    var nm   = el.getAttribute('name') || '';
+    var tp   = el.getAttribute('type') || '';
+    var isInp = /^(input|textarea|select)$/.test(tag);
+    var isCb  = tp === 'checkbox' || tp === 'radio';
+
+    // Resolve label — priority: associated <label> > aria-label > visible text > placeholder > name > type+tag
+    var lbl = '';
+    var id = el.id;
+    if (id) { var lb = document.querySelector('label[for="' + id + '"]'); if (lb) lbl = (lb.textContent || '').trim(); }
+    if (!lbl) { var lb2 = el.closest('label'); if (lb2) lbl = (lb2.textContent || '').replace(text, '').trim(); }
+    if (!lbl) lbl = al;
+    if (!lbl) lbl = text.slice(0, 60);
+    if (!lbl) lbl = ph;
+    if (!lbl) lbl = nm;
+    if (!lbl && tp) lbl = tp + ' ' + tag;   // e.g. "submit button", "email input"
+    if (!lbl) lbl = tag;                     // last resort: "div", "span", etc.
+
+    // Collect key attrs for attribute-type assertions
+    var attrs = {};
+    ['href','src','alt','title','data-testid','id','role','class'].forEach(function(a) {
+      var v = el.getAttribute(a); if (v) attrs[a] = v.slice(0, 100);
+    });
+
+    return { tag: tag, text: text, value: val, placeholder: ph, ariaLabel: al,
+             name: nm, type: tp, label: lbl, isInput: isInp, isCheckbox: isCb,
+             isChecked: el.checked || false, attrs: attrs };
+  }
+
+  function onOver(e) {
+    var el = e.target;
+    if (!el || el.id === '__dxqe_hl') return;
+    setHL(el);
+  }
+
+  function onClick(e) {
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    var el = e.target;
+    if (!el || el.id === '__dxqe_hl') return;
+    if (typeof window.__devxqe_send === 'function') {
+      window.__devxqe_send({ type: 'assert_element', url: window.location.href,
+        pageTitle: document.title, elementInfo: getInfo(el) });
+    }
+  }
+
+  document.body.style.cursor = 'crosshair';
+  document.addEventListener('mouseover', onOver,  true);
+  document.addEventListener('click',     onClick, true);
+
+  window.__dxqe_assertOff = function() {
+    document.body.style.cursor = '';
+    var hl = document.getElementById('__dxqe_hl');
+    if (hl) hl.remove();
+    document.removeEventListener('mouseover', onOver,  true);
+    document.removeEventListener('click',     onClick, true);
+    delete window.__dxqe_assertOff;
+  };
+  return 'ok';
+})()`;
 
     try {
-      // Dispatch the same message the iframe uses, but inside the real browser page
-      await pw.page.evaluate((m: string) => {
-        window.dispatchEvent(new MessageEvent('message', {
-          data: { target: '__devxqe_assert', mode: m }
-        }));
-      }, mode);
+      if (mode === 'on') {
+        // Inject on the current page immediately
+        const result = await pw.page.evaluate(ASSERT_JS);
+        console.log(`[Assert] inject result for ${sid}:`, result);
+
+        // Re-inject after every navigation so assert mode survives page loads
+        const reinject = async () => {
+          try { await pw.page.evaluate(ASSERT_JS); } catch (e) { /* navigating */ }
+        };
+        // Remove any previous listener before adding a new one
+        if ((pw as any)._assertReinject) {
+          pw.page.off('load', (pw as any)._assertReinject);
+        }
+        pw.page.on('load', reinject);
+        (pw as any)._assertReinject = reinject;
+
+      } else {
+        // Remove navigation listener
+        if ((pw as any)._assertReinject) {
+          pw.page.off('load', (pw as any)._assertReinject);
+          delete (pw as any)._assertReinject;
+        }
+        // Clean up the current page
+        await pw.page.evaluate(`
+          if (typeof window.__dxqe_assertOff === 'function') window.__dxqe_assertOff();
+        `).catch(() => {});
+      }
       res.json({ success: true, mode });
     } catch (err: any) {
-      res.status(500).json({ error: err.message });
+      // Log full error — bypass the 80-char HTTP log truncation
+      console.error('[Assert] FULL ERROR:', err.message);
+      console.error('[Assert] STACK:', err.stack?.split('\n').slice(0,4).join(' | '));
+      // Return 200 so the UI banner stays visible — user sees assert mode ON
+      // even if injection failed (they can try navigating to trigger reinject)
+      res.json({ success: false, mode, error: err.message });
     }
   });
 
@@ -2124,7 +2292,7 @@ function runPlaywright(execId: string, scriptPath: string, credentials?: Record<
   const exec = executions.get(execId)!;
   // Use node directly to run the playwright CLI — avoids .cmd / shebang issues on Windows
   const nodeBin = process.execPath;
-  const pwCli = path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+  const pwCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
 
   broadcastExec(exec, { type: 'start', message: '▶ Starting Playwright...' });
 
@@ -2198,11 +2366,12 @@ export function registerPlaywrightRoutes(app: Express) {
   app.get('/api/playwright/setup-check', async (_req, res) => {
     try {
       const nodeBin = process.execPath;
-      const pwCli = path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+      const pwCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
       const pwInstalled = fs.existsSync(pwCli);
 
-      // Check if browsers are installed by looking for chromium marker
-      const browsersDir = path.join(PROJECT_ROOT, 'node_modules', 'playwright-core', '.local-browsers');
+      // Check if browsers are installed — check both Playwright cache and PLAYWRIGHT_BROWSERS_PATH
+      const browsersDir = process.env.PLAYWRIGHT_BROWSERS_PATH ||
+        path.join(PROJECT_ROOT, 'node_modules', 'playwright-core', '.local-browsers');
       const chromiumInstalled = fs.existsSync(browsersDir) &&
         fs.readdirSync(browsersDir).some(d => d.startsWith('chromium'));
 
@@ -2230,30 +2399,66 @@ export function registerPlaywrightRoutes(app: Express) {
 
     send('Installing Playwright browsers (chromium)...');
 
+    // Install @playwright/test into /tmp/pw-install (NOT PROJECT_ROOT — that would read
+    // the full package.json and install 691 MB of deps). Then use its cli.js to download
+    // the Chromium browser binary.
+    const PW_PREFIX = '/tmp/pw-install';
+    const cliPath = path.join(PW_PREFIX, 'node_modules', '@playwright', 'test', 'cli.js');
     const nodeBin = process.execPath;
-    const proc = spawn(nodeBin, [
-      path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js'),
-      'install', 'chromium'
-    ], { cwd: PROJECT_ROOT, shell: false });
 
-    proc.stdout.on('data', d => {
-      d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
-    });
-    proc.stderr.on('data', d => {
-      d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
-    });
-    proc.on('close', code => {
-      if (code === 0) {
-        send('✅ Playwright browsers installed successfully!', true);
-      } else {
-        send('❌ Installation failed. Check server logs.', true);
-      }
-      res.end();
-    });
-    proc.on('error', err => {
-      send(`❌ Error: ${err.message}`, true);
-      res.end();
-    });
+    const runInstallBrowsers = () => {
+      send('Installing Chromium browser binaries...');
+      const proc2 = spawn(nodeBin, [cliPath, 'install', 'chromium'], {
+        cwd: PW_PREFIX, shell: false, env: { ...process.env }
+      });
+      proc2.stdout.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      proc2.stderr.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      proc2.on('close', code => {
+        if (code === 0) {
+          send('✅ Playwright browsers installed successfully!', true);
+        } else {
+          send('❌ Installation failed. Check server logs.', true);
+        }
+        res.end();
+      });
+      proc2.on('error', err => {
+        send(`❌ Error: ${err.message}`, true);
+        res.end();
+      });
+    };
+
+    // If cli.js already exists in /tmp/pw-install, skip npm install
+    if (fs.existsSync(cliPath)) {
+      runInstallBrowsers();
+    } else {
+      send('Installing @playwright/test to /tmp/pw-install...');
+      // mkdir -p /tmp/pw-install then npm install — isolated from project package.json
+      const npm = spawn('sh', ['-c',
+        `mkdir -p ${PW_PREFIX} && npm install @playwright/test --prefix ${PW_PREFIX} --no-package-lock`
+      ], { shell: false, env: { ...process.env } });
+      npm.stdout.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      npm.stderr.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      npm.on('close', code => {
+        if (code === 0) {
+          runInstallBrowsers();
+        } else {
+          send('❌ npm install @playwright/test failed. Check server logs.', true);
+          res.end();
+        }
+      });
+      npm.on('error', err => {
+        send(`❌ Error: ${err.message}`, true);
+        res.end();
+      });
+    }
   });
 
   // GET /api/playwright/video/:execId — serve the failure video file
@@ -2317,13 +2522,23 @@ export function registerPlaywrightRoutes(app: Express) {
 
   // POST /api/playwright/generate-framework — SSE: AI framework generation
   app.post('/api/playwright/generate-framework', async (req, res) => {
-    const { nlSteps, startUrl, testName, events } = req.body as {
+    const { nlSteps, startUrl, testName, events, projectName, tcId, moduleName } = req.body as {
       nlSteps: string[];
       startUrl: string;
       testName: string;
       events?: Array<{ sequence: number; type: string; url: string; pageTitle: string; naturalLanguage: string }>;
+      projectName?: string;  // optional: when provided, existing POMs on disk are read
+      tcId?: string;         // optional: TC ID for Excel row key (e.g. "TC001")
+      moduleName?: string;   // optional: module/feature name
     };
     if (!nlSteps?.length) return res.status(400).json({ error: 'nlSteps required' });
+
+    // Resolve the on-disk project directory if a project name was supplied.
+    // This lets generateFramework() read existing pages/*.ts from TC001, TC002, …
+    // so Claude sees all previously generated method names before writing new code.
+    const projectOutputDir = projectName?.trim()
+      ? path.join(PROJECTS_DIR, projectName.trim().replace(/[^a-zA-Z0-9_-]/g, '-'))
+      : undefined;
 
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -2336,7 +2551,10 @@ export function registerPlaywrightRoutes(app: Express) {
 
     try {
       const { generateFramework } = await import('./script-writer-agent.js');
-      for await (const event of generateFramework(nlSteps, startUrl || '', testName || 'Recorded Flow', events || [])) {
+      for await (const event of generateFramework(
+        nlSteps, startUrl || '', testName || 'Recorded Flow',
+        events || [], projectOutputDir, tcId
+      )) {
         send(event);
       }
       send({ type: 'done' });
@@ -2634,7 +2852,7 @@ export default defineConfig({
    * Body: { projectName: string, files: GeneratedFile[] }
    * where GeneratedFile = { path: string; content: string; type: string }
    */
-  app.post('/api/projects/save-ai-framework', (req, res) => {
+  app.post('/api/projects/save-ai-framework', async (req, res) => {
     const { projectName, files } = req.body as {
       projectName: string;
       files: Array<{ path: string; content: string; type: string }>;
@@ -2659,7 +2877,50 @@ export default defineConfig({
 
         const exists = fs.existsSync(filePath);
 
-        if (file.type === 'test') {
+        if (file.type === 'excel_data') {
+          // ── Excel test data — upsert a row into fixtures/test-data.xlsx ──────────
+          // file.content is JSON: { tcId, baseUrl, fieldName: value, ... }
+          try {
+            const newRow: Record<string, string> = JSON.parse(file.content);
+            let wb: XLSX.WorkBook;
+            let rows: Record<string, string>[] = [];
+
+            if (exists) {
+              wb = XLSX.readFile(filePath);
+              const sheetName = wb.SheetNames.includes('TestData') ? 'TestData' : wb.SheetNames[0];
+              rows = XLSX.utils.sheet_to_json<Record<string, string>>(wb.Sheets[sheetName], { defval: '' });
+              const idx = rows.findIndex(r => r['tcId'] === newRow['tcId']);
+              if (idx >= 0) {
+                rows[idx] = { ...rows[idx], ...newRow }; // merge — keep extra user-added columns
+              } else {
+                rows.push(newRow); // new TC ID — append
+              }
+            } else {
+              wb = XLSX.utils.book_new();
+              rows = [newRow];
+            }
+
+            const ws = XLSX.utils.json_to_sheet(rows);
+            // Set sensible column widths
+            ws['!cols'] = Object.keys(newRow).map(k => ({ wch: Math.max(k.length + 2, 22) }));
+
+            if (wb.SheetNames.includes('TestData')) {
+              wb.Sheets['TestData'] = ws;
+            } else {
+              if (wb.SheetNames.length > 0) {
+                wb.Sheets[wb.SheetNames[0]] = ws;
+              } else {
+                XLSX.utils.book_append_sheet(wb, ws, 'TestData');
+              }
+            }
+
+            XLSX.writeFile(wb, filePath);
+            written.push(file.path);
+          } catch (xlsxErr: any) {
+            console.error(`[save-ai-framework] Excel upsert failed: ${xlsxErr.message}`);
+            skipped.push(file.path);
+          }
+        } else if (file.type === 'test') {
           // Test spec: always write (never overwrite — use timestamp suffix for uniqueness)
           const ext  = path.extname(file.path);
           const base = path.basename(file.path, ext);
@@ -2697,7 +2958,82 @@ export default defineConfig({
         }
       }
 
+      // ── Register project in DB so it shows on the dashboard ─────────────────
+      try {
+        const { storage } = await import('./storage.js');
+        const user = (req as any).user;
+        if (user?.id) {
+          const existingProjects = await storage.getProjectsByUserId(user.id);
+          const alreadyInDb = existingProjects.some(
+            p => p.name.toLowerCase() === safeName.toLowerCase()
+          );
+          if (!alreadyInDb) {
+            await storage.createProject({
+              userId: user.id,
+              tenantId: user.tenantId || 'default-tenant',
+              name: safeName,
+              description: 'Playwright framework — created by Recording Studio',
+              type: 'playwright',
+            });
+            console.log(`[save-ai-framework] Registered project "${safeName}" in DB for user ${user.id}`);
+          }
+        }
+      } catch (dbErr: any) {
+        // Non-fatal — files were saved successfully, DB registration is best-effort
+        console.warn(`[save-ai-framework] DB project registration skipped: ${dbErr.message}`);
+      }
+
       res.json({ projectName: safeName, projectDir, written, skipped, merged });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /**
+   * POST /api/projects/:name/rename
+   * Rename a locator key or page method across all affected layers in a saved project.
+   *
+   * Body: {
+   *   scope:    'locator' | 'method'
+   *   file:     base file name without extension, e.g. "NousinfosystemsHomePage"
+   *   oldName:  current name
+   *   newName:  desired name
+   *   dryRun:   true = preview only (default true)
+   * }
+   *
+   * Response: RenameResult — hits[], filesAffected, applied
+   */
+  app.post('/api/projects/:name/rename', async (req, res) => {
+    const projectName = req.params.name;
+    const { scope, file, oldName, newName, dryRun = true } = req.body as {
+      scope: 'locator' | 'method';
+      file: string;
+      oldName: string;
+      newName: string;
+      dryRun?: boolean;
+    };
+
+    if (!scope || !file || !oldName || !newName) {
+      return res.status(400).json({ error: 'scope, file, oldName and newName are required' });
+    }
+    if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(newName)) {
+      return res.status(400).json({ error: 'newName must be a valid JavaScript identifier' });
+    }
+
+    const safeName   = projectName.replace(/[^a-zA-Z0-9_-]/g, '-');
+    const projectDir = path.join(PROJECTS_DIR, safeName);
+
+    if (!fs.existsSync(projectDir)) {
+      return res.status(404).json({ error: `Project "${safeName}" not found` });
+    }
+
+    try {
+      const { renameLocator, renameMethod } = await import('./rename-propagation.js');
+      const result = scope === 'locator'
+        ? renameLocator(projectDir, file, oldName, newName, dryRun)
+        : renameMethod(projectDir, file, oldName, newName, dryRun);
+
+      res.json(result);
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
@@ -2893,7 +3229,7 @@ export default defineConfig({
 // ─── WebSocket Server ─────────────────────────────────────────────────────────
 
 export function setupRecorderWebSocket(server: Server) {
-  const wss = new WebSocketServer({ server, path: '/ws/recorder' });
+  const wss = new WebSocketServer({ noServer: true });
 
   wss.on('connection', (ws: WebSocket) => {
     let linkedSession: RecordingSession | null = null;
@@ -3307,7 +3643,7 @@ export function registerTestManagementRoutes(app: Express) {
 
       const startTime = Date.now();
       const nodeBin = process.execPath;
-      const pwCli = path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+      const pwCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
       const relScript = path.relative(PROJECT_ROOT, scriptPath).replace(/\\/g, '/');
 
       const proc = spawn(nodeBin, [pwCli, 'test', relScript, '--reporter=list', '--headed', '--config', PW_CONFIG], {

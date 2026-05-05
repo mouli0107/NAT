@@ -90,6 +90,7 @@
     "pdfkit": "^0.17.2",
     "pg": "^8.20.0",
     "pixelmatch": "^7.1.0",
+    "@playwright/test": "^1.56.1",
     "playwright": "^1.56.1",
     "pngjs": "^7.0.0",
     "react": "^18.3.1",
@@ -113,7 +114,6 @@
     "zod-validation-error": "^3.5.4"
   },
   "devDependencies": {
-    "@playwright/test": "^1.56.1",
     "@replit/vite-plugin-cartographer": "^0.4.2",
     "@replit/vite-plugin-dev-banner": "^0.1.1",
     "@replit/vite-plugin-runtime-error-modal": "^0.0.3",
