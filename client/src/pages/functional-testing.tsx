@@ -3,6 +3,8 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import Editor from '@monaco-editor/react';
 import { useLocation } from 'wouter';
+import { Sidebar } from '@/components/dashboard/sidebar';
+import { DashboardHeader } from '@/components/dashboard/header';
 import {
   Globe, Loader2, CheckCircle2, XCircle, ChevronRight,
   Play, Download, RefreshCw, Terminal, AlertCircle,
@@ -54,6 +56,19 @@ const STEPS: Array<{ key: Step; label: string; icon: React.ReactNode }> = [
   { key: 'testcases', label: 'Test Cases',   icon: <ClipboardList className="w-4 h-4" /> },
   { key: 'scripts',   label: 'Scripts & Run', icon: <Zap className="w-4 h-4" /> },
 ];
+
+const cleanTitle = (title: string): string => {
+  if (!title) return title;
+  const altDataMatch = title.match(/^\[Alt Data\]\s+"([^"]+)"\s+satisfies:\s*(.+)$/i);
+  if (altDataMatch) return `${altDataMatch[2].trim()} — using ${altDataMatch[1].trim()}`;
+  const downstreamMatch = title.match(/^\[Downstream\]\s+After\s+"([^"]+)"\s+—\s+verify:\s*(.+)$/i);
+  if (downstreamMatch) return `${downstreamMatch[1].trim()} — verify downstream: ${downstreamMatch[2].trim()}`;
+  const violatedMatch = title.match(/^\[Criterion Violated\]\s+System rejects when:\s+"([^"]+)"\s+is not met/i);
+  if (violatedMatch) return `System rejects when not met: ${violatedMatch[1].trim()}`;
+  let cleaned = title.replace(/^\[[^\]]+\]\s*/g, '');
+  cleaned = cleaned.replace(/^"([^"]+)"$/, '$1');
+  return cleaned.trim();
+};
 
 const PRIORITY_COLORS: Record<string, string> = {
   P0: 'bg-red-50 text-red-600 border-red-200',
@@ -127,6 +142,7 @@ function highlightCode(code: string): string {
 export default function FunctionalTesting() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [step, setStep]               = useState<Step>('configure');
   const [url, setUrl]                 = useState('');
   const [maxPages, setMaxPages]       = useState(50);
@@ -947,12 +963,21 @@ export default function FunctionalTesting() {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full flex flex-col text-gray-900" style={{ background: '#f9fafb' }}>
+    <div className="flex h-full bg-background">
+      {/* ── Left sidebar ── */}
+      <Sidebar
+        isCollapsed={isSidebarCollapsed}
+        onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+      />
+
+      {/* ── Main content ── */}
+      <div className="flex-1 flex flex-col overflow-hidden text-gray-900" style={{ background: '#f9fafb' }}>
+        <DashboardHeader />
 
       {/* ── Header ── */}
       <div style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb' }}
         className="px-6 py-4 flex-shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+        <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => setLocation('/dashboard')}
@@ -979,7 +1004,7 @@ export default function FunctionalTesting() {
 
       {/* ── Step bar ── */}
       <div style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb' }} className="px-6 py-3 flex-shrink-0">
-        <div className="max-w-6xl mx-auto flex items-center gap-1">
+        <div className="flex items-center gap-1">
           {STEPS.map((s, i) => (
             <div key={s.key} className="flex items-center gap-1">
               <button
@@ -1012,7 +1037,7 @@ export default function FunctionalTesting() {
 
       {/* ── Content ── */}
       <div className="flex-1 overflow-y-auto">
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="px-6 py-6">
         <AnimatePresence mode="wait">
 
           {/* ─ Step 1: Configure ─ */}
@@ -1040,7 +1065,7 @@ export default function FunctionalTesting() {
                         <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#4f46e525', border: '1px solid #4f46e545' }}>
                           <Zap className="w-3.5 h-3.5 text-indigo-400" />
                         </div>
-                        <span className="text-indigo-400 text-xs font-bold tracking-widest uppercase">DevX QE</span>
+                        <span className="text-indigo-400 text-xs font-bold tracking-widest uppercase">ASTRA QE</span>
                       </div>
                       <h1 className="text-2xl font-bold text-white mb-1.5 tracking-tight">Autonomous Agentic AI Pipeline</h1>
                       <p className="text-white/45 text-sm leading-relaxed max-w-lg">
@@ -1853,7 +1878,7 @@ export default function FunctionalTesting() {
                         {selectedIds.has(tc.id) && <Check className="w-3 h-3 text-white" />}
                       </div>
                       <span className="text-xs font-mono text-gray-500 w-14 flex-shrink-0">{tc.id}</span>
-                      <span className="flex-1 text-sm font-medium text-gray-900">{tc.title}</span>
+                      <span className="flex-1 text-sm font-medium text-gray-900 whitespace-normal break-words">{cleanTitle(tc.title)}</span>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full border ${PRIORITY_COLORS[tc.priority]}`}>
                           {tc.priority}
@@ -2264,6 +2289,8 @@ export default function FunctionalTesting() {
 
         </AnimatePresence>
       </div>
+      </div>
+
       </div>
     </div>
   );

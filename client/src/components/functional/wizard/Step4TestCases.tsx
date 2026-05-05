@@ -77,7 +77,7 @@ function TestCaseRow({ tc, onUpdate }: { tc: TestCase; onUpdate: (id: string, up
           </div>
         ) : (
           <>
-            <span className="flex-1 text-xs font-medium truncate">{tc.name}</span>
+            <span className="flex-1 text-xs font-medium break-words whitespace-normal">{tc.name}</span>
             <button
               onClick={e => { e.stopPropagation(); setEditing(true); }}
               className="opacity-0 group-hover:opacity-100 p-0.5 hover:bg-muted rounded"

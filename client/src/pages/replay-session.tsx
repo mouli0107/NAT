@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type { TestSessionWithResults, AgentTask, LiveMetric, TestResults } from "@shared/schema";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Play, Pause, RotateCcw } from "lucide-react";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { AgentTimeline } from "@/components/dashboard/agent-timeline";
 import { LiveMetrics } from "@/components/dashboard/live-metrics";
 import { VisualComparison } from "@/components/dashboard/visual-comparison";
@@ -61,6 +62,7 @@ export default function ReplaySession() {
 
   return (
     <div className="flex flex-col h-full">
+      <DashboardHeader />
       <header className="border-b p-4">
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-4">

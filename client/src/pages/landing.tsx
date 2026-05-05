@@ -28,9 +28,24 @@ export default function LandingPage() {
     setIsLoading(true);
 
     try {
-      await apiRequest("POST", "/api/auth/login", { email, password });
-      localStorage.setItem("isAuthenticated", "true");
-      setLocation("/");
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username: email.trim(), password }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        localStorage.setItem("isAuthenticated", "true");
+        localStorage.setItem("currentUser", JSON.stringify({ id: data.userId, username: data.username, tenantId: data.tenantId }));
+        // Redirect to /login to handle forced password change flow
+        if (data.mustChangePassword) {
+          setLocation("/login");
+        } else {
+          setLocation("/");
+        }
+      } else {
+        toast({ variant: "destructive", title: "Login failed", description: data.error || "Invalid credentials" });
+      }
     } catch (error: any) {
       toast({
         variant: "destructive",
@@ -147,26 +162,28 @@ export default function LandingPage() {
                 {brand.loginTitle}
               </h2>
               <p className="text-sm text-gray-500 mt-2" data-testid="text-demo-mode">
-                Demo mode: Use any credentials
+                Sign in with your account credentials
               </p>
             </div>
 
             <form onSubmit={handleLogin} className="space-y-4">
               <Input
-                type="email"
-                placeholder="Enter any email"
+                type="text"
+                placeholder="your@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="border-gray-300 text-gray-900 bg-white"
+                autoComplete="username"
                 required
                 data-testid="input-email"
               />
               <Input
                 type="password"
-                placeholder="Enter any password"
+                placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="border-gray-300 text-gray-900 bg-white"
+                autoComplete="current-password"
                 required
                 data-testid="input-password"
               />
@@ -177,7 +194,7 @@ export default function LandingPage() {
                 disabled={isLoading}
                 data-testid="button-login"
               >
-                {isLoading ? "Logging in..." : "Login"}
+                {isLoading ? "Signing in..." : "Sign In"}
               </Button>
             </form>
           </div>

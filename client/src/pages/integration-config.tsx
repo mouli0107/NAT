@@ -752,7 +752,7 @@ export default function IntegrationConfigPage() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
         <main className="flex-1 overflow-y-auto">
-          <div className="max-w-4xl mx-auto p-6">
+          <div className="w-full p-6">
             <div className="mb-6">
               <Link href="/integration-management">
                 <Button variant="ghost" size="sm" className="mb-4" data-testid="button-back">

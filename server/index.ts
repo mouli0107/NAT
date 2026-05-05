@@ -1,16 +1,41 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
+import session from "express-session";
 import { registerRoutes } from "./routes";
-import { setupVite, serveStatic, log } from "./vite";
+import { serveStatic, log } from "./static";
 import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady } from "./playwright-setup";
 
 const app = express();
+
+// Trust Azure App Service reverse proxy so secure cookies work over HTTPS
+app.set('trust proxy', 1);
 
 declare module 'http' {
   interface IncomingMessage {
     rawBody: unknown
   }
 }
+
+// Augment express-session to carry our auth fields
+declare module 'express-session' {
+  interface SessionData {
+    userId?: string;
+    tenantId?: string;
+    username?: string;
+  }
+}
+
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'nat20-dev-secret-change-in-production',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+  },
+}));
+
 app.use(express.json({
   limit: '50mb',
   verify: (req, _res, buf) => {
@@ -64,6 +89,7 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (app.get("env") === "development") {
+    const { setupVite } = await import("./vite");
     await setupVite(app, server);
   } else {
     serveStatic(app);
@@ -77,14 +103,51 @@ app.use((req, res, next) => {
   // Detect system browser before server starts (fast — no download)
   detectBrowser();
 
-  server.listen({
-    port,
-    host: "0.0.0.0",
-  }, () => {
-    log(`serving on port ${port}`);
-    // If no system browser was found, attempt background install as fallback
-    if (!isPlaywrightReady()) {
-      startPlaywrightInstallation();
-    }
-  });
+  // ── Graceful shutdown ────────────────────────────────────────────────
+  const shutdown = (signal: string) => {
+    log(`[Shutdown] ${signal} received — closing server on port ${port}`);
+    server.close(() => {
+      log('[Shutdown] HTTP server closed. Port released. Exiting.');
+      process.exit(0);
+    });
+    // Force-exit after 3 s if SSE/WS connections prevent clean close
+    setTimeout(() => {
+      log('[Shutdown] Force exit after timeout.');
+      process.exit(0);
+    }, 3000).unref();
+  };
+  process.on('SIGINT',  () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGHUP',  () => shutdown('SIGHUP'));
+
+  // ── Listen with auto-retry on EADDRINUSE ─────────────────────────────
+  // On Windows, killing a process leaves the socket in TIME_WAIT for a
+  // few seconds. We retry up to 5 times with a 1.5 s gap so `npm run dev`
+  // always succeeds without needing a machine restart.
+  const MAX_RETRIES = 8;
+  const RETRY_DELAY = 2000;
+
+  const startListening = (attempt: number) => {
+    server.listen({ port, host: '0.0.0.0' }, () => {
+      log(`serving on port ${port}`);
+      if (!isPlaywrightReady()) startPlaywrightInstallation();
+    });
+
+    server.once('error', (err: NodeJS.ErrnoException) => {
+      if (err.code === 'EADDRINUSE') {
+        if (attempt < MAX_RETRIES) {
+          log(`[Server] Port ${port} still in use — retrying in ${RETRY_DELAY}ms (attempt ${attempt}/${MAX_RETRIES})…`);
+          server.close();
+          setTimeout(() => startListening(attempt + 1), RETRY_DELAY);
+        } else {
+          log(`[Server] Port ${port} still blocked after ${MAX_RETRIES} attempts. Run kill-server.bat then try again.`);
+          process.exit(1);
+        }
+      } else {
+        throw err;
+      }
+    });
+  };
+
+  startListening(1);
 })();

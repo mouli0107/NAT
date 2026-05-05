@@ -9,34 +9,10 @@ export interface ColorScheme {
 
 export const colorSchemes: ColorScheme[] = [
   {
-    id: "devx-blue",
-    name: "DevX Blue",
+    id: "astra-blue",
+    name: "ASTRA Blue",
     background: "#ffffff",
     accent: "#4f46e5",
-  },
-  {
-    id: "ocean-blue",
-    name: "Ocean Blue",
-    background: "#ffffff",
-    accent: "#3b82f6",
-  },
-  {
-    id: "deep-pink",
-    name: "Deep Pink",
-    background: "#ffffff",
-    accent: "#ec4899",
-  },
-  {
-    id: "forest-green",
-    name: "Forest Green",
-    background: "#ffffff",
-    accent: "#10b981",
-  },
-  {
-    id: "sunset-orange",
-    name: "Sunset Orange",
-    background: "#ffffff",
-    accent: "#f97316",
   },
 ];
 

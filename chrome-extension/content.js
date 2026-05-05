@@ -1,5 +1,5 @@
 /**
- * DevX QE Recorder — content.js
+ * ASTRA QE Recorder — content.js
  * Injected into every page. Captures user interactions and sends to background.js.
  *
  * Selector Priority Ladder (most stable → least stable):

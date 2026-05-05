@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation, Link } from "wouter";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -96,10 +98,10 @@ function ProjectNode({
   return (
     <div>
       <div
-        className="group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors hover:bg-violet-900/20 text-violet-300"
+        className="group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors hover:bg-blue-50 text-blue-700 font-semibold"
         onClick={() => onToggleProject(projectName)}
       >
-        <span className="text-slate-500 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+        <span className="text-blue-400 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
           {projectTests.length > 0 ? '▶' : ' '}
         </span>
         <input type="checkbox"
@@ -107,15 +109,15 @@ function ProjectNode({
           ref={(el: HTMLInputElement | null) => { if (el) el.indeterminate = someSel && !allSel; }}
           onChange={e => { e.stopPropagation(); projectTests.forEach(t => onToggleTest(t.id)); }}
           onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-violet-500 flex-shrink-0 cursor-pointer"
+          className="w-3 h-3 rounded accent-blue-500 flex-shrink-0 cursor-pointer"
         />
         <span className="flex-shrink-0">🏗</span>
-        <span className="flex-1 truncate font-semibold">{projectName}</span>
-        <span className="text-[9px] text-slate-600 flex-shrink-0 ml-1">{projectTests.length}</span>
+        <span className="flex-1 truncate">{projectName}</span>
+        <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-semibold">{projectTests.length}</span>
       </div>
 
       {isExpanded && (
-        <div className="ml-4 border-l border-violet-800/40 pl-2">
+        <div className="ml-4 border-l border-blue-200 pl-2">
           {relevantRootFolders.map(folder => (
             <FolderNode
               key={`${projectName}-${folder.id}`}
@@ -177,11 +179,11 @@ function FolderNode({
   return (
     <div>
       <div
-        className={`group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors relative ${isSelected ? 'bg-indigo-600/20 text-indigo-300' : 'hover:bg-slate-800/60 text-slate-400'}`}
+        className={`group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors relative ${isSelected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-slate-700'}`}
         onClick={() => { onSelectFolder(folder.id); onToggleExpand(folder.id); }}
       >
         {/* Expand arrow */}
-        <span className="text-slate-600 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+        <span className="text-blue-400 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
           {(children.length > 0 || folderTests.length > 0) ? '▶' : ' '}
         </span>
 
@@ -189,7 +191,7 @@ function FolderNode({
         <input type="checkbox" checked={allSelected} ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
           onChange={e => { e.stopPropagation(); folderTests.forEach(t => onToggleTest(t.id)); }}
           onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0 cursor-pointer"
+          className="w-3 h-3 rounded accent-blue-500 flex-shrink-0 cursor-pointer"
         />
 
         <span className="flex-shrink-0">{icon}</span>
@@ -198,7 +200,7 @@ function FolderNode({
           <input
             value={renameVal}
             autoFocus
-            className="flex-1 bg-slate-800 border border-indigo-500 rounded px-1 py-0 text-xs text-white outline-none min-w-0"
+            className="flex-1 bg-white border border-blue-400 rounded px-1 py-0 text-xs text-slate-800 outline-none min-w-0"
             onChange={e => setRenameVal(e.target.value)}
             onBlur={() => { onRenameFolder(folder.id, renameVal); setRenaming(false); }}
             onKeyDown={e => { if (e.key === 'Enter') { onRenameFolder(folder.id, renameVal); setRenaming(false); } if (e.key === 'Escape') setRenaming(false); }}
@@ -208,25 +210,25 @@ function FolderNode({
           <span className="flex-1 truncate font-medium">{folder.name}</span>
         )}
 
-        <span className="text-[9px] text-slate-700 flex-shrink-0 ml-1">{folderTests.length}</span>
+        <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-semibold">{folderTests.length}</span>
 
         {/* Context menu trigger */}
         <button
           onClick={e => { e.stopPropagation(); setShowCtx(v => !v); }}
-          className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-slate-600 hover:text-slate-300 px-0.5 transition-opacity"
+          className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-slate-400 hover:text-blue-600 px-0.5 transition-opacity"
         >⋯</button>
 
         {showCtx && (
-          <div className="absolute right-2 top-7 z-50 bg-slate-900 border border-slate-700 rounded-lg shadow-xl text-xs w-36 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <button className="w-full text-left px-3 py-2 hover:bg-slate-800 text-slate-300" onClick={() => { setRenaming(true); setShowCtx(false); }}>✏️ Rename</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-slate-800 text-slate-300" onClick={() => { onNewFolder(folder.id); setShowCtx(false); }}>📁 New Subfolder</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-slate-800 text-red-400" onClick={() => { onDeleteFolder(folder.id); setShowCtx(false); }}>🗑 Delete Folder</button>
+          <div className="absolute right-2 top-7 z-50 bg-white border border-slate-200 rounded-lg shadow-xl text-xs w-36 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700" onClick={() => { setRenaming(true); setShowCtx(false); }}>✏️ Rename</button>
+            <button className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700" onClick={() => { onNewFolder(folder.id); setShowCtx(false); }}>📁 New Subfolder</button>
+            <button className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500" onClick={() => { onDeleteFolder(folder.id); setShowCtx(false); }}>🗑 Delete Folder</button>
           </div>
         )}
       </div>
 
       {isExpanded && (
-        <div className="ml-4 border-l border-slate-800/60 pl-2">
+        <div className="ml-4 border-l border-blue-200 pl-2">
           {children.map(child => (
             <FolderNode key={child.id} folder={child} allFolders={allFolders} tests={tests}
               selectedFolderId={selectedFolderId} selectedTestIds={selectedTestIds}
@@ -250,12 +252,12 @@ function TestRow({ test, selected, onToggle }: { test: RecordedTest; selected: b
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-[11px] transition-colors ${selected ? 'bg-indigo-600/10 text-indigo-300' : 'hover:bg-slate-800/40 text-slate-500'}`}
+      className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-[11px] transition-colors ${selected ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-50 text-slate-600'}`}
       onClick={() => onToggle(test.id)}
     >
       <input type="checkbox" checked={selected} onChange={() => onToggle(test.id)}
         onClick={e => e.stopPropagation()}
-        className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0" />
+        className="w-3 h-3 rounded accent-blue-500 flex-shrink-0" />
       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot}`} />
       <span className="flex-1 truncate">{test.name}</span>
       {test.lastRunDuration && <span className="text-[9px] text-slate-700">{(test.lastRunDuration / 1000).toFixed(1)}s</span>}
@@ -267,6 +269,7 @@ function TestRow({ test, selected, onToggle }: { test: RecordedTest; selected: b
 
 export default function TestLibraryPage() {
   const [, navigate] = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   // Data
   const [folders, setFolders] = useState<TestFolder[]>([]);
@@ -503,73 +506,91 @@ export default function TestLibraryPage() {
   // When a folder is selected inside a project context, filter to that project's tests in that folder
   // When no project is selected, show unassigned tests for that folder
   const folderTests = selectedFolderId
-    ? tests.filter(t => t.folderId === selectedFolderId && (selectedProject ? t.projectName === selectedProject : !t.projectName))
+    ? tests.filter(t => t.folderId === selectedFolderId && (selectedProject ? t.projectName?.toLowerCase() === selectedProject.toLowerCase() : !t.projectName))
     : [];
 
-  // Projects: unique projectNames derived from tests
-  const projectNames = Array.from(new Set(
-    tests.map(t => t.projectName).filter(Boolean) as string[]
-  )).sort();
-  const projectTests = selectedProject ? tests.filter(t => t.projectName === selectedProject) : [];
+  // Projects: unique projectNames derived from tests — case-insensitive deduplication
+  // e.g. "OneSpan" and "Onespan" are treated as the same project
+  const projectNameMap = new Map<string, string>(); // lowercase key → original display name (first seen)
+  for (const t of tests) {
+    if (t.projectName) {
+      const key = t.projectName.toLowerCase();
+      if (!projectNameMap.has(key)) projectNameMap.set(key, t.projectName);
+    }
+  }
+  const projectNames = Array.from(projectNameMap.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+  const projectTests = selectedProject
+    ? tests.filter(t => t.projectName?.toLowerCase() === selectedProject.toLowerCase())
+    : [];
 
   return (
-    <div className="flex flex-col h-full bg-[#050a14] text-white overflow-hidden">
+    <div className="flex h-full bg-background">
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+    <div className="flex-1 flex flex-col bg-white text-slate-800 overflow-hidden">
+      <DashboardHeader />
 
           {/* Test Management Banner */}
           {showTMLink && (
-            <div className="flex items-center justify-between px-4 py-2 bg-violet-900/20 border-b border-violet-500/20 text-xs">
-              <div className="flex items-center gap-2 text-violet-300">
+            <div className="flex items-center justify-between px-4 py-2 bg-blue-50 border-b border-blue-200 text-xs">
+              <div className="flex items-center gap-2 text-blue-700">
                 <span>📊</span>
                 <span>View pass rate trends, RTM, CI/CD pipelines and flakiness reports in</span>
-                <a href="/test-management" className="font-bold text-violet-200 underline hover:text-white">Test Management Dashboard →</a>
+                <a href="/test-management" className="font-bold text-blue-600 underline hover:text-blue-800">Test Management Dashboard →</a>
               </div>
-              <button onClick={() => setShowTMLink(false)} className="text-violet-500 hover:text-violet-300 ml-4">✕</button>
+              <button onClick={() => setShowTMLink(false)} className="text-blue-400 hover:text-blue-600 ml-4">✕</button>
             </div>
           )}
 
-      {/* ── Quick-action bar (Coverage + New Recording) ────────────────────── */}
-      <div className="flex-shrink-0 flex items-center justify-end gap-2 px-4 py-2 border-b border-slate-800/60 bg-slate-950/60">
-        <Link href="/coverage">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs transition-colors border border-slate-700">
-            📊 Coverage
+      {/* ── Quick-action bar (Dashboard + Coverage + New Recording) ─────────── */}
+      <div className="flex-shrink-0 flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-white">
+        <Link href="/dashboard">
+          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors border border-slate-200">
+            ← Dashboard
           </button>
         </Link>
-        <Link href="/recorder">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-rose-600/80 to-red-600/80 hover:from-rose-600 hover:to-red-600 text-white text-xs font-semibold transition-all">
-            <span className="text-[10px]">⏺</span> New Recording
-          </button>
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/coverage">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors border border-slate-200">
+              📊 Coverage
+            </button>
+          </Link>
+          <Link href="/recorder">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-rose-600/80 to-red-600/80 hover:from-rose-600 hover:to-red-600 text-white text-xs font-semibold transition-all">
+              <span className="text-[10px]">⏺</span> New Recording
+            </button>
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden">
 
       {/* ── Left: Folder Tree ────────────────────────────────────────────────── */}
-      <div className="w-72 flex-shrink-0 border-r border-slate-800/60 flex flex-col bg-slate-950/40">
+      <div className="w-72 flex-shrink-0 border-r border-slate-200 flex flex-col bg-slate-50">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-slate-800/60 flex-shrink-0">
+        <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center text-xs">🗂</div>
-              <span className="text-sm font-bold text-white">Test Library</span>
+              <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-xs">🗂</div>
+              <span className="text-sm font-bold text-blue-700">Test Library</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setShowNewFolder(true)} title="New Folder"
-                className="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">+</button>
+                className="w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs flex items-center justify-center transition-colors">+</button>
               <button onClick={loadRunHistory} title="Run History"
-                className="w-6 h-6 rounded-md bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">🕘</button>
+                className="w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs flex items-center justify-center transition-colors">🕘</button>
             </div>
           </div>
 
           {/* Stats bar */}
           <div className="grid grid-cols-3 gap-1">
             {[
-              { label: 'Total', val: stats.totalTests, color: 'text-slate-300' },
-              { label: 'Passed', val: stats.passed, color: 'text-emerald-400' },
-              { label: 'Failed', val: stats.failed, color: 'text-red-400' },
+              { label: 'Total', val: stats.totalTests, color: 'text-blue-600', bg: 'bg-blue-50' },
+              { label: 'Passed', val: stats.passed, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+              { label: 'Failed', val: stats.failed, color: 'text-red-500', bg: 'bg-red-50' },
             ].map(s => (
-              <div key={s.label} className="bg-slate-900 rounded-lg px-2 py-1.5 text-center">
+              <div key={s.label} className={`${s.bg} rounded-lg px-2 py-1.5 text-center border border-slate-200`}>
                 <div className={`text-sm font-bold ${s.color}`}>{s.val}</div>
-                <div className="text-[9px] text-slate-600">{s.label}</div>
+                <div className="text-[9px] text-slate-500">{s.label}</div>
               </div>
             ))}
           </div>
@@ -577,24 +598,24 @@ export default function TestLibraryPage() {
 
         {/* New folder form */}
         {showNewFolder && (
-          <div className="px-3 py-2 border-b border-slate-800 bg-slate-900/60 flex-shrink-0">
-            <div className="text-[10px] text-slate-500 mb-1.5 font-semibold">NEW FOLDER</div>
+          <div className="px-3 py-2 border-b border-slate-200 bg-blue-50 flex-shrink-0">
+            <div className="text-[10px] text-blue-600 mb-1.5 font-semibold">NEW FOLDER</div>
             <input
               autoFocus
               value={newFolderName}
               onChange={e => setNewFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') setShowNewFolder(false); }}
               placeholder="Folder name..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-white placeholder-slate-600 outline-none focus:border-violet-500 mb-1.5"
+              className="w-full bg-white border border-blue-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-500 mb-1.5"
             />
             <select value={newFolderParent} onChange={e => setNewFolderParent(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 outline-none mb-2">
+              className="w-full bg-white border border-blue-300 rounded-lg px-2 py-1.5 text-xs text-slate-700 outline-none mb-2">
               <option value="">Root</option>
               {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
             <div className="flex gap-1.5">
-              <button onClick={() => setShowNewFolder(false)} className="flex-1 py-1 rounded bg-slate-800 text-xs text-slate-400">Cancel</button>
-              <button onClick={createFolder} className="flex-1 py-1 rounded bg-violet-600 hover:bg-violet-500 text-xs text-white font-semibold">Create</button>
+              <button onClick={() => setShowNewFolder(false)} className="flex-1 py-1 rounded bg-white border border-slate-200 text-xs text-slate-600">Cancel</button>
+              <button onClick={createFolder} className="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-xs text-white font-semibold">Create</button>
             </div>
           </div>
         )}
@@ -605,7 +626,7 @@ export default function TestLibraryPage() {
           {/* ── Projects section ── */}
           {projectNames.length > 0 && (
             <div className="mb-1">
-              <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+              <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
                 <span>🏗</span> Projects
               </div>
               {projectNames.map(proj => (
@@ -613,7 +634,7 @@ export default function TestLibraryPage() {
                   key={proj}
                   projectName={proj}
                   allFolders={folders}
-                  projectTests={tests.filter(t => t.projectName === proj)}
+                  projectTests={tests.filter(t => t.projectName?.toLowerCase() === proj.toLowerCase())}
                   selectedFolderId={selectedFolderId}
                   selectedTestIds={selectedTestIds}
                   onSelectFolder={id => { setSelectedFolderId(id); setSelectedProject(proj); }}
@@ -631,42 +652,42 @@ export default function TestLibraryPage() {
         </div>
 
         {/* Execute button */}
-        <div className="px-3 py-3 border-t border-slate-800/60 flex-shrink-0">
+        <div className="px-3 py-3 border-t border-slate-200 flex-shrink-0">
           <button
             onClick={executeSelected}
             disabled={selectedCount === 0 || isRunning}
-            className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold transition-all flex items-center justify-center gap-2"
+            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold transition-all flex items-center justify-center gap-2"
           >
             {isRunning
               ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Running {selectedCount} tests...</>
               : <>▶ Execute Selected {selectedCount > 0 ? `(${selectedCount})` : ''}</>}
           </button>
           {selectedCount > 0 && !isRunning && (
-            <button onClick={() => setSelectedTestIds(new Set())} className="w-full mt-1.5 py-1 text-[10px] text-slate-600 hover:text-slate-400 transition-colors">Clear selection</button>
+            <button onClick={() => setSelectedTestIds(new Set())} className="w-full mt-1.5 py-1 text-[10px] text-slate-500 hover:text-blue-600 transition-colors">Clear selection</button>
           )}
         </div>
       </div>
 
       {/* ── Middle: Test list for selected folder / project ─────────────────── */}
-      <div className="w-72 flex-shrink-0 border-r border-slate-800/60 flex flex-col">
-        <div className="px-4 py-3 border-b border-slate-800/60 flex-shrink-0">
+      <div className="w-72 flex-shrink-0 border-r border-slate-200 flex flex-col bg-white">
+        <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
           <div className="flex items-center gap-1 flex-wrap">
             {selectedProject && (
               <>
-                <span className="text-[10px] text-violet-400 font-semibold">🏗 {selectedProject}</span>
-                {selectedFolderId && <span className="text-slate-600 text-[10px]">/</span>}
+                <span className="text-[10px] text-blue-600 font-semibold">🏗 {selectedProject}</span>
+                {selectedFolderId && <span className="text-slate-400 text-[10px]">/</span>}
               </>
             )}
             {selectedFolderId && (
-              <span className="text-xs font-bold text-white truncate">
+              <span className="text-xs font-bold text-slate-800 truncate">
                 {folders.find(f => f.id === selectedFolderId)?.name || 'Folder'}
               </span>
             )}
             {!selectedProject && !selectedFolderId && (
-              <span className="text-xs font-bold text-slate-500">Select a folder</span>
+              <span className="text-xs font-bold text-slate-400">Select a folder</span>
             )}
           </div>
-          <div className="text-[10px] text-slate-600 mt-0.5">
+          <div className="text-[10px] text-slate-400 mt-0.5">
             {(selectedProject ? projectTests : folderTests).length} test{(selectedProject ? projectTests : folderTests).length !== 1 ? 's' : ''}
           </div>
         </div>
@@ -683,34 +704,34 @@ export default function TestLibraryPage() {
                 <div
                   key={test.id}
                   onClick={() => { openTest(test.id); }}
-                  className={`group flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${activeTestId === test.id ? 'bg-indigo-600/10 border-indigo-500/30' : 'bg-slate-900/40 border-slate-800/60 hover:border-slate-700'}`}
+                  className={`group flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${activeTestId === test.id ? 'bg-blue-50 border-blue-400' : 'bg-white border-slate-200 hover:border-blue-300'}`}
                 >
                   <input type="checkbox" checked={selectedTestIds.has(test.id)}
                     onChange={() => toggleTest(test.id)} onClick={e => e.stopPropagation()}
-                    className="mt-0.5 w-3.5 h-3.5 rounded accent-indigo-500 flex-shrink-0" />
+                    className="mt-0.5 w-3.5 h-3.5 rounded accent-blue-500 flex-shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-slate-300 truncate flex items-center gap-1">
+                    <div className="text-xs font-medium text-slate-700 truncate flex items-center gap-1">
                       <span className="truncate">{test.name}</span>
                       {/* Flakiness indicator */}
                       {(() => {
                         const f = flakinessMap[test.id] || flakinessMap[test.name];
                         if (!f || f.runCount === 0) return null;
                         return (
-                          <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${f.isFlaky ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30' : 'bg-emerald-500/10 text-emerald-500'}`}>
+                          <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${f.isFlaky ? 'bg-amber-100 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600'}`}>
                             {f.isFlaky ? `⚠ ${f.stability}%` : `✓ ${f.stability}%`}
                           </span>
                         );
                       })()}
                     </div>
                     {test.projectName && !selectedProject && (
-                      <div className="text-[10px] text-violet-400/70 truncate mt-0.5">🏗 {test.projectName}</div>
+                      <div className="text-[10px] text-blue-500 truncate mt-0.5">🏗 {test.projectName}</div>
                     )}
-                    <div className="text-[10px] text-slate-600 truncate mt-0.5">{test.url}</div>
+                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{test.url}</div>
                     <div className="flex items-center gap-2 mt-1.5">
                       <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                        test.lastRunStatus === 'passed' ? 'bg-emerald-500/10 text-emerald-400' :
-                        test.lastRunStatus === 'failed' ? 'bg-red-500/10 text-red-400' :
-                        'bg-slate-800 text-slate-600'
+                        test.lastRunStatus === 'passed' ? 'bg-emerald-50 text-emerald-600' :
+                        test.lastRunStatus === 'failed' ? 'bg-red-50 text-red-500' :
+                        'bg-slate-100 text-slate-500'
                       }`}>
                         {test.lastRunStatus === 'passed' ? '✓ Passed' : test.lastRunStatus === 'failed' ? '✗ Failed' : '◦ Not run'}
                       </div>
@@ -762,12 +783,12 @@ export default function TestLibraryPage() {
           <div className="flex-1 flex overflow-hidden">
             {/* Test detail */}
             <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-800/60 flex items-center gap-3 flex-shrink-0">
+              <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-3 flex-shrink-0 bg-white">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <div className="text-sm font-bold text-white truncate">{activeTest.name}</div>
+                    <div className="text-sm font-bold text-slate-800 truncate">{activeTest.name}</div>
                     {activeTest.projectName && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-violet-500/15 border border-violet-500/25 text-violet-300 text-[10px] font-semibold flex-shrink-0">
+                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-semibold flex-shrink-0">
                         🏗 {activeTest.projectName}
                       </span>
                     )}
@@ -787,19 +808,19 @@ export default function TestLibraryPage() {
                           if (e.key === 'Escape') setEditingProject(false);
                         }}
                         placeholder="Project name..."
-                        className="bg-slate-800 border border-violet-500/50 rounded-lg px-2 py-1.5 text-xs text-white outline-none w-32 placeholder-slate-600"
+                        className="bg-white border border-blue-400 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none w-32 placeholder-slate-400"
                       />
                       <button
                         onClick={() => { assignProject(activeTest.id, projectInputVal); setEditingProject(false); }}
-                        className="px-2 py-1.5 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold"
+                        className="px-2 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
                       >✓</button>
-                      <button onClick={() => setEditingProject(false)} className="px-2 py-1.5 rounded-lg bg-slate-800 text-slate-400 text-xs">✕</button>
+                      <button onClick={() => setEditingProject(false)} className="px-2 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-xs">✕</button>
                     </div>
                   ) : (
                     <button
                       onClick={() => { setProjectInputVal(activeTest.projectName || ''); setEditingProject(true); }}
                       title={activeTest.projectName ? `Project: ${activeTest.projectName} — click to change` : 'Assign to project'}
-                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border text-xs transition-colors ${activeTest.projectName ? 'border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20' : 'border-slate-700 bg-slate-800 text-slate-500 hover:text-slate-300'}`}
+                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border text-xs transition-colors ${activeTest.projectName ? 'border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100' : 'border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-700'}`}
                     >
                       🏗 {activeTest.projectName || 'Set Project'}
                     </button>
@@ -807,7 +828,7 @@ export default function TestLibraryPage() {
                   <select
                     value={activeTest.folderId}
                     onChange={e => { moveTest(activeTest.id, e.target.value); setActiveTest(prev => prev ? {...prev, folderId: e.target.value} : null); }}
-                    className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 outline-none"
+                    className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 outline-none"
                   >
                     {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
                   </select>
@@ -826,7 +847,7 @@ export default function TestLibraryPage() {
                     <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recorded Steps</div>
                     <div className="space-y-1">
                       {activeTest.nlSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs text-slate-400 bg-slate-900/40 rounded-lg px-3 py-1.5">
+                        <div key={i} className="flex items-start gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-1.5">
                           <span className="text-slate-700 flex-shrink-0 font-mono text-[10px]">{String(i + 1).padStart(2, '0')}</span>
                           <span>{step.replace(/^Step \d+:\s*/, '')}</span>
                         </div>
@@ -842,19 +863,19 @@ export default function TestLibraryPage() {
                       <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Playwright Script</div>
                       <div className="flex gap-2">
                         <button onClick={() => navigator.clipboard.writeText(activeTest.script || '')}
-                          className="text-[10px] text-slate-500 hover:text-slate-300 px-2 py-1 rounded bg-slate-800 transition-colors">📋 Copy</button>
+                          className="text-[10px] text-slate-500 hover:text-blue-600 px-2 py-1 rounded bg-slate-100 border border-slate-200 transition-colors">📋 Copy</button>
                         <a href={`/api/test-library/tests/${activeTest.id}/script`}
-                          download className="text-[10px] text-slate-500 hover:text-slate-300 px-2 py-1 rounded bg-slate-800 transition-colors">↓ Download</a>
+                          download className="text-[10px] text-slate-500 hover:text-blue-600 px-2 py-1 rounded bg-slate-100 border border-slate-200 transition-colors">↓ Download</a>
                       </div>
                     </div>
-                    <pre className="text-[11px] font-mono bg-slate-950/60 border border-slate-800 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}>
+                    <pre className="text-[11px] font-mono bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
                       {activeTest.script.split('\n').map((line, i) => (
                         <span key={i} className={
-                          line.trim().startsWith('//') ? 'text-slate-600' :
-                          line.startsWith('import') ? 'text-violet-400' :
-                          line.includes("test(") ? 'text-blue-400' :
-                          line.includes('await') ? 'text-emerald-300' :
-                          'text-slate-300'
+                          line.trim().startsWith('//') ? 'text-slate-400' :
+                          line.startsWith('import') ? 'text-blue-600' :
+                          line.includes("test(") ? 'text-blue-700 font-semibold' :
+                          line.includes('await') ? 'text-emerald-700' :
+                          'text-slate-700'
                         }>{line}{'\n'}</span>
                       ))}
                     </pre>
@@ -865,15 +886,15 @@ export default function TestLibraryPage() {
 
             {/* Execution output panel */}
             {(isRunning || runOutput.length > 0) && (
-              <div className="w-96 flex-shrink-0 border-l border-slate-800/60 flex flex-col bg-[#030712]">
-                <div className="px-3 py-2.5 border-b border-slate-800 flex items-center gap-2 flex-shrink-0">
+              <div className="w-96 flex-shrink-0 border-l border-slate-200 flex flex-col bg-white">
+                <div className="px-3 py-2.5 border-b border-slate-200 flex items-center gap-2 flex-shrink-0">
                   <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-yellow-400 animate-pulse' : activeRun?.failCount ? 'bg-red-400' : 'bg-emerald-400'}`} />
-                  <span className="text-xs font-semibold text-slate-300">Execution Output</span>
-                  <button onClick={() => { setRunOutput([]); setVisualAnalysis(null); }} className="ml-auto text-slate-700 hover:text-slate-400 text-xs">Clear</button>
+                  <span className="text-xs font-semibold text-slate-700">Execution Output</span>
+                  <button onClick={() => { setRunOutput([]); setVisualAnalysis(null); }} className="ml-auto text-slate-400 hover:text-slate-600 text-xs">Clear</button>
                 </div>
-                <div ref={outputRef} className="flex-1 overflow-auto p-3 font-mono text-[10px] space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}>
+                <div ref={outputRef} className="flex-1 overflow-auto p-3 font-mono text-[10px] space-y-0.5 bg-slate-50" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
                   {runOutput.map((line, i) => (
-                    <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${line.isError ? 'text-red-400' : line.line.startsWith('\n▶') ? 'text-indigo-300 font-bold mt-2' : line.line.includes('✅') ? 'text-emerald-300 font-bold' : line.line.includes('❌') ? 'text-red-300 font-bold' : 'text-slate-500'}`}>
+                    <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${line.isError ? 'text-red-500' : line.line.startsWith('\n▶') ? 'text-blue-600 font-bold mt-2' : line.line.includes('✅') ? 'text-emerald-600 font-bold' : line.line.includes('❌') ? 'text-red-500 font-bold' : 'text-slate-600'}`}>
                       {line.line}
                     </div>
                   ))}
@@ -924,29 +945,29 @@ export default function TestLibraryPage() {
         )}
       </div>
 
-      </div>{/* end inner flex */}
+      </div>
 
       {/* ── Run History modal ────────────────────────────────────────────────── */}
       {showRunHistory && (
         <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[560px] max-h-[70vh] bg-[#0d1424] border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-800 flex-shrink-0">
-              <div className="text-sm font-bold text-white">🕘 Run History</div>
-              <button onClick={() => setShowRunHistory(false)} className="text-slate-600 hover:text-slate-400">✕</button>
+          <div className="w-[560px] max-h-[70vh] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 flex-shrink-0">
+              <div className="text-sm font-bold text-slate-800">🕘 Run History</div>
+              <button onClick={() => setShowRunHistory(false)} className="text-slate-400 hover:text-slate-600">✕</button>
             </div>
             <div className="flex-1 overflow-auto p-4 space-y-2">
               {runHistory.length === 0 ? (
-                <div className="text-xs text-slate-600 text-center py-8">No runs yet</div>
+                <div className="text-xs text-slate-400 text-center py-8">No runs yet</div>
               ) : runHistory.map(run => (
-                <div key={run.id} className="flex items-center gap-3 bg-slate-900 rounded-xl p-3 border border-slate-800">
+                <div key={run.id} className="flex items-center gap-3 bg-slate-50 rounded-xl p-3 border border-slate-200">
                   <div className={`w-2 h-2 rounded-full flex-shrink-0 ${run.failCount > 0 ? 'bg-red-400' : 'bg-emerald-400'}`} />
                   <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-slate-300 truncate">{run.name}</div>
-                    <div className="text-[10px] text-slate-600 mt-0.5">
+                    <div className="text-xs font-semibold text-slate-700 truncate">{run.name}</div>
+                    <div className="text-[10px] text-slate-400 mt-0.5">
                       {run.passCount} passed · {run.failCount} failed · {new Date(run.startedAt).toLocaleString()}
                     </div>
                   </div>
-                  <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${run.failCount > 0 ? 'bg-red-500/10 text-red-400' : 'bg-emerald-500/10 text-emerald-400'}`}>
+                  <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${run.failCount > 0 ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
                     {run.status}
                   </div>
                 </div>
@@ -955,6 +976,7 @@ export default function TestLibraryPage() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

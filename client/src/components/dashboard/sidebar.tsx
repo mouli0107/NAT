@@ -4,17 +4,29 @@ import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
 import { useBranding, brandProfiles } from "@/contexts/BrandingContext";
 
+
 interface SidebarProps {
-  activeView: "testing" | "configuration";
-  onViewChange: (view: "testing" | "configuration") => void;
-  isRunning: boolean;
+  activeView?: "testing" | "configuration";
+  onViewChange?: (view: "testing" | "configuration") => void;
+  isRunning?: boolean;
   isCollapsed?: boolean;
   onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ activeView, onViewChange, isRunning, isCollapsed = false, onToggleCollapse }: SidebarProps) {
+// Modules that are ALWAYS visible regardless of allowedModules (bottom section + dashboard)
+const ALWAYS_VISIBLE = new Set(['dashboard', 'framework-config', 'integration-management', 'settings', 'help']);
+
+export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRunning = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
   const { brand, setBrand, brandId } = useBranding();
+
+  // Read allowed modules from localStorage (null = admin = see everything)
+  const allowedModules: string[] | null = (() => {
+    try {
+      const u = JSON.parse(localStorage.getItem('currentUser') || '{}');
+      return Array.isArray(u.allowedModules) ? u.allowedModules : null;
+    } catch { return null; }
+  })();
 
   const brandIds = Object.keys(brandProfiles);
   const currentIdx = brandIds.indexOf(brandId);
@@ -33,22 +45,27 @@ export function Sidebar({ activeView, onViewChange, isRunning, isCollapsed = fal
     boxShadow: `0 4px 14px -2px ${brand.accentColor}66`,
   };
 
-  const navItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", testId: "nav-dashboard" },
-    { href: "/recorder", icon: CircleDot, label: "Recording Studio", testId: "nav-recorder" },
-    { href: "/test-library", icon: Library, label: "Test Library", testId: "nav-test-library" },
-    { href: "/test-management", icon: ClipboardList, label: "Test Management", testId: "nav-test-management" },
-    { href: "/functional-testing", icon: Zap, label: "Autonomous Testing", testId: "nav-functional" },
-    { href: "/sprint-agent", icon: Target, label: "Generate from User Stories", testId: "nav-sprint-agent" },
-    { href: "/execution-mode", icon: Play, label: "Execution Mode", testId: "nav-execution-mode" },
-    { href: "/visual-regression", icon: Eye, label: "Visual Regression", testId: "nav-visual-regression" },
-    { href: "/synthetic-data", icon: Database, label: "Synthetic Data", testId: "nav-synthetic-data" },
-    { href: "/nradiverse", icon: Sparkles, label: "AI Quality Engine", testId: "nav-nradiverse" },
-    { href: "/reports", icon: BarChart3, label: "Reports & Analytics", testId: "nav-reports" },
-    { href: "/import-export", icon: ArrowUpDown, label: "Import/Export", testId: "nav-import-export" },
-    { href: "/projects", icon: FolderOpen, label: "Project History", testId: "nav-projects" },
-    { href: "/architecture", icon: Layers, label: "Architecture Diagram", testId: "nav-architecture" },
+  const allNavItems = [
+    { id: "dashboard",         href: "/dashboard",         icon: LayoutDashboard, label: "Dashboard",                    testId: "nav-dashboard" },
+    { id: "recorder",          href: "/recorder",          icon: CircleDot,       label: "Recording Studio",             testId: "nav-recorder" },
+    { id: "test-library",      href: "/test-library",      icon: Library,         label: "Test Library",                 testId: "nav-test-library" },
+    { id: "test-management",   href: "/test-management",   icon: ClipboardList,   label: "Test Management",              testId: "nav-test-management" },
+    { id: "functional-testing",href: "/functional-testing",icon: Zap,             label: "Autonomous Testing",           testId: "nav-functional" },
+    { id: "sprint-agent",      href: "/sprint-agent",      icon: Target,          label: "Generate from User Stories",   testId: "nav-sprint-agent" },
+    { id: "execution-mode",    href: "/execution-mode",    icon: Play,            label: "Execution Mode",               testId: "nav-execution-mode" },
+    { id: "visual-regression", href: "/visual-regression", icon: Eye,             label: "Visual Regression",            testId: "nav-visual-regression" },
+    { id: "synthetic-data",    href: "/synthetic-data",    icon: Database,        label: "Synthetic Data",               testId: "nav-synthetic-data" },
+    { id: "nradiverse",        href: "/nradiverse",        icon: Sparkles,        label: "AI Quality Engine",            testId: "nav-nradiverse" },
+    { id: "reports",           href: "/reports",           icon: BarChart3,       label: "Reports & Analytics",          testId: "nav-reports" },
+    { id: "import-export",     href: "/import-export",     icon: ArrowUpDown,     label: "Import/Export",                testId: "nav-import-export" },
+    { id: "projects",          href: "/projects",          icon: FolderOpen,      label: "Project History",              testId: "nav-projects" },
+    { id: "architecture",      href: "/architecture",      icon: Layers,          label: "Architecture Diagram",         testId: "nav-architecture" },
   ];
+
+  // Filter: if allowedModules is null → admin, show all; otherwise show only allowed + always-visible
+  const navItems = allNavItems.filter(item =>
+    ALWAYS_VISIBLE.has(item.id) || allowedModules === null || allowedModules.includes(item.id)
+  );
 
   const bottomItems = [
     { href: "/framework-config", icon: Library, label: "Framework Config", testId: "nav-framework-config" },
@@ -69,7 +86,7 @@ export function Sidebar({ activeView, onViewChange, isRunning, isCollapsed = fal
                     src={brand.logoSrc}
                     alt={brand.platformName}
                     className="object-contain object-left"
-                    style={{ height: "32px", maxWidth: "160px" }}
+                    style={{ height: "48px", maxWidth: "200px" }}
                   />
                 </div>
                 <p className="text-[11px] text-muted-foreground tracking-wide">{brand.subtitle}</p>

@@ -235,6 +235,19 @@ export function TestCasesList({ scenarios = [], testCases, generationProgress, o
   const totalPages = Math.ceil(sortedCases.length / itemsPerPage);
   const paginatedCases = sortedCases.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
+  const cleanTitle = (title: string): string => {
+    if (!title) return title;
+    const altDataMatch = title.match(/^\[Alt Data\]\s+"([^"]+)"\s+satisfies:\s*(.+)$/i);
+    if (altDataMatch) return `${altDataMatch[2].trim()} — using ${altDataMatch[1].trim()}`;
+    const downstreamMatch = title.match(/^\[Downstream\]\s+After\s+"([^"]+)"\s+—\s+verify:\s*(.+)$/i);
+    if (downstreamMatch) return `${downstreamMatch[1].trim()} — verify downstream: ${downstreamMatch[2].trim()}`;
+    const violatedMatch = title.match(/^\[Criterion Violated\]\s+System rejects when:\s+"([^"]+)"\s+is not met/i);
+    if (violatedMatch) return `System rejects when not met: ${violatedMatch[1].trim()}`;
+    let cleaned = title.replace(/^\[[^\]]+\]\s*/g, '');
+    cleaned = cleaned.replace(/^"([^"]+)"$/, '$1');
+    return cleaned.trim();
+  };
+
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "P0":
@@ -422,8 +435,8 @@ export function TestCasesList({ scenarios = [], testCases, generationProgress, o
               <div className="font-mono text-sm font-bold w-24 flex-shrink-0 pt-0.5" data-testid={`test-id-${tc.id}`}>
                 {tc.id}
               </div>
-              <div className="flex-1 min-w-0 text-sm" data-testid={`test-name-${tc.id}`}>
-                {tc.name}
+              <div className="flex-1 min-w-0 text-sm whitespace-normal break-words" data-testid={`test-name-${tc.id}`}>
+                {cleanTitle(tc.name)}
               </div>
               <div className="flex items-center gap-2 flex-shrink-0">
                 <Badge className={getTypeColor(tc.type || tc.category || "functional")} data-testid={`test-type-${tc.id}`}>
@@ -448,7 +461,7 @@ export function TestCasesList({ scenarios = [], testCases, generationProgress, o
                 {/* Test Case Title */}
                 <div>
                   <div className="text-xs font-bold text-muted-foreground mb-1">Test Case Title:</div>
-                  <div className="text-sm font-semibold">{tc.name}</div>
+                  <div className="text-sm font-semibold">{cleanTitle(tc.name)}</div>
                 </div>
 
                 {/* Description */}

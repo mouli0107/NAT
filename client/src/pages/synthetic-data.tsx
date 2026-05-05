@@ -3,6 +3,8 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { useBranding } from "@/contexts/BrandingContext";
+import { SampleFileUploadMode } from "@/components/synthetic-data/SampleFileUploadMode";
+import { GenerationHistoryView } from "@/components/synthetic-data/GenerationHistoryView";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,6 +23,7 @@ import {
   ShoppingCart,
   Radio,
   Factory,
+  Upload,
   Download,
   FileSpreadsheet,
   FileJson,
@@ -35,7 +38,8 @@ import {
   Plus,
   X,
   Brain,
-  Wand2
+  Wand2,
+  History
 } from "lucide-react";
 
 const DOMAIN_DEFINITIONS: DomainDefinition[] = [
@@ -550,7 +554,8 @@ export default function SyntheticDataPage() {
   const { toast } = useToast();
   const { brand } = useBranding();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  
+  const [activeMode, setActiveMode] = useState<"template" | "upload" | "history">("template");
+
   // Get default domain from settings (localStorage)
   const defaultDomain = localStorage.getItem("defaultDomain") || "insurance";
   
@@ -792,25 +797,87 @@ export default function SyntheticDataPage() {
   
   return (
     <div className="flex h-full bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
       <DashboardHeader />
       <main className="flex-1 overflow-auto">
-        <div className="p-6 max-w-7xl mx-auto">
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-2">
-              <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
-                <Database className="w-6 h-6 text-violet-400" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-foreground">Synthetic Data</h1>
-                <p className="text-muted-foreground">Generate production-grade test datasets for any domain</p>
+        {/* Header + mode switcher: always constrained to keep it readable */}
+        <div className="px-6 pt-6 pb-0 max-w-[1600px] mx-auto">
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2 rounded-lg bg-gradient-to-br from-violet-500/20 to-purple-500/20">
+                  <Database className="w-6 h-6 text-violet-400" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-bold text-foreground">Synthetic Data</h1>
+                  <p className="text-muted-foreground">Generate production-grade test datasets for any domain</p>
+                </div>
               </div>
             </div>
+
+            {/* Mode Switcher */}
+            <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
+              <button
+                onClick={() => setActiveMode("template")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "template"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-from-template"
+              >
+                <Sparkles className="w-4 h-4" />
+                From Template
+              </button>
+              <button
+                onClick={() => setActiveMode("upload")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "upload"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-from-file"
+              >
+                <Upload className="w-4 h-4" />
+                From Sample File
+              </button>
+              <button
+                onClick={() => setActiveMode("history")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "history"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-history"
+              >
+                <History className="w-4 h-4" />
+                History
+              </button>
+            </div>
           </div>
-          
-          <div className="space-y-6">
+
+        </div>{/* end header wrapper */}
+
+        {/* ── From Sample File Mode: full-width, just horizontal padding ── */}
+        {activeMode === "upload" && (
+          <div className="px-6 pb-6">
+            <SampleFileUploadMode />
+          </div>
+        )}
+
+        {/* ── History Mode ── */}
+        {activeMode === "history" && (
+          <div className="px-6 pb-6">
+            <GenerationHistoryView onNavigateToUpload={() => setActiveMode("upload")} />
+          </div>
+        )}
+
+        {/* ── From Template Mode: keep readable max-width ── */}
+        {activeMode === "template" && (
+        <div className="px-6 pb-6 max-w-[1600px] mx-auto">
+        <div className="space-y-6">
             {/* Compact Domain & Entity Selection Row */}
             <Card>
               <CardContent className="p-4">
@@ -1212,6 +1279,7 @@ export default function SyntheticDataPage() {
           </div>
         </div>
         </div>
+        )}
       </main>
       </div>
     </div>

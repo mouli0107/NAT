@@ -247,7 +247,7 @@ function generateFunctionalTests(
     if (!reg.isDuplicate(happyKey)) {
       results.push({
         testCaseId: reg.nextId("TC_FUNC"),
-        title: `[Happy Path] ${criterion.substring(0, 85)}`,
+        title: criterion,
         description: `As a ${ctx.userRole}, verify the system correctly satisfies: "${criterion}"`,
         objective: `Confirm the system fulfils: ${criterion}`,
         preconditions: [
@@ -304,7 +304,7 @@ function generateFunctionalTests(
       if (!reg.isDuplicate(altKey)) {
         results.push({
           testCaseId: reg.nextId("TC_FUNC"),
-          title: `[Alt Data] "${val}" satisfies: ${criterion.substring(0, 60)}`,
+          title: `${criterion} — using ${val}`,
           description: `Verify that the specific value "${val}" correctly satisfies the criterion "${criterion}"`,
           objective: `Confirm "${val}" is a valid value for: ${criterion}`,
           preconditions: [
@@ -350,7 +350,7 @@ function generateFunctionalTests(
     if (!reg.isDuplicate(persistKey)) {
       results.push({
         testCaseId: reg.nextId("TC_FUNC"),
-        title: `[Persistence] Data persists after session refresh for: ${criterion.substring(0, 60)}`,
+        title: `Data persists after session refresh: ${criterion}`,
         description: `Verify that data satisfying "${criterion}" persists after logout/login and page refresh`,
         objective: `Ensure data persistence and session independence for: ${criterion}`,
         preconditions: [
@@ -392,7 +392,7 @@ function generateFunctionalTests(
       if (!reg.isDuplicate(downKey)) {
         results.push({
           testCaseId: reg.nextId("TC_FUNC"),
-          title: `[Downstream] After "${criterion.substring(0, 50)}" — verify: ${ctx.downstreamEffects[0].substring(0, 50)}`,
+          title: `${criterion} — verify downstream: ${ctx.downstreamEffects[0]}`,
           description: `Verify the business outcome: "${ctx.businessReason}" is achieved once "${criterion}" is satisfied`,
           objective: `Confirm downstream effect: ${ctx.downstreamEffects[0]}`,
           preconditions: [
@@ -456,7 +456,7 @@ function generateNegativeTests(
     if (!reg.isDuplicate(key)) {
       results.push({
         testCaseId: reg.nextId("TC_NEG"),
-        title: `[Criterion Violated] System rejects when: "${criterion.substring(0, 70)}" is not met`,
+        title: `System rejects when not met: ${criterion}`,
         description: `Verify the system prevents saving/submitting when the criterion "${criterion}" is violated`,
         objective: `Ensure system enforces: ${criterion}`,
         preconditions: [
@@ -494,7 +494,7 @@ function generateNegativeTests(
     if (!reg.isDuplicate(key)) {
       results.push({
         testCaseId: reg.nextId("TC_NEG"),
-        title: `[Invalid Type] "${field}" rejects wrong data type`,
+        title: `${field} — rejects wrong data type`,
         description: `Verify "${field}" in "${ctx.featureName}" rejects input of an incorrect data type`,
         objective: `Ensure "${field}" enforces correct data type validation`,
         preconditions: [`User logged in as ${ctx.userRole}`, `"${field}" field is editable`],
@@ -535,7 +535,7 @@ function generateNegativeTests(
   if (!reg.isDuplicate("neg-missing-required")) {
     results.push({
       testCaseId: reg.nextId("TC_NEG"),
-      title: `[Missing Required] All required fields blank — system blocks submission`,
+      title: `All required fields blank — system blocks submission`,
       description: `Verify "${ctx.featureName}" blocks submission when all required fields are left blank`,
       objective: "Ensure required-field validation prevents empty form submission",
       preconditions: [`User logged in as ${ctx.userRole}`, "Form is open and in default empty state"],
@@ -569,7 +569,7 @@ function generateNegativeTests(
   if (!reg.isDuplicate("neg-unauthorized-role")) {
     results.push({
       testCaseId: reg.nextId("TC_NEG"),
-      title: `[Unauthorized Role] Non-${ctx.userRole} role cannot perform "${ctx.featureName}" actions`,
+      title: `Non-${ctx.userRole} role cannot perform ${ctx.featureName} actions`,
       description: `Verify that a user without the "${ctx.userRole}" role cannot access or modify "${ctx.featureName}"`,
       objective: `Ensure role-based access control enforces ${ctx.userRole} requirement`,
       preconditions: [
@@ -609,7 +609,7 @@ function generateNegativeTests(
   if (!reg.isDuplicate("neg-duplicate-record")) {
     results.push({
       testCaseId: reg.nextId("TC_NEG"),
-      title: `[Duplicate] System prevents creating duplicate of "${ctx.entities[0] ?? "record"}"`,
+      title: `System prevents creating duplicate ${ctx.entities[0] ?? "record"}`,
       description: `Verify system detects and blocks duplicate record creation for ${ctx.entities[0] ?? ctx.featureName}`,
       objective: "Ensure uniqueness constraints are enforced",
       preconditions: [
@@ -649,7 +649,7 @@ function generateNegativeTests(
   if (!reg.isDuplicate("neg-concurrent-edit")) {
     results.push({
       testCaseId: reg.nextId("TC_NEG"),
-      title: `[Concurrent Edit] System detects conflict when two users edit same record simultaneously`,
+      title: `System detects conflict when two users edit same record simultaneously`,
       description: `Verify optimistic locking or conflict detection when two ${ctx.userRole} users edit the same record`,
       objective: "Ensure no silent data overwrite on concurrent edits",
       preconditions: [
@@ -761,7 +761,7 @@ function generateEdgeTests(
     if (!reg.isDuplicate(key)) {
       results.push({
         testCaseId: reg.nextId("TC_EDGE"),
-        title: `[Edge] "${field}" — ${variant.variant}`,
+        title: `${field} — ${variant.variant}`,
         description: `Edge case: test "${field}" in "${ctx.featureName}" with ${variant.variant}`,
         objective: `Verify "${field}" handles the edge condition: ${variant.variant}`,
         preconditions: [
@@ -804,7 +804,7 @@ function generateEdgeTests(
     if (!reg.isDuplicate(key)) {
       results.push({
         testCaseId: reg.nextId("TC_EDGE"),
-        title: `[Edge] ${variant.variant} — "${ctx.featureName}"`,
+        title: `${variant.variant} — ${ctx.featureName}`,
         description: `Edge case: verify "${ctx.featureName}" handles ${variant.variant} gracefully`,
         objective: `Ensure system robustness for edge condition: ${variant.variant}`,
         preconditions: [
@@ -903,7 +903,7 @@ function generateSecurityTests(
     .filter(t => !reg.isDuplicate(`sec-${t.id}`))
     .map(threat => ({
       testCaseId: reg.nextId("TC_SEC"),
-      title: `[Security] ${threat.label}`,
+      title: threat.label,
       description: `Security test for "${ctx.featureName}": ${threat.label}`,
       objective: `Verify "${ctx.featureName}" is protected against: ${threat.label}`,
       preconditions: [
@@ -1000,7 +1000,7 @@ function generateAccessibilityTests(
     .filter(a => !reg.isDuplicate(`a11y-${a.id}`))
     .map(a => ({
       testCaseId: reg.nextId("TC_ACC"),
-      title: `[A11y] ${a.label}`,
+      title: a.label,
       description: `Accessibility test for "${ctx.featureName}": ${a.label}`,
       objective: `Ensure WCAG 2.1 AA compliance for: ${a.label}`,
       preconditions: [
@@ -1055,7 +1055,7 @@ function generateIntegrationTests(
     if (reg.isDuplicate(key)) return;
     results.push({
       testCaseId: reg.nextId("TC_INT"),
-      title: `[Integration] ${touchpoint}`,
+      title: `Integration: ${touchpoint}`,
       description: `Verify that "${ctx.featureName}" correctly triggers: ${touchpoint}`,
       objective: `Confirm integration touchpoint is invoked with correct data: ${touchpoint}`,
       preconditions: [
@@ -1086,7 +1086,7 @@ function generateIntegrationTests(
     if (reg.isDuplicate(key)) return;
     results.push({
       testCaseId: reg.nextId("TC_INT"),
-      title: `[API] Verify endpoint: ${endpoint}`,
+      title: `Verify endpoint: ${endpoint}`,
       description: `Direct API test for endpoint: ${endpoint} — related to "${ctx.featureName}"`,
       objective: `Verify the API endpoint ${endpoint} behaves correctly for this story`,
       preconditions: [
@@ -1129,7 +1129,7 @@ function generateRiskTests(
     if (reg.isDuplicate(key)) return;
     results.push({
       testCaseId: reg.nextId("TC_RISK"),
-      title: `[Risk] ${risk}`,
+      title: risk,
       description: `Risk-based test for "${ctx.featureName}": ${risk}`,
       objective: `Verify the identified risk is mitigated: ${risk}`,
       preconditions: [
@@ -1160,7 +1160,7 @@ function generateRiskTests(
     if (reg.isDuplicate(key)) return;
     results.push({
       testCaseId: reg.nextId("TC_RISK"),
-      title: `[Business Rule] ${rule}`,
+      title: rule,
       description: `Verify business rule is enforced: ${rule}`,
       objective: `Ensure the system enforces: ${rule}`,
       preconditions: [
@@ -1202,7 +1202,7 @@ function generateGapTests(
     if (reg.isDuplicate(key)) return;
     results.push({
       testCaseId: reg.nextId("TC_GAP"),
-      title: `[Coverage Gap] ${gap}`,
+      title: gap,
       description: `This scenario was found in the codebase but NOT covered by the acceptance criteria: ${gap}`,
       objective: `Fill identified coverage gap: ${gap}`,
       preconditions: [

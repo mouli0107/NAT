@@ -1,4 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from "react";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
@@ -1441,6 +1443,7 @@ function ConfigDetailPanel({ configId, onDelete }: ConfigDetailPanelProps) {
 export default function FrameworkConfigPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [createOpen, setCreateOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   const { data: configs, isLoading, isError, error, refetch } = useQuery<FrameworkConfig[]>({
     queryKey: ["framework-configs"],
@@ -1479,7 +1482,15 @@ export default function FrameworkConfigPage() {
   return (
     <>
       <GlobalAnimations />
-      <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "#FAFAF8" }}>
+      <div className="flex h-full bg-background">
+        {/* Global nav sidebar */}
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
+
+      <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden", background: "#FAFAF8" }}>
+        <DashboardHeader />
 
         {/* ── Page Header ── */}
         <div style={{ flexShrink: 0, padding: "0 24px", height: 52, display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "0.5px solid #E5E4E2", background: "#FFFFFF" }}>
@@ -1505,7 +1516,7 @@ export default function FrameworkConfigPage() {
         </div>
 
         {/* ── Body ── */}
-        <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0, 1fr)", height: "calc(100vh - 52px)", overflow: "hidden" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "280px minmax(0, 1fr)", flex: 1, overflow: "hidden" }}>
 
           {/* Left Sidebar */}
           <div style={{ width: "280px", minWidth: "280px", maxWidth: "280px", flexShrink: 0, borderRight: "0.5px solid #E5E4E2", background: "#FFFFFF", display: "flex", flexDirection: "column", overflowX: "hidden", overflowY: "hidden" }}>
@@ -1560,6 +1571,7 @@ export default function FrameworkConfigPage() {
           onClose={() => setCreateOpen(false)}
           onCreated={(id) => { setCreateOpen(false); if (id) setSelectedId(id); }}
         />
+      </div>
       </div>
     </>
   );

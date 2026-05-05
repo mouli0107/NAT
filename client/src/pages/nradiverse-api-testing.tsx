@@ -63,7 +63,8 @@ import {
   AlertTriangle,
   MinusCircle,
   PlusCircle,
-  GitCompare
+  GitCompare,
+  FileSpreadsheet
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -274,9 +275,9 @@ export default function NRadiVerseAPITestingPage() {
 
   const [apiConfig, setApiConfig] = useState({
     method: "GET",
-    endpoint: "",
-    baseUrl: "",
-    description: "",
+    endpoint: "https://petstore.swagger.io/v2/pet/findByStatus",
+    baseUrl: "https://petstore.swagger.io/v2",
+    description: "Finds Pets by status. Multiple status values can be provided with comma separated strings.",
     authType: "none",
     authToken: "",
     apiKey: "",
@@ -285,16 +286,19 @@ export default function NRadiVerseAPITestingPage() {
     password: "",
     requestBody: "",
     responseSchema: "",
-    expectedStatusCodes: "200, 201, 204"
+    expectedStatusCodes: "200, 400"
   });
 
   const [headers, setHeaders] = useState<Header[]>(defaultHeaders);
-  const [queryParams, setQueryParams] = useState<QueryParam[]>(defaultQueryParams);
-  
+  const [queryParams, setQueryParams] = useState<QueryParam[]>([
+    { key: "status", value: "available", enabled: true },
+    { key: "", value: "", enabled: true }
+  ]);
+
   // Swagger/OpenAPI Mode State
   const [inputMode, setInputMode] = useState<"single" | "swagger">("single");
   const [swaggerInputType, setSwaggerInputType] = useState<"url" | "file">("url");
-  const [swaggerUrl, setSwaggerUrl] = useState("");
+  const [swaggerUrl, setSwaggerUrl] = useState("https://petstore.swagger.io/v2/swagger.json");
   const [swaggerContent, setSwaggerContent] = useState("");
   const [parsedEndpoints, setParsedEndpoints] = useState<SwaggerEndpoint[]>([]);
   const [apiInfo, setApiInfo] = useState<{ title: string; version: string; description: string; baseUrl: string } | null>(null);
@@ -376,6 +380,46 @@ export default function NRadiVerseAPITestingPage() {
         progress: Math.round(((i + 1) / steps) * 100)
       });
     }
+  };
+
+  const handleNewTest = () => {
+    setIsGenerating(false);
+    setShowAgentPipeline(false);
+    setPipelineComplete(false);
+    setQeValidationComplete(false);
+    setGeneratedTests([]);
+    setPendingTestCases([]);
+    setApiExecutionResult(null);
+    setCurrentAgentIndex(-1);
+    setAgents(initialAgents);
+    setApiConfig({
+      method: "GET",
+      endpoint: "https://petstore.swagger.io/v2/pet/findByStatus",
+      baseUrl: "https://petstore.swagger.io/v2",
+      description: "Finds Pets by status. Multiple status values can be provided with comma separated strings.",
+      authType: "none",
+      authToken: "",
+      apiKey: "",
+      apiKeyHeader: "X-API-Key",
+      username: "",
+      password: "",
+      requestBody: "",
+      responseSchema: "",
+      expectedStatusCodes: "200, 400"
+    });
+    setHeaders(defaultHeaders);
+    setQueryParams([
+      { key: "status", value: "available", enabled: true },
+      { key: "", value: "", enabled: true }
+    ]);
+    setSwaggerUrl("https://petstore.swagger.io/v2/swagger.json");
+    setSwaggerContent("");
+    setParsedEndpoints([]);
+    setApiInfo(null);
+    setTestResults([]);
+    setTestSummary(null);
+    setShowResults(false);
+    setInputMode("single");
   };
 
   const runAgentPipeline = async (): Promise<void> => {
@@ -505,6 +549,7 @@ export default function NRadiVerseAPITestingPage() {
     setGeneratedTests([]);
     setPendingTestCases([]);
     setQeValidationComplete(false);
+    setPipelineComplete(false);
     setApiExecutionResult(null);
 
     // Start agent pipeline visualization (runs in parallel with API call)
@@ -595,6 +640,119 @@ export default function NRadiVerseAPITestingPage() {
     a.download = `api-test-cases-${Date.now()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+  };
+
+  const exportToExcel = async () => {
+    if (!generatedTests.length) {
+      toast({ title: "No test cases", description: "Generate test cases first", variant: "destructive" });
+      return;
+    }
+    try {
+      const response = await fetch('/api/export/api-test-cases/excel', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ testCases: generatedTests, apiConfig })
+      });
+      if (!response.ok) throw new Error('Export failed');
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `NAT2_API_Tests_${new Date().toISOString().split('T')[0]}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
+      toast({ title: "Excel Downloaded", description: `${generatedTests.length} test cases exported with generated code` });
+    } catch (error: any) {
+      toast({ title: "Export Failed", description: error.message, variant: "destructive" });
+    }
+  };
+
+  const downloadPostmanCollection = () => {
+    const hasPostman = generatedTests.some(t => t.postmanScript);
+    if (!hasPostman) {
+      toast({ title: "No Postman scripts", description: "Enable Postman scripts before generating", variant: "destructive" });
+      return;
+    }
+    const collection = {
+      info: {
+        name: `NAT2 API Tests — ${apiConfig.endpoint || 'API'}`,
+        schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+      },
+      item: generatedTests
+        .filter(t => t.postmanScript)
+        .map(t => ({
+          name: `[${t.id}] ${t.title}`,
+          event: [{ listen: "test", script: { type: "text/javascript", exec: t.postmanScript!.split('\n') } }],
+          request: {
+            method: apiConfig.method || "GET",
+            header: [],
+            url: { raw: apiConfig.endpoint || "", host: [apiConfig.endpoint || ""] }
+          }
+        }))
+    };
+    const blob = new Blob([JSON.stringify(collection, null, 2)], { type: 'application/json' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NAT2_Postman_Collection_${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast({ title: "Postman Collection Downloaded", description: `${generatedTests.filter(t => t.postmanScript).length} requests exported` });
+  };
+
+  const downloadReadyApiScripts = () => {
+    const hasReadyApi = generatedTests.some(t => t.readyApiGroovy);
+    if (!hasReadyApi) {
+      toast({ title: "No ReadyAPI scripts", description: "Enable ReadyAPI scripts before generating", variant: "destructive" });
+      return;
+    }
+    const lines: string[] = [
+      '// NAT 2.0 — ReadyAPI Groovy Test Scripts',
+      `// Generated: ${new Date().toLocaleString()}`,
+      `// Endpoint: ${apiConfig.endpoint || ''}`,
+      '', ''
+    ];
+    generatedTests.filter(t => t.readyApiGroovy).forEach(t => {
+      lines.push(`// ── ${t.id}: ${t.title} ──`);
+      lines.push(t.readyApiGroovy!);
+      lines.push('', '');
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NAT2_ReadyAPI_Scripts_${new Date().toISOString().split('T')[0]}.groovy`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast({ title: "ReadyAPI Scripts Downloaded", description: `${generatedTests.filter(t => t.readyApiGroovy).length} scripts exported` });
+  };
+
+  const downloadPlaywrightTests = () => {
+    const hasPlaywright = generatedTests.some(t => t.playwrightScript);
+    if (!hasPlaywright) {
+      toast({ title: "No Playwright scripts", description: "Enable Playwright scripts before generating", variant: "destructive" });
+      return;
+    }
+    const lines: string[] = [
+      '// NAT 2.0 — Playwright API Test Scripts',
+      `// Generated: ${new Date().toLocaleString()}`,
+      `// Endpoint: ${apiConfig.endpoint || ''}`,
+      "import { test, expect } from '@playwright/test';",
+      '', ''
+    ];
+    generatedTests.filter(t => t.playwrightScript).forEach(t => {
+      lines.push(`// ── ${t.id}: ${t.title} ──`);
+      lines.push(t.playwrightScript!);
+      lines.push('', '');
+    });
+    const blob = new Blob([lines.join('\n')], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `NAT2_Playwright_Tests_${new Date().toISOString().split('T')[0]}.spec.ts`;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    toast({ title: "Playwright Tests Downloaded", description: `${generatedTests.filter(t => t.playwrightScript).length} test scripts exported` });
   };
 
   // ==================== Baseline / Regression Testing Functions ====================
@@ -1618,12 +1776,25 @@ export default function NRadiVerseAPITestingPage() {
                         <CardDescription>Multi-agent orchestration for intelligent test generation</CardDescription>
                       </div>
                     </div>
-                    {pipelineComplete && (
-                      <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
-                        <CheckCircle2 className="w-3 h-3 mr-1" />
-                        Pipeline Complete
-                      </Badge>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {pipelineComplete && (
+                        <Badge className="bg-emerald-500/20 text-emerald-400 border-emerald-500/30">
+                          <CheckCircle2 className="w-3 h-3 mr-1" />
+                          Pipeline Complete
+                        </Badge>
+                      )}
+                      {pipelineComplete && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={handleNewTest}
+                          className="gap-1.5 text-sm border-primary/30 hover:bg-primary/10"
+                        >
+                          <RefreshCw className="w-3.5 h-3.5" />
+                          New API Test
+                        </Button>
+                      )}
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -2161,11 +2332,33 @@ export default function NRadiVerseAPITestingPage() {
                         {generatedTests.length} comprehensive test cases generated by AI agents
                       </CardDescription>
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <Button variant="outline" size="sm" onClick={exportToJson} data-testid="button-export-json">
                         <Download className="w-4 h-4 mr-2" />
                         Export JSON
                       </Button>
+                      <Button variant="outline" size="sm" onClick={exportToExcel} data-testid="button-export-excel">
+                        <FileSpreadsheet className="w-4 h-4 mr-2" />
+                        Export Excel
+                      </Button>
+                      {generatedTests.some(t => t.postmanScript) && (
+                        <Button variant="outline" size="sm" onClick={downloadPostmanCollection} data-testid="button-download-postman">
+                          <FileJson className="w-4 h-4 mr-2" />
+                          Postman
+                        </Button>
+                      )}
+                      {generatedTests.some(t => t.readyApiGroovy) && (
+                        <Button variant="outline" size="sm" onClick={downloadReadyApiScripts} data-testid="button-download-readyapi">
+                          <FileCode className="w-4 h-4 mr-2" />
+                          ReadyAPI
+                        </Button>
+                      )}
+                      {generatedTests.some(t => t.playwrightScript) && (
+                        <Button variant="outline" size="sm" onClick={downloadPlaywrightTests} data-testid="button-download-playwright">
+                          <FileCode className="w-4 h-4 mr-2" />
+                          Playwright
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </CardHeader>

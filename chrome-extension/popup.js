@@ -1,5 +1,5 @@
 /**
- * DevX QE Recorder — popup.js
+ * ASTRA QE Recorder — popup.js
  * Controls the extension popup UI. Communicates with background.js via chrome.runtime.sendMessage.
  */
 
@@ -23,6 +23,11 @@ const countInputs     = document.getElementById('countInputs');
 const countNavs       = document.getElementById('countNavs');
 const countApis       = document.getElementById('countApis');
 const openNat20       = document.getElementById('openNat20');
+const settingsToggle  = document.getElementById('settingsToggle');
+const settingsPanel   = document.getElementById('settingsPanel');
+const serverUrlInput  = document.getElementById('serverUrlInput');
+const btnSaveUrl      = document.getElementById('btnSaveUrl');
+const settingsMessage = document.getElementById('settingsMessage');
 
 // ─── State ────────────────────────────────────────────────────────────────────
 
@@ -60,11 +65,10 @@ function updateConnectionStatus(connected, maxRetriesReached = false) {
   state.connected = connected;
   statusDot.className = 'status-dot' + (connected ? ' connected' : '');
   if (maxRetriesReached) {
-    statusLabel.textContent = 'Cannot reach server on port 5000';
+    statusLabel.textContent = 'Cannot reach server — check Server Settings';
   } else {
-    statusLabel.textContent = connected ? 'Connected to DevX QE server' : 'Connecting to server...';
+    statusLabel.textContent = connected ? 'Connected to NAT 2.0 server' : 'Connecting to server...';
   }
-  // Update join button state
   btnJoin.disabled = !connected || state.sessionJoined;
 }
 
@@ -96,7 +100,7 @@ function updateRecordingUI() {
     btnRecord.className = 'btn-record start';
     btnRecord.innerHTML = '<div class="record-dot"></div> Start Recording';
     statusDot.className = 'status-dot' + (state.connected ? ' connected' : '');
-    statusLabel.textContent = state.connected ? 'Connected to DevX QE server' : 'Connecting...';
+    statusLabel.textContent = state.connected ? 'Connected to ASTRA QE server' : 'Connecting...';
     btnLeave.disabled = false;
     sessionInput.disabled = false;
   }
@@ -290,7 +294,43 @@ btnRecord.addEventListener('click', async () => {
 });
 
 openNat20.addEventListener('click', () => {
-  chrome.tabs.create({ url: 'http://localhost:5000' });
+  sendToBackground('GET_STATUS').then(status => {
+    const url = status?.httpBaseUrl || 'http://localhost:5000';
+    chrome.tabs.create({ url });
+  }).catch(() => {
+    chrome.tabs.create({ url: 'http://localhost:5000' });
+  });
+});
+
+// ─── Settings Panel ───────────────────────────────────────────────────────────
+
+settingsToggle.addEventListener('click', () => {
+  const isOpen = settingsPanel.classList.contains('visible');
+  settingsPanel.classList.toggle('visible', !isOpen);
+  settingsToggle.classList.toggle('open', !isOpen);
+});
+
+btnSaveUrl.addEventListener('click', async () => {
+  const url = serverUrlInput.value.trim();
+  if (!url) {
+    showMessage(settingsMessage, 'Please enter a server URL', 'error');
+    return;
+  }
+  btnSaveUrl.disabled = true;
+  btnSaveUrl.textContent = '...';
+  try {
+    const res = await sendToBackground('SET_SERVER_URL', { serverUrl: url });
+    if (res?.success) {
+      showMessage(settingsMessage, 'Saved — reconnecting...', 'success');
+    } else {
+      showMessage(settingsMessage, res?.error || 'Failed to save', 'error');
+    }
+  } catch {
+    showMessage(settingsMessage, 'Could not reach background service', 'error');
+  } finally {
+    btnSaveUrl.disabled = false;
+    btnSaveUrl.textContent = 'Save';
+  }
 });
 
 // ─── Session input — allow Enter key ─────────────────────────────────────────
@@ -334,6 +374,11 @@ chrome.runtime.onMessage.addListener((msg) => {
     case 'RECORDING_EVENT':
       if (msg.event) addEventToFeed(msg.event);
       break;
+
+    case 'SERVER_URL_CHANGED':
+      serverUrlInput.value = msg.serverUrl || '';
+      updateConnectionStatus(false);
+      break;
   }
 });
 
@@ -344,6 +389,10 @@ async function init() {
     const status = await sendToBackground('GET_STATUS');
     if (status) {
       updateConnectionStatus(status.connected);
+      // Populate server URL field
+      if (status.serverUrl) {
+        serverUrlInput.value = status.serverUrl;
+      }
       if (status.sessionId) {
         state.sessionId = status.sessionId;
         state.sessionJoined = true;

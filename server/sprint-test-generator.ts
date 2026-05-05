@@ -101,7 +101,7 @@ export class SprintTestGenerator {
       acceptanceCriteria.slice(0, 3).forEach((criterion, index) => {
         tests.push({
           testCaseId: `TC-${baseId}-${String(startCounter + 1 + index).padStart(3, '0')}`,
-          title: `Verify: ${criterion.substring(0, 50)}...`,
+          title: `Verify: ${criterion}`,
           objective: `Validate acceptance criterion: ${criterion}`,
           preconditions: ['User is logged into the system', 'Test data is prepared'],
           testSteps: [

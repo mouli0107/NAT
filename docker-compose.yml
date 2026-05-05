@@ -1,0 +1,67 @@
+version: '3.9'
+
+# ─── NAT 2.0 — Docker Compose ────────────────────────────────────────────────
+# Starts: NAT 2.0 server + PostgreSQL
+# Remote agent runs separately (needs a real browser on the host machine)
+#
+# Quick start:
+#   1. Copy .env.example to .env and fill in ANTHROPIC_API_KEY + SESSION_SECRET
+#   2. docker compose up -d
+#   3. Open http://localhost:5000
+#   4. Start remote agent: cd remote-agent && npx tsx agent.ts
+
+services:
+
+  # ── PostgreSQL ───────────────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nat20
+      POSTGRES_USER: nat20user
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-nat20pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nat20user -d nat20"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── NAT 2.0 Server ───────────────────────────────────────────────────────────
+  nat20:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "${PORT:-5000}:5000"
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://nat20user:${POSTGRES_PASSWORD:-nat20pass}@postgres:5432/nat20
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-in-production}
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      # Persist generated test files and runtime data
+      - nat20_projects:/app/projects
+      - nat20_recorder_data:/app/recorder-data
+      - nat20_screenshots:/app/screenshots
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:5000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+
+volumes:
+  postgres_data:
+  nat20_projects:
+  nat20_recorder_data:
+  nat20_screenshots:

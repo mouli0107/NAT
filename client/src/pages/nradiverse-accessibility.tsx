@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { pdf } from '@react-pdf/renderer';
+import { AccessibilityReportPDF } from '@/components/accessibility-report-pdf';
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +13,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import type { AccessibilityViolation, WCAGCriterion } from "@shared/schema";
 import { 
   Accessibility, 
@@ -32,7 +36,11 @@ import {
   Clock,
   Lightbulb,
   Target,
-  Wrench
+  Wrench,
+  History,
+  Trash2,
+  X,
+  ChevronRight
 } from "lucide-react";
 
 interface AccessibilityAIAnalysis {
@@ -577,60 +585,172 @@ export default function NRadiVerseAccessibilityPage() {
   const [overallScore, setOverallScore] = useState(0);
   const [aiAnalysis, setAiAnalysis] = useState<AccessibilityAIAnalysis | null>(null);
   const [scanMetadata, setScanMetadata] = useState<{ browser: string; scanDuration: number; axeVersion: string } | null>(null);
+  // Enhanced scan state
+  const [screenReaderResult, setScreenReaderResult] = useState<any>(null);
+  const [visualTestResult, setVisualTestResult] = useState<any>(null);
+  const [agentStates, setAgentStates] = useState<Record<string, { status: string; message: string; progress: number }>>({});
+  const [scanMode, setScanMode] = useState<"standard" | "enhanced">("enhanced");
+  const [showHistory, setShowHistory] = useState(false);
+  const queryClient = useQueryClient();
+
+  // Fetch scan history
+  const { data: historyData, refetch: refetchHistory } = useQuery<{ success: boolean; scans: any[] }>({
+    queryKey: ["/api/nradiverse/accessibility-scan/history"],
+    enabled: showHistory,
+  });
+  const eventSourceRef = useRef<EventSource | null>(null);
   const { toast } = useToast();
+
+  // Cleanup SSE on unmount
+  useEffect(() => () => { eventSourceRef.current?.close(); }, []);
 
   const runAccessibilityScan = async () => {
     if (!scanUrl) {
-      toast({
-        title: "Missing URL",
-        description: "Please enter a URL to scan.",
-        variant: "destructive"
-      });
+      toast({ title: "Missing URL", description: "Please enter a URL to scan.", variant: "destructive" });
       return;
     }
 
     setIsScanning(true);
     setScanComplete(false);
     setAiAnalysis(null);
+    setScreenReaderResult(null);
+    setVisualTestResult(null);
+    setAgentStates({});
 
-    try {
-      const response = await fetch("/api/nradiverse/accessibility-scan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url: scanUrl, wcagLevel: "AA" })
+    if (scanMode === "enhanced") {
+      // SSE-based enhanced scan with agents
+      const es = new EventSource(
+        `/api/nradiverse/accessibility-scan/stream?url=${encodeURIComponent(scanUrl)}&wcagLevel=AA&phases=axe,screenreader,visual`
+      );
+      eventSourceRef.current = es;
+
+      es.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === "final_result") {
+            // Final aggregated result
+            if (data.data?.axeResult) {
+              setViolations(data.data.axeResult.violations || []);
+              setWcagCriteria(data.data.axeResult.wcagCriteria || []);
+              setOverallScore(data.data.combinedScore || data.data.axeResult.overallScore || 0);
+              setAiAnalysis(data.data.axeResult.aiAnalysis || null);
+              setScanMetadata(data.data.axeResult.metadata || null);
+            }
+            if (data.data?.screenReaderResult) setScreenReaderResult(data.data.screenReaderResult);
+            if (data.data?.visualTestResult) setVisualTestResult(data.data.visualTestResult);
+          } else if (data.agent) {
+            // Agent progress update
+            setAgentStates((prev) => ({
+              ...prev,
+              [data.agent]: { status: data.status, message: data.message, progress: data.progress || 0 },
+            }));
+            // Merge intermediate data
+            if (data.agent === "axe-scanner" && data.status === "completed" && data.data) {
+              setViolations(data.data.violations || []);
+              setWcagCriteria(data.data.wcagCriteria || []);
+              setOverallScore(data.data.overallScore || 0);
+              setAiAnalysis(data.data.aiAnalysis || null);
+              setScanMetadata(data.data.metadata || null);
+            }
+            if (data.agent === "screen-reader" && data.status === "completed" && data.data) {
+              setScreenReaderResult(data.data);
+            }
+            if (data.agent === "visual-tester" && data.status === "completed" && data.data) {
+              setVisualTestResult(data.data);
+            }
+          }
+        } catch (err) {
+          console.error("SSE parse error:", err);
+        }
+      };
+
+      es.addEventListener("complete", () => {
+        es.close();
+        setScanComplete(true);
+        setIsScanning(false);
+        toast({ title: "Enhanced Scan Complete", description: "All accessibility agents finished" });
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        setViolations(result.violations || []);
-        setWcagCriteria(result.wcagCriteria || []);
-        setOverallScore(result.overallScore || 0);
-        setAiAnalysis(result.aiAnalysis || null);
-        setScanMetadata(result.metadata || null);
-        
-        toast({
-          title: "Scan Complete",
-          description: `Found ${result.violations?.length || 0} accessibility issues${result.aiAnalysis ? " with AI analysis" : ""}`
+      es.onerror = () => {
+        es.close();
+        setScanComplete(true);
+        setIsScanning(false);
+      };
+    } else {
+      // Standard scan (existing behavior)
+      try {
+        const response = await fetch("/api/nradiverse/accessibility-scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: scanUrl, wcagLevel: "AA" }),
         });
-      } else {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Scan failed");
+        if (response.ok) {
+          const result = await response.json();
+          setViolations(result.violations || []);
+          setWcagCriteria(result.wcagCriteria || []);
+          setOverallScore(result.overallScore || 0);
+          setAiAnalysis(result.aiAnalysis || null);
+          setScanMetadata(result.metadata || null);
+          toast({ title: "Scan Complete", description: `Found ${result.violations?.length || 0} accessibility issues` });
+        } else {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Scan failed");
+        }
+      } catch (error: any) {
+        console.error("Accessibility scan error:", error);
+        toast({ title: "Scan Failed", description: error.message, variant: "destructive" });
+        setViolations(sampleViolations);
+        setWcagCriteria(sampleWCAGCriteria);
+        setOverallScore(76);
       }
-    } catch (error: any) {
-      console.error("Accessibility scan error:", error);
-      toast({
-        title: "Scan Failed",
-        description: error.message || "Failed to scan the URL. Please check the URL and try again.",
-        variant: "destructive"
-      });
-      setViolations(sampleViolations);
-      setWcagCriteria(sampleWCAGCriteria);
-      setOverallScore(76);
+      setScanComplete(true);
+      setIsScanning(false);
     }
-    
-    setScanComplete(true);
-    setIsScanning(false);
   };
+
+  const loadHistoryScan = async (scanId: string) => {
+    try {
+      const res = await fetch(`/api/nradiverse/accessibility-scan/history/${scanId}`);
+      const data = await res.json();
+      if (data.success && data.scan) {
+        const s = data.scan;
+        setScanUrl(s.url);
+        setViolations(s.violations || []);
+        setWcagCriteria(s.wcagCriteria || []);
+        setOverallScore(s.overallScore || 0);
+        setAiAnalysis(s.aiAnalysis || null);
+        setScanMetadata(s.metadata || null);
+        setScreenReaderResult(s.screenReaderResult || null);
+        setVisualTestResult(s.visualTestResult || null);
+        setScanComplete(true);
+        setIsScanning(false);
+        setShowHistory(false);
+        // Set all agents to done for display
+        const agentIds = ["axe-scanner", "screen-reader", "heading-checker", "landmark-checker", "focus-tester", "visual-tester", "ai-analyzer"];
+        const doneStates: Record<string, any> = {};
+        agentIds.forEach(id => { doneStates[id] = { status: "completed", message: "Loaded from history", progress: 100 }; });
+        setAgentStates(doneStates);
+        toast({ title: "Scan Loaded", description: `Loaded results for ${s.url}` });
+      }
+    } catch (err: any) {
+      toast({ title: "Load Failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const deleteHistoryScan = async (scanId: string) => {
+    try {
+      await fetch(`/api/nradiverse/accessibility-scan/history/${scanId}`, { method: "DELETE" });
+      refetchHistory();
+      toast({ title: "Deleted", description: "Scan removed from history" });
+    } catch (err: any) {
+      toast({ title: "Delete Failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  // Also refetch history after scan completes
+  useEffect(() => {
+    if (scanComplete && showHistory) refetchHistory();
+  }, [scanComplete]);
 
   const getImpactColor = (impact: string) => {
     switch (impact) {
@@ -646,6 +766,22 @@ export default function NRadiVerseAccessibilityPage() {
   const moderateCount = violations.filter(v => v.impact === "moderate").length;
   const minorCount = violations.filter(v => v.impact === "minor").length;
 
+  // Agent definitions for the pipeline
+  const AGENTS = [
+    { id: "axe-scanner", name: "Axe Scanner", icon: Shield, color: "#8b5cf6", desc: "WCAG 2.1 AA violations" },
+    { id: "screen-reader", name: "Screen Reader", icon: Volume2, color: "#06b6d4", desc: "What blind users hear" },
+    { id: "heading-checker", name: "Headings", icon: FileText, color: "#10b981", desc: "H1→H2→H3 hierarchy" },
+    { id: "landmark-checker", name: "Landmarks", icon: Target, color: "#f59e0b", desc: "nav/main/footer structure" },
+    { id: "focus-tester", name: "Focus Order", icon: Keyboard, color: "#3b82f6", desc: "Tab key navigation" },
+    { id: "visual-tester", name: "Visual Tests", icon: Eye, color: "#f43f5e", desc: "Contrast, resize, reflow" },
+    { id: "ai-analyzer", name: "AI Analysis", icon: Brain, color: "#a855f7", desc: "Claude Vision audit" },
+  ];
+
+  const totalIssues = criticalCount + seriousCount + moderateCount + minorCount;
+  const srIssues = screenReaderResult?.issueCount || 0;
+  const vtFails = visualTestResult?.failCount || 0;
+  const allIssues = totalIssues + srIssues + vtFails;
+
   return (
     <div className="h-full bg-background flex">
       <Sidebar
@@ -658,643 +794,527 @@ export default function NRadiVerseAccessibilityPage() {
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
-        
-        <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+
+        <main className="flex-1 overflow-y-auto">
+          <div className="max-w-[1800px] mx-auto p-6 space-y-6">
+
+            {/* ─── HEADER ─────────────────────────────────────────── */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-2xl font-bold text-foreground flex items-center gap-3" data-testid="heading-accessibility">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-emerald-500/20 to-green-500/20">
+                <h1 className="text-2xl font-bold flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-gradient-to-br from-emerald-500/20 to-cyan-500/20 shadow-lg shadow-emerald-500/10">
                     <Accessibility className="w-7 h-7 text-emerald-400" />
                   </div>
                   Accessibility Compliance
                 </h1>
                 <p className="text-muted-foreground mt-1">
-                  WCAG 2.1 Level AA automated validation with axe-core integration
+                  WCAG 2.1 Level AA • Screen Reader Simulation • Visual Accessibility Tests
                 </p>
               </div>
               <div className="flex items-center gap-3">
-                <Button variant="outline" data-testid="button-export-report">
-                  <Download className="w-4 h-4 mr-2" />
-                  Export Report
+                <Button variant="outline" onClick={() => { setShowHistory(!showHistory); if (!showHistory) refetchHistory(); }}>
+                  <History className="w-4 h-4 mr-2" />
+                  {showHistory ? "Hide History" : "View History"}
                 </Button>
+                {scanComplete && (
+                  <Button variant="outline" onClick={async () => {
+                    try {
+                      toast({ title: "Generating PDF...", description: "Please wait" });
+                      const doc = <AccessibilityReportPDF
+                        url={scanUrl}
+                        overallScore={overallScore}
+                        violations={violations}
+                        wcagCriteria={wcagCriteria}
+                        screenReaderResult={screenReaderResult}
+                        visualTestResult={visualTestResult}
+                        aiAnalysis={aiAnalysis}
+                        generatedAt={new Date().toLocaleString()}
+                      />;
+                      const blob = await pdf(doc).toBlob();
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = `accessibility-report-${new Date().toISOString().slice(0, 10)}.pdf`;
+                      a.click();
+                      URL.revokeObjectURL(url);
+                      toast({ title: "Report Downloaded", description: "PDF saved to your downloads" });
+                    } catch (err: any) {
+                      toast({ title: "Export Failed", description: err.message, variant: "destructive" });
+                    }
+                  }}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Report
+                  </Button>
+                )}
               </div>
             </div>
 
-            {scanComplete && (
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-                <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Score</p>
-                        <p className="text-2xl font-bold text-violet-400">{overallScore}%</p>
+            {/* ─── HISTORY PANEL ──────────────────────────────────── */}
+            {showHistory && (
+              <Card className="border-blue-500/20 bg-blue-500/5">
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-base flex items-center gap-2">
+                      <History className="w-5 h-5 text-blue-400" />
+                      Scan History
+                    </CardTitle>
+                    <Button variant="ghost" size="sm" onClick={() => setShowHistory(false)}>
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {!historyData?.scans?.length ? (
+                    <p className="text-sm text-muted-foreground text-center py-4">No scan history yet. Run a scan to see results here.</p>
+                  ) : (
+                    <ScrollArea className="h-[250px]">
+                      <div className="space-y-2">
+                        {historyData.scans.map((scan: any) => {
+                          const scoreColor = scan.overallScore >= 80 ? "text-emerald-400 border-emerald-500/30 bg-emerald-500/10" :
+                            scan.overallScore >= 50 ? "text-amber-400 border-amber-500/30 bg-amber-500/10" :
+                            "text-red-400 border-red-500/30 bg-red-500/10";
+                          return (
+                            <div key={scan.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-muted/30 transition-colors">
+                              {/* Score badge */}
+                              <div className={`w-12 h-12 rounded-lg flex items-center justify-center border ${scoreColor} flex-shrink-0`}>
+                                <span className="text-lg font-bold">{scan.overallScore || 0}</span>
+                              </div>
+                              {/* Details */}
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold truncate">{scan.url}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {scan.violationsCount || 0} violations
+                                  {scan.criticalCount > 0 && <span className="text-red-400"> • {scan.criticalCount} critical</span>}
+                                  {scan.seriousCount > 0 && <span className="text-orange-400"> • {scan.seriousCount} serious</span>}
+                                  <span className="ml-2">• {new Date(scan.createdAt).toLocaleString()}</span>
+                                </p>
+                              </div>
+                              {/* Actions */}
+                              <div className="flex gap-1 flex-shrink-0">
+                                <Button variant="outline" size="sm" onClick={() => loadHistoryScan(scan.id)}>
+                                  <ChevronRight className="w-4 h-4" />
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => deleteHistoryScan(scan.id)} className="text-red-400 hover:text-red-300 hover:bg-red-500/10">
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <Shield className="w-6 h-6 text-violet-400" />
-                    </div>
-                    <Progress value={overallScore} className="mt-2 h-2" />
-                  </CardContent>
-                </Card>
+                    </ScrollArea>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
-                <Card className="bg-gradient-to-br from-red-500/10 to-rose-500/10 border-red-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Critical</p>
-                        <p className="text-2xl font-bold text-red-400">{criticalCount}</p>
-                      </div>
-                      <XCircle className="w-6 h-6 text-red-400" />
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* ─── SCAN INPUT ─────────────────────────────────────── */}
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex gap-4 items-end">
+                  <div className="flex-1">
+                    <Label className="text-xs text-muted-foreground mb-1">Website URL</Label>
+                    <Input
+                      placeholder="https://apple.com"
+                      value={scanUrl}
+                      onChange={(e) => setScanUrl(e.target.value)}
+                      onKeyDown={(e) => e.key === "Enter" && runAccessibilityScan()}
+                      className="h-11"
+                    />
+                  </div>
+                  <Button onClick={runAccessibilityScan} disabled={isScanning} className="h-11 px-8 bg-gradient-to-r from-emerald-600 to-cyan-600 hover:from-emerald-700 hover:to-cyan-700">
+                    {isScanning ? <RefreshCw className="w-4 h-4 mr-2 animate-spin" /> : <Play className="w-4 h-4 mr-2" />}
+                    {isScanning ? "Scanning..." : "Run Scan"}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
 
-                <Card className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 border-orange-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Serious</p>
-                        <p className="text-2xl font-bold text-orange-400">{seriousCount}</p>
-                      </div>
-                      <AlertTriangle className="w-6 h-6 text-orange-400" />
-                    </div>
-                  </CardContent>
-                </Card>
+            {/* ─── AGENT PIPELINE — HORIZONTAL CARDS WITH CONNECTORS ─── */}
+            {(isScanning || scanComplete) && (
+              <div className="space-y-3">
+                {/* Pipeline row */}
+                <div className="flex items-stretch gap-0">
+                  {AGENTS.map((agent, idx) => {
+                    const state = agentStates[agent.id] || { status: "idle", message: "", progress: 0 };
+                    const isActive = state.status === "working";
+                    const isDone = state.status === "completed" || state.status === "complete" || state.status === "done";
+                    const isError = state.status === "error";
+                    const Icon = agent.icon;
+                    const pct = isDone ? 100 : state.progress;
 
-                <Card className="bg-gradient-to-br from-amber-500/10 to-yellow-500/10 border-amber-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Moderate</p>
-                        <p className="text-2xl font-bold text-amber-400">{moderateCount}</p>
-                      </div>
-                      <Info className="w-6 h-6 text-amber-400" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    return (
+                      <div key={agent.id} className="flex items-center" style={{ flex: 1 }}>
+                        {/* Agent card */}
+                        <div className={`relative flex-1 rounded-xl border-2 p-3 transition-all duration-500 ${
+                          isDone ? "border-emerald-500/40 bg-emerald-500/5" :
+                          isActive ? "border-transparent bg-card shadow-xl" :
+                          isError ? "border-red-500/40 bg-red-500/5" :
+                          "border-transparent bg-muted/20 opacity-50"
+                        }`}
+                        style={isActive ? { borderColor: agent.color + '60', boxShadow: `0 0 24px ${agent.color}20` } : {}}>
 
-                <Card className="bg-gradient-to-br from-blue-500/10 to-cyan-500/10 border-blue-500/30">
-                  <CardContent className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Minor</p>
-                        <p className="text-2xl font-bold text-blue-400">{minorCount}</p>
+                          {/* Animated top progress bar */}
+                          <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-xl overflow-hidden bg-muted/20">
+                            <div
+                              className="h-full rounded-full transition-all duration-700 ease-out"
+                              style={{
+                                width: `${pct}%`,
+                                background: isDone ? '#10b981' : isError ? '#ef4444' : agent.color,
+                              }}
+                            />
+                          </div>
+
+                          {/* Spinning indicator for active */}
+                          {isActive && (
+                            <div className="absolute -top-1 -right-1 w-5 h-5">
+                              <svg className="w-full h-full animate-spin" style={{ animationDuration: "1.5s" }} viewBox="0 0 20 20">
+                                <circle cx="10" cy="10" r="8" fill="none" stroke={agent.color} strokeWidth="2" strokeDasharray="12 38" strokeLinecap="round" />
+                              </svg>
+                            </div>
+                          )}
+
+                          <div className="flex items-center gap-2.5">
+                            {/* Icon */}
+                            <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 transition-all duration-300 ${
+                              isDone ? "bg-emerald-500/15" :
+                              isActive ? "bg-white/10" :
+                              isError ? "bg-red-500/15" :
+                              "bg-muted/30"
+                            }`} style={isActive ? { background: agent.color + '15' } : {}}>
+                              {isDone ? <CheckCircle2 className="w-4 h-4 text-emerald-400" /> :
+                               isError ? <XCircle className="w-4 h-4 text-red-400" /> :
+                               <Icon className="w-4 h-4" style={{ color: isActive ? agent.color : '#64748b' }} />}
+                            </div>
+                            {/* Text */}
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11px] font-semibold truncate" style={{ color: isDone ? '#10b981' : isActive ? agent.color : '#94a3b8' }}>
+                                {agent.name}
+                              </p>
+                              <p className="text-[9px] text-muted-foreground truncate">
+                                {isActive ? `${Math.round(pct)}%` : isDone ? "✓ Complete" : isError ? "✗ Failed" : agent.desc}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Connector arrow */}
+                        {idx < AGENTS.length - 1 && (
+                          <div className="flex items-center px-1 flex-shrink-0">
+                            <div className={`w-4 h-[2px] transition-colors duration-500 ${isDone ? "bg-emerald-500/50" : "bg-muted/20"}`} />
+                            <div className={`w-0 h-0 border-t-[4px] border-t-transparent border-b-[4px] border-b-transparent border-l-[5px] transition-colors duration-500 ${isDone ? "border-l-emerald-500/50" : "border-l-muted/20"}`} />
+                          </div>
+                        )}
                       </div>
-                      <CheckCircle2 className="w-6 h-6 text-blue-400" />
-                    </div>
-                  </CardContent>
-                </Card>
+                    );
+                  })}
+                </div>
+
+                {/* Live status bar */}
+                {isScanning && (
+                  <div className="flex items-center gap-3 px-4 py-2 rounded-lg bg-muted/20 border border-border/20">
+                    <div className="w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    <p className="text-xs font-mono text-muted-foreground truncate flex-1">
+                      {(() => {
+                        const active = Object.entries(agentStates).find(([_, s]) => s.status === "working");
+                        return active ? active[1].message : "Initializing agents...";
+                      })()}
+                    </p>
+                    <span className="text-[10px] text-muted-foreground tabular-nums">
+                      {Object.values(agentStates).filter(s => s.status === "completed" || s.status === "complete" || s.status === "done").length}/{AGENTS.length} complete
+                    </span>
+                  </div>
+                )}
               </div>
             )}
 
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-              <TabsList className="bg-card border">
-                <TabsTrigger value="scan" data-testid="tab-scan">
-                  <Play className="w-4 h-4 mr-2" />
-                  Run Scan
-                </TabsTrigger>
-                <TabsTrigger value="violations" data-testid="tab-violations" disabled={!scanComplete}>
-                  <XCircle className="w-4 h-4 mr-2" />
-                  Violations ({violations.length})
-                </TabsTrigger>
-                <TabsTrigger value="ai-analysis" data-testid="tab-ai-analysis" disabled={!aiAnalysis}>
-                  <Brain className="w-4 h-4 mr-2" />
-                  AI Analysis
-                </TabsTrigger>
-                <TabsTrigger value="wcag" data-testid="tab-wcag" disabled={!scanComplete}>
-                  <Shield className="w-4 h-4 mr-2" />
-                  WCAG Criteria
-                </TabsTrigger>
-                <TabsTrigger value="contrast" data-testid="tab-contrast">
-                  <Palette className="w-4 h-4 mr-2" />
-                  Color Contrast
-                </TabsTrigger>
-                <TabsTrigger value="testcases" data-testid="tab-testcases">
-                  <FileText className="w-4 h-4 mr-2" />
-                  WCAG AA Test Cases
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="scan" className="space-y-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Accessibility Scan</CardTitle>
-                    <CardDescription>Enter a URL to scan for WCAG 2.1 Level AA compliance issues</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="flex gap-4">
-                      <div className="flex-1 space-y-2">
-                        <Label>Website URL</Label>
-                        <Input 
-                          placeholder="https://example.gehealthcare.com" 
-                          value={scanUrl}
-                          onChange={(e) => setScanUrl(e.target.value)}
-                          data-testid="input-scan-url"
-                        />
-                      </div>
-                      <div className="flex items-end">
-                        <Button 
-                          onClick={runAccessibilityScan} 
-                          disabled={isScanning}
-                          data-testid="button-run-scan"
-                        >
-                          {isScanning ? (
-                            <>
-                              <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                              Scanning...
-                            </>
-                          ) : (
-                            <>
-                              <Play className="w-4 h-4 mr-2" />
-                              Run Scan
-                            </>
-                          )}
-                        </Button>
+            {/* ─── VERDICT BANNER (after scan) ────────────────────── */}
+            {scanComplete && (
+              <Card className={`border-2 ${allIssues === 0 ? "border-emerald-500/50 bg-emerald-500/5" : allIssues <= 5 ? "border-amber-500/50 bg-amber-500/5" : "border-red-500/50 bg-red-500/5"}`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center gap-6">
+                    {/* Score circle */}
+                    <div className="relative w-20 h-20 flex-shrink-0">
+                      <svg className="w-full h-full -rotate-90" viewBox="0 0 80 80">
+                        <circle cx="40" cy="40" r="35" fill="none" strokeWidth="4" className="text-muted/20" stroke="currentColor" />
+                        <circle cx="40" cy="40" r="35" fill="none" strokeWidth="4" strokeLinecap="round"
+                          stroke={overallScore >= 80 ? "#10b981" : overallScore >= 50 ? "#f59e0b" : "#ef4444"}
+                          strokeDasharray={`${(overallScore / 100) * 220} 220`} />
+                      </svg>
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <span className={`text-lg font-bold ${overallScore >= 80 ? "text-emerald-400" : overallScore >= 50 ? "text-amber-400" : "text-red-400"}`}>
+                          {overallScore}
+                        </span>
                       </div>
                     </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
-                      {wcagPrinciples.map((principle) => (
-                        <Card key={principle.id} className={`${principle.bgColor} border-transparent`}>
-                          <CardContent className="p-4 flex items-center gap-3">
-                            <div className={`p-2 rounded-lg ${principle.bgColor}`}>
-                              <principle.icon className={`w-5 h-5 ${principle.color}`} />
-                            </div>
-                            <div>
-                              <p className="font-medium text-sm">{principle.name}</p>
-                              <p className="text-xs text-muted-foreground">WCAG Principle</p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      ))}
+                    {/* Verdict text */}
+                    <div className="flex-1">
+                      <h2 className={`text-xl font-bold ${allIssues === 0 ? "text-emerald-400" : allIssues <= 5 ? "text-amber-400" : "text-red-400"}`}>
+                        {allIssues === 0 ? "No Accessibility Issues Found" : `${allIssues} Accessibility Issues Found`}
+                      </h2>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        {criticalCount > 0 && <span className="text-red-400 font-semibold">{criticalCount} Critical</span>}
+                        {criticalCount > 0 && seriousCount > 0 && " • "}
+                        {seriousCount > 0 && <span className="text-orange-400 font-semibold">{seriousCount} Serious</span>}
+                        {(criticalCount > 0 || seriousCount > 0) && moderateCount > 0 && " • "}
+                        {moderateCount > 0 && <span className="text-amber-400">{moderateCount} Moderate</span>}
+                        {srIssues > 0 && ` • ${srIssues} Screen Reader issues`}
+                        {vtFails > 0 && ` • ${vtFails} Visual test failures`}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>What We Test</CardTitle>
-                    <CardDescription>Comprehensive WCAG 2.1 Level AA compliance validation</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <Palette className="w-6 h-6 text-violet-400 mb-2" />
-                        <h4 className="font-medium mb-1">Color Contrast</h4>
-                        <p className="text-sm text-muted-foreground">Verify text meets 4.5:1 ratio for normal text, 3:1 for large text</p>
+                    {/* Quick stats */}
+                    <div className="flex gap-6">
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-red-400">{criticalCount + seriousCount}</p>
+                        <p className="text-[10px] text-muted-foreground">Critical+Serious</p>
                       </div>
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <Keyboard className="w-6 h-6 text-cyan-400 mb-2" />
-                        <h4 className="font-medium mb-1">Keyboard Navigation</h4>
-                        <p className="text-sm text-muted-foreground">Ensure all interactive elements are keyboard accessible</p>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-cyan-400">{srIssues}</p>
+                        <p className="text-[10px] text-muted-foreground">Screen Reader</p>
                       </div>
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <Volume2 className="w-6 h-6 text-emerald-400 mb-2" />
-                        <h4 className="font-medium mb-1">Screen Reader</h4>
-                        <p className="text-sm text-muted-foreground">Validate ARIA labels and semantic structure</p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <Eye className="w-6 h-6 text-amber-400 mb-2" />
-                        <h4 className="font-medium mb-1">Alt Text</h4>
-                        <p className="text-sm text-muted-foreground">Check all images have meaningful alternative text</p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <FileText className="w-6 h-6 text-pink-400 mb-2" />
-                        <h4 className="font-medium mb-1">Form Labels</h4>
-                        <p className="text-sm text-muted-foreground">Verify form elements have associated labels</p>
-                      </div>
-                      <div className="p-4 rounded-lg bg-muted/50 border border-border/50">
-                        <Shield className="w-6 h-6 text-blue-400 mb-2" />
-                        <h4 className="font-medium mb-1">Focus Management</h4>
-                        <p className="text-sm text-muted-foreground">Ensure visible focus indicators and logical order</p>
+                      <div className="text-center">
+                        <p className="text-2xl font-bold text-rose-400">{vtFails}</p>
+                        <p className="text-[10px] text-muted-foreground">Visual Fails</p>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-              <TabsContent value="violations" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Accessibility Violations</CardTitle>
-                    <CardDescription>Issues found during the accessibility scan</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ScrollArea className="h-[600px]">
-                      <Accordion type="multiple" className="space-y-3">
-                        {violations.map((violation, idx) => (
-                          <AccordionItem key={idx} value={violation.id} className="border rounded-lg">
-                            <AccordionTrigger className="px-4 hover:no-underline">
-                              <div className="flex items-center gap-3 text-left">
-                                <Badge className={getImpactColor(violation.impact)}>
-                                  {violation.impact.toUpperCase()}
-                                </Badge>
-                                <div>
-                                  <p className="font-medium">{violation.description}</p>
-                                  <p className="text-sm text-muted-foreground">{violation.nodes.length} element(s) affected</p>
-                                </div>
+            {/* ─── RESULTS — ALL VISIBLE, NO TAB HUNTING ──────────── */}
+            {scanComplete && (
+              <div className="space-y-6">
+
+                {/* Violations */}
+                {violations.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5 text-orange-400" />
+                        WCAG Violations ({violations.length})
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ScrollArea className="h-[300px]">
+                        <div className="space-y-2">
+                          {violations.map((v, i) => (
+                            <div key={i} className={`p-3 rounded-lg border ${getImpactColor(v.impact)}`}>
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className={`text-[10px] ${getImpactColor(v.impact)}`}>{v.impact}</Badge>
+                                <span className="text-sm font-medium">{v.help || v.description}</span>
                               </div>
-                            </AccordionTrigger>
-                            <AccordionContent className="px-4 pb-4">
-                              <div className="space-y-4">
-                                <p className="text-sm text-muted-foreground">{violation.help}</p>
-                                <div className="flex gap-2 flex-wrap">
-                                  {violation.tags.map((tag) => (
-                                    <Badge key={tag} variant="outline" className="text-xs">{tag}</Badge>
-                                  ))}
-                                </div>
-                                <div className="space-y-2">
-                                  <p className="font-medium text-sm">Affected Elements:</p>
-                                  {violation.nodes.map((node, nodeIdx) => (
-                                    <div key={nodeIdx} className="p-3 rounded bg-muted/50 font-mono text-xs">
-                                      <code>{node.html}</code>
-                                      <p className="text-muted-foreground mt-2 font-sans">{node.failureSummary}</p>
-                                    </div>
-                                  ))}
-                                </div>
-                                <Button variant="outline" size="sm" asChild>
-                                  <a href={violation.helpUrl} target="_blank" rel="noopener noreferrer">
-                                    <ExternalLink className="w-4 h-4 mr-2" />
-                                    Learn More
-                                  </a>
-                                </Button>
-                              </div>
-                            </AccordionContent>
-                          </AccordionItem>
-                        ))}
-                      </Accordion>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                              <p className="text-xs text-muted-foreground">{v.description}</p>
+                              {v.nodes?.[0] && (
+                                <pre className="text-[10px] font-mono bg-muted/30 rounded p-2 mt-2 overflow-x-auto">{v.nodes[0].html}</pre>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    </CardContent>
+                  </Card>
+                )}
 
-              <TabsContent value="ai-analysis" className="space-y-4">
-                {aiAnalysis && (
-                  <>
-                    <Card className="bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/30">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <Brain className="w-5 h-5 text-violet-400" />
-                          AI-Powered Analysis
-                        </CardTitle>
-                        <CardDescription>
-                          Intelligent accessibility insights powered by Claude AI
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div className="p-4 rounded-lg bg-background/50 border border-border/50">
-                          <p className="text-sm leading-relaxed">{aiAnalysis.summary}</p>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-4">
-                          <div className="p-4 rounded-lg bg-background/50 border border-border/50 text-center">
-                            <div className={`text-lg font-bold ${aiAnalysis.complianceStatus?.wcag21AA ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {aiAnalysis.complianceStatus?.wcag21AA ? 'PASS' : 'FAIL'}
-                            </div>
-                            <p className="text-xs text-muted-foreground">WCAG 2.1 AA</p>
-                          </div>
-                          <div className="p-4 rounded-lg bg-background/50 border border-border/50 text-center">
-                            <div className={`text-lg font-bold ${aiAnalysis.complianceStatus?.section508 ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {aiAnalysis.complianceStatus?.section508 ? 'PASS' : 'FAIL'}
-                            </div>
-                            <p className="text-xs text-muted-foreground">Section 508</p>
-                          </div>
-                          <div className="p-4 rounded-lg bg-background/50 border border-border/50 text-center">
-                            <div className={`text-lg font-bold ${aiAnalysis.complianceStatus?.adaCompliance ? 'text-emerald-400' : 'text-red-400'}`}>
-                              {aiAnalysis.complianceStatus?.adaCompliance ? 'PASS' : 'FAIL'}
-                            </div>
-                            <p className="text-xs text-muted-foreground">ADA Compliance</p>
-                          </div>
-                        </div>
-                        
-                        {aiAnalysis.estimatedFixTime && (
-                          <div className="flex items-center gap-2 p-3 rounded-lg bg-amber-500/10 border border-amber-500/30">
-                            <Clock className="w-4 h-4 text-amber-400" />
-                            <span className="text-sm">Estimated fix time: <strong>{aiAnalysis.estimatedFixTime}</strong></span>
-                          </div>
-                        )}
-                      </CardContent>
-                    </Card>
-                    
-                    {aiAnalysis.prioritizedIssues && aiAnalysis.prioritizedIssues.length > 0 && (
+                {/* Screen Reader Results */}
+                {screenReaderResult && (
+                  <div className="grid grid-cols-12 gap-4">
+                    <div className="col-span-7">
                       <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Target className="w-5 h-5 text-cyan-400" />
-                            Prioritized Issues
-                          </CardTitle>
-                          <CardDescription>Issues ordered by impact and importance</CardDescription>
+                        <CardHeader className="pb-3">
+                          <div className="flex items-center justify-between">
+                            <CardTitle className="text-base flex items-center gap-2">
+                              <Volume2 className="w-5 h-5 text-cyan-400" />
+                              Screen Reader Transcript
+                            </CardTitle>
+                            <Badge variant="outline" className="text-xs">{screenReaderResult.transcript?.totalElements || 0} elements</Badge>
+                          </div>
+                          <CardDescription>What NVDA/JAWS users would hear navigating this page</CardDescription>
                         </CardHeader>
                         <CardContent>
-                          <ScrollArea className="h-[400px]">
-                            <div className="space-y-4">
-                              {aiAnalysis.prioritizedIssues.map((item, idx) => (
-                                <div key={idx} className="p-4 rounded-lg border border-border/50 bg-muted/30">
-                                  <div className="flex items-start gap-3">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-500 to-violet-500 flex items-center justify-center text-white font-bold text-sm">
-                                      {idx + 1}
-                                    </div>
-                                    <div className="flex-1 space-y-2">
-                                      <h4 className="font-medium">{item.issue}</h4>
-                                      <p className="text-sm text-muted-foreground">{item.impact}</p>
-                                      <div className="flex items-center gap-2 text-xs">
-                                        <Badge variant="outline">{item.affectedUsers}</Badge>
-                                      </div>
-                                      <div className="p-3 rounded bg-emerald-500/10 border border-emerald-500/30">
-                                        <div className="flex items-center gap-2 mb-1">
-                                          <Wrench className="w-3 h-3 text-emerald-400" />
-                                          <span className="text-xs font-medium text-emerald-400">Remediation</span>
-                                        </div>
-                                        <p className="text-sm">{item.remediation}</p>
-                                      </div>
-                                      {item.codeExample && (
-                                        <div className="p-3 rounded bg-muted/50 font-mono text-xs overflow-x-auto">
-                                          <code>{item.codeExample}</code>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
+                          <ScrollArea className="h-[300px]">
+                            <div className="space-y-0.5 font-mono text-xs">
+                              {screenReaderResult.transcript?.entries?.map((entry: any, i: number) => (
+                                <div key={i} className={`flex items-start gap-2 px-2 py-1 rounded ${entry.issues?.length ? "bg-red-500/10 border-l-2 border-red-500" : "hover:bg-muted/20"}`}
+                                  style={{ paddingLeft: `${(entry.depth || 0) * 12 + 8}px` }}>
+                                  {entry.landmark && <Badge variant="outline" className="text-[9px] bg-cyan-500/10 text-cyan-400 border-cyan-500/30 flex-shrink-0 py-0">{entry.landmark}</Badge>}
+                                  <span className="text-muted-foreground">{entry.announcement}</span>
                                 </div>
                               ))}
                             </div>
                           </ScrollArea>
                         </CardContent>
                       </Card>
-                    )}
-                    
-                    {aiAnalysis.recommendations && aiAnalysis.recommendations.length > 0 && (
+                    </div>
+                    <div className="col-span-5 space-y-4">
+                      {/* Headings */}
                       <Card>
-                        <CardHeader>
-                          <CardTitle className="flex items-center gap-2">
-                            <Lightbulb className="w-5 h-5 text-amber-400" />
-                            Recommendations
+                        <CardHeader className="pb-2 pt-4 px-4">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            Heading Hierarchy
+                            <Badge variant={screenReaderResult.headingHierarchy?.pass ? "default" : "destructive"} className="text-[10px] ml-auto">
+                              {screenReaderResult.headingHierarchy?.pass ? "✓ Pass" : "✗ Fail"}
+                            </Badge>
                           </CardTitle>
-                          <CardDescription>AI-generated suggestions for improvement</CardDescription>
                         </CardHeader>
-                        <CardContent>
-                          <div className="space-y-3">
-                            {aiAnalysis.recommendations.map((rec, idx) => (
-                              <div key={idx} className="flex items-start gap-3 p-3 rounded-lg bg-muted/30 border border-border/50">
-                                <CheckCircle2 className="w-5 h-5 text-emerald-400 mt-0.5" />
-                                <p className="text-sm">{rec}</p>
+                        <CardContent className="px-4 pb-3">
+                          <div className="space-y-1">
+                            {screenReaderResult.headingHierarchy?.headings?.map((h: any, i: number) => (
+                              <div key={i} className="flex items-center gap-1 text-xs" style={{ paddingLeft: `${(h.level - 1) * 10}px` }}>
+                                <Badge variant="outline" className="text-[9px] w-6 justify-center py-0">H{h.level}</Badge>
+                                <span className="text-muted-foreground truncate">{h.text}</span>
                               </div>
                             ))}
                           </div>
                         </CardContent>
                       </Card>
-                    )}
-                  </>
+                      {/* Landmarks */}
+                      <Card>
+                        <CardHeader className="pb-2 pt-4 px-4">
+                          <CardTitle className="text-sm flex items-center gap-2">
+                            Landmarks
+                            <Badge variant={screenReaderResult.landmarks?.pass ? "default" : "destructive"} className="text-[10px] ml-auto">
+                              {screenReaderResult.landmarks?.pass ? "✓ Pass" : `${screenReaderResult.landmarks?.missing?.length || 0} missing`}
+                            </Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="px-4 pb-3">
+                          <div className="space-y-1 text-xs">
+                            {screenReaderResult.landmarks?.found?.map((l: any, i: number) => (
+                              <div key={i} className="flex justify-between"><span className="text-emerald-400">✓ {l.role}</span><span className="text-muted-foreground">{l.count}×</span></div>
+                            ))}
+                            {screenReaderResult.landmarks?.missing?.map((m: string, i: number) => (
+                              <div key={i} className="text-red-400">✗ {m} — missing</div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                      {/* Focus + Links summary */}
+                      <Card>
+                        <CardContent className="p-4 space-y-2 text-xs">
+                          <div className="flex justify-between">
+                            <span>Focus Order</span>
+                            <Badge variant={screenReaderResult.focusOrder?.pass ? "default" : "destructive"} className="text-[10px]">
+                              {screenReaderResult.focusOrder?.issues?.length || 0} issues
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Links ({screenReaderResult.linksAnalysis?.totalLinks || 0} total)</span>
+                            <Badge variant={screenReaderResult.linksAnalysis?.pass ? "default" : "destructive"} className="text-[10px]">
+                              {screenReaderResult.linksAnalysis?.problematicLinks || 0} problematic
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>ARIA Validation</span>
+                            <Badge variant={screenReaderResult.ariaValidation?.pass ? "default" : "destructive"} className="text-[10px]">
+                              {screenReaderResult.ariaValidation?.issueCount || 0} issues
+                            </Badge>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
                 )}
-              </TabsContent>
 
-              <TabsContent value="wcag" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>WCAG 2.1 Criteria Status</CardTitle>
-                    <CardDescription>Compliance status for each WCAG success criterion</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      {wcagPrinciples.map((principle) => {
-                        const criteria = wcagCriteria.filter(c => c.principle === principle.id);
-                        const passCount = criteria.filter(c => c.status === "pass").length;
-                        const failCount = criteria.filter(c => c.status === "fail").length;
-                        
-                        return (
-                          <Card key={principle.id} className={`${principle.bgColor} border-transparent`}>
-                            <CardHeader className="pb-2">
-                              <div className="flex items-center gap-2">
-                                <principle.icon className={`w-5 h-5 ${principle.color}`} />
-                                <CardTitle className="text-lg">{principle.name}</CardTitle>
-                              </div>
-                            </CardHeader>
-                            <CardContent>
-                              <div className="flex gap-4 mb-4">
-                                <div className="text-center">
-                                  <p className="text-2xl font-bold text-emerald-400">{passCount}</p>
-                                  <p className="text-xs text-muted-foreground">Passed</p>
-                                </div>
-                                <div className="text-center">
-                                  <p className="text-2xl font-bold text-red-400">{failCount}</p>
-                                  <p className="text-xs text-muted-foreground">Failed</p>
-                                </div>
-                              </div>
-                              <div className="space-y-2">
-                                {criteria.map((c) => (
-                                  <div key={c.id} className="flex items-center justify-between p-2 rounded bg-background/50">
-                                    <div className="flex items-center gap-2">
-                                      {c.status === "pass" ? (
-                                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                      ) : c.status === "fail" ? (
-                                        <XCircle className="w-4 h-4 text-red-400" />
-                                      ) : (
-                                        <AlertTriangle className="w-4 h-4 text-amber-400" />
-                                      )}
-                                      <span className="font-mono text-sm">{c.id}</span>
-                                      <Badge variant="outline" className="text-xs">{c.level}</Badge>
-                                    </div>
-                                    {c.violations && c.violations > 0 && (
-                                      <span className="text-xs text-red-400">{c.violations} issues</span>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </CardContent>
-                          </Card>
-                        );
-                      })}
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-
-              <TabsContent value="contrast" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Color Contrast Analyzer</CardTitle>
-                    <CardDescription>Check color combinations for WCAG compliance</CardDescription>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-4">
-                        <div className="space-y-2">
-                          <Label>Foreground Color</Label>
-                          <div className="flex gap-2">
-                            <Input type="color" className="w-14 h-10 p-1 cursor-pointer" defaultValue="#000000" />
-                            <Input placeholder="#000000" className="flex-1" defaultValue="#000000" />
-                          </div>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Background Color</Label>
-                          <div className="flex gap-2">
-                            <Input type="color" className="w-14 h-10 p-1 cursor-pointer" defaultValue="#ffffff" />
-                            <Input placeholder="#ffffff" className="flex-1" defaultValue="#ffffff" />
-                          </div>
-                        </div>
-                        <Button className="w-full">Check Contrast</Button>
-                      </div>
-                      <div className="space-y-4">
-                        <div className="p-6 rounded-lg border text-center" style={{ background: "#ffffff", color: "#000000" }}>
-                          <p className="text-2xl font-bold mb-2">Sample Text</p>
-                          <p className="text-sm">This is how your text will appear</p>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="p-4 rounded-lg bg-emerald-500/20 border border-emerald-500/50 text-center">
-                            <p className="text-3xl font-bold text-emerald-400">21:1</p>
-                            <p className="text-xs text-muted-foreground">Contrast Ratio</p>
-                          </div>
-                          <div className="space-y-2">
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                              <span className="text-sm">Normal Text (4.5:1)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                              <span className="text-sm">Large Text (3:1)</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                              <span className="text-sm">UI Components (3:1)</span>
-                            </div>
-                          </div>
+                {/* Visual Tests Grid */}
+                {visualTestResult && visualTestResult.tests?.length > 0 && (
+                  <Card>
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-base flex items-center gap-2">
+                          <Eye className="w-5 h-5 text-rose-400" />
+                          Visual Accessibility Tests
+                        </CardTitle>
+                        <div className="flex gap-3 text-xs">
+                          <span className="text-emerald-400 font-semibold">{visualTestResult.passCount} Passed</span>
+                          <span className="text-red-400 font-semibold">{visualTestResult.failCount} Failed</span>
+                          <span className="text-amber-400">{visualTestResult.warningCount} Warnings</span>
                         </div>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              </TabsContent>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-3 lg:grid-cols-5 gap-3">
+                        {visualTestResult.tests.map((test: any) => (
+                          <div key={test.testId} className={`rounded-xl border p-3 ${
+                            test.status === "pass" ? "border-emerald-500/30 bg-emerald-500/5" :
+                            test.status === "fail" ? "border-red-500/30 bg-red-500/5" :
+                            "border-amber-500/30 bg-amber-500/5"
+                          }`}>
+                            {test.screenshotBase64 && (
+                              <img src={`data:image/jpeg;base64,${test.screenshotBase64}`} alt={test.testName} className="w-full h-20 object-cover rounded-md mb-2 border border-border/30" />
+                            )}
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-xs font-semibold truncate">{test.testName}</span>
+                              {test.status === "pass" ? <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" /> :
+                               test.status === "fail" ? <XCircle className="w-4 h-4 text-red-400 flex-shrink-0" /> :
+                               <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />}
+                            </div>
+                            <p className="text-[10px] text-muted-foreground">{test.wcagCriterion}</p>
+                            {test.issues?.length > 0 && <p className="text-[10px] text-red-400 mt-1">{test.issues.length} issue{test.issues.length > 1 ? "s" : ""}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
 
-              <TabsContent value="testcases" className="space-y-4">
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <FileText className="w-5 h-5 text-emerald-400" />
-                      WCAG 2.1 AA Test Cases
-                    </CardTitle>
-                    <CardDescription>
-                      Comprehensive test cases for WCAG 2.1 Level AA compliance testing. 
-                      {wcagAATestCases.length} test cases covering all success criteria.
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="mb-4 grid grid-cols-4 gap-4">
-                      <Card className="bg-violet-500/10 border-violet-500/30">
-                        <CardContent className="p-3 text-center">
-                          <p className="text-2xl font-bold text-violet-400">{wcagAATestCases.filter(t => t.principle === 'perceivable').length}</p>
-                          <p className="text-xs text-muted-foreground">Perceivable</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-cyan-500/10 border-cyan-500/30">
-                        <CardContent className="p-3 text-center">
-                          <p className="text-2xl font-bold text-cyan-400">{wcagAATestCases.filter(t => t.principle === 'operable').length}</p>
-                          <p className="text-xs text-muted-foreground">Operable</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-emerald-500/10 border-emerald-500/30">
-                        <CardContent className="p-3 text-center">
-                          <p className="text-2xl font-bold text-emerald-400">{wcagAATestCases.filter(t => t.principle === 'understandable').length}</p>
-                          <p className="text-xs text-muted-foreground">Understandable</p>
-                        </CardContent>
-                      </Card>
-                      <Card className="bg-amber-500/10 border-amber-500/30">
-                        <CardContent className="p-3 text-center">
-                          <p className="text-2xl font-bold text-amber-400">{wcagAATestCases.filter(t => t.principle === 'robust').length}</p>
-                          <p className="text-xs text-muted-foreground">Robust</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    
-                    <ScrollArea className="h-[600px]">
-                      <Accordion type="multiple" className="space-y-2">
-                        {wcagAATestCases.map((testCase) => {
-                          const principleConfig = wcagPrinciples.find(p => p.id === testCase.principle);
-                          const PrincipleIcon = principleConfig?.icon || Shield;
-                          
-                          return (
-                            <AccordionItem key={testCase.id} value={testCase.id} className="border rounded-lg px-4 bg-card">
-                              <AccordionTrigger className="hover:no-underline py-3">
-                                <div className="flex items-center gap-3 flex-1">
-                                  <div className={`p-1.5 rounded ${principleConfig?.bgColor}`}>
-                                    <PrincipleIcon className={`w-4 h-4 ${principleConfig?.color}`} />
-                                  </div>
-                                  <div className="flex items-center gap-2 flex-1">
-                                    <Badge variant="outline" className="text-xs">
-                                      {testCase.id}
-                                    </Badge>
-                                    <Badge className={testCase.level === 'AA' ? 'bg-amber-500/20 text-amber-400 border-amber-500/50' : 'bg-blue-500/20 text-blue-400 border-blue-500/50'}>
-                                      Level {testCase.level}
-                                    </Badge>
-                                    <span className="font-medium text-sm text-left">{testCase.name}</span>
-                                    {testCase.automatable && (
-                                      <Badge variant="outline" className="text-xs bg-emerald-500/10 text-emerald-400 border-emerald-500/50">
-                                        <Wrench className="w-3 h-3 mr-1" />
-                                        Automatable
-                                      </Badge>
-                                    )}
-                                  </div>
-                                </div>
-                              </AccordionTrigger>
-                              <AccordionContent className="pt-2 pb-4">
-                                <div className="space-y-4">
-                                  <div>
-                                    <p className="text-sm text-muted-foreground">{testCase.description}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                      WCAG Criterion: <span className="text-foreground font-medium">{testCase.criterion}</span>
-                                    </p>
-                                  </div>
-                                  
-                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                      <h4 className="text-sm font-medium flex items-center gap-2">
-                                        <Target className="w-4 h-4 text-cyan-400" />
-                                        Test Procedure
-                                      </h4>
-                                      <ol className="list-decimal list-inside space-y-1 text-sm text-muted-foreground pl-2">
-                                        {testCase.testProcedure.map((step, idx) => (
-                                          <li key={idx}>{step}</li>
-                                        ))}
-                                      </ol>
-                                    </div>
-                                    
-                                    <div className="space-y-4">
-                                      <div className="space-y-2">
-                                        <h4 className="text-sm font-medium flex items-center gap-2">
-                                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                                          Expected Result
-                                        </h4>
-                                        <p className="text-sm text-muted-foreground bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/30">
-                                          {testCase.expectedResult}
-                                        </p>
-                                      </div>
-                                      
-                                      <div className="space-y-2">
-                                        <h4 className="text-sm font-medium flex items-center gap-2">
-                                          <Wrench className="w-4 h-4 text-amber-400" />
-                                          Testing Tools
-                                        </h4>
-                                        <div className="flex flex-wrap gap-2">
-                                          {testCase.tools.map((tool, idx) => (
-                                            <Badge key={idx} variant="outline" className="text-xs">
-                                              {tool}
-                                            </Badge>
-                                          ))}
-                                        </div>
-                                      </div>
-                                    </div>
-                                  </div>
-                                </div>
-                              </AccordionContent>
-                            </AccordionItem>
-                          );
-                        })}
-                      </Accordion>
-                    </ScrollArea>
-                  </CardContent>
-                </Card>
-              </TabsContent>
-            </Tabs>
+                {/* AI Analysis */}
+                {aiAnalysis && (
+                  <Card className="border-purple-500/30">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base flex items-center gap-2">
+                        <Brain className="w-5 h-5 text-purple-400" />
+                        AI Analysis
+                        <Badge variant="outline" className="text-[10px] ml-2 bg-purple-500/10 text-purple-400 border-purple-500/30">Claude Vision</Badge>
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-sm text-muted-foreground mb-4">{aiAnalysis.summary}</p>
+                      {aiAnalysis.prioritizedIssues?.length > 0 && (
+                        <div className="space-y-2">
+                          <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Priority Fixes</h4>
+                          {aiAnalysis.prioritizedIssues.slice(0, 5).map((issue, i) => (
+                            <div key={i} className="p-3 rounded-lg bg-muted/30 border border-border/30">
+                              <div className="flex items-center gap-2 mb-1">
+                                <Badge variant="outline" className="text-[10px] bg-purple-500/10 text-purple-400 border-purple-500/30">#{i + 1}</Badge>
+                                <span className="text-sm font-medium">{issue.issue}</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground">{issue.remediation}</p>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                )}
+
+              </div>
+            )}
+
+            {/* ─── PRE-SCAN: What We Test ──────────────────────────── */}
+            {!isScanning && !scanComplete && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {[
+                  { icon: Shield, color: "text-violet-400", bg: "bg-violet-500/10", title: "WCAG 2.1 AA", desc: "Axe-core engine with 90+ rules" },
+                  { icon: Volume2, color: "text-cyan-400", bg: "bg-cyan-500/10", title: "Screen Reader Sim", desc: "Transcript of what users hear" },
+                  { icon: Eye, color: "text-rose-400", bg: "bg-rose-500/10", title: "9 Visual Tests", desc: "Contrast, resize, reflow, focus" },
+                  { icon: Brain, color: "text-purple-400", bg: "bg-purple-500/10", title: "AI Vision Analysis", desc: "Claude finds what tools miss" },
+                ].map((card, i) => (
+                  <Card key={i} className={`${card.bg} border-transparent`}>
+                    <CardContent className="p-5">
+                      <card.icon className={`w-8 h-8 ${card.color} mb-3`} />
+                      <h4 className="font-semibold text-sm mb-1">{card.title}</h4>
+                      <p className="text-xs text-muted-foreground">{card.desc}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
+
           </div>
         </main>
       </div>
     </div>
   );
 }
+

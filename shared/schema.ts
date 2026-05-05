@@ -3,14 +3,40 @@ import { pgTable, text, varchar, timestamp, integer, jsonb, boolean } from "driz
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// ─── Multi-Tenant Core ────────────────────────────────────────────────────────
+
+export const tenants = pgTable("tenants", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  storageConnectionString: text("storage_connection_string"),  // per-tenant Azure storage (optional)
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export const deviceTokens = pgTable("device_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 64 }).notNull(),
+  userId: varchar("user_id").notNull(),
+  tokenHash: text("token_hash").notNull().unique(),
+  deviceName: text("device_name"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  lastUsedAt: timestamp("last_used_at"),
+});
+
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 64 }).notNull().default("default-tenant"),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  mustChangePassword: boolean("must_change_password").notNull().default(false),
+  // null = admin / unrestricted; string[] = specific modules allowed
+  allowedModules: jsonb("allowed_modules").$type<string[] | null>().default(null),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 export const projects = pgTable("projects", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  tenantId: varchar("tenant_id", { length: 64 }).notNull().default("default-tenant"),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
   description: text("description"),
@@ -298,6 +324,8 @@ export const executionResults = pgTable("execution_results", {
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
+  mustChangePassword: true,
+  allowedModules: true,
 });
 
 export const insertProjectSchema = createInsertSchema(projects).omit({
@@ -422,6 +450,9 @@ export const sprintUserStories = pgTable("sprint_user_stories", {
   additionalContext: text("additional_context"),
   contextDocuments: jsonb("context_documents").$type<{id: string; name: string; content: string}[]>().default([]),
   contextUrls: jsonb("context_urls").$type<{url: string; title?: string; content?: string}[]>().default([]),
+  generatedTestCases: jsonb("generated_test_cases"),
+  testCaseCount: integer("test_case_count").default(0),
+  generatedAt: timestamp("generated_at"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
@@ -1034,6 +1065,9 @@ export const accessibilityScanResults = pgTable("accessibility_scan_results", {
     scanDuration?: number;
     axeVersion?: string;
   }>(),
+  screenReaderResult: jsonb("screen_reader_result"),
+  visualTestResult: jsonb("visual_test_result"),
+  aiAnalysis: jsonb("ai_analysis"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
@@ -1066,6 +1100,109 @@ export interface WCAGCriterion {
   principle: "perceivable" | "operable" | "understandable" | "robust";
   status: "pass" | "fail" | "incomplete";
   violations?: number;
+}
+
+// ============================================
+// nRadiVerse Quality Engine - Screen Reader Simulation
+// ============================================
+
+export interface ScreenReaderSimulationResult {
+  transcript: ScreenReaderTranscript;
+  headingHierarchy: HeadingHierarchyResult;
+  landmarks: LandmarkResult;
+  linksAnalysis: LinksAnalysisResult;
+  focusOrder: FocusOrderResult;
+  ariaValidation: ARIAValidationResult;
+  readingOrder: ReadingOrderResult;
+  overallScore: number;
+  issueCount: number;
+  duration: number;
+}
+
+export interface ScreenReaderTranscript {
+  entries: TranscriptEntry[];
+  totalElements: number;
+  duration: number;
+}
+
+export interface TranscriptEntry {
+  index: number;
+  announcement: string;
+  role: string;
+  name: string;
+  landmark?: string;
+  depth: number;
+  issues?: string[];
+}
+
+export interface HeadingHierarchyResult {
+  headings: { level: number; text: string; index: number }[];
+  issues: { type: string; message: string }[];
+  pass: boolean;
+}
+
+export interface LandmarkResult {
+  found: { role: string; name?: string; count: number }[];
+  missing: string[];
+  duplicates: string[];
+  pass: boolean;
+}
+
+export interface LinksAnalysisResult {
+  links: { text: string; href: string; issues: string[] }[];
+  totalLinks: number;
+  problematicLinks: number;
+  pass: boolean;
+}
+
+export interface FocusOrderResult {
+  sequence: { index: number; tag: string; role: string; name: string; x: number; y: number }[];
+  issues: { type: string; message: string; element: string }[];
+  pass: boolean;
+}
+
+export interface ARIAValidationResult {
+  elements: { selector: string; role?: string; ariaAttrs: Record<string, string>; issues: string[] }[];
+  totalARIAElements: number;
+  issueCount: number;
+  pass: boolean;
+}
+
+export interface ReadingOrderResult {
+  outOfOrderElements: { element: string; domIndex: number; visualPosition: { x: number; y: number } }[];
+  pass: boolean;
+}
+
+// ============================================
+// nRadiVerse Quality Engine - Visual Accessibility Tests
+// ============================================
+
+export interface VisualTestResult {
+  testId: string;
+  testName: string;
+  wcagCriterion: string;
+  status: "pass" | "fail" | "warning";
+  score: number;
+  issues: { element: string; description: string; severity: "critical" | "serious" | "moderate" | "minor" }[];
+  screenshotBase64?: string;
+  duration: number;
+}
+
+export interface VisualAccessibilityResult {
+  tests: VisualTestResult[];
+  overallScore: number;
+  passCount: number;
+  failCount: number;
+  warningCount: number;
+  totalDuration: number;
+}
+
+export interface EnhancedAccessibilityScanResult {
+  axeResult: any; // existing AccessibilityScanResult
+  screenReaderResult?: ScreenReaderSimulationResult;
+  visualTestResult?: VisualAccessibilityResult;
+  combinedScore: number;
+  scanDuration: number;
 }
 
 // ============================================

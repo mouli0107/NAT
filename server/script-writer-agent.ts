@@ -14,6 +14,10 @@
  */
 
 import Anthropic from "@anthropic-ai/sdk";
+import * as fs from 'fs';
+import * as path from 'path';
+import * as ts from 'typescript';
+import * as XLSX from 'xlsx';
 
 const clientOpts: { apiKey: string; baseURL?: string } = {
   apiKey: (process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || ''),
@@ -22,6 +26,9 @@ if (process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL) {
   clientOpts.baseURL = process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
 }
 const anthropic = new Anthropic(clientOpts);
+
+// Model to use for all script generation — defaults to Sonnet if not configured
+const SCRIPT_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-4-5';
 
 export interface LocatorEntry { name: string; strategy: string; description: string; }
 export interface FunctionEntry { name: string; description: string; stepCount: number; }
@@ -187,9 +194,12 @@ export async function scrollToElement(page: Page, selector: string): Promise<voi
   await page.locator(selector).first().scrollIntoViewIfNeeded();
 }
 
-/** Wait for a URL pattern — pattern may be a path segment like '/dashboard' */
+/** Wait for a URL pattern — accepts a full URL, path segment like '/dashboard', or glob */
 export async function waitForUrl(page: Page, pattern: string, timeoutMs = 15000): Promise<void> {
-  const glob = pattern.startsWith('**') ? pattern : \`**\${pattern.startsWith('/') ? '' : '/'}\${pattern}\`;
+  // Full URL and existing globs are used as-is; path segments get a leading glob
+  const glob = pattern.startsWith('http') || pattern.startsWith('**')
+    ? pattern
+    : \`**\${pattern.startsWith('/') ? '' : '/'}\${pattern}\`;
   await page.waitForURL(glob, { timeout: timeoutMs });
 }
 
@@ -248,12 +258,24 @@ export async function clickAndWait(page: Page, name: string): Promise<void> {
 
 /**
  * Click a button that causes a full-page navigation.
- * Uses Promise.all so we start listening for navigation BEFORE the click fires.
+ * Waits for domcontentloaded AFTER the click — avoids the race where
+ * waitForURL('**\/*') resolves immediately against the current URL.
  */
 export async function clickAndNavigate(page: Page, name: string): Promise<void> {
   await Promise.all([
-    page.waitForURL('**/*', { timeout: 20000 }),
+    page.waitForLoadState('domcontentloaded', { timeout: 20000 }),
     page.getByRole('button', { name, exact: false }).first().click(),
+  ]);
+}
+
+/**
+ * Click a link that causes a full-page navigation.
+ * Same pattern as clickAndNavigate but targets role='link'.
+ */
+export async function clickLinkAndNavigate(page: Page, name: string): Promise<void> {
+  await Promise.all([
+    page.waitForLoadState('domcontentloaded', { timeout: 20000 }),
+    page.getByRole('link', { name, exact: false }).first().click(),
   ]);
 }
 `;
@@ -363,11 +385,23 @@ export async function submitForm(page: Page, buttonText?: string) {
 }
 `;
 
-const GENERIC_ASSERT_ACTIONS = `import { Page, expect } from '@playwright/test';
+const GENERIC_ASSERT_ACTIONS = `import { Page, expect, test } from '@playwright/test';
+import * as path from 'path';
+import * as fs   from 'fs';
 
-/** Assert visible text exists on the page (substring match by default) */
+/** Assert visible text exists on the page (substring match by default).
+ *  Uses Playwright's :text()/:text-is() + :visible pseudo-class combination so we only
+ *  match elements that are actually rendered on screen — not hidden mobile menus,
+ *  collapsed accordions, breadcrumbs inside display:none containers, etc.
+ */
 export async function verifyText(page: Page, text: string, exact = false) {
-  await expect(page.getByText(text, { exact }).first()).toBeVisible();
+  const escaped = text.replace(/"/g, '\\"');
+  // :text-is() / :text() are Playwright's built-in text pseudo-classes.
+  // :visible ensures the matched element is visible (not display:none / hidden).
+  const sel = exact
+    ? \`:text-is("\${escaped}"):visible\`
+    : \`:text("\${escaped}"):visible\`;
+  await expect(page.locator(sel).first()).toBeVisible({ timeout: 10000 });
 }
 
 /** Assert current URL contains a path */
@@ -429,26 +463,46 @@ export async function verifyCount(page: Page, selector: string, count: number) {
 }
 
 /**
- * Soft assertion wrapper — logs failure without stopping the test.
- * Usage: await softAssert(() => verifyText(page, 'Success'), failures)
+ * Soft assertion — records the failure without stopping the test.
+ * - label   : human-readable step name shown in console and HTML report
+ * - failures: accumulated list; caller throws at the end if non-empty
  */
 export async function softAssert(
   fn: () => Promise<void>,
-  failures: string[]
+  failures: string[],
+  label = 'Assertion'
 ): Promise<void> {
   try {
     await fn();
+    console.log(\`  ✓ \${label}\`);
   } catch (e: any) {
-    failures.push(e.message || String(e));
-    console.warn('[SOFT ASSERT FAILED]', e.message);
+    // Keep only the first 3 lines of the stack — enough to identify the failure
+    const msg = (e.message || String(e)).split('\\n').slice(0, 3).join(' | ');
+    failures.push(\`\${label}: \${msg}\`);
+    console.error(\`  ✗ \${label}\\n    → \${msg}\`);
   }
+}
+
+/**
+ * Capture a full-page screenshot and print its absolute path to the console.
+ * Called automatically by verify functions when any soft assertion failed.
+ */
+export async function screenshotOnFailure(page: Page, label: string): Promise<string> {
+  const dir  = path.join('test-results', 'screenshots');
+  fs.mkdirSync(dir, { recursive: true });
+  const safe = label.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+  const file = path.join(dir, \`\${safe}-\${Date.now()}.png\`);
+  await page.screenshot({ path: file, fullPage: true });
+  const abs = path.resolve(file);
+  console.error(\`\\n  📸 Screenshot saved: \${abs}\\n\`);
+  return abs;
 }
 `;
 
 function buildPlaywrightConfig(hasAuth: boolean, startUrl: string): string {
   // Shared config block used in both auth and non-auth variants
   const sharedConfig = `  testDir: './tests',
-  fullyParallel: false,
+  fullyParallel: true,
   retries: process.env.CI ? 2 : 1,
   timeout: 60000,
   expect: { timeout: 10000 },
@@ -464,6 +518,7 @@ function buildPlaywrightConfig(hasAuth: boolean, startUrl: string): string {
   reporter: [
     ['html', { open: 'never', outputFolder: 'playwright-report' }],
     ['junit', { outputFile: 'test-results/results.xml' }],
+    ['allure-playwright', { detail: true, outputFolder: 'allure-results', suiteTitle: false }],
     ['list'],
   ],
   outputDir: 'test-results',`;
@@ -523,15 +578,186 @@ const PACKAGE_JSON = `{
     "test:auth": "npx playwright test --project=setup",
     "test:ci": "npx playwright test --reporter=junit,html",
     "test:debug": "npx playwright test --debug",
-    "report": "npx playwright show-report"
+    "report": "npx playwright show-report",
+    "report:allure": "allure generate allure-results --clean -o allure-report && allure open allure-report"
   },
   "dependencies": {
-    "dotenv": "^16.4.0"
+    "dotenv": "^16.4.0",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
-    "@playwright/test": "^1.44.0",
-    "typescript": "^5.4.0"
+    "@playwright/test": "^1.52.0",
+    "allure-playwright": "^3.0.0",
+    "allure-commandline": "^2.30.0",
+    "typescript": "^5.5.0"
   }
+}
+`;
+
+// ─── Excel Test Data Reader (generated into fixtures/excel-reader.ts) ─────────
+// This file is emitted ONCE per project and shared across ALL test cases.
+// Each TC gets its own row in fixtures/test-data.xlsx keyed by tcId.
+const EXCEL_READER_FILE = `/**
+ * Excel Test Data Reader — fixtures/excel-reader.ts
+ * ──────────────────────────────────────────────────────────────────────────────
+ * All test data lives in fixtures/test-data.xlsx — NOT in TypeScript files.
+ *
+ * Excel sheet "TestData" columns:
+ *   tcId      | baseUrl  | username | password | firstName | ... (any field)
+ *   TC001     | https:// | john@... |          | John      | ...
+ *   TC002     | https:// | jane@... |          | Jane      | ...
+ *
+ * HOW TO UPDATE TEST DATA:
+ *   1. Open fixtures/test-data.xlsx in Excel / LibreOffice
+ *   2. Edit the row for your TC ID (add columns freely)
+ *   3. Save — no code changes needed
+ *
+ * ENV VAR OVERRIDES (CI/CD pipelines):
+ *   BASE_URL   overrides baseUrl   for every row
+ *   USERNAME   overrides username  for every row
+ *   PASSWORD   overrides password  for every row (recommended for sensitive data)
+ *
+ * USAGE:
+ *   import { getTestData } from '@fixtures/excel-reader';
+ *   const data = getTestData('TC001');
+ *   await page.fill('#username', data.username);
+ */
+
+import * as XLSX from 'xlsx';
+import * as path from 'path';
+import * as dotenv from 'dotenv';
+dotenv.config();
+
+export interface TestDataRow {
+  tcId: string;
+  baseUrl: string;
+  [key: string]: string;
+}
+
+// ── Internal cache (loaded once per test run) ──────────────────────────────────
+
+let _cache: Record<string, TestDataRow> | null = null;
+
+function loadAll(): Record<string, TestDataRow> {
+  const filePath = path.join(__dirname, 'test-data.xlsx');
+  const wb = XLSX.readFile(filePath);
+  const sheetName = wb.SheetNames.includes('TestData') ? 'TestData' : wb.SheetNames[0];
+  const ws = wb.Sheets[sheetName];
+  if (!ws) throw new Error('[excel-reader] test-data.xlsx has no sheets');
+  const rows = XLSX.utils.sheet_to_json<Record<string, string>>(ws, { defval: '' });
+  const map: Record<string, TestDataRow> = {};
+  for (const row of rows) {
+    const tcId = String(row['tcId'] ?? '').trim();
+    if (tcId) map[tcId] = { ...row, tcId } as TestDataRow;
+  }
+  return map;
+}
+
+// ── Public API ─────────────────────────────────────────────────────────────────
+
+/**
+ * Returns the test data row for the given TC ID from test-data.xlsx.
+ * Throws immediately if the TC ID is not found — tests fail fast with a clear error.
+ */
+export function getTestData(tcId: string): TestDataRow {
+  if (!_cache) _cache = loadAll();
+  const row = _cache[tcId];
+  if (!row) {
+    const ids = Object.keys(_cache).join(', ') || '(none)';
+    throw new Error(
+      \`[excel-reader] No row found for "\${tcId}" in fixtures/test-data.xlsx.\\n\` +
+      \`Available IDs: \${ids}\\n\` +
+      \`Open fixtures/test-data.xlsx and add a row with tcId="\${tcId}" to fix this.\`
+    );
+  }
+  // Apply env var overrides for sensitive / environment-specific fields
+  return {
+    ...row,
+    ...(process.env.BASE_URL  ? { baseUrl:  process.env.BASE_URL  } : {}),
+    ...(process.env.USERNAME  ? { username: process.env.USERNAME  } : {}),
+    ...(process.env.PASSWORD  ? { password: process.env.PASSWORD  } : {}),
+  };
+}
+
+/**
+ * Returns ALL rows keyed by tcId — useful for data-driven tests.
+ *   for (const [id, data] of Object.entries(getAllTestData())) { ... }
+ */
+export function getAllTestData(): Record<string, TestDataRow> {
+  if (!_cache) _cache = loadAll();
+  return { ..._cache };
+}
+`;
+
+// Rule 2: helpers/universal.ts is ALWAYS emitted with every generated project.
+// Tests import prepareSite from this file — it must never be a phantom import.
+const HELPERS_UNIVERSAL = `import { Page, BrowserContext, Locator } from '@playwright/test';
+
+// Common cookie / consent banner selectors (covers 95% of customer sites)
+const CONSENT_SELECTORS = [
+  '#onetrust-accept-btn-handler','#onetrust-pc-btn-handler',
+  '#CybotCookiebotDialogBodyLevelButtonLevelOptinAllowAll','#CybotCookiebotDialogBodyButtonAccept',
+  '.trustarc-agree-btn','.qc-cmp2-summary-buttons button:first-child',
+  '.osano-cm-accept-all','#didomi-notice-agree-button','.fc-button.fc-cta-consent',
+  'button[data-testid="uc-accept-all-button"]','#axeptio_btn_acceptAll','.cky-btn-accept',
+  '#iubenda-cs-accept-btn','.klaro button.cm-btn-accept-all',
+  'button[id*="accept"][id*="cookie" i]','button[class*="accept-all" i]',
+  'button[class*="acceptAll" i]','[aria-label*="Accept all" i]',
+  // WordPress-style cookie banners (#cookie-content, .cookie-notice, etc.)
+  '#cookie-close','#cookie-accept','#cookie-agree',
+  '#cookie-content button','#cookie-content a.close','#cookie-content .close',
+  '.cookie-notice-container button','.cookie-notice button',
+  '#eu-cookie-law button','#cookiebar button','.cookiebar button',
+  '[id*="cookie"] button[class*="close" i]','[id*="cookie"] button[class*="accept" i]',
+  '[id*="cookie"] button[class*="agree" i]','[id*="cookie"] .dismiss',
+];
+const CONSENT_XPATH = [
+  "//button[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='accept all cookies']",
+  "//button[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='accept all']",
+  "//button[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='allow all']",
+  "//button[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='i agree']",
+  "//button[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='got it']",
+  "//a[translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz')='accept all cookies']",
+];
+export async function dismissOverlays(page: Page): Promise<void> {
+  for (const s of CONSENT_SELECTORS) { try { const el=page.locator(s).first(); if(await el.isVisible({timeout:800})){await el.click({timeout:3000});await page.waitForTimeout(600);return;} } catch{} }
+  for (const x of CONSENT_XPATH) { try { const el=page.locator('xpath='+x).first(); if(await el.isVisible({timeout:400})){await el.click({timeout:2000});await page.waitForTimeout(600);return;} } catch{} }
+}
+export async function dismissPopups(page: Page): Promise<void> {
+  const sels=['[role="dialog"] button[aria-label*="close" i]','[role="dialog"] button[class*="close" i]','.modal button[class*="close" i]','.popup button[class*="close" i]'];
+  for(const s of sels){try{const el=page.locator(s).first();if(await el.isVisible({timeout:400})){await el.click({timeout:2000});await page.waitForTimeout(400);}}catch{}}
+}
+export async function waitForStableURL(page: Page, ms=15000): Promise<string> {
+  let last='',stable=0,deadline=Date.now()+ms;
+  while(Date.now()<deadline){await page.waitForTimeout(300);const u=page.url();if(u!=='about:blank'&&u===last){stable++;if(stable>=4)return u;}else{stable=0;last=u;}}
+  return page.url();
+}
+export async function waitForPageReady(page: Page): Promise<void> {
+  await page.waitForLoadState('domcontentloaded').catch(()=>{});
+  await waitForStableURL(page,10000);
+  await page.waitForLoadState('networkidle',{timeout:8000}).catch(()=>{});
+}
+export async function clickNewTab(context: BrowserContext, locator: Locator): Promise<Page> {
+  const [newTab]=await Promise.all([context.waitForEvent('page',{timeout:15000}),locator.click()]);
+  await newTab.waitForLoadState('domcontentloaded').catch(()=>{});
+  await waitForStableURL(newTab,10000);
+  return newTab as Page;
+}
+export async function hoverAndWait(locator: Locator, waitMs=600): Promise<void> {
+  await locator.hover(); await locator.page().waitForTimeout(waitMs);
+}
+export async function tryLocators(page: Page, locators: string[], action: 'click'|'fill'|'check'='click', value?: string): Promise<boolean> {
+  for(const loc of locators){try{const el=page.locator(loc).first();if(!(await el.isVisible({timeout:2000})))continue;if(action==='click')await el.click();else if(action==='fill'&&value)await el.fill(value);else if(action==='check')await (el as any).check();return true;}catch{}}return false;
+}
+/**
+ * Universal site-readiness gate — call as the SECOND line in every test.
+ * Waits for the page to settle, then silently dismisses cookie/consent banners.
+ * Works across any customer site; does nothing if no banner is present.
+ */
+export async function prepareSite(page: Page): Promise<void> {
+  await waitForPageReady(page);
+  await dismissOverlays(page);
+  await dismissPopups(page);
 }
 `;
 
@@ -539,7 +765,7 @@ const TSCONFIG_JSON = `{
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",
-    "lib": ["ES2020"],
+    "lib": ["ES2020", "DOM"],
     "strict": true,
     "esModuleInterop": true,
     "resolveJsonModule": true,
@@ -551,6 +777,7 @@ const TSCONFIG_JSON = `{
       "@locators/*": ["locators/*"],
       "@actions/*":  ["actions/*"],
       "@fixtures/*": ["fixtures/*"],
+      "@helpers/*":  ["helpers/*"],
       "@auth/*":     ["auth/*"]
     },
     "skipLibCheck": true
@@ -610,7 +837,7 @@ No relative path fragility (\`../../..\`) anywhere in the codebase.
 
 // ─── Claude Prompts ────────────────────────────────────────────────────────────
 
-function buildPageObjectPrompt(nlSteps: string[], startUrl: string, pageName: string, ariaSnapshot?: string): string {
+function buildPageObjectPrompt(nlSteps: string[], startUrl: string, pageName: string, ariaSnapshot?: string, iframeOrigin?: string): string {
   const snapshotSection = ariaSnapshot
     ? `
 ## Live Accessibility Tree (source of truth for locator identification)
@@ -628,11 +855,41 @@ Then express each locator as an XPath following the MANDATORY LOCATOR RULES belo
 No live page snapshot available — infer locators from the recorded steps and standard conventions.
 `;
 
+  const iframeNote = iframeOrigin
+    ? `
+⚠️ IFRAME CONTEXT — ALL form/input elements live inside an embedded iframe from "${iframeOrigin}".
+
+LOCATORS FILE — iframe locators MUST use page.frameLocator() (NOT page.locator()):
+\`\`\`typescript
+  // Uniqueness: unique | Stability: stable | Fallback: //input[@name='FirstName']
+  firstNameInput: (page: Page): Locator => page.frameLocator('iframe[src*="${iframeOrigin}"]').locator('xpath=//input[@id="FirstName"]'),
+  submitButton:   (page: Page): Locator => page.frameLocator('iframe[src*="${iframeOrigin}"]').locator('xpath=//button[normalize-space(text())="Submit"]'),
+\`\`\`
+
+PAGE CLASS — wait for iframe to attach, then call locators normally (frameLocator is already embedded inside each locator):
+\`\`\`typescript
+  async waitForIframe(): Promise<void> {
+    await this.page.waitForSelector('iframe[src*="${iframeOrigin}"]', { state: 'attached', timeout: 15000 });
+  }
+  async fillFirstName(value: string): Promise<void> {
+    await this.waitForIframe();
+    const loc = ${pageName}PageLocators.firstNameInput(this.page); // frameLocator is inside the locator
+    await loc.waitFor({ state: 'visible', timeout: 15000 });
+    await loc.fill(value);
+  }
+\`\`\`
+
+❌ WRONG in page class — never call frameLocator directly:
+  const frame = this.page.frameLocator('iframe'); // bypasses locators file
+  await frame.locator('#Field').fill(value);       // zero inline selectors allowed
+`
+    : '';
+
   return `You are a senior QA automation engineer. Generate a Playwright Page Object class for "${pageName}".
 
 The test flow recorded on ${startUrl} has these steps:
 ${nlSteps.map((s, i) => `${i + 1}. ${s.replace(/^Step \d+:\s*/, '')}`).join('\n')}
-${snapshotSection}
+${snapshotSection}${iframeNote}
 Generate TWO TypeScript files following these strict rules:
 
 ### FILE 1 — Object Repository (locatorsCode)
@@ -712,117 +969,471 @@ export const ${pageName}PageLocators = {
 
 ### FILE 2 — Page Object Class (code)
 File: pages/${pageName}Page.ts
-- Import: import { Page } from '@playwright/test';
-- Import: import { ${pageName}PageLocators } from '@locators/${pageName}Page.locators';
-- Class name: ${pageName}Page — constructor receives \`page: Page\`
-- Methods call locators via \`${pageName}PageLocators.prop(this.page)\`
 - ZERO inline selectors — 100% delegated to the locators file
 - Before EVERY interaction: await locator.waitFor({ state: 'visible' })
 - Navigation-triggering clicks: await Promise.all([page.waitForLoadState('networkidle').catch(()=>{}), locator.click()])
 - NEVER use waitForTimeout — only condition-based waits
+- Generate a method for EVERY recorded step, not just 2 or 3
+
+CRITICAL CLASS PATTERN — copy this structure exactly:
+\`\`\`typescript
+import { Page } from '@playwright/test';
+import { ${pageName}PageLocators } from '@locators/${pageName}Page.locators';
+
+export class ${pageName}Page {
+  constructor(private readonly page: Page) {}  // ← NO this.L assignment; just store page
+
+  async clickSomeButton(): Promise<void> {
+    const loc = ${pageName}PageLocators.someButton(this.page);  // ← call factory fn with this.page
+    await loc.waitFor({ state: 'visible' });
+    await loc.click();
+  }
+
+  async fillSomeInput(value: string): Promise<void> {
+    const loc = ${pageName}PageLocators.someInput(this.page);   // ← new factory call each time
+    await loc.waitFor({ state: 'visible' });
+    await loc.fill(value);
+  }
+
+  async selectDropdown(value: string): Promise<void> {
+    const loc = ${pageName}PageLocators.someDropdown(this.page);
+    await loc.waitFor({ state: 'visible' });
+    await loc.selectOption(value);
+  }
+}
+\`\`\`
+
+❌ FORBIDDEN — any of these will cause a TypeScript/runtime crash:
+  this.L = ${pageName}PageLocators(page);    // NOT a function — it's a plain object
+  this.L = new ${pageName}PageLocators();     // NOT a class
+  page.locator('xpath=...')                    // no inline selectors in page class
+  page.getByRole(...)                          // no inline Playwright calls in page class
+
+PLATFORM RULES — APPLY TO EVERY CUSTOMER SITE:
+
+Rule 3 — NO ABSOLUTE URLs in goto():
+  CORRECT:  await this.page.goto('/services/agile-development');
+  WRONG:    await this.page.goto('https://www.any-customer-site.com/services/agile-development');
+  Playwright resolves relative paths against baseURL in playwright.config.ts.
+  The POM must be environment-agnostic (dev/staging/prod/any customer URL).
+
+Rule 4 — NO ASSERTIONS in the POM layer:
+  CORRECT:  async getHeadingText(): Promise<string> { return (await loc.textContent()) ?? ''; }
+  WRONG:    async verifyHeading(): Promise<void> { expect(text).toBe('...'); }
+  The POM NEVER imports expect. Text-reading methods return the value; the caller asserts.
+
+Rule 7 — href locators MUST use contains(), never exact match:
+  CORRECT:  xpath=//a[contains(@href,"data-visualization") and contains(normalize-space(text()),"Learn More")]
+  WRONG:    xpath=//a[@href="competency/data-visualization"]
+  WRONG:    xpath=//a[@href="https://www.site.com/page"]
+
+Rule 8 — Tab locators MUST use semantic content, never positional:
+  CORRECT:  xpath=//button[@role="tab" and contains(normalize-space(.),"Digital Product")]
+  WRONG:    xpath=//button[@role="tab" and @aria-label="1 of 6"]
+
+Rule 16 — TypeScript class/variable names MUST NOT contain hyphens:
+  If the page URL is "data-visualization", the class is DataVisualizationPage (PascalCase).
+  If the page URL is "agile-development", the class is AgileDevelopmentPage.
+  Hyphenated URL slugs → PascalCase identifiers. File names may keep hyphens.
+
+Rule 18 — NEVER call .fill() on <select> / dropdown / combobox elements:
+  CORRECT:  await loc.selectOption('Option Text');
+  WRONG:    await loc.fill('Option Text');   // throws Playwright runtime error on <select>
+  WRONG:    await loc.fill('');              // throws Playwright runtime error on <select>
+  If you need to "clear" a dropdown, select the default/blank option via selectOption('').
+
+Rule 19 — POM method names MUST use action verbs — NEVER use assert*, verify*, check* prefixes:
+  CORRECT:  async waitForPageReady(): Promise<void>
+  CORRECT:  async getHeadingText(): Promise<string>
+  CORRECT:  async isDropdownVisible(): Promise<boolean>
+  WRONG:    async assertPageLoaded(): Promise<void>   // assertion semantics in POM layer
+  WRONG:    async verifyHeading(): Promise<void>      // belongs in Layer 4 (business actions)
+  The POM returns values or performs actions — callers assert in Layer 4.
+
+Rule 20 — Links that open new tabs MUST return the new Page object:
+  If a link has target="_blank" or you know it opens a popup/new tab:
+  CORRECT pattern:
+    async clickExternalLink(): Promise<Page> {
+      const loc = PageLocators.externalLink(this.page);
+      await loc.waitFor({ state: 'visible' });
+      const popupPromise = this.page.context().waitForEvent('page');
+      await loc.click();
+      const newPage = await popupPromise;
+      await newPage.waitForLoadState('domcontentloaded', { timeout: 30000 }).catch(() => {});
+      return newPage;  // business action uses this to assert on the new tab
+    }
+  WRONG:
+    async clickExternalLink(): Promise<void> { await loc.click(); } // caller has no handle to new tab
+
+Rule 21 — OCR CORRUPTION GUARD + TEXT MATCHING TOLERANCE:
+  The NL steps were captured by a screen recorder using OCR. OCR sometimes corrupts text:
+  - Missing characters: "Reque t a demo" → should be "Request a demo"
+  - Double spaces: "Featured  ervice " → should be "Featured Services"
+  - Split words: "Sub mit" → should be "Submit"
+  BEFORE using any text string in a locator XPath text() predicate or assertion:
+  1. Inspect it for OCR artifacts (single chars separated by spaces, double spaces, missing letters)
+  2. Reconstruct the correct English phrase using context from the page/URL
+  3. NEVER embed corrupted text in XPath — it will never match the live DOM
+
+  TEXT MATCHING — ALWAYS use contains(), NEVER exact equality for text XPaths:
+  CORRECT: page.locator('xpath=//button[contains(normalize-space(text()),"Request a demo")]')
+  WRONG:   page.locator('xpath=//button[normalize-space(text())="Request a demo"]')
+  CORRECT: page.locator('xpath=//a[contains(normalize-space(.),"Learn More")]')
+  WRONG:   page.locator('xpath=//a[normalize-space(.)="Learn More"]')
+  Reason: exact equality fails when the DOM has leading/trailing whitespace, non-breaking
+  spaces, or minor text changes across environments. contains() is resilient to these.
 
 Call the generate_page_object tool. Put raw TypeScript (no markdown fences) in 'locatorsCode' and 'code'.
 List every locator in 'locators'. List every method in 'methods'.`;
 }
 
-function buildBusinessActionsPrompt(nlSteps: string[], pageName: string, domain: string, ariaSnapshot?: string): string {
+function buildBusinessActionsPrompt(
+  nlSteps: string[],
+  pageName: string,
+  domain: string,
+  testDataSchema: string,
+  ariaSnapshot?: string,
+  pomContracts?: Array<{ className: string; pageFile: string; methods: string[] }>
+): string {
   const snapshotHint = ariaSnapshot
     ? `\nPage structure reference (trimmed):\n\`\`\`\n${ariaSnapshot.slice(0, 2000)}\n\`\`\`\nUse visible text labels from the tree when constructing verifyText / verifyVisible assertions.\n`
     : '';
 
+  // ── LAYER 2 → LAYER 4 CONTRACT ───────────────────────────────────────────────
+  // pomContracts is the exact list of methods generated for each POM class.
+  // Business actions MUST ONLY call methods from this list — never invent names.
+  const methodContractSection = (pomContracts && pomContracts.length > 0)
+    ? `
+════════════════════════════════════════════════════════
+POM METHOD CONTRACT — MANDATORY
+The following are the ONLY valid methods for each Page class.
+DO NOT call any method not listed here. DO NOT invent method names.
+If no suitable method exists for a step, skip that interaction.
+
+${pomContracts.map(c =>
+  `${c.className} (from ${c.pageFile}):\n  const pg = new ${c.className}(page);\n  Callable methods: ${c.methods.map(m => `pg.${m}()`).join(', ')}`
+).join('\n\n')}
+════════════════════════════════════════════════════════
+`
+    : `
+NOTE: No POM method contract provided — infer methods from the page class name.
+      Use conservative, obvious method names (clickXxx, fillXxx, navigateTo).
+`;
+
   return `You are a senior QA automation engineer. Generate a Business Actions file for the "${domain}" domain.
 
-These steps were recorded (steps prefixed "Assert" are assertions, not interactions):
+These steps were recorded. Steps prefixed "Assert" are ALREADY handled by a separately generated verify function — DO NOT generate any assertion code, just the interaction/navigation steps:
 ${nlSteps.map((s, i) => `${i + 1}. ${s.replace(/^Step \d+:\s*/, '')}`).join('\n')}
-${snapshotHint}
+${snapshotHint}${methodContractSection}
+EXACT TEST DATA SHAPE — getTestData() returns a FLAT object (no nested objects):
+\`\`\`typescript
+${testDataSchema}
+\`\`\`
+Access as: data.baseUrl, data.firstName, data.email, etc.
+NEVER use: data.form.email  or  data.urls.anything  or  data.selectors.anything
+
 Generate TypeScript business action functions following these STRICT rules:
 
 IMPORTS — always use @-alias paths (resolved via tsconfig baseUrl):
-1. import { ${pageName}Page } from '@pages/${pageName}Page'
-2. import { navigateTo, clickButton, clickLink, waitForNetworkIdle, clickAndWait } from '@actions/generic/browser.actions'
-3. import { fillField, submitForm, typeInField, selectOption } from '@actions/generic/form.actions'
-4. import { verifyText, verifyUrl, verifyVisible, verifyNotPresent, verifyInputValue, verifyAttribute, softAssert } from '@actions/generic/assert.actions'
-5. import { testData } from '@fixtures/test-data'
+1. import { Page } from '@playwright/test'
+2. Import EVERY Page Object class listed in the POM CONTRACT above — one import per class:
+${(pomContracts && pomContracts.length > 0)
+  ? pomContracts.map(c => `   import { ${c.className} } from '@pages/${c.pageFile.replace(/^pages\//, '').replace(/\.ts$/, '')}'`).join('\n')
+  : `   import { ${pageName}Page } from '@pages/${pageName}Page'`}
+   ⚠️  EVERY class listed in the POM CONTRACT must be imported — DO NOT import classes not in the contract.
+3. import { navigateTo, waitForNetworkIdle } from '@actions/generic/browser.actions'
+4. import ONLY the assertion functions you actually call from '@actions/generic/assert.actions'
+   Available: verifyText, verifyUrl, verifyVisible, verifyNotPresent, verifyInputValue, verifyEnabled, verifyDisabled, softAssert
+   Example (import only what you use): import { verifyText, verifyUrl } from '@actions/generic/assert.actions'
+   DO NOT import functions you do not call — unused imports are TypeScript compile errors.
+5. import { getTestData, TestDataRow } from '@fixtures/excel-reader'
+
+STRICT LAYER RULE — MANDATORY:
+6. NEVER call page.locator(), page.frameLocator(), page.getByRole(), page.fill() directly
+7. ALL DOM interactions MUST go through the correct Page Object class using ONLY the methods listed in the POM CONTRACT.
+   For each action, identify WHICH page class owns the method, then instantiate that class:
+${(pomContracts && pomContracts.length > 0)
+  ? pomContracts.map(c => `   // For actions on ${c.pageFile}: const pg${c.className} = new ${c.className}(page);`).join('\n')
+  : `   const pg = new ${pageName}Page(page);`}
+   Example with two POMs:
+     const homePg = new HomePageClass(page);       // ← for steps on the home page
+     await homePg.clickServicesLink();
+     await waitForNetworkIdle(page);
+     const detailPg = new DetailPageClass(page);   // ← for steps on the detail page
+     await detailPg.expandSection();
+   WRONG — using the primary POM for ALL steps even when a step belongs to a different page:
+     const pg = new HomePageClass(page);
+     await pg.someMethodThatDoesNotExist();        // ← method not in the contract list
+8. Business actions are ORCHESTRATION functions — they call page methods and assert results, nothing else
 
 FUNCTION DESIGN:
-6. Create 1-3 functions that each represent a complete BUSINESS SCENARIO (e.g. submitContactForm, searchProduct, completeCheckout)
-7. Each function signature: async function myAction(page: Page, data = testData)
-8. Use data.fieldName to reference values — NEVER hardcode strings from the recording
-9. For "[soft]" assertion steps, use: const failures: string[] = []; await softAssert(() => verifyX(...), failures);
-10. After a click that triggers API/navigation, always follow with: await waitForNetworkIdle(page)
-11. Assertions must be SPECIFIC: verify the exact value entered, the resulting URL, or a unique success indicator — NOT generic text like 'Welcome'
-12. Each assertion comment explains WHAT BUSINESS RULE it validates
+9.  Create 2-4 functions that each represent a SINGLE BUSINESS SCENARIO (e.g. submitDemoRequest, navigateToProduct)
+    Each function must be independently testable — do NOT chain multiple unrelated scenarios into one function
+10. Each function signature: export async function myAction(page: Page, data: TestDataRow): Promise<void>
+11. Use data.fieldName for values — NEVER hardcode strings from the recording
+12. After a page-navigation action (click button/link), always follow with: await waitForNetworkIdle(page)
+13. Assertions must verify the OUTCOME: the resulting URL, a success message, or submitted data appearing
 
-SHADOW DOM:
-13. For elements inside web components or iframes, use page.frameLocator() or locator.locator() chaining
+ASSERTION RULES — CRITICAL (Rule 5):
+14. verifyText(page, 'prose string')     — for human-readable text, headings, labels, button copy
+    verifyVisible(page, '[css-selector]') — ONLY for CSS selectors like [data-testid="x"] or .classname
+    NEVER pass a prose text string to verifyVisible()
+    NEVER pass a CSS selector to verifyText()
+15. verifyUrl(page, '/path-string')      — argument is ALWAYS a string, NEVER a RegExp literal
+    CORRECT: verifyUrl(page, '/data-visualization')
+    WRONG:   verifyUrl(page, /data-visualization/)
+
+URL RULES — CRITICAL (Rule 3):
+16. NEVER use absolute https:// URLs in business actions
+    CORRECT: await navigateTo(page, data.baseUrl)  then  await pg.clickServicesNavLink()
+    WRONG:   await navigateTo(page, 'https://www.site.com/services')
+
+POPUP / NEW-TAB RULE (Rule 17):
+17. When a click opens a new browser tab (external link, target="_blank", community portal, etc.):
+    CORRECT pattern — capture the new tab, assert on it, NOT on the original 'page':
+      const popupPromise = page.context().waitForEvent('page');
+      await pg.clickExternalLink();
+      const popup = await popupPromise;
+      await popup.waitForLoadState('networkidle', { timeout: 20000 }).catch(() => {});
+      await verifyUrl(popup as any, 'expected-path-or-domain');
+    WRONG — the original page never navigates when a new tab opens:
+      await pg.clickExternalLink();
+      await waitForNetworkIdle(page);
+      await verifyUrl(page, 'community.site.com');   ← ALWAYS FAILS — page didn't navigate
+    Signal that a new tab is opening:
+      - URL in the next step contains a different domain than baseUrl
+      - Step description mentions "community", "portal", "external", "opens in new tab"
+      - Link has target="_blank" in the recorded interaction
+
+For "[soft]" steps: const failures: string[] = []; await softAssert(() => verifyX(...), failures);
 
 Call the generate_business_actions tool. Put the raw TypeScript code (no markdown fences) in 'code'.
 List every exported function in 'functions' with its business-intent description and approximate step count.`;
 }
 
-function buildTestFilePrompt(nlSteps: string[], testName: string, startUrl: string, pageName: string, domain: string): string {
+function buildTestFilePrompt(
+  nlSteps: string[],
+  testName: string,
+  startUrl: string,
+  pageName: string,
+  domain: string,
+  exportedFunctions: string[],
+  testDataSchema: string
+): string {
+  const functionList = exportedFunctions.length > 0
+    ? exportedFunctions.map(f => `  - ${f}(page, data?)`).join('\n')
+    : '  (no functions generated yet — write minimal test with navigateTo only)';
+
   return `You are a senior QA automation engineer. Generate a clean Playwright test file.
 
 The recorded flow: "${testName}" on ${startUrl}
 Steps: ${nlSteps.map((s, i) => `${i + 1}. ${s.replace(/^Step \d+:\s*/, '')}`).join(' | ')}
 
+════════════════════════════════════════════════════════
+MANDATORY CONTRACT — THE FOLLOWING ARE THE ONLY VALID
+BUSINESS FUNCTIONS FROM actions/business/${domain}.actions.ts:
+${functionList}
+
+DO NOT invent new function names.
+DO NOT call any function that is not in the list above.
+The import statement must list EXACTLY the functions above.
+════════════════════════════════════════════════════════
+
+EXACT TEST DATA SHAPE — getTestData() returns a FLAT object:
+\`\`\`typescript
+${testDataSchema}
+\`\`\`
+Call getTestData('${testName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'TC001'}') once at the top of the describe block.
+Access fields as: data.baseUrl, data.firstName, data.email, etc.
+NEVER use: data.form.email  or  data.urls.anything  or  data.selectors.anything
+
 Generate a TypeScript test file following these STRICT rules:
 
 IMPORTS — always use @-alias paths:
 1. import { test } from '@playwright/test'
-2. import { navigateTo, waitForNetworkIdle } from '@actions/generic/browser.actions'
-3. import { prepareSite, waitForPageReady, clickNewTab, hoverAndWait } from '../helpers/universal'
-4. import { /* business functions */ } from '@actions/business/${domain}.actions'
+2. import { navigateTo } from '@actions/generic/browser.actions'
+3. import { prepareSite } from '../helpers/universal'
+4. import { ${exportedFunctions.length > 0 ? exportedFunctions.join(', ') : '/* functions */'} } from '@actions/business/${domain}.actions'
 5. import { verifyUrl, verifyVisible, verifyText } from '@actions/generic/assert.actions'
-6. import { testData } from '@fixtures/test-data'
+6. import { getTestData } from '@fixtures/excel-reader'
 
-TEST STRUCTURE:
-7. ONE test.describe block named after the business feature being tested
-8. ONE test case per logical user journey — name it as a clear business statement
-9. Test function signature MUST be: async ({ page, context }) => { ... }
+TEST STRUCTURE — PLATFORM RULES (apply to every customer site):
+7.  ONE test.describe block named after the business feature being tested
+8.  ATOMIC TESTS — MANDATORY: create a SEPARATE test() block for EACH distinct business scenario.
+    NEVER chain unrelated scenarios into one test() block — a failure in scenario 1 must NOT
+    prevent scenarios 2 and 3 from running.
+
+    Detect scenario boundaries using these signals:
+      Signal A — Navigation to a completely different URL path (e.g. /products → /contact)
+      Signal B — Clear topic shift in the business actions (product info → form submission)
+      Signal C — Business action returns a page from a different domain (popup/new tab)
+
+    Required test() blocks (create ALL of these, each independent):
+      test('Page loads and displays key content', ...)    ← smoke: always visible content
+      test('Navigating to [feature] succeeds', ...)       ← navigation + URL verification
+      test('[Feature] displays expected sections', ...)   ← content/accordion/tab test
+      (add more if the recording spans multiple distinct flows)
+
+    WRONG — single monolithic test:
+      test('full flow', async ({ page }) => {
+        await navigateToFIDOAuth(page);       ← scenario A
+        await navigateToCommunity(page);      ← scenario B (unrelated — should be separate)
+        await submitContactForm(page);        ← scenario C (unrelated — should be separate)
+      });
+    CORRECT — separate atomic tests:
+      test('FIDO authenticators page loads', async ({ page }) => { ... });
+      test('Community portal opens in new tab', async ({ page }) => { ... });
+      test('Contact form can be submitted', async ({ page }) => { ... });
+9.  Test function signature MUST be: async ({ page }) => { ... }
+    NEVER add 'context' unless the test actually calls context.xxx — unused params are compile errors.
 10. Add test.use({ storageState: '.auth/user.json' }) if the flow requires authentication
-11. Always start with: await navigateTo(page, testData.baseUrl)
-12. Immediately after navigateTo, call: await prepareSite(page);  (replaces waitForLoadState)
-13. Call business action functions from '${domain}.actions' — NEVER inline raw Playwright calls
-14. End with specific assertions that prove the business outcome succeeded:
+11. Rule 13 — ALWAYS declare data ONCE before all tests, then start every test with these two lines:
+      // At top of describe block (before any test):
+      const data = getTestData('TC_ID_HERE');   ← replace TC_ID_HERE with the actual TC ID
+      // Inside every test():
+      await navigateTo(page, data.baseUrl);
+      await prepareSite(page);
+    prepareSite() is the universal site-readiness gate for every customer site.
+12. Call ONLY the business action functions listed in the contract above — NEVER inline raw Playwright calls
+    Pass data to every business action: myAction(page, data)
+13. End with specific assertions proving the business outcome:
     - Verify the resulting URL (proves navigation completed)
     - Verify a unique success element or message (proves the action worked)
-    - Verify data that was submitted appears in the result (proves persistence)
-15. Use testData.fieldName for all values — NO hardcoded strings from the recording
+14. Use data.keyName for all values — NO hardcoded strings (data comes from getTestData())
+15. Rule 12 — NEVER put XPath strings, CSS selectors, or data-testid values in test files
+    All selectors live in locators/ files. Tests call business actions only.
+
+STEP LOGGING — MANDATORY:
+16. Wrap EVERY action call in test.step() so each step appears in the HTML and Allure reports:
+    await test.step('Step N · <human description>', () => someAction(page, ...));
+    Example:
+      await test.step('1 · Navigate to homepage',    () => navigateTo(page, data.baseUrl));
+      await test.step('2 · Accept cookies / prepare site', () => prepareSite(page));
+      await test.step('3 · Navigate to Products',    () => navigateToProducts(page));
+      await test.step('4 · Verify page content',     () => verifyOnespan(page));
+
+SCREENSHOT + FAILURE LOGGING — MANDATORY:
+17. Add this afterEach block INSIDE the test.describe, BEFORE the test() call:
+    test.afterEach(async ({ page }, testInfo) => {
+      if (testInfo.status !== testInfo.expectedStatus) {
+        const screenshotPath = \`test-results/\${testInfo.title.replace(/\\s+/g, '-')}-failure.png\`;
+        await page.screenshot({ path: screenshotPath, fullPage: true });
+        await testInfo.attach('failure-screenshot', { path: screenshotPath, contentType: 'image/png' });
+        console.error(\`\\n📸 Failure screenshot: \${require('path').resolve(screenshotPath)}\\n\`);
+      }
+    });
 
 CRITICAL RULES:
-- NEVER call page.waitForLoadState() directly in test body — use prepareSite(page) instead
-- ALWAYS use async ({ page, context }) as the test function parameter destructuring
-- Import prepareSite from '../helpers/universal' — it handles all page-ready logic
+- NEVER call page.waitForLoadState() directly — use prepareSite(page) instead
+- ALWAYS use async ({ page }) as the test function parameter — NEVER add 'context' unless actually used
+- ONLY call functions in the MANDATORY CONTRACT list above
+- ALWAYS wrap every call in test.step() — no bare awaits on action functions
 
-Call the generate_test_file tool. Put the raw TypeScript code (no markdown fences) in 'code'.
+Call the generate_test_file tool. Put raw TypeScript (no markdown fences) in 'code'.
 Populate 'testCaseName', 'businessScenario', 'businessActionsUsed', and 'assertionsUsed'.`;
 }
 
 // ─── Main Generator ────────────────────────────────────────────────────────────
 
 function deriveNames(startUrl: string, nlSteps: string[], testName: string): { pageName: string; domain: string; testFileName: string } {
-  // Derive page name from URL
+  // Helper: convert a path segment to PascalCase
+  const toPascal = (s: string) =>
+    s.replace(/[-_]/g, ' ').split(' ')
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join('');
+
+  /**
+   * Returns true when a PascalCase identifier looks like a recording artifact / random ID
+   * rather than a meaningful English class name. Examples that fail:
+   *   GvvvGdmiqjccvc7c  — mixed alphanumeric, 4+ consecutive consonants
+   *   AbcXyz123Def       — digit embedded between letter runs
+   *   QjccVcMessenger    — 4-consonant cluster qjcc
+   */
+  const isLikelyRandomId = (name: string): boolean => {
+    // Digit immediately surrounded by letters on both sides (e.g. 7c in Abc7cDef)
+    if (/[a-zA-Z][0-9][a-zA-Z]/.test(name)) return true;
+    // Four or more consecutive consonants (not natural English)
+    if (/[bcdfghjklmnpqrstvwxyz]{4,}/i.test(name)) return true;
+    // More than one embedded digit anywhere (session tokens often have 2+ digits)
+    if ((name.match(/[0-9]/g) || []).length > 1) return true;
+    return false;
+  };
+
+  /**
+   * Fall back to a brand-derived name when the URL segment is garbage.
+   * Uses the hostname brand + a short domain hint so the class stays meaningful:
+   *   onespan.com + "contact" steps → OnespanContact
+   *   yoursite.com + default         → YoursitePage
+   */
+  const brandFromUrl = (url: string, suffix = 'Page'): string => {
+    try {
+      const hostParts = new URL(url).hostname.split('.');
+      const SKIP = new Set(['www','app','m','web','api','portal','mobile','staging','dev','qa','test']);
+      const brand = SKIP.has(hostParts[0].toLowerCase()) && hostParts.length > 2 ? hostParts[1] : hostParts[0];
+      return brand.charAt(0).toUpperCase() + brand.slice(1) + suffix;
+    } catch { return 'App' + suffix; }
+  };
+
+  // Derive page name from URL — always prefixed with brand so names are unique across projects
+  // e.g. onespan.com/contact-us → OnespanContactUs,  nousinfosystems.com/ → NousinfosystemsHome
   let pageName = 'App';
   try {
     const url = new URL(startUrl);
+    const hostParts = url.hostname.split('.');
+    const SKIP_HOST = new Set(['www', 'app', 'm', 'web', 'api', 'portal', 'mobile', 'staging', 'dev', 'qa', 'test']);
+    // IP addresses (e.g. 172.25.1.238) have all-numeric parts — use 'App' as brand
+    // to avoid invalid identifiers like '172LoginPage'
+    const isIpAddress = hostParts.every(p => /^\d+$/.test(p));
+    const rawBrand = isIpAddress
+      ? 'App'
+      : SKIP_HOST.has(hostParts[0].toLowerCase()) && hostParts.length > 2
+        ? hostParts[1]
+        : hostParts[0];
+    // PascalCase brand prefix: nousinfosystems → Nousinfosystems
+    const brandPrefix = rawBrand.charAt(0).toUpperCase() + rawBrand.slice(1);
+
     const parts = url.pathname.split('/').filter(Boolean);
-    if (parts.length > 0) {
-      // If the last segment is a numeric ID (e.g. /students/12345), use parent + "Detail"
+    if (parts.length === 0) {
+      // Root URL: brand.com/ → BrandHome
+      pageName = brandPrefix + 'Home';
+    } else {
       const last = parts[parts.length - 1];
       const isNumericOrId = /^\d+$/.test(last) || /^[a-f0-9-]{8,}$/i.test(last);
-      let segment: string;
+
+      let pathName: string;
       if (isNumericOrId && parts.length >= 2) {
-        const parent = parts[parts.length - 2].replace(/[-_]/g, ' ');
-        segment = parent.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('') + 'Detail';
+        // e.g. /students/12345 → brand + StudentDetail
+        pathName = toPascal(parts[parts.length - 2]) + 'Detail';
+      } else if (parts.length >= 2) {
+        // Use last 1–2 meaningful segments, cap at 40 total chars (incl. brand)
+        const lastPascal   = toPascal(last);
+        const parentPascal = toPascal(parts[parts.length - 2]);
+        const combined = parentPascal + lastPascal;
+        // If combined name + brand would be > 40 chars, just use the last segment
+        pathName = (brandPrefix.length + combined.length) <= 40 ? combined : lastPascal;
       } else {
-        segment = last.replace(/[-_]/g, ' ').split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+        // Single segment: /products → brand + Products
+        pathName = toPascal(last) || 'App';
       }
-      pageName = segment || 'App';
-    } else {
-      pageName = url.hostname.split('.')[0].charAt(0).toUpperCase() + url.hostname.split('.')[0].slice(1);
+      pageName = brandPrefix + pathName;
     }
   } catch {}
+
+  // ── Sanitise: reject garbled/random-ID page names ──────────────────────────
+  // If the URL segment looks like a session token or recording artifact (e.g.
+  // "gvvv-gdmiqjccvc7c"), fall back to the hostname brand + a domain-based suffix
+  // so every generated class name is a meaningful English identifier.
+  if (isLikelyRandomId(pageName)) {
+    const allText = nlSteps.join(' ').toLowerCase();
+    let suffix = 'Page';
+    if (/login|sign.?in|password/.test(allText)) suffix = 'Login';
+    else if (/contact|form/.test(allText)) suffix = 'Contact';
+    else if (/checkout|cart|purchase/.test(allText)) suffix = 'Checkout';
+    else if (/search/.test(allText)) suffix = 'Search';
+    else if (/register|signup/.test(allText)) suffix = 'Register';
+    pageName = brandFromUrl(startUrl, suffix);
+  }
 
   // Derive domain from steps (look for verbs)
   const allText = nlSteps.join(' ').toLowerCase();
@@ -898,6 +1509,43 @@ function toCamelCase(str: string): string {
     .replace(/[^a-zA-Z0-9]/g, '');
 }
 
+/**
+ * Returns a GENERIC placeholder for a recorded value so developer's personal data
+ * (real names, personal emails, phone numbers) never ships as the default in a generated
+ * framework that will be committed to a customer repo or used by 1000+ users.
+ *
+ * Rules:
+ * - email fields      → "test-user@example.com"
+ * - first/last name   → "Test" / "User"
+ * - phone             → "555-0100"
+ * - company / org     → "TestCo Inc."
+ * - title / role      → "QA Automation"
+ * - comments / notes  → "Automated test comment"
+ * - zip / postal      → "10001"
+ * - city              → "Test City"
+ * - state / province  → "NY"
+ * - anything else     → "test-value"
+ *
+ * The actual recorded value is intentionally discarded — it may contain PII.
+ */
+function genericPlaceholder(key: string, label: string): string {
+  const k = (key + ' ' + label).toLowerCase();
+  if (/email/i.test(k))                           return 'test-user@example.com';
+  if (/first.?name|firstname|fname/i.test(k))     return 'Test';
+  if (/last.?name|lastname|lname/i.test(k))       return 'User';
+  if (/phone|mobile|tel(?!e)/i.test(k))           return '555-0100';
+  if (/company|org(?:aniz)?|business/i.test(k))   return 'TestCo Inc.';
+  if (/title|position|role|job/i.test(k))         return 'QA Automation';
+  if (/comment|message|note|feedback/i.test(k))   return 'Automated test comment';
+  if (/zip|postal|postcode/i.test(k))             return '10001';
+  if (/\bcity\b/i.test(k))                        return 'Test City';
+  if (/state|province|region/i.test(k))           return 'NY';
+  if (/country/i.test(k))                         return 'United States';
+  if (/url|website|web.?site/i.test(k))           return 'https://example.com';
+  if (/name/i.test(k))                            return 'Test User';
+  return 'test-value';
+}
+
 function buildTestDataFile(fields: ExtractedField[], startUrl: string): string {
   const lines: string[] = [
     `import * as dotenv from 'dotenv';`,
@@ -906,7 +1554,8 @@ function buildTestDataFile(fields: ExtractedField[], startUrl: string): string {
     `/**`,
     ` * Test data — extracted from recorded interactions.`,
     ` * Sensitive values (passwords, tokens) are read from environment variables.`,
-    ` * Override any value by setting the corresponding env var.`,
+    ` * All defaults are GENERIC PLACEHOLDERS — never developer's personal data.`,
+    ` * Override any value by setting the corresponding env var before running tests.`,
     ` */`,
     `export const testData = {`,
     `  /** Base URL of the application under test */`,
@@ -920,8 +1569,10 @@ function buildTestDataFile(fields: ExtractedField[], startUrl: string): string {
       lines.push(`  /** ${f.label} — set ${envKey} env var */`);
       lines.push(`  ${f.key}: process.env.${envKey} || '',`);
     } else {
+      // Use a generic placeholder instead of the actual recorded value (PII guard)
+      const placeholder = genericPlaceholder(f.key, f.label);
       lines.push(`  /** ${f.label} */`);
-      lines.push(`  ${f.key}: process.env.${envKey} || ${JSON.stringify(f.value)},`);
+      lines.push(`  ${f.key}: process.env.${envKey} || ${JSON.stringify(placeholder)},`);
     }
     lines.push('');
   }
@@ -937,6 +1588,166 @@ function toScreamingSnake(camel: string): string {
     .replace(/([A-Z])/g, '_$1')
     .toUpperCase()
     .replace(/^_/, '');
+}
+
+/**
+ * Build compact schema showing Claude the shape of TestDataRow from Excel.
+ * Prevents Claude inventing nested structures like data.form.email.
+ */
+function buildTestDataSchema(tcId: string, fields: ExtractedField[], startUrl: string): string {
+  const lines = [
+    `// getTestData('${tcId}') returns a TestDataRow — flat object, no nesting:`,
+    `interface TestDataRow {`,
+    `  tcId: string;      // "${tcId}"`,
+    `  baseUrl: string;   // "${startUrl}"`,
+  ];
+  for (const f of fields) {
+    if (f.isSensitive) {
+      lines.push(`  ${f.key}: string;   // ${f.label} — leave blank, override with env var`);
+    } else {
+      lines.push(`  ${f.key}: string;   // ${f.label}`);
+    }
+  }
+  lines.push(`  [key: string]: string;  // any additional columns from Excel`);
+  lines.push(`}`);
+  return lines.join('\n');
+}
+
+/**
+ * Build the JSON payload for a single Excel row (stored as type: 'excel_data').
+ * The save-ai-framework endpoint converts this JSON into a row in test-data.xlsx.
+ * Sensitive fields are left blank — users fill them in the Excel file or via env vars.
+ */
+function buildExcelDataContent(tcId: string, fields: ExtractedField[], startUrl: string): string {
+  const row: Record<string, string> = { tcId, baseUrl: startUrl };
+  for (const f of fields) {
+    row[f.key] = f.isSensitive ? '' : genericPlaceholder(f.key, f.label);
+  }
+  return JSON.stringify(row);
+}
+
+// ─── Assertion Step Converter ─────────────────────────────────────────────────
+// Deterministically converts a recorded NL assertion step into a Playwright call.
+// This is NOT sent to Claude — it is always correct by construction.
+
+function escSingle(s: string): string {
+  return s.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+}
+
+export function nlAssertionToCode(nlStep: string): { code: string; isSoft: boolean } {
+  // Strip "Step N:" or any "Step X:" prefix before parsing
+  const raw   = nlStep.replace(/^Step [^:]*:\s*/i, '').trim();
+  const isSoft = /\[soft\]/i.test(raw);
+  const step  = raw.replace(/\s*\[soft\]\s*$/, '').trim();
+
+  let m: RegExpMatchArray | null;
+
+  // Assert "label" is visible — use getByText since the label is visible text, not a CSS selector
+  m = step.match(/^Assert "(.+)" is visible$/i);
+  if (m) return { code: `await verifyText(page, '${escSingle(m[1])}');`, isSoft };
+
+  // Assert "label" is hidden
+  m = step.match(/^Assert "(.+)" is hidden$/i);
+  if (m) return { code: `await expect(page.getByText('${escSingle(m[1])}', { exact: false }).first()).not.toBeVisible();`, isSoft };
+
+  // Assert "label" is enabled
+  m = step.match(/^Assert "(.+)" is enabled$/i);
+  if (m) return { code: `await verifyEnabled(page, '${escSingle(m[1])}');`, isSoft };
+
+  // Assert "label" is disabled
+  m = step.match(/^Assert "(.+)" is disabled$/i);
+  if (m) return { code: `await verifyDisabled(page, '${escSingle(m[1])}');`, isSoft };
+
+  // Assert "label" is checked
+  m = step.match(/^Assert "(.+)" is checked$/i);
+  if (m) return { code: `await verifyChecked(page, '${escSingle(m[1])}');`, isSoft };
+
+  // Assert "label" is unchecked
+  m = step.match(/^Assert "(.+)" is unchecked$/i);
+  if (m) return { code: `await verifyUnchecked(page, '${escSingle(m[1])}');`, isSoft };
+
+  // Assert text contains|equals|starts with|does not equal "X" on "label"
+  m = step.match(/^Assert text (contains|equals|starts with|does not equal) "(.+)" on "(.+)"$/i);
+  if (m) {
+    const op = m[1].toLowerCase(), expected = m[2];
+    if (op === 'contains')     return { code: `await verifyText(page, '${escSingle(expected)}');`, isSoft };
+    if (op === 'equals')       return { code: `await verifyText(page, '${escSingle(expected)}', true);`, isSoft };
+    if (op === 'starts with')  return { code: `await expect(page.getByText('${escSingle(expected)}', { exact: false }).first()).toHaveText(/^${escSingle(expected)}/);`, isSoft };
+    if (op === 'does not equal') return { code: `await expect(page.getByText('${escSingle(expected)}', { exact: true })).not.toBeVisible();`, isSoft };
+  }
+
+  // Assert value contains|equals "X" on "label"
+  m = step.match(/^Assert value (contains|equals|starts with|does not equal) "(.+)" on "(.+)"$/i);
+  if (m) {
+    const op = m[1].toLowerCase(), expected = m[2], label = m[3];
+    if (op === 'contains') return { code: `await verifyInputContains(page, '${escSingle(label)}', '${escSingle(expected)}');`, isSoft };
+    return { code: `await verifyInputValue(page, '${escSingle(label)}', '${escSingle(expected)}');`, isSoft };
+  }
+
+  // Assert attribute "attr" * "X" on "label"
+  m = step.match(/^Assert attribute "(.+)" (?:contains|equals|starts with|does not equal) "(.+)" on "(.+)"$/i);
+  if (m) return { code: `await verifyAttribute(page, '${escSingle(m[3])}', '${escSingle(m[1])}', '${escSingle(m[2])}');`, isSoft };
+
+  // Assert N elements match "label"
+  m = step.match(/^Assert (\d+) elements? match(?:es)? "(.+)"$/i);
+  if (m) return { code: `await verifyCount(page, ':has-text("${escSingle(m[2])}")', ${m[1]});`, isSoft };
+
+  // Fallback — keep as comment so the file still compiles
+  return { code: `// TODO: ${step}`, isSoft: false };
+}
+
+/**
+ * Build a deterministic `verify[Domain]` function from all assertion NL steps.
+ * Returns the TypeScript source for one exported function, or '' if no assertions.
+ */
+export function buildVerifyFunction(domain: string, nlSteps: string[]): string {
+  const assertionSteps = nlSteps.filter(s =>
+    /^Step \d+:\s*Assert /i.test(s)
+  );
+  if (assertionSteps.length === 0) return '';
+
+  const fnName  = `verify${domain.charAt(0).toUpperCase() + domain.slice(1)}`;
+  const hasSoft = assertionSteps.some(s => /\[soft\]/i.test(s));
+
+  const lines: string[] = [];
+
+  // Every verify function needs `test` for test.step() and `screenshotOnFailure`
+  lines.push(`// Each assertion runs as a named Playwright step — visible in HTML + Allure reports`);
+  lines.push(`import { test } from '@playwright/test';`);
+  lines.push(``);
+  lines.push(`export async function ${fnName}(page: Page): Promise<void> {`);
+  if (hasSoft) lines.push(`  const softFailures: string[] = [];`);
+
+  for (const step of assertionSteps) {
+    const { code, isSoft } = nlAssertionToCode(step);
+    const label = step.replace(/^Step \d+:\s*/i, '');   // human label for the step
+
+    lines.push(``);
+    if (isSoft) {
+      // Soft: collect failure, continue running remaining assertions
+      lines.push(`  await test.step(${JSON.stringify(label)}, async () => {`);
+      lines.push(`    await softAssert(async () => { await ${code.replace(/^await /, '')} }, softFailures, ${JSON.stringify(label)});`);
+      lines.push(`  });`);
+    } else {
+      // Hard: step fails immediately on error — Playwright marks it failed in the report
+      lines.push(`  await test.step(${JSON.stringify(label)}, async () => {`);
+      lines.push(`    ${code}`);
+      lines.push(`  });`);
+    }
+  }
+
+  if (hasSoft) {
+    lines.push(``);
+    lines.push(`  if (softFailures.length > 0) {`);
+    lines.push(`    // Screenshot captured and path printed to console for easy debugging`);
+    lines.push(`    const screenshotFile = await screenshotOnFailure(page, '${fnName}');`);
+    lines.push(`    const report = softFailures.map((f, i) => \`  \${i + 1}. \${f}\`).join('\\n');`);
+    lines.push(`    throw new Error(\`\${softFailures.length} assertion(s) failed:\\n\${report}\\n  📸 \${screenshotFile}\`);`);
+    lines.push(`  }`);
+  }
+
+  lines.push(`}`);
+  return lines.join('\n');
 }
 
 export function detectAuthSteps(nlSteps: string[]): AuthInfo {
@@ -1036,6 +1847,217 @@ playwright-report/
 test-results/
 `;
 
+// ─── Post-Generation Validator ────────────────────────────────────────────────
+// After Claude generates each file, these functions catch and auto-fix the
+// most common structural problems before the files reach the user.
+
+/**
+ * Fix 1 — Locators file: ensure `import { Page, Locator }` is present.
+ * If Claude only imported `Page`, inject `Locator`.
+ */
+function fixLocatorsImport(code: string): string {
+  // Already correct
+  if (/import\s*\{[^}]*\bLocator\b[^}]*\}\s*from\s*['"]@playwright\/test['"]/.test(code)) {
+    return code;
+  }
+  // Has Page import but missing Locator
+  return code.replace(
+    /import\s*\{\s*Page\s*\}\s*from\s*['"]@playwright\/test['"]/,
+    "import { Page, Locator } from '@playwright/test'"
+  );
+}
+
+/**
+ * Fix 2 — Locators file: detect and remove truncated/incomplete locator expressions.
+ * A line that ends with `(` or `,` inside a template literal is incomplete.
+ * Replace with a safe fallback so TypeScript still compiles.
+ */
+function fixTruncatedLocators(code: string): string {
+  // Match lines like: propName: (page: Page): Locator => page.locator('xpath=//a[contains(
+  // (the XPath expression is clearly cut short — ends without closing )')
+  return code.replace(
+    /(\w+:\s*\(page:\s*Page\)[^=]*=>[^\n]*page\.locator\('[^']*$)/gm,
+    (match, _p1, offset, fullStr) => {
+      const lineEnd = fullStr.indexOf('\n', offset);
+      const line = fullStr.substring(offset, lineEnd > -1 ? lineEnd : undefined);
+      // Only replace lines that are clearly incomplete (unbalanced parens)
+      const open  = (line.match(/\(/g) || []).length;
+      const close = (line.match(/\)/g) || []).length;
+      if (open > close) {
+        const propName = line.match(/(\w+):/)?.[1] || 'unknownLocator';
+        return `${propName}: (page: Page): Locator => page.locator("xpath=//TODO-fix-truncated-locator[@id='${propName}']"),  // ⚠️ AUTO-FIXED: original XPath was truncated`;
+      }
+      return match;
+    }
+  );
+}
+
+/**
+ * Fix 3 — Page class: detect and remove `this.L = PageLocators(...)` anti-pattern.
+ * Replace the constructor + this.L pattern with the correct factory-call pattern.
+ */
+function fixPageClassConstructor(code: string, pageName: string): string {
+  const locatorsObj = `${pageName}PageLocators`;
+
+  // Pattern: private L: ...; constructor(page) { this.page = page; this.L = XxxLocators(page); }
+  // → Remove the this.L line entirely; keep this.page = page if present
+  let fixed = code.replace(
+    new RegExp(`\\bthis\\.L\\s*=\\s*${locatorsObj}\\s*\\(\\s*\\w+\\s*\\)\\s*;`, 'g'),
+    `// ← removed: locators are called as factory functions per method, not cached here`
+  );
+
+  // Pattern: private L: ReturnType<...>  → remove the type annotation field
+  fixed = fixed.replace(
+    /\s*private\s+L:\s*ReturnType<[^>]+>;\s*/g,
+    '\n  '
+  );
+
+  // Pattern: this.L.someLocator → PageLocators.someLocator(this.page)
+  fixed = fixed.replace(
+    /\bthis\.L\.(\w+)\b/g,
+    `${locatorsObj}.$1(this.page)`
+  );
+
+  return fixed;
+}
+
+/**
+ * Fix 4 — Test file: align the business-actions import to match what was actually exported.
+ * If the import lists function names that don't exist in the actions file, replace them.
+ */
+function fixTestFileImports(
+  testCode: string,
+  actionsCode: string,
+  domain: string
+): string {
+  // Extract what the actions file actually exports
+  const exportedFns: string[] = [];
+  const exportFnRe = /export\s+async\s+function\s+(\w+)/g;
+  let exportFnMatch: RegExpExecArray | null;
+  while ((exportFnMatch = exportFnRe.exec(actionsCode)) !== null) {
+    exportedFns.push(exportFnMatch[1]);
+  }
+
+  if (exportedFns.length === 0) return testCode;
+
+  // Find the import line from business actions
+  const importPattern = new RegExp(
+    `import\\s*\\{([^}]+)\\}\\s*from\\s*['"]@actions/business/${domain}\\.actions['"]`
+  );
+  const importMatch = testCode.match(importPattern);
+  if (!importMatch) return testCode;
+
+  const importedNames = importMatch[1].split(',').map(s => s.trim()).filter(Boolean);
+  const bogusNames = importedNames.filter(name => !exportedFns.includes(name));
+
+  if (bogusNames.length === 0) return testCode; // already correct
+
+  // Replace the import statement with the correct function names
+  let fixed = testCode.replace(
+    importPattern,
+    `import { ${exportedFns.join(', ')} } from '@actions/business/${domain}.actions'`
+  );
+
+  // Replace any calls to bogus function names with the first exported function
+  // (conservative: at least makes the file compile)
+  for (const bogus of bogusNames) {
+    // Replace call sites: await bogusName(page, ...) → await realName(page, ...)
+    const bestMatch = exportedFns.find(fn =>
+      fn.toLowerCase().includes(bogus.toLowerCase().substring(0, 5))
+    ) || exportedFns[0];
+    fixed = fixed.replace(new RegExp(`\\b${bogus}\\b`, 'g'), bestMatch);
+  }
+
+  return fixed;
+}
+
+/**
+ * Fix 5 — Test file and business actions: replace nested data references
+ * (data.form.email, data.urls.x, data.selectors.x) with the
+ * flat keys that actually exist in the Excel TestDataRow.
+ * Also converts any legacy `testData.x.y` patterns.
+ */
+function fixNestedTestDataRefs(code: string, flatKeys: string[]): string {
+  // Handle both `data.something.somethingElse` and legacy `testData.something.somethingElse`
+  return code.replace(
+    /\b(data|testData)\.(\w+)\.(\w+)\b/g,
+    (match, _prefix, first, second) => {
+      const prefix = 'data';
+      if (flatKeys.includes(`${first}${second.charAt(0).toUpperCase()}${second.slice(1)}`)) {
+        const camel = `${first}${second.charAt(0).toUpperCase()}${second.slice(1)}`;
+        return `${prefix}.${camel}`;
+      }
+      if (flatKeys.includes(second)) return `${prefix}.${second}`;
+      return `${prefix}.baseUrl /* TODO: was ${match} — update to correct flat key */`;
+    }
+  );
+}
+
+/**
+ * Master validator: applies all fixes to the generated files in sequence.
+ * Returns the corrected array of files.
+ */
+function validateAndFixGeneratedFiles(
+  files: GeneratedFile[],
+  domain: string,
+  testDataKeys: string[]
+): GeneratedFile[] {
+  const actionsFile = files.find(f => f.type === 'business_action');
+  const testFile    = files.find(f => f.type === 'test');
+  const locFiles    = files.filter(f => f.type === 'pom' && f.path.includes('/locators/'));
+  const pageFiles   = files.filter(f => f.type === 'pom' && f.path.includes('/pages/'));
+
+  const fixed = files.map(f => ({ ...f })); // shallow copy
+
+  // Fix locators files
+  for (const locFile of locFiles) {
+    const idx = fixed.findIndex(f => f.path === locFile.path);
+    if (idx < 0) continue;
+    let code = fixed[idx].content;
+    code = fixLocatorsImport(code);
+    code = fixTruncatedLocators(code);
+    fixed[idx] = { ...fixed[idx], content: code };
+  }
+
+  // Fix page class files
+  for (const pageFile of pageFiles) {
+    const idx = fixed.findIndex(f => f.path === pageFile.path);
+    if (idx < 0) continue;
+    // Derive page name from path: pages/XxxPage.ts → Xxx
+    const pageNameMatch = pageFile.path.match(/pages\/(\w+)Page\.ts/);
+    if (!pageNameMatch) continue;
+    const pageName = pageNameMatch[1];
+    let code = fixed[idx].content;
+    code = fixPageClassConstructor(code, pageName);
+    if (testDataKeys.length > 0) code = fixNestedTestDataRefs(code, testDataKeys);
+    fixed[idx] = { ...fixed[idx], content: code };
+  }
+
+  // Fix business actions file
+  if (actionsFile) {
+    const idx = fixed.findIndex(f => f.path === actionsFile.path);
+    if (idx >= 0 && testDataKeys.length > 0) {
+      let code = fixed[idx].content;
+      code = fixNestedTestDataRefs(code, testDataKeys);
+      fixed[idx] = { ...fixed[idx], content: code };
+    }
+  }
+
+  // Fix test file — align imports to actual exports + fix testData refs
+  if (testFile && actionsFile) {
+    const testIdx    = fixed.findIndex(f => f.path === testFile.path);
+    const actionsIdx = fixed.findIndex(f => f.path === actionsFile.path);
+    if (testIdx >= 0 && actionsIdx >= 0) {
+      let code = fixed[testIdx].content;
+      code = fixTestFileImports(code, fixed[actionsIdx].content, domain);
+      if (testDataKeys.length > 0) code = fixNestedTestDataRefs(code, testDataKeys);
+      fixed[testIdx] = { ...fixed[testIdx], content: code };
+    }
+  }
+
+  return fixed;
+}
+
 // ─── GAP 3: Multi-page Analysis ──────────────────────────────────────────────
 
 interface PageGroup {
@@ -1044,11 +2066,12 @@ interface PageGroup {
   domain: string;
   steps: string[];
   isAuthPage: boolean;
+  iframeOrigin?: string; // set when page interactions happen inside an iframe
 }
 
 function analyzePages(
   nlSteps: string[],
-  events: Array<{ sequence: number; type: string; url: string; naturalLanguage: string }>,
+  events: Array<{ sequence: number; type: string; url: string; naturalLanguage: string; inIframe?: boolean; iframeOrigin?: string }>,
   startUrl: string
 ): PageGroup[] {
   // Build a map: NL step text → URL from events
@@ -1065,6 +2088,14 @@ function analyzePages(
     }
   }
 
+  // Build a map: NL step text → iframe origin (if event came from an iframe)
+  const stepIframeMap = new Map<string, string>();
+  for (const evt of events) {
+    if (evt.naturalLanguage && evt.inIframe && evt.iframeOrigin) {
+      stepIframeMap.set(evt.naturalLanguage.trim(), evt.iframeOrigin);
+    }
+  }
+
   const groups: PageGroup[] = [];
   let currentUrl = startUrl;
   let currentSteps: string[] = [];
@@ -1073,7 +2104,12 @@ function analyzePages(
     if (currentSteps.length === 0) return;
     const { pageName, domain } = deriveNames(url, currentSteps, '');
     const isAuthPage = currentSteps.some(s => /Enter.*"\*\*\*MASKED\*\*\*"/.test(s));
-    groups.push({ url, pageName, domain, steps: [...currentSteps], isAuthPage });
+    // Detect if any steps in this group came from an iframe
+    const iframeOrigins = currentSteps
+      .map(s => stepIframeMap.get(s.trim()))
+      .filter(Boolean) as string[];
+    const iframeOrigin = iframeOrigins.length > 0 ? iframeOrigins[0] : undefined;
+    groups.push({ url, pageName, domain, steps: [...currentSteps], isAuthPage, iframeOrigin });
     currentSteps = [];
   };
 
@@ -1101,7 +2137,15 @@ function analyzePages(
     }
   }
 
-  return Array.from(merged.values());
+  // Filter out pages with no real user interactions
+  // A page with only "Page loaded" or "Navigated to" steps has no interactions
+  // These are background redirects (third-party tools, tracking pixels, SSO callbacks etc.)
+  const hasRealInteractions = (group: PageGroup): boolean => {
+    const nonInteractionPattern = /^(Page loaded|Navigated to|Navigate to|URL changed|Redirected to)/i;
+    return group.steps.some(step => !nonInteractionPattern.test(step.trim()));
+  };
+
+  return Array.from(merged.values()).filter(hasRealInteractions);
 }
 
 export type GeneratorEvent =
@@ -1169,11 +2213,73 @@ async function captureAriaSnapshot(url: string): Promise<string> {
   }
 }
 
+// ─── Existing-project POM reader ────────────────────────────────────────────
+// Copied & adapted from server/validator/gates/gate-04-method-contracts.ts
+// Reads pages/*.ts already saved to disk and returns their class+method contracts
+// so the generator knows what already exists when adding TC002+.
+
+/** Extract the first exported class name from a TypeScript source string */
+function extractClassName(source: string): string | null {
+  const srcFile = ts.createSourceFile('_temp.ts', source, ts.ScriptTarget.Latest, true);
+  for (const stmt of srcFile.statements) {
+    if (
+      ts.isClassDeclaration(stmt) &&
+      stmt.name &&
+      stmt.modifiers?.some(m => m.kind === ts.SyntaxKind.ExportKeyword)
+    ) {
+      return stmt.name.text;
+    }
+  }
+  return null;
+}
+
+/** Extract all public method names from a class declaration */
+function extractClassMethods(source: string): Set<string> {
+  const methods = new Set<string>();
+  const srcFile = ts.createSourceFile('_temp.ts', source, ts.ScriptTarget.Latest, true);
+  for (const stmt of srcFile.statements) {
+    if (!ts.isClassDeclaration(stmt)) continue;
+    for (const member of stmt.members) {
+      if (!ts.isMethodDeclaration(member)) continue;
+      const isPrivate = member.modifiers?.some(m => m.kind === ts.SyntaxKind.PrivateKeyword);
+      if (isPrivate) continue;
+      if (ts.isIdentifier(member.name)) methods.add(member.name.text);
+    }
+  }
+  return methods;
+}
+
+/** Read all pages/*.ts from an existing saved project and return their method contracts */
+function readExistingPomContracts(
+  projectOutputDir: string
+): Array<{ className: string; pageFile: string; methods: string[] }> {
+  const pagesDir = path.join(projectOutputDir, 'pages');
+  if (!fs.existsSync(pagesDir)) return [];
+
+  return fs.readdirSync(pagesDir)
+    .filter(f => f.endsWith('.ts'))
+    .flatMap(file => {
+      try {
+        const content = fs.readFileSync(path.join(pagesDir, file), 'utf-8');
+        const className = extractClassName(content);
+        const methods   = Array.from(extractClassMethods(content));
+        if (!className || methods.length === 0) return [];
+        return [{ className, pageFile: `pages/${file}`, methods }];
+      } catch {
+        return [];
+      }
+    });
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+
 export async function* generateFramework(
   nlSteps: string[],
   startUrl: string,
   testName: string,
-  events: Array<{ sequence: number; type: string; url: string; naturalLanguage: string }> = []
+  events: Array<{ sequence: number; type: string; url: string; naturalLanguage: string }> = [],
+  projectOutputDir?: string,
+  tcId?: string
 ): AsyncGenerator<GeneratorEvent> {
   const { pageName, domain, testFileName } = deriveNames(startUrl, nlSteps, testName);
 
@@ -1200,15 +2306,29 @@ export async function* generateFramework(
   // 1. Emit static generic files immediately (no AI)
   yield { type: 'status', message: 'Generating generic action library...' };
 
-  // Extract test data from recorded steps → fixtures/test-data.ts
+  // Extract test data from recorded steps
   const extractedFields = extractTestData(nlSteps, startUrl);
-  const testDataContent  = buildTestDataFile(extractedFields, startUrl);
+
+  // Derive a clean TC ID: use provided tcId, or extract from testName (e.g. "TC001_Login"), or generate one
+  const resolvedTcId = tcId?.trim() ||
+    (testName.match(/^(TC\d+)/i)?.[1] ?? `TC_${testName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 8)}`);
+
+  // Compact schema string passed to Claude so it knows the exact TestDataRow shape
+  const testDataSchema = buildTestDataSchema(resolvedTcId, extractedFields, startUrl);
+  // JSON row payload for the Excel file (type: excel_data handled by save-ai-framework)
+  const excelRowContent = buildExcelDataContent(resolvedTcId, extractedFields, startUrl);
 
   const genericFiles: GeneratedFile[] = [
     { path: 'actions/generic/browser.actions.ts', content: GENERIC_BROWSER_ACTIONS, type: 'generic_action' },
     { path: 'actions/generic/form.actions.ts',    content: GENERIC_FORM_ACTIONS,    type: 'generic_action' },
     { path: 'actions/generic/assert.actions.ts',  content: GENERIC_ASSERT_ACTIONS,  type: 'generic_action' },
-    { path: 'fixtures/test-data.ts',              content: testDataContent,          type: 'config' },
+    // Rule 2: helpers/universal.ts is ALWAYS emitted — never a phantom import
+    // Test files import prepareSite from this file; it must exist in every generated project
+    { path: 'helpers/universal.ts',              content: HELPERS_UNIVERSAL,        type: 'generic_action' },
+    // Excel reader — shared utility, emitted once per project (skipped if already exists)
+    { path: 'fixtures/excel-reader.ts',           content: EXCEL_READER_FILE,       type: 'config' },
+    // Excel data row for this TC — upserted into fixtures/test-data.xlsx by save-ai-framework
+    { path: 'fixtures/test-data.xlsx',            content: excelRowContent,         type: 'excel_data' },
     { path: 'package.json',                       content: PACKAGE_JSON,            type: 'config' },
     { path: 'tsconfig.json',                      content: TSCONFIG_JSON,           type: 'config' },
     { path: 'README.md',                          content: README_MD,               type: 'config' },
@@ -1254,7 +2374,11 @@ export async function* generateFramework(
     yield { type: 'status', message: `📄 Single-page recording detected` };
   }
 
+  // Buffer for AI-generated files — validated before emitting
+  const aiGeneratedFiles: GeneratedFile[] = [];
+
   // Helper to generate POM for a single page group
+  // Pushes locators + page files to aiGeneratedFiles instead of yielding directly
   async function* generatePagePom(pageGroup: PageGroup): AsyncGenerator<GeneratorEvent> {
     const pg = pageGroup.pageName;
 
@@ -1271,12 +2395,11 @@ export async function* generateFramework(
     yield { type: 'status', message: `🧠 Generating locators/${pg}Page.locators.ts + pages/${pg}Page.ts...` };
     try {
       const pomResponse = await anthropic.messages.create({
-        model: 'claude-sonnet-4-5',
+        model: SCRIPT_MODEL,
         max_tokens: 12000,
-        thinking:    { type: 'enabled', budget_tokens: 7000 },
         tools:       [TOOL_POM],
         tool_choice: { type: 'auto' },
-        messages: [{ role: 'user', content: buildPageObjectPrompt(pageGroup.steps, pageGroup.url, pg, ariaSnapshot) }]
+        messages: [{ role: 'user', content: buildPageObjectPrompt(pageGroup.steps, pageGroup.url, pg, ariaSnapshot, pageGroup.iframeOrigin) }]
       });
       const pomThinking = extractThinking(pomResponse.content);
       let pomInput = extractToolInput<PomToolInput>(pomResponse.content, 'generate_page_object');
@@ -1289,25 +2412,19 @@ export async function* generateFramework(
         yield { type: 'thinking', label: `${pg}Page — locator reasoning`, content: pomThinking };
       }
       if (pomInput.locatorsCode?.trim()) {
-        yield {
-          type: 'file',
-          file: {
-            path: `locators/${pg}Page.locators.ts`,
-            content: pomInput.locatorsCode.trim(),
-            type: 'pom',
-            metadata: { className: `${pg}PageLocators`, locators: pomInput.locators, snapshotUsed: !!ariaSnapshot }
-          }
-        };
-      }
-      yield {
-        type: 'file',
-        file: {
-          path: `pages/${pg}Page.ts`,
-          content: pomInput.code.trim(),
+        aiGeneratedFiles.push({
+          path: `locators/${pg}Page.locators.ts`,
+          content: pomInput.locatorsCode.trim(),
           type: 'pom',
-          metadata: { className: pomInput.className, locators: pomInput.locators, methods: pomInput.methods, snapshotUsed: !!ariaSnapshot }
-        }
-      };
+          metadata: { className: `${pg}PageLocators`, locators: pomInput.locators, snapshotUsed: !!ariaSnapshot }
+        });
+      }
+      aiGeneratedFiles.push({
+        path: `pages/${pg}Page.ts`,
+        content: pomInput.code.trim(),
+        type: 'pom',
+        metadata: { className: pomInput.className, locators: pomInput.locators, methods: pomInput.methods, snapshotUsed: !!ariaSnapshot }
+      });
     } catch (err: any) {
       yield { type: 'error', message: `Page Object generation failed for ${pg}: ${err.message}` };
     }
@@ -1325,6 +2442,8 @@ export async function* generateFramework(
       allPageNames.push(pageGroup.pageName);
       yield* generatePagePom(pageGroup);
     }
+  } else if (pages.length === 0) {
+    yield { type: 'status', message: `⚠️ No pages with user interactions found — skipping POM generation` };
   } else {
     // Single-page: use original snapshot approach
     const singleGroup = pages[0] || { url: startUrl, pageName, domain, steps: nlSteps, isAuthPage: authInfo.hasAuth };
@@ -1340,7 +2459,52 @@ export async function* generateFramework(
   const primaryPageName = allPageNames[0] || pageName;
   const primaryDomain = domain;
 
+  // ── LAYER N → N+1 THREADING ─────────────────────────────────────────────────
+  // After all POM files are generated, extract the exact method names from the
+  // structured tool output (pomInput.methods). These are passed as a hard contract
+  // into the business actions prompt so Claude CANNOT invent method names.
+  // This eliminates Issue 2: "broken method calls in business actions".
+  interface PomMethodContract {
+    className: string;  // e.g. NousinfosystemsHomePage
+    pageFile:  string;  // e.g. pages/NousinfosystemsHomePage.ts
+    methods:   string[]; // exact method names from pomInput.methods
+  }
+  const pomMethodContracts: PomMethodContract[] = aiGeneratedFiles
+    .filter(f => f.type === 'pom' && f.path.startsWith('pages/'))
+    .map(f => ({
+      className: (f.metadata?.className as string) || '',
+      pageFile:  f.path,
+      methods:   ((f.metadata?.methods as string[]) || []),
+    }))
+    .filter(c => c.className && c.methods.length > 0);
+
+  // ── Merge with POMs already saved to disk from previous TCs ─────────────────
+  // pomMethodContracts only covers POMs generated in THIS run.
+  // When adding TC002+ to an existing project, pages from TC001 already exist on
+  // disk but won't be in pomMethodContracts. Without merging, Claude can't see
+  // those methods and may re-invent or rename them inconsistently.
+  const existingContracts = projectOutputDir ? readExistingPomContracts(projectOutputDir) : [];
+  const mergedContracts: PomMethodContract[] = [...pomMethodContracts];
+  let mergedCount = 0;
+  for (const existing of existingContracts) {
+    // Current run wins if same class was just regenerated; add anything not in this run
+    if (!mergedContracts.find(c => c.className === existing.className)) {
+      mergedContracts.push(existing);
+      mergedCount++;
+    }
+  }
+
+  if (mergedContracts.length > 0) {
+    const contractSummary = mergedContracts
+      .map(c => `${c.className}: [${c.methods.join(', ')}]`)
+      .join(' | ');
+    const fromDisk = mergedCount > 0 ? ` (+${mergedCount} from saved project)` : '';
+    yield { type: 'status', message: `🔗 POM→Actions contract${fromDisk}: ${contractSummary}` };
+  }
+
   // 3. Business Actions — Extended Thinking + Structured Output
+  // exportedFunctionNames is populated after generation and passed to the test file prompt
+  let exportedFunctionNames: string[] = [];
   yield { type: 'status', message: `🧠 Extended Thinking + Structured Output: generating ${primaryDomain}.actions.ts...` };
 
   // For business actions we pass all page steps (minus pure auth steps)
@@ -1357,12 +2521,11 @@ export async function* generateFramework(
 
   try {
     const actionsResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: SCRIPT_MODEL,
       max_tokens: 9000,
-      thinking:    { type: 'enabled', budget_tokens: 5000 },
       tools:       [TOOL_BUSINESS_ACTIONS],
       tool_choice: { type: 'auto' },
-      messages: [{ role: 'user', content: buildBusinessActionsPrompt(nonAuthSteps, primaryPageName, primaryDomain, baSnapshot || undefined) }]
+      messages: [{ role: 'user', content: buildBusinessActionsPrompt(nonAuthSteps, primaryPageName, primaryDomain, testDataSchema, baSnapshot || undefined, mergedContracts) }]
     });
     const actionsThinking = extractThinking(actionsResponse.content);
     let actionsInput = extractToolInput<BusinessActionsToolInput>(actionsResponse.content, 'generate_business_actions');
@@ -1374,15 +2537,47 @@ export async function* generateFramework(
     if (actionsThinking) {
       yield { type: 'thinking', label: `${primaryDomain}.actions — composition reasoning`, content: actionsThinking };
     }
-    yield {
-      type: 'file',
-      file: {
-        path: `actions/business/${primaryDomain}.actions.ts`,
-        content: actionsInput.code.trim(),
-        type: 'business_action',
-        metadata: { functions: actionsInput.functions }
+    // ── DETERMINISTIC VERIFY FUNCTION — appended after AI-generated actions ──
+    // Any "Assert ..." NL steps are converted directly to Playwright expect() calls.
+    // This bypasses Claude for assertions — always correct, no hallucination.
+    const verifyFnSource = buildVerifyFunction(primaryDomain, nonAuthSteps);
+    let actionsFileContent = actionsInput.code.trim();
+
+    if (verifyFnSource) {
+      // Ensure the verify function's imports are present in the actions file
+      const needsSoftAssert = /softAssert/.test(verifyFnSource);
+      // Always include screenshotOnFailure — verify function always calls it on any failure
+      let assertImport = `import { verifyText, verifyUrl, verifyVisible, verifyEnabled, verifyDisabled,\n         verifyChecked, verifyUnchecked, verifyInputValue, verifyInputContains,\n         verifyAttribute, verifyCount${needsSoftAssert ? ', softAssert' : ''}, screenshotOnFailure } from '@actions/generic/assert.actions';`;
+      // Replace or insert assert import
+      if (/from '@actions\/generic\/assert\.actions'/.test(actionsFileContent)) {
+        actionsFileContent = actionsFileContent.replace(
+          /import\s*\{[^}]*\}\s*from\s*'@actions\/generic\/assert\.actions';/,
+          assertImport
+        );
+      } else {
+        actionsFileContent = actionsFileContent + '\n' + assertImport;
       }
-    };
+      actionsFileContent += '\n\n' + verifyFnSource;
+
+      const verifyFnName = `verify${primaryDomain.charAt(0).toUpperCase() + primaryDomain.slice(1)}`;
+      actionsInput.functions.push({
+        name: verifyFnName,
+        description: 'Verifies page state using recorded assertions',
+        stepCount: nonAuthSteps.filter(s => /^Step \d+:\s*Assert /i.test(s)).length
+      });
+      yield { type: 'status', message: `✅ Deterministic verify function generated: ${verifyFnName}()` };
+    }
+
+    aiGeneratedFiles.push({
+      path: `actions/business/${primaryDomain}.actions.ts`,
+      content: actionsFileContent,
+      type: 'business_action',
+      metadata: { functions: actionsInput.functions }
+    });
+
+    // ── CONTRACT: extract the real exported function names so test file uses them exactly ──
+    exportedFunctionNames = actionsInput.functions.map(f => f.name);
+    yield { type: 'status', message: `📋 Business actions contract: [${exportedFunctionNames.join(', ')}]` };
   } catch (err: any) {
     yield { type: 'error', message: `Business Actions generation failed: ${err.message}` };
     return;
@@ -1399,15 +2594,14 @@ export async function* generateFramework(
       })
     : nlSteps;
 
-  yield { type: 'status', message: `🧠 Extended Thinking + Structured Output: generating ${testFileName}.spec.ts...` };
+  yield { type: 'status', message: `🧠 Generating ${testFileName}.spec.ts...` };
   try {
     const testResponse = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5',
+      model: SCRIPT_MODEL,
       max_tokens: 6000,
-      thinking:    { type: 'enabled', budget_tokens: 3000 },
       tools:       [TOOL_TEST],
       tool_choice: { type: 'auto' },
-      messages: [{ role: 'user', content: buildTestFilePrompt(testSteps, testName, startUrl, primaryPageName, primaryDomain) }]
+      messages: [{ role: 'user', content: buildTestFilePrompt(testSteps, testName, startUrl, primaryPageName, primaryDomain, exportedFunctionNames, testDataSchema) }]
     });
     const testThinking = extractThinking(testResponse.content);
     let testInput = extractToolInput<TestToolInput>(testResponse.content, 'generate_test_file');
@@ -1419,23 +2613,40 @@ export async function* generateFramework(
     if (testThinking) {
       yield { type: 'thinking', label: `${testFileName}.spec — test design reasoning`, content: testThinking };
     }
-    yield {
-      type: 'file',
-      file: {
-        path: `tests/${testFileName}.spec.ts`,
-        content: testInput.code.trim(),
-        type: 'test',
-        metadata: {
-          testCaseName: testInput.testCaseName,
-          businessScenario: testInput.businessScenario,
-          businessActionsUsed: testInput.businessActionsUsed,
-          assertionsUsed: testInput.assertionsUsed
-        }
+    aiGeneratedFiles.push({
+      path: `tests/${testFileName}.spec.ts`,
+      content: testInput.code.trim(),
+      type: 'test',
+      metadata: {
+        testCaseName: testInput.testCaseName,
+        businessScenario: testInput.businessScenario,
+        businessActionsUsed: testInput.businessActionsUsed,
+        assertionsUsed: testInput.assertionsUsed
       }
-    };
+    });
   } catch (err: any) {
     yield { type: 'error', message: `Test file generation failed: ${err.message}` };
     return;
+  }
+
+  // ── POST-GENERATION VALIDATION ──────────────────────────────────────────────
+  // Run all auto-fix passes on the buffered AI-generated files before emitting.
+  // This guarantees structural consistency regardless of what Claude produced.
+  yield { type: 'status', message: '🔍 Running post-generation validation...' };
+
+  const testDataKeys = extractedFields.map(f => f.key).concat(['baseUrl']);
+  const validatedFiles = validateAndFixGeneratedFiles(aiGeneratedFiles, primaryDomain, testDataKeys);
+
+  // Report which files were modified
+  for (let i = 0; i < aiGeneratedFiles.length; i++) {
+    if (validatedFiles[i].content !== aiGeneratedFiles[i].content) {
+      yield { type: 'status', message: `  🔧 Auto-fixed: ${validatedFiles[i].path}` };
+    }
+  }
+
+  // Emit all validated files
+  for (const file of validatedFiles) {
+    yield { type: 'file', file };
   }
 
   yield { type: 'status', message: '✅ Framework generation complete!' };
@@ -1450,7 +2661,7 @@ export async function healLocator(
   domSnapshot: string  // simplified DOM around the failing element
 ): Promise<string> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-5',
+    model: SCRIPT_MODEL,
     max_tokens: 500,
     messages: [{
       role: 'user',

@@ -27,7 +27,8 @@ import {
   FileSpreadsheet,
   Globe,
   Code2,
-  Activity
+  Activity,
+  Coffee
 } from "lucide-react";
 
 const modules = [
@@ -151,6 +152,24 @@ const modules = [
     stats: { tests: 0, passed: 0, failed: 0 }
   },
   {
+    id: "java-migration",
+    title: "Java + Selenium + BDD Migration",
+    description: "AI-powered agents convert your Java+Selenium+Cucumber framework to Playwright+TypeScript — upload, classify, migrate, download",
+    icon: Coffee,
+    href: "/nradiverse/java-migration",
+    color: "text-violet-400",
+    bgColor: "bg-violet-500/20",
+    borderColor: "border-violet-500/30",
+    badge: "NEW",
+    features: [
+      "Upload ZIP & auto-classify",
+      "6 AI migration agents",
+      "PageFactory → Playwright POM",
+      "Download ready-to-run project"
+    ],
+    stats: { tests: 0, passed: 0, failed: 0 }
+  },
+  {
     id: "icu-streaming",
     title: "ICU Medical Device Stream Validator",
     description: "Real-time validation of 24/7 ICU device data streams as they push to the cloud — integrity, latency, sequencing, and FHIR transformation",
@@ -200,7 +219,7 @@ export default function NRadiVersePage() {
         <DashboardHeader />
         
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="w-full space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3" data-testid="heading-nradiverse">

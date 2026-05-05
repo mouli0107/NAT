@@ -5,12 +5,13 @@ dotenv.config();
 export default defineConfig({
   testDir: './tests',
   fullyParallel: false,
+  workers: 1,             // sequential — prevents rate-limiting on the live site
   retries: process.env.CI ? 2 : 1,
-  timeout: 60000,
+  timeout: 90000,         // 90 s — allows for slow network / CDN warm-up
   expect: { timeout: 10000 },
   use: {
     headless: process.env.CI ? true : false,
-    baseURL: process.env.BASE_URL || 'https://smartbear.com',
+    baseURL: process.env.BASE_URL || 'https://www.nousinfosystems.com',
     viewport: { width: 1280, height: 720 },
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

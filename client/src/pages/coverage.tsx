@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "wouter";
+import { DashboardHeader } from "@/components/dashboard/header";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -165,6 +166,7 @@ export default function CoveragePage() {
 
   return (
     <div className="flex flex-col h-full bg-[#050a14] text-white overflow-hidden">
+      <DashboardHeader />
 
       {/* ── Top bar ─────────────────────────────────────────────────────────── */}
       <div className="flex-shrink-0 flex items-center gap-2 px-4 py-2.5 border-b border-slate-800/60 bg-slate-950/60 backdrop-blur-sm">

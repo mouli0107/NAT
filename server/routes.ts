@@ -43,6 +43,9 @@ import { generateAutomationScripts } from "./script-generator";
 import { captureHarFromUrl, importSwaggerSpec } from "./api-discovery";
 import { registerAutoTestRoutes } from "./autotest-routes";
 import { registerRecorderRoutes, setupRecorderWebSocket, registerPlaywrightRoutes, registerTestManagementRoutes } from "./recorder-ws";
+import { setupAgentWebSocket, dispatchJobToAgent, hasAvailableAgent, getAgentStatus, type AgentJobPayload, type SseCallback } from "./agent-ws";
+import { setupWorkspaceAgentWebSocket, dispatchSyncProject, getWorkspaceAgentStatus } from "./workspace-agent-ws";
+import { ensureDefaultTenant, getAuthContext, requireAuth, generateDeviceCode, pollDeviceCode, approveDeviceCode } from "./auth-middleware";
 import { registerTestLibraryRoutes } from "./test-library";
 import { registerCoverageRoutes } from "./coverage";
 import { generateTestCompleteScripts } from "./generators/testcomplete/index.js";
@@ -699,17 +702,15 @@ async function pushTestCasesToPlatform(
   }
 }
 
-// TODO: Replace with proper session-based authentication (express-session + Passport.js)
-// For MVP/demo, using a mock user when session auth is not configured
-const DEMO_USER = { id: "demo-user-1", email: "demo@insurity.com" };
+// Admin user — fixed ID so it survives DB restarts; username managed by auth-middleware
+const DEMO_USER = { id: "admin-user-1", email: "chandramouli@nousinfo.com" };
 
-// Helper function to get user ID - uses session if available, falls back to demo user for development
+// Helper function to get user ID - uses session if available, falls back to admin user for development
 function getUserId(req: Request): string {
   const sessionUserId = (req as any).session?.userId;
   if (sessionUserId) {
     return sessionUserId;
   }
-  // For demo/development mode, use demo user
   return DEMO_USER.id;
 }
 
@@ -717,47 +718,10 @@ function getUserId(req: Request): string {
 async function seedDemoDataIfEmpty() {
   try {
     const existingProjects = await storage.getProjectsByUserId(DEMO_USER.id);
-    
+
     if (existingProjects.length === 0) {
-      console.log("[Seed] No projects found, creating demo data...");
-      
-      // First, ensure demo user exists in the users table
-      try {
-        await storage.createUser({
-          id: DEMO_USER.id,
-          username: "demo_user",
-          password: "demo_password_123"
-        });
-        console.log("[Seed] Created demo user");
-      } catch (err: any) {
-        // User may already exist, that's fine
-        if (!err.message?.includes("duplicate")) {
-          console.log("[Seed] Demo user already exists or error handled");
-        }
-      }
-      
-      // Create demo projects
-      const demoProjects = [
-        { name: "Insurance Portal", description: "Main insurance web application testing", userId: DEMO_USER.id, type: "web" },
-        { name: "Claims Processing", description: "Claims management system tests", userId: DEMO_USER.id, type: "web" },
-        { name: "Policy Admin", description: "Policy administration platform", userId: DEMO_USER.id, type: "web" },
-      ];
-      
-      for (const projectData of demoProjects) {
-        const project = await storage.createProject(projectData);
-        console.log(`[Seed] Created project: ${project.name}`);
-        
-        // Create a demo sprint for each project
-        const sprint = await storage.createSprint({
-          projectId: project.id,
-          name: "Sprint 1",
-          description: "Initial sprint with core features",
-          status: "active"
-        });
-        console.log(`[Seed] Created sprint: ${sprint.name} for project ${project.name}`);
-      }
-      
-      console.log("[Seed] Demo data seeding complete");
+      // No projects yet — nothing to seed. Admin user is created by ensureDefaultTenant().
+      console.log("[Seed] No projects found. Create your first project from the dashboard.");
     } else {
       console.log(`[Seed] Found ${existingProjects.length} existing projects, skipping seed`);
     }
@@ -1109,6 +1073,11 @@ function generateFunctionalTestCases(focus: string): any[] {
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Health check endpoint (used by Docker, Azure, load balancers)
+  app.get('/api/health', (_req, res) => {
+    res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0' });
+  });
+
   // Serve screenshots directory as static files
   const screenshotsDir = path.join(process.cwd(), 'screenshots');
   app.use('/screenshots', express.static(screenshotsDir));
@@ -1119,21 +1088,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Seed demo data if database is empty (for production first-run)
   await seedDemoDataIfEmpty();
   
-  app.post("/api/auth/login", (req: Request, res: Response) => {
-    const { email, password } = req.body;
-    
-    if (!email || !password) {
-      res.status(400).json({ error: "Email and password required" });
-      return;
-    }
-    
-    res.json({ 
-      success: true, 
-      user: { email },
-      message: "Login successful" 
-    });
-  });
-
   app.get("/api/tests/functional", async (req: Request, res: Response) => {
     const url = req.query.url as string;
     const focus = req.query.focus as string || "all";
@@ -1758,6 +1712,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // API Testing Module — Excel Export (Manual Test Cases only; code downloaded separately)
+  app.post("/api/export/api-test-cases/excel", async (req: Request, res: Response) => {
+    try {
+      const { testCases, apiConfig } = req.body;
+      if (!testCases || !Array.isArray(testCases)) {
+        res.status(400).json({ error: "Test cases array is required" });
+        return;
+      }
+
+      const ExcelJS = (await import('exceljs')).default;
+      const workbook = new ExcelJS.Workbook();
+      workbook.creator = 'NAT 2.0 — API Testing Module';
+      workbook.created = new Date();
+
+      const headerFill: ExcelJS.Fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1E3A5F' } };
+      const headerFont = { name: 'Calibri', bold: true, color: { argb: 'FFFFFFFF' }, size: 11 };
+      const borderStyle: Partial<ExcelJS.Borders> = {
+        top: { style: 'thin' }, left: { style: 'thin' }, bottom: { style: 'thin' }, right: { style: 'thin' }
+      };
+
+      // ── Sheet 1: Manual Test Cases ──────────────────────────────────────────
+      const tcSheet = workbook.addWorksheet('Manual Test Cases');
+      tcSheet.columns = [
+        { header: 'TC ID',         key: 'id',           width: 12 },
+        { header: 'Title',         key: 'title',        width: 45 },
+        { header: 'Type',          key: 'type',         width: 14 },
+        { header: 'Priority',      key: 'priority',     width: 10 },
+        { header: 'Description',   key: 'description',  width: 45 },
+        { header: 'Preconditions', key: 'preconditions',width: 40 },
+        { header: 'Test Steps',    key: 'steps',        width: 60 },
+        { header: 'Assertions',    key: 'assertions',   width: 50 },
+      ];
+
+      // Style header row
+      const tcHeader = tcSheet.getRow(1);
+      tcHeader.eachCell(cell => {
+        cell.fill = headerFill;
+        cell.font = headerFont;
+        cell.alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        cell.border = borderStyle;
+      });
+      tcHeader.height = 22;
+
+      const typeColors: Record<string, string> = {
+        functional: 'FFE2EFDA', negative: 'FFFCE4D6', security: 'FFECE3F5',
+        performance: 'FFFFF2CC', boundary: 'FFDDEBF7'
+      };
+      const priorityColors: Record<string, string> = {
+        P0: 'FFFF0000', P1: 'FFFFA500', P2: 'FFFFFF00', P3: 'FF90EE90'
+      };
+
+      testCases.forEach((tc: any, idx: number) => {
+        const stepsText = (tc.steps || []).map((s: any, i: number) =>
+          `${i + 1}. Action: ${s.action}\n   Expected: ${s.expected}`
+        ).join('\n\n');
+
+        const row = tcSheet.addRow({
+          id:           tc.id || `TC-${idx + 1}`,
+          title:        tc.title || '',
+          type:         (tc.type || 'functional').toUpperCase(),
+          priority:     tc.priority || 'P2',
+          description:  tc.description || '',
+          preconditions:(tc.preconditions || []).join('\n'),
+          steps:        stepsText,
+          assertions:   (tc.assertions || []).join('\n'),
+        });
+
+        row.alignment = { wrapText: true, vertical: 'top' };
+        row.border = borderStyle;
+        row.height = Math.max(40, (tc.steps || []).length * 25);
+
+        // Colour by type
+        const typeBg = typeColors[tc.type] || 'FFFFFFFF';
+        row.eachCell(cell => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: typeBg } }; });
+
+        // Priority cell colour
+        const prioCell = row.getCell('priority');
+        const prioBg = priorityColors[tc.priority] || 'FFFFFFFF';
+        prioCell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: prioBg } };
+        prioCell.font = { bold: true };
+        prioCell.alignment = { horizontal: 'center', vertical: 'top' };
+      });
+
+      tcSheet.autoFilter = { from: 'A1', to: 'H1' };
+
+      // ── Sheet 2: Summary ─────────────────────────────────────────────────────
+      const summarySheet = workbook.addWorksheet('Summary');
+      const summaryData = [
+        ['API Testing Report — NAT 2.0'],
+        [],
+        ['Endpoint',  apiConfig?.endpoint || ''],
+        ['Method',    apiConfig?.method || ''],
+        ['Base URL',  apiConfig?.baseUrl || ''],
+        ['Generated', new Date().toLocaleString()],
+        [],
+        ['Category',     'Count'],
+        ...['functional','negative','security','performance','boundary'].map(t => [
+          t.charAt(0).toUpperCase() + t.slice(1),
+          testCases.filter((tc: any) => tc.type === t).length
+        ]),
+        [],
+        ['Total Test Cases', testCases.length],
+      ];
+
+      summaryData.forEach((row, i) => {
+        const r = summarySheet.addRow(row);
+        if (i === 0) { r.getCell(1).font = { bold: true, size: 14, color: { argb: 'FF1E3A5F' } }; }
+        if (row[0] === 'Category') { r.eachCell(c => { c.font = { bold: true }; c.fill = headerFill; c.font = headerFont; }); }
+        if (row[0] === 'Total Test Cases') { r.eachCell(c => { c.font = { bold: true }; }); }
+      });
+      summarySheet.getColumn(1).width = 22;
+      summarySheet.getColumn(2).width = 40;
+
+      const buffer = await workbook.xlsx.writeBuffer() as Buffer;
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `NAT2_API_Tests_${dateStr}.xlsx`;
+
+      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', buffer.length);
+      res.send(buffer);
+    } catch (error: any) {
+      console.error('[API Excel Export] Error:', error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // Enhanced Excel Export with professional formatting (NAT 2.0 format)
   app.post("/api/export/test-cases/excel", async (req: Request, res: Response) => {
     try {
@@ -2119,8 +2200,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/projects", async (req: Request, res: Response) => {
     try {
       const user = req.user || DEMO_USER; // Fallback to demo user for MVP
-      const projects = await storage.getProjectsByUserId(user.id);
-      res.json(projects);
+      const dbProjects = await storage.getProjectsByUserId(user.id);
+
+      // ── Sync disk-only projects into DB ──────────────────────────────────────
+      // Projects created by the Recording Studio exist only on disk until registered.
+      // On every GET we check for unregistered disk folders and auto-import them.
+      const DISK_DIR = path.join(process.cwd(), 'projects');
+      if (fs.existsSync(DISK_DIR)) {
+        const dbNames = new Set(dbProjects.map(p => p.name.toLowerCase()));
+        const diskDirs = fs.readdirSync(DISK_DIR, { withFileTypes: true })
+          .filter(d => d.isDirectory())
+          .map(d => d.name);
+
+        for (const dirName of diskDirs) {
+          if (dbNames.has(dirName.toLowerCase())) continue; // already in DB
+          try {
+            const metaPath = path.join(DISK_DIR, dirName, 'project.json');
+            const meta = fs.existsSync(metaPath)
+              ? JSON.parse(fs.readFileSync(metaPath, 'utf8'))
+              : {};
+            const description = meta.modules?.length
+              ? `Modules: ${(meta.modules as string[]).join(', ')}`
+              : 'Auto-imported from Recording Studio';
+            const newProject = await storage.createProject({
+              userId: user.id,
+              tenantId: (user as any).tenantId || 'default-tenant',
+              name: dirName,
+              description,
+              type: 'playwright',
+            });
+            dbProjects.push(newProject);
+            console.log(`[Projects] Auto-imported disk project "${dirName}" into DB`);
+          } catch (syncErr: any) {
+            console.warn(`[Projects] Could not sync disk project "${dirName}": ${syncErr.message}`);
+          }
+        }
+      }
+
+      res.json(dbProjects);
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -5129,84 +5246,115 @@ test.describe('Automated Test Suite', () => {
         let failedTests = 0;
 
         if (testCasesForExecution.length > 0 && !cancelled) {
-          const { PlaywrightExecutionEngine } = await import('./playwright-execution-engine');
-          const engine = new PlaywrightExecutionEngine({
-            targetUrl: targetUrlStr,
-            headless: false,
-            channel: 'msedge',
-            slowMo: 800,
-            recordVideo: false,
-            screenshotOnEveryStep: true,
-            timeout: 30000,
-          });
-
-          await engine.initialize();
-          sendEvent('playwright_log', {
-            timestamp: new Date().toISOString(),
-            level: 'info',
-            category: 'browser',
-            message: `Execution browser ready — running ${totalTests} test case(s)`,
-          });
-
-          for (let i = 0; i < testCasesForExecution.length && !cancelled; i++) {
-            const tc = testCasesForExecution[i];
-            sendEvent('agent_status', { agent: 'Orchestrator', status: 'working', activity: `Executing test ${i + 1} of ${totalTests}` });
+          // ── Remote agent path ─────────────────────────────────────────────
+          if (hasAvailableAgent()) {
             sendEvent('playwright_log', {
               timestamp: new Date().toISOString(),
               level: 'info',
-              category: 'test',
-              message: `Starting test case ${i + 1} of ${totalTests}: ${tc.title}`,
+              category: 'browser',
+              message: `Dispatching ${totalTests} test(s) to remote execution agent`,
             });
 
-            await engine.executeTestCase(tc, {
-              onStepStart: (_testCaseId, stepIndex, action) => {
-                sendEvent('step_progress', { stepIndex: stepIndex + 1, totalSteps: tc.steps.length || 1 });
-                sendEvent('playwright_log', {
-                  timestamp: new Date().toISOString(),
-                  level: 'info',
-                  category: 'action',
-                  message: `Step ${stepIndex + 1}: ${action}`,
-                });
-              },
-              onStepComplete: (_testCaseId, result) => {
-                sendEvent('playwright_log', {
-                  timestamp: new Date().toISOString(),
-                  level: result.status === 'passed' ? 'info' : 'error',
-                  category: 'result',
-                  message: `Step ${result.stepIndex + 1} ${result.status.toUpperCase()}${result.error ? ' — ' + result.error : ''}`,
-                });
-              },
-              onTestStart: (_testCaseId, title) => {
-                sendEvent('agent_status', { agent: 'Executor', status: 'working', activity: `Running: ${title}` });
-              },
-              onTestComplete: (result) => {
-                if (result.status === 'passed') passedTests++;
-                else failedTests++;
-                sendEvent('agent_status', { agent: 'Validator', status: 'working', activity: `Validating: ${tc.title}` });
-                sendEvent('test_complete', {
-                  testCaseId: result.testCaseId,
-                  status: result.status,
-                  testIndex: i + 1,
-                  totalTests,
-                });
-                sendEvent('playwright_log', {
-                  timestamp: new Date().toISOString(),
-                  level: result.status === 'passed' ? 'info' : 'error',
-                  category: 'result',
-                  message: `TEST ${result.status.toUpperCase()}: "${tc.title}" (${result.duration}ms)`,
-                });
-              },
-              onScreenshot: (_testCaseId, stepIndex, base64Data) => {
-                sendEvent('screenshot', { screenshot: base64Data, step: `Test ${i + 1} — Step ${stepIndex + 1}`, testIndex: i + 1 });
-                collectedScreenshots.push(base64Data);
-              },
-              onAgentActivity: (_agent, activity, status) => {
-                sendEvent('agent_status', { agent: 'Executor', status, activity });
-              },
+            const sseCallback: SseCallback = {
+              sendEvent,
+              isCancelled: () => cancelled,
+            };
+
+            const jobPayload: AgentJobPayload = {
+              executionRunId: id,
+              testCases: testCasesForExecution,
+              targetUrl: targetUrlStr,
+              browser: 'chromium',
+              headless: false,
+              screenshotOnEveryStep: true,
+              slowMo: 500,
+            };
+
+            const summary = await dispatchJobToAgent(jobPayload, sseCallback);
+            passedTests = summary.passed;
+            failedTests = summary.failed;
+
+          } else {
+            // ── In-process fallback (no remote agent connected) ────────────
+            const { PlaywrightExecutionEngine } = await import('./playwright-execution-engine');
+            const engine = new PlaywrightExecutionEngine({
+              targetUrl: targetUrlStr,
+              headless: false,
+              channel: 'msedge',
+              slowMo: 800,
+              recordVideo: false,
+              screenshotOnEveryStep: true,
+              timeout: 30000,
             });
+
+            await engine.initialize();
+            sendEvent('playwright_log', {
+              timestamp: new Date().toISOString(),
+              level: 'info',
+              category: 'browser',
+              message: `Execution browser ready (in-process) — running ${totalTests} test case(s)`,
+            });
+
+            for (let i = 0; i < testCasesForExecution.length && !cancelled; i++) {
+              const tc = testCasesForExecution[i];
+              sendEvent('agent_status', { agent: 'Orchestrator', status: 'working', activity: `Executing test ${i + 1} of ${totalTests}` });
+              sendEvent('playwright_log', {
+                timestamp: new Date().toISOString(),
+                level: 'info',
+                category: 'test',
+                message: `Starting test case ${i + 1} of ${totalTests}: ${tc.title}`,
+              });
+
+              await engine.executeTestCase(tc, {
+                onStepStart: (_testCaseId, stepIndex, action) => {
+                  sendEvent('step_progress', { stepIndex: stepIndex + 1, totalSteps: tc.steps.length || 1 });
+                  sendEvent('playwright_log', {
+                    timestamp: new Date().toISOString(),
+                    level: 'info',
+                    category: 'action',
+                    message: `Step ${stepIndex + 1}: ${action}`,
+                  });
+                },
+                onStepComplete: (_testCaseId, result) => {
+                  sendEvent('playwright_log', {
+                    timestamp: new Date().toISOString(),
+                    level: result.status === 'passed' ? 'info' : 'error',
+                    category: 'result',
+                    message: `Step ${result.stepIndex + 1} ${result.status.toUpperCase()}${result.error ? ' — ' + result.error : ''}`,
+                  });
+                },
+                onTestStart: (_testCaseId, title) => {
+                  sendEvent('agent_status', { agent: 'Executor', status: 'working', activity: `Running: ${title}` });
+                },
+                onTestComplete: (result) => {
+                  if (result.status === 'passed') passedTests++;
+                  else failedTests++;
+                  sendEvent('agent_status', { agent: 'Validator', status: 'working', activity: `Validating: ${tc.title}` });
+                  sendEvent('test_complete', {
+                    testCaseId: result.testCaseId,
+                    status: result.status,
+                    testIndex: i + 1,
+                    totalTests,
+                  });
+                  sendEvent('playwright_log', {
+                    timestamp: new Date().toISOString(),
+                    level: result.status === 'passed' ? 'info' : 'error',
+                    category: 'result',
+                    message: `TEST ${result.status.toUpperCase()}: "${tc.title}" (${result.duration}ms)`,
+                  });
+                },
+                onScreenshot: (_testCaseId, stepIndex, base64Data) => {
+                  sendEvent('screenshot', { screenshot: base64Data, step: `Test ${i + 1} — Step ${stepIndex + 1}`, testIndex: i + 1 });
+                  collectedScreenshots.push(base64Data);
+                },
+                onAgentActivity: (_agent, activity, status) => {
+                  sendEvent('agent_status', { agent: 'Executor', status, activity });
+                },
+              });
+            }
+
+            await engine.cleanup();
           }
-
-          await engine.cleanup();
         }
         
         if (!cancelled) {
@@ -5685,6 +5833,487 @@ test.describe('Automated Test Suite', () => {
   });
 
   // ============================================
+  // Synthetic Data — File Upload & Schema Inference
+  // ============================================
+  {
+    const multerMod = await import("multer");
+    const os        = await import("os");
+    const cryptoMod = await import("crypto");
+    const fsMod     = await import("fs");
+
+    // ── Challenge #2: large file support ──────────────────────────────────────
+    // Disk storage — multer writes to a temp file without loading into RAM.
+    // readline then reads only the first MAX_SAMPLE_LINES lines, keeping
+    // memory safe even for 30 GB+ production files.
+    // Upload limit raised to 500 MB (browser-uploadable range).
+    const diskStorage = multerMod.default.diskStorage({
+      destination: os.tmpdir(),
+      filename: (_req: any, _file: any, cb: any) => {
+        cb(null, `synthetic-${cryptoMod.randomBytes(8).toString("hex")}`);
+      },
+    });
+
+    const syntheticUpload = multerMod.default({
+      storage: diskStorage,
+      limits: { fileSize: 500 * 1024 * 1024 }, // 500 MB
+    });
+
+    // Multi-file uploader (up to 10 files for cross-file correlation)
+    const syntheticMultiUpload = multerMod.default({
+      storage: diskStorage,
+      limits: { fileSize: 500 * 1024 * 1024, files: 10 },
+    });
+
+    // Helper — clean up a temp file silently
+    function unlinkTemp(p?: string) {
+      if (p) fsMod.unlink(p, () => {});
+    }
+
+    // ── POST /api/synthetic-data/infer-schema ─────────────────────────────────
+    app.post(
+      "/api/synthetic-data/infer-schema",
+      (req: Request, res: Response, next: Function) => {
+        syntheticUpload.single("file")(req as any, res as any, (err: any) => {
+          if (err) {
+            console.error("[SyntheticInfer] Multer error:", err?.message);
+            res.status(400).json({ success: false, error: err?.message ?? "Upload failed" });
+            return;
+          }
+          next();
+        });
+      },
+      async (req: Request, res: Response) => {
+        const file = (req as any).file;
+        try {
+          if (!file) {
+            res.status(400).json({ success: false, error: "No file uploaded" });
+            return;
+          }
+          const { parseFileFromDisk, schemaToSQL } = await import("./synthetic-file-processor.js");
+          const { enrichSchemaNames }              = await import("./schema-name-enricher.js");
+
+          // Streaming parse — only reads first MAX_SAMPLE_LINES lines
+          const rawSchema = await parseFileFromDisk(file.path, file.originalname);
+          const schema    = await enrichSchemaNames(rawSchema);
+          const sqlSchema = schemaToSQL(schema);
+
+          console.log(`[SyntheticInfer] ${file.originalname} (${(file.size / 1024 / 1024).toFixed(1)} MB) → ${schema.columns.length} columns, ${schema.sampleRecordCount} sample records`);
+          res.json({ success: true, schema, sqlSchema });
+        } catch (error: any) {
+          console.error("Schema inference error:", error);
+          res.status(500).json({ success: false, error: error.message || "Failed to infer schema" });
+        } finally {
+          unlinkTemp(file?.path);
+        }
+      }
+    );
+
+    // ── Agent file registry (fileId → { filePath, filename, createdAt }) ──────
+    // Entries expire after 1 hour to free temp files.
+    const agentFileRegistry = new Map<string, { filePath: string; filename: string; createdAt: number }>();
+    setInterval(() => {
+      const cutoff = Date.now() - 3_600_000;
+      for (const [id, entry] of agentFileRegistry.entries()) {
+        if (entry.createdAt < cutoff) {
+          unlinkTemp(entry.filePath);
+          agentFileRegistry.delete(id);
+        }
+      }
+    }, 300_000);
+
+    // ── POST /api/synthetic-data/upload-for-agent ─────────────────────────────
+    // Phase 1 of the agent flow: saves the file to disk and returns a fileId.
+    // The browser then opens an SSE connection to /orchestrate-stream?fileId=...
+    app.post(
+      "/api/synthetic-data/upload-for-agent",
+      (req: Request, res: Response, next: Function) => {
+        syntheticUpload.single("file")(req as any, res as any, (err: any) => {
+          if (err) {
+            res.status(400).json({ success: false, error: err?.message ?? "Upload failed" });
+            return;
+          }
+          next();
+        });
+      },
+      async (req: Request, res: Response) => {
+        const file = (req as any).file;
+        if (!file) { res.status(400).json({ success: false, error: "No file uploaded" }); return; }
+        const { randomBytes } = await import("crypto");
+        const fileId = randomBytes(12).toString("hex");
+        agentFileRegistry.set(fileId, {
+          filePath:  file.path,
+          filename:  file.originalname,
+          createdAt: Date.now(),
+        });
+        console.log(`[AgentUpload] Registered ${file.originalname} → ${fileId}`);
+        res.json({
+          success: true,
+          fileId,
+          filename:  file.originalname,
+          sizeBytes: file.size,
+        });
+      }
+    );
+
+    // ── GET /api/synthetic-data/orchestrate-stream ────────────────────────────
+    // Phase 2: SSE stream. Runs the 5-agent pipeline and emits real-time events.
+    app.get("/api/synthetic-data/orchestrate-stream", async (req: Request, res: Response) => {
+      const fileId   = (req.query.fileId   as string) || "";
+      const filename = (req.query.filename as string) || "file";
+
+      const entry = agentFileRegistry.get(fileId);
+      if (!entry) {
+        res.status(404).json({ error: "Unknown fileId — upload again" });
+        return;
+      }
+
+      // SSE headers
+      res.setHeader("Content-Type",  "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection",    "keep-alive");
+      res.setHeader("X-Accel-Buffering", "no"); // disable nginx buffering if present
+      res.flushHeaders();
+
+      // Remove from registry so we don't leak it
+      agentFileRegistry.delete(fileId);
+
+      try {
+        const { runOrchestration } = await import("./agent-orchestrator.js");
+        await runOrchestration(entry.filePath, entry.filename, res);
+      } finally {
+        unlinkTemp(entry.filePath);
+        res.end();
+      }
+    });
+
+    // ── POST /api/synthetic-data/infer-multi-schema ───────────────────────────
+    // Challenge #9: upload 2–10 related files; returns per-file schemas PLUS
+    // a correlation map identifying shared anchor fields (account_id, SSN, phone).
+    app.post(
+      "/api/synthetic-data/infer-multi-schema",
+      (req: Request, res: Response, next: Function) => {
+        syntheticMultiUpload.array("files", 10)(req as any, res as any, (err: any) => {
+          if (err) {
+            console.error("[SyntheticMultiInfer] Multer error:", err?.message);
+            res.status(400).json({ success: false, error: err?.message ?? "Upload failed" });
+            return;
+          }
+          next();
+        });
+      },
+      async (req: Request, res: Response) => {
+        const files: any[] = (req as any).files ?? [];
+        try {
+          if (files.length < 1) {
+            res.status(400).json({ success: false, error: "At least one file required" });
+            return;
+          }
+
+          const { parseFileFromDisk, schemaToSQL, detectCorrelations } = await import("./synthetic-file-processor.js");
+          const { enrichSchemaNames } = await import("./schema-name-enricher.js");
+
+          // Parse all files in parallel
+          const parsed = await Promise.all(
+            files.map(async (f: any) => {
+              const raw    = await parseFileFromDisk(f.path, f.originalname);
+              const schema = await enrichSchemaNames(raw);
+              return { filename: f.originalname, schema };
+            })
+          );
+
+          const correlations = detectCorrelations(parsed);
+          const sqlSchemas   = Object.fromEntries(
+            parsed.map(p => [p.filename, schemaToSQL(p.schema, p.filename.replace(/\W+/g, "_"))])
+          );
+
+          console.log(`[SyntheticMultiInfer] ${files.length} files, ${correlations.length} correlations found`);
+          res.json({ success: true, files: parsed, correlations, sqlSchemas });
+        } catch (error: any) {
+          console.error("Multi-schema inference error:", error);
+          res.status(500).json({ success: false, error: error.message || "Failed to infer multi-schema" });
+        } finally {
+          files.forEach((f: any) => unlinkTemp(f?.path));
+        }
+      }
+    );
+  }
+
+  // ── POST /api/synthetic-data/generate-from-schema ────────────────────────────
+  app.post("/api/synthetic-data/generate-from-schema", async (req: Request, res: Response) => {
+    try {
+      const { schema, recordCount, includeManifest } = req.body;
+      if (!schema || !recordCount) {
+        res.status(400).json({ success: false, error: "schema and recordCount are required" });
+        return;
+      }
+      const count = Math.min(Math.max(parseInt(recordCount) || 100, 1), 2_000_000);
+      const { generateTestData } = await import("./synthetic-file-processor.js");
+      const result = generateTestData({ schema, recordCount: count, includeManifest: !!includeManifest });
+      res.json({ success: true, result });
+    } catch (error: any) {
+      console.error("Generate from schema error:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to generate data" });
+    }
+  });
+
+  // ── GET  /api/synthetic-data/history ─────────────────────────────────────────
+  app.get("/api/synthetic-data/history", async (_req: Request, res: Response) => {
+    try {
+      const { listHistory } = await import("./generation-history.js");
+      res.json({ success: true, entries: listHistory() });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ── POST /api/synthetic-data/history ─────────────────────────────────────────
+  app.post("/api/synthetic-data/history", async (req: Request, res: Response) => {
+    try {
+      const { uploadedFilename, schema, config, result } = req.body;
+      if (!uploadedFilename || !schema || !config || !result) {
+        res.status(400).json({ success: false, error: "uploadedFilename, schema, config and result are required" });
+        return;
+      }
+      const { saveEntry } = await import("./generation-history.js");
+      const entry = saveEntry({ uploadedFilename, schema, config, result });
+      res.json({ success: true, entry });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ── DELETE /api/synthetic-data/history/:id ────────────────────────────────────
+  app.delete("/api/synthetic-data/history/:id", async (req: Request, res: Response) => {
+    try {
+      const { deleteEntry } = await import("./generation-history.js");
+      const deleted = deleteEntry(req.params.id);
+      res.json({ success: true, deleted });
+    } catch (err: any) {
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ── GET /api/synthetic-data/history/:id/download ─────────────────────────────
+  app.get("/api/synthetic-data/history/:id/download", async (req: Request, res: Response) => {
+    try {
+      const { getEntry, getDataFilePath } = await import("./generation-history.js");
+      const entry = getEntry(req.params.id);
+      if (!entry) {
+        res.status(404).json({ success: false, error: "Entry not found" });
+        return;
+      }
+
+      const existingPath = getDataFilePath(req.params.id);
+      if (existingPath) {
+        // Temp file still valid — stream directly
+        const fs = await import("fs");
+        const data = fs.readFileSync(existingPath, "utf8");
+        res.setHeader("Content-Type", "text/plain; charset=utf-8");
+        res.setHeader(
+          "Content-Disposition",
+          `attachment; filename="${entry.uploadedFilename.replace(/\.[^.]+$/, "")}_synthetic.${entry.uploadedFilename.split(".").pop() || "txt"}"`
+        );
+        res.send(data);
+        return;
+      }
+
+      // File expired — regenerate using stored fullSchema
+      const { generateTestData } = await import("./synthetic-file-processor.js");
+      const regenerated = generateTestData({
+        schema: entry.schemaSnap.fullSchema,
+        recordCount: entry.config.recordCount,
+        includeManifest: entry.config.includeManifest,
+      });
+
+      res.setHeader("Content-Type", "text/plain; charset=utf-8");
+      res.setHeader(
+        "Content-Disposition",
+        `attachment; filename="${entry.uploadedFilename.replace(/\.[^.]+$/, "")}_synthetic.${entry.uploadedFilename.split(".").pop() || "txt"}"`
+      );
+      res.send(regenerated.data);
+    } catch (err: any) {
+      console.error("History download error:", err);
+      res.status(500).json({ success: false, error: err.message });
+    }
+  });
+
+  // ── POST /api/synthetic-data/generate-correlated ─────────────────────────────
+  // Challenge #9: generate multiple synthetic files that share the same account IDs /
+  // SSNs / phone numbers so relational integrity holds across files.
+  app.post("/api/synthetic-data/generate-correlated", async (req: Request, res: Response) => {
+    try {
+      const { files, recordCount, correlations, includeManifest } = req.body;
+      if (!files || !Array.isArray(files) || files.length < 1) {
+        res.status(400).json({ success: false, error: "files array is required" });
+        return;
+      }
+      const count = Math.min(Math.max(parseInt(recordCount) || 100, 1), 500_000);
+      const { generateCorrelatedData } = await import("./synthetic-file-processor.js");
+      const result = generateCorrelatedData({
+        files,
+        recordCount: count,
+        correlations: correlations ?? [],
+        includeManifest: includeManifest !== false,
+      });
+      res.json({ success: true, result });
+    } catch (error: any) {
+      console.error("Generate correlated error:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to generate correlated data" });
+    }
+  });
+
+  // ── POST /api/synthetic-data/generate-from-server-path ───────────────────────
+  // Challenge #2: for files already on the server FS (e.g. mounted NFS / FTP folder)
+  // — avoids HTTP upload entirely.
+  app.post("/api/synthetic-data/generate-from-server-path", async (req: Request, res: Response) => {
+    try {
+      const { filePath, recordCount, includeManifest } = req.body;
+      if (!filePath || typeof filePath !== "string") {
+        res.status(400).json({ success: false, error: "filePath is required" });
+        return;
+      }
+      const fsMod = await import("fs");
+      if (!fsMod.existsSync(filePath)) {
+        res.status(404).json({ success: false, error: `File not found: ${filePath}` });
+        return;
+      }
+      const { parseFileFromDisk, generateTestData, schemaToSQL } = await import("./synthetic-file-processor.js");
+      const { enrichSchemaNames } = await import("./schema-name-enricher.js");
+      const basename  = filePath.split(/[\\/]/).pop() ?? "unknown";
+      const rawSchema = await parseFileFromDisk(filePath, basename);
+      const schema    = await enrichSchemaNames(rawSchema);
+      const sqlSchema = schemaToSQL(schema);
+      const count     = Math.min(Math.max(parseInt(recordCount) || 100, 1), 2_000_000);
+      const result    = generateTestData({ schema, recordCount: count, includeManifest: !!includeManifest });
+      res.json({ success: true, schema, sqlSchema, result });
+    } catch (error: any) {
+      console.error("Generate from server path error:", error);
+      res.status(500).json({ success: false, error: error.message || "Failed to process server file" });
+    }
+  });
+
+  // ─── Custodian Profile Library ─────────────────────────────────────────────
+  // Challenge #3 / #5: save, load, and reuse named custodian schemas so
+  // teams don't re-upload files for every generation run.
+
+  // GET  /api/synthetic-data/custodian-profiles       → list all (no schema payload)
+  app.get("/api/synthetic-data/custodian-profiles", async (_req: Request, res: Response) => {
+    try {
+      const { listProfiles } = await import("./custodian-profiles.js");
+      res.json({ success: true, profiles: listProfiles() });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // GET  /api/synthetic-data/custodian-profiles/search?q=fidelity
+  app.get("/api/synthetic-data/custodian-profiles/search", async (req: Request, res: Response) => {
+    try {
+      const q = (req.query.q as string) || "";
+      const { searchProfiles } = await import("./custodian-profiles.js");
+      res.json({ success: true, profiles: searchProfiles(q) });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // GET  /api/synthetic-data/custodian-profiles/:id   → full profile with schema
+  app.get("/api/synthetic-data/custodian-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { getProfile } = await import("./custodian-profiles.js");
+      const profile = getProfile(req.params.id);
+      if (!profile) { res.status(404).json({ success: false, error: "Profile not found" }); return; }
+      res.json({ success: true, profile });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/custodian-profiles       → save new profile
+  app.post("/api/synthetic-data/custodian-profiles", async (req: Request, res: Response) => {
+    try {
+      const { custodianName, providerName, description, schema } = req.body;
+      if (!custodianName || !schema) {
+        res.status(400).json({ success: false, error: "custodianName and schema are required" });
+        return;
+      }
+      const { saveProfile } = await import("./custodian-profiles.js");
+      const profile = saveProfile({ custodianName, providerName, description, schema });
+      res.json({ success: true, profile });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // PATCH /api/synthetic-data/custodian-profiles/:id  → update name/description/schema
+  app.patch("/api/synthetic-data/custodian-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { updateProfile } = await import("./custodian-profiles.js");
+      const updated = updateProfile(req.params.id, req.body);
+      if (!updated) { res.status(404).json({ success: false, error: "Profile not found" }); return; }
+      res.json({ success: true, profile: updated });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // DELETE /api/synthetic-data/custodian-profiles/:id
+  app.delete("/api/synthetic-data/custodian-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { deleteProfile } = await import("./custodian-profiles.js");
+      const ok = deleteProfile(req.params.id);
+      if (!ok) { res.status(404).json({ success: false, error: "Profile not found" }); return; }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/try-regex
+  // Feature #5: client sends a regex pattern, server returns 8 sample values.
+  // Used by the schema editor "Try It" button to preview what a pattern generates.
+  app.post("/api/synthetic-data/try-regex", async (req: Request, res: Response) => {
+    try {
+      const { pattern, count = 8 } = req.body;
+      if (!pattern || typeof pattern !== "string") {
+        res.status(400).json({ success: false, error: "pattern is required" });
+        return;
+      }
+      const { sampleFromPattern } = await import("./synthetic-file-processor.js");
+      const n = Math.min(Math.max(parseInt(count) || 8, 1), 20);
+      const samples: string[] = [];
+      for (let i = 0; i < n; i++) {
+        try { samples.push(sampleFromPattern(pattern)); }
+        catch { samples.push("(invalid pattern)"); break; }
+      }
+      res.json({ success: true, samples });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/generate-from-profile/:id
+  // Load a saved custodian schema and immediately generate test data —
+  // no file re-upload needed.
+  app.post("/api/synthetic-data/generate-from-profile/:id", async (req: Request, res: Response) => {
+    try {
+      const { getProfile } = await import("./custodian-profiles.js");
+      const profile = getProfile(req.params.id);
+      if (!profile) { res.status(404).json({ success: false, error: "Profile not found" }); return; }
+
+      const { recordCount = 1000, includeManifest = true } = req.body;
+      const count = Math.min(Math.max(parseInt(recordCount) || 1000, 1), 2_000_000);
+      const { generateTestData, schemaToSQL } = await import("./synthetic-file-processor.js");
+
+      const result    = generateTestData({ schema: profile.schema, recordCount: count, includeManifest });
+      const sqlSchema = schemaToSQL(profile.schema);
+      res.json({ success: true, custodianName: profile.custodianName, result, sqlSchema });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ============================================
   // nRadiVerse Quality Engine API Endpoints
   // ============================================
 
@@ -5781,6 +6410,198 @@ test.describe('Automated Test Suite', () => {
     } catch (error: any) {
       console.error("[nRadiVerse] Accessibility scan error:", error);
       res.status(500).json({ success: false, error: error.message || "Accessibility scan failed" });
+    }
+  });
+
+  // Enhanced Accessibility Scan — SSE streaming with Screen Reader + Visual Tests
+  app.get("/api/nradiverse/accessibility-scan/stream", async (req: Request, res: Response) => {
+    const url = req.query.url as string;
+    const wcagLevel = (req.query.wcagLevel as string) || "AA";
+    const phases = ((req.query.phases as string) || "axe,screenreader,visual").split(",");
+
+    if (!url) {
+      res.status(400).json({ success: false, error: "URL is required" });
+      return;
+    }
+
+    res.writeHead(200, {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "Connection": "keep-alive",
+      "X-Accel-Buffering": "no",
+    });
+
+    const send = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+    const sendComplete = (result: any) => {
+      res.write(`data: ${JSON.stringify({ type: "final_result", data: result })}\n\n`);
+      res.write(`event: complete\ndata: {}\n\n`);
+      res.end();
+    };
+
+    try {
+      // Auto-add https:// if missing
+      let scanUrl = url.trim();
+      if (!scanUrl.startsWith("http://") && !scanUrl.startsWith("https://")) {
+        scanUrl = `https://${scanUrl}`;
+      }
+
+      const { chromium } = await import("playwright");
+      const browser = await chromium.launch({ headless: true });
+      const context = await browser.newContext({ viewport: { width: 1920, height: 1080 } });
+      const page = await context.newPage();
+
+      send({ agent: "axe-scanner", status: "working", message: `Navigating to ${scanUrl}...`, progress: 5 });
+      await page.goto(scanUrl, { waitUntil: "networkidle", timeout: 30000 }).catch(() =>
+        page.goto(scanUrl, { waitUntil: "domcontentloaded", timeout: 30000 })
+      );
+
+      let axeResult: any = null;
+      let screenReaderResult: any = null;
+      let visualTestResult: any = null;
+
+      // Phase 1: Axe-core scan
+      if (phases.includes("axe")) {
+        send({ agent: "axe-scanner", status: "working", message: "Injecting axe-core engine...", progress: 10 });
+        const { runAccessibilityScan } = await import("./nradiverse-service");
+        axeResult = await runAccessibilityScan(url, wcagLevel);
+        send({
+          agent: "axe-scanner", status: "completed",
+          message: `Axe scan complete: ${axeResult.violationsCount} violations, score ${axeResult.overallScore}/100`,
+          progress: 100, data: axeResult,
+        });
+      }
+
+      // Phase 2: Screen Reader Simulation
+      if (phases.includes("screenreader")) {
+        try {
+          const { runScreenReaderSimulation } = await import("./accessibility-screen-reader");
+          screenReaderResult = await runScreenReaderSimulation(page, send);
+        } catch (err: any) {
+          send({ agent: "screen-reader", status: "error", message: `Screen reader simulation failed: ${err.message}`, progress: 0 });
+        }
+      }
+
+      // Phase 3: Visual Accessibility Tests
+      if (phases.includes("visual")) {
+        try {
+          const { runVisualAccessibilityTests } = await import("./accessibility-visual-tests");
+          visualTestResult = await runVisualAccessibilityTests(page, url, browser, send);
+        } catch (err: any) {
+          send({ agent: "visual-tester", status: "error", message: `Visual tests failed: ${err.message}`, progress: 0 });
+        }
+      }
+
+      // Phase 4: AI Analysis (reuse existing)
+      if (axeResult) {
+        send({ agent: "ai-analyzer", status: "working", message: "Running Claude Vision AI analysis...", progress: 50 });
+        // AI analysis is already included in axeResult from runAccessibilityScan
+        send({ agent: "ai-analyzer", status: "completed", message: "AI analysis complete", progress: 100 });
+      }
+
+      await context.close();
+      await browser.close();
+
+      // Combined score
+      const axeScore = axeResult?.overallScore || 0;
+      const srScore = screenReaderResult?.overallScore || 0;
+      const vtScore = visualTestResult?.overallScore || 0;
+      const activePhasesCount = [axeResult, screenReaderResult, visualTestResult].filter(Boolean).length;
+      const combinedScore = activePhasesCount > 0
+        ? Math.round((axeScore * 0.4 + srScore * 0.3 + vtScore * 0.3) / (activePhasesCount > 0 ? 1 : 1))
+        : 0;
+
+      // Auto-save to database
+      let savedId: string | null = null;
+      try {
+        const { accessibilityScanResults } = await import("@shared/schema");
+        const saveResult = await db.insert(accessibilityScanResults).values({
+          url: scanUrl,
+          status: "completed",
+          overallScore: combinedScore,
+          violationsCount: axeResult?.violationsCount || 0,
+          passesCount: axeResult?.passesCount || 0,
+          incompleteCount: axeResult?.incompleteCount || 0,
+          inapplicableCount: axeResult?.inapplicableCount || 0,
+          criticalCount: axeResult?.violations?.filter((v: any) => v.impact === "critical").length || 0,
+          seriousCount: axeResult?.violations?.filter((v: any) => v.impact === "serious").length || 0,
+          moderateCount: axeResult?.violations?.filter((v: any) => v.impact === "moderate").length || 0,
+          minorCount: axeResult?.violations?.filter((v: any) => v.impact === "minor").length || 0,
+          violations: axeResult?.violations || [],
+          passes: axeResult?.passes || [],
+          incomplete: axeResult?.incomplete || [],
+          wcagCriteria: axeResult?.wcagCriteria || [],
+          metadata: axeResult?.metadata || {},
+          screenReaderResult: screenReaderResult || null,
+          visualTestResult: visualTestResult || null,
+          aiAnalysis: axeResult?.aiAnalysis || null,
+        }).returning();
+        savedId = saveResult[0]?.id || null;
+        console.log("[Accessibility] Scan saved to history:", savedId);
+      } catch (saveErr: any) {
+        console.error("[Accessibility] Failed to save scan history:", saveErr.message);
+      }
+
+      sendComplete({
+        axeResult,
+        screenReaderResult,
+        visualTestResult,
+        combinedScore,
+        savedId,
+      });
+    } catch (error: any) {
+      console.error("[Accessibility] Enhanced scan error:", error);
+      send({ agent: "axe-scanner", status: "error", message: error.message, progress: 0 });
+      res.write(`event: complete\ndata: {}\n\n`);
+      res.end();
+    }
+  });
+
+  // ── Accessibility Scan History CRUD ─────────────────────────────────
+
+  app.get("/api/nradiverse/accessibility-scan/history", async (req: Request, res: Response) => {
+    try {
+      const { accessibilityScanResults } = await import("@shared/schema");
+      const scans = await db.select({
+        id: accessibilityScanResults.id,
+        url: accessibilityScanResults.url,
+        status: accessibilityScanResults.status,
+        overallScore: accessibilityScanResults.overallScore,
+        violationsCount: accessibilityScanResults.violationsCount,
+        criticalCount: accessibilityScanResults.criticalCount,
+        seriousCount: accessibilityScanResults.seriousCount,
+        moderateCount: accessibilityScanResults.moderateCount,
+        minorCount: accessibilityScanResults.minorCount,
+        createdAt: accessibilityScanResults.createdAt,
+      }).from(accessibilityScanResults)
+        .orderBy(desc(accessibilityScanResults.createdAt))
+        .limit(50);
+      res.json({ success: true, scans });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/nradiverse/accessibility-scan/history/:id", async (req: Request, res: Response) => {
+    try {
+      const { accessibilityScanResults } = await import("@shared/schema");
+      const [scan] = await db.select().from(accessibilityScanResults)
+        .where(eq(accessibilityScanResults.id, req.params.id));
+      if (!scan) return res.status(404).json({ success: false, error: "Scan not found" });
+      res.json({ success: true, scan });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.delete("/api/nradiverse/accessibility-scan/history/:id", async (req: Request, res: Response) => {
+    try {
+      const { accessibilityScanResults } = await import("@shared/schema");
+      await db.delete(accessibilityScanResults).where(eq(accessibilityScanResults.id, req.params.id));
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
     }
   });
 
@@ -6222,8 +7043,85 @@ test.describe('Automated Test Suite', () => {
     }
   });
 
+  // ==================== Java → Playwright Migration Routes ====================
+
+  const javaMigrationUpload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
+  const javaMigrationSessions = new Map<string, { zipBuffer?: Buffer }>();
+  let lastJavaMigrationResult: any = null;
+
+  app.post("/api/java-migration/upload", javaMigrationUpload.single('framework'), async (req: Request, res: Response) => {
+    try {
+      const file = (req as any).file;
+      if (!file) return res.status(400).json({ success: false, error: "No file uploaded" });
+      const sessionId = 'jm_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      javaMigrationSessions.set(sessionId, { zipBuffer: file.buffer });
+      console.log("[JavaMigration] Upload received:", file.originalname, file.size, "bytes, session:", sessionId);
+      res.json({ success: true, sessionId });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  app.get("/api/java-migration/stream", async (req: Request, res: Response) => {
+    const isDemo = req.query.demo === 'true';
+    const sessionId = req.query.sessionId as string;
+
+    res.writeHead(200, {
+      'Content-Type': 'text/event-stream',
+      'Cache-Control': 'no-cache',
+      'Connection': 'keep-alive',
+      'X-Accel-Buffering': 'no',
+    });
+
+    const send = (data: any) => {
+      res.write(`data: ${JSON.stringify(data)}\n\n`);
+    };
+    const sendComplete = () => {
+      res.write(`event: complete\ndata: {}\n\n`);
+      res.end();
+    };
+
+    try {
+      const { processJavaMigration } = await import('./java-migration-service');
+      const session = javaMigrationSessions.get(sessionId || '');
+      // For demo mode: pass null zipBuffer; for upload: pass actual buffer
+      const zipBuffer = isDemo ? null : (session?.zipBuffer || null);
+      if (!isDemo && !session) {
+        send({ agent: 'scanner', status: 'error', message: 'Session not found', progress: 0 });
+        sendComplete();
+        return;
+      }
+      const result = await processJavaMigration(zipBuffer, send);
+      lastJavaMigrationResult = result;
+      console.log("[JavaMigration] Pipeline complete. convertedFiles:", result?.convertedFiles?.length || 0);
+      sendComplete();
+      if (sessionId) javaMigrationSessions.delete(sessionId);
+    } catch (error: any) {
+      console.error("[JavaMigration] Stream error:", error);
+      send({ agent: 'packager', status: 'error', message: error.message, progress: 0 });
+      sendComplete();
+    }
+  });
+
+  app.get("/api/java-migration/download", async (req: Request, res: Response) => {
+    try {
+      const { buildMigrationZip } = await import('./java-migration-service');
+      if (!lastJavaMigrationResult || !lastJavaMigrationResult.convertedFiles) {
+        return res.status(400).json({ success: false, error: "No migration result available. Run migration first." });
+      }
+      const zipBuffer = await buildMigrationZip(lastJavaMigrationResult.convertedFiles);
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="playwright-framework.zip"');
+      res.setHeader('Content-Length', zipBuffer.length);
+      res.send(zipBuffer);
+    } catch (error: any) {
+      console.error("[JavaMigration] Download error:", error);
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // ==================== API Testing Module Routes ====================
-  
+
   // Helper function to analyze JSON response structure for test generation
   function analyzeJsonSchema(obj: any, path: string = "response", depth: number = 0): string {
     if (depth > 5) return ""; // Limit recursion depth
@@ -6607,7 +7505,7 @@ Return ONLY a valid JSON array of test case objects with this exact structure:
           "anthropic-version": "2023-06-01"
         },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
+          model: "claude-sonnet-4-5",
           max_tokens: 8000,
           system: systemPrompt,
           messages: [{ role: "user", content: userPrompt }]
@@ -7784,6 +8682,7 @@ Each element includes a fallback locator strategy (label, placeholder, text).
       const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
       res.setHeader('Content-Type', 'application/zip');
       res.setHeader('Content-Disposition', `attachment; filename="bdd-assets-${storyName}.zip"`);
+      res.setHeader('Content-Length', buffer.length);
       res.send(buffer);
 
     } catch (error: any) {
@@ -9096,11 +9995,356 @@ Each element includes a fallback locator strategy (label, placeholder, text).
 
   // Register Chrome Extension recorder routes + WebSocket + Playwright executor
   registerRecorderRoutes(app);
-  setupRecorderWebSocket(httpServer);
+  const recorderWss = setupRecorderWebSocket(httpServer);
   registerPlaywrightRoutes(app);
   registerTestManagementRoutes(app);
   registerTestLibraryRoutes(app);
   registerCoverageRoutes(app);
+
+  // Remote Playwright execution agent WebSocket
+  const agentWss = setupAgentWebSocket(httpServer);
+
+  // Local workspace agent WebSocket (file sync + artifact roundtrip)
+  const workspaceAgentWss = setupWorkspaceAgentWebSocket(httpServer);
+
+  // Shared upgrade router — prevents multiple WSS instances from fighting over the upgrade event
+  httpServer.on('upgrade', (req, socket, head) => {
+    const pathname = req.url?.split('?')[0];
+    if (pathname === '/ws/recorder') {
+      recorderWss.handleUpgrade(req, socket as any, head, (ws) => {
+        recorderWss.emit('connection', ws, req);
+      });
+    } else if (pathname === '/ws/execution-agent') {
+      agentWss.handleUpgrade(req, socket as any, head, (ws) => {
+        agentWss.emit('connection', ws, req);
+      });
+    } else if (pathname === '/ws/workspace-agent') {
+      workspaceAgentWss.handleUpgrade(req, socket as any, head, (ws) => {
+        workspaceAgentWss.emit('connection', ws, req);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
+
+  // Bootstrap default tenant on startup (dev/single-tenant)
+  ensureDefaultTenant().catch((err) => console.warn('[Routes] ensureDefaultTenant:', err.message));
+
+  // Agent status endpoint
+  app.get('/api/execution-agent/status', (_req, res) => {
+    res.json(getAgentStatus());
+  });
+
+  // Workspace agent status
+  app.get('/api/workspace-agent/status', (_req, res) => {
+    res.json(getWorkspaceAgentStatus());
+  });
+
+  // ── Device Auth Endpoints (for workspace-agent CLI login flow) ────────────────
+
+  /** POST /api/auth/device/code — issue a device code for the workspace agent */
+  app.post('/api/auth/device/code', async (req, res) => {
+    try {
+      const ctx = await getAuthContext(req);
+      const { deviceCode, userCode } = generateDeviceCode(ctx.tenantId, ctx.userId);
+      const serverUrl = `${req.protocol}://${req.get('host')}`;
+      res.json({
+        deviceCode,
+        userCode,
+        verificationUrl: `${serverUrl}/settings?verify=${userCode}`,
+        expiresInSeconds: 600,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** GET /api/auth/device/poll?deviceCode=... — workspace agent polls for approval */
+  app.get('/api/auth/device/poll', (req, res) => {
+    const deviceCode = req.query.deviceCode as string;
+    if (!deviceCode) return res.status(400).json({ error: 'deviceCode required' });
+    const result = pollDeviceCode(deviceCode);
+    res.json(result);
+  });
+
+  /** POST /api/auth/device/approve — browser UI approves the user code */
+  app.post('/api/auth/device/approve', async (req, res) => {
+    try {
+      const ctx = await getAuthContext(req);
+      const { userCode } = req.body;
+      if (!userCode) return res.status(400).json({ error: 'userCode required' });
+      const token = await approveDeviceCode(userCode, ctx.tenantId, ctx.userId);
+      if (!token) return res.status(404).json({ error: 'Code not found or expired' });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── Auth Endpoints ────────────────────────────────────────────────────────────
+
+  /** POST /api/auth/login */
+  app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'username and password required' });
+    try {
+      const user = await storage.getUserByUsername(username.trim());
+      if (!user) return res.status(401).json({ error: 'Invalid username or password' });
+
+      const { verifyPassword } = await import('./auth-middleware');
+      if (!verifyPassword(password, user.password)) {
+        return res.status(401).json({ error: 'Invalid username or password' });
+      }
+
+      (req as any).session.userId = user.id;
+      (req as any).session.tenantId = user.tenantId || 'default-tenant';
+      (req as any).session.username = user.username;
+
+      res.json({
+        success: true,
+        userId: user.id,
+        tenantId: user.tenantId,
+        username: user.username,
+        mustChangePassword: user.mustChangePassword ?? false,
+        allowedModules: user.allowedModules ?? null,
+      });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** POST /api/auth/change-password — forced password change on first login */
+  app.post('/api/auth/change-password', async (req, res) => {
+    const { currentPassword, newPassword } = req.body;
+    if (!newPassword || newPassword.length < 8) {
+      return res.status(400).json({ error: 'New password must be at least 8 characters' });
+    }
+    try {
+      const ctx = await getAuthContext(req);
+      const user = await storage.getUser(ctx.userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+
+      // Verify current password (skip check only if mustChangePassword is true and no currentPassword provided for first-time flow)
+      if (currentPassword) {
+        const { verifyPassword } = await import('./auth-middleware');
+        if (!verifyPassword(currentPassword, user.password)) {
+          return res.status(401).json({ error: 'Current password is incorrect' });
+        }
+      }
+
+      if (newPassword === currentPassword) {
+        return res.status(400).json({ error: 'New password must be different from the current password' });
+      }
+
+      const { hashPassword } = await import('./auth-middleware');
+      await storage.updateUserPassword(ctx.userId, hashPassword(newPassword));
+
+      // Clear the mustChangePassword flag
+      await storage.updateUserMustChangePassword(ctx.userId, false);
+
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** POST /api/auth/logout */
+  app.post('/api/auth/logout', (req, res) => {
+    (req as any).session.destroy(() => {});
+    res.json({ success: true });
+  });
+
+  /** GET /api/auth/me — returns current session user */
+  app.get('/api/auth/me', async (req, res) => {
+    const session = (req as any).session;
+    if (session?.userId) {
+      try {
+        const user = await storage.getUser(session.userId);
+        res.json({
+          loggedIn: true,
+          userId: session.userId,
+          tenantId: session.tenantId,
+          username: session.username,
+          allowedModules: user?.allowedModules ?? null,
+        });
+      } catch {
+        res.json({ loggedIn: true, userId: session.userId, tenantId: session.tenantId, username: session.username, allowedModules: null });
+      }
+    } else {
+      res.json({ loggedIn: false });
+    }
+  });
+
+  // ── User Management (Admin-only) ──────────────────────────────────────────────
+
+  /** GET /api/users — list all users in current tenant */
+  app.get('/api/users', async (req, res) => {
+    try {
+      const ctx = await getAuthContext(req);
+      const allUsers = await storage.getUsersByTenantId(ctx.tenantId);
+      // Never return password hashes
+      res.json(allUsers.map(u => ({ id: u.id, username: u.username, tenantId: u.tenantId, allowedModules: u.allowedModules ?? null })));
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** POST /api/users — admin creates a new user in their tenant */
+  app.post('/api/users', async (req, res) => {
+    const { username, password, allowedModules } = req.body;
+    if (!username || !password) return res.status(400).json({ error: 'username and password required' });
+    if (password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    try {
+      const ctx = await getAuthContext(req);
+      const { hashPassword } = await import('./auth-middleware');
+
+      // Check duplicate
+      const existing = await storage.getUserByUsername(username.trim());
+      if (existing) return res.status(409).json({ error: 'Username already exists' });
+
+      const newUser = await storage.createUser({
+        username: username.trim(),
+        password: hashPassword(password),
+        tenantId: ctx.tenantId,
+        mustChangePassword: true,
+        allowedModules: Array.isArray(allowedModules) ? allowedModules : null,
+      });
+
+      // Send welcome email (non-blocking — never fails the request)
+      const { sendWelcomeEmail } = await import('./mailer');
+      sendWelcomeEmail({
+        to: username.trim(),
+        username: username.trim(),
+        temporaryPassword: password,          // plain-text password (before hashing)
+        allowedModules: newUser.allowedModules,
+      });
+
+      res.status(201).json({ id: newUser.id, username: newUser.username, tenantId: newUser.tenantId, allowedModules: newUser.allowedModules });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** PUT /api/users/:id/modules — admin updates a user's module access */
+  app.put('/api/users/:id/modules', async (req, res) => {
+    const { modules } = req.body;
+    try {
+      const ctx = await getAuthContext(req);
+      const target = await storage.getUser(req.params.id);
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      if (target.tenantId !== ctx.tenantId) return res.status(403).json({ error: 'Forbidden' });
+      const resolved = Array.isArray(modules) ? modules : null;
+      await storage.updateUserModules(req.params.id, resolved);
+      res.json({ success: true, allowedModules: resolved });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** PUT /api/users/:id/password — admin resets a user's password */
+  app.put('/api/users/:id/password', async (req, res) => {
+    const { password } = req.body;
+    if (!password || password.length < 8) return res.status(400).json({ error: 'Password must be at least 8 characters' });
+    try {
+      const ctx = await getAuthContext(req);
+      const { hashPassword } = await import('./auth-middleware');
+
+      const target = await storage.getUser(req.params.id);
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      if (target.tenantId !== ctx.tenantId) return res.status(403).json({ error: 'Forbidden' });
+
+      await storage.updateUserPassword(req.params.id, hashPassword(password));
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  /** DELETE /api/users/:id — admin removes a user */
+  app.delete('/api/users/:id', async (req, res) => {
+    try {
+      const ctx = await getAuthContext(req);
+
+      const target = await storage.getUser(req.params.id);
+      if (!target) return res.status(404).json({ error: 'User not found' });
+      if (target.tenantId !== ctx.tenantId) return res.status(403).json({ error: 'Forbidden' });
+      if (target.id === ctx.userId) return res.status(400).json({ error: 'Cannot delete yourself' });
+
+      await storage.deleteUser(req.params.id);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── Desktop Downloads ─────────────────────────────────────────────────────────
+  const REPO_ROOT = process.cwd();
+
+  /** GET /api/downloads/chrome-extension — serve chrome-extension/ as a .zip */
+  app.get('/api/downloads/chrome-extension', (_req, res) => {
+    const extDir = path.join(REPO_ROOT, 'chrome-extension');
+    if (!fs.existsSync(extDir)) {
+      return res.status(404).json({ error: 'chrome-extension directory not found' });
+    }
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-chrome-extension.zip"');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
+    archive.pipe(res);
+    archive.directory(extDir, 'nat20-chrome-extension');
+    archive.finalize();
+  });
+
+  /** GET /api/downloads/remote-agent — serve remote-agent/ (excluding node_modules) as a .zip */
+  app.get('/api/downloads/remote-agent', (_req, res) => {
+    const agentDir = path.join(REPO_ROOT, 'remote-agent');
+    if (!fs.existsSync(agentDir)) {
+      return res.status(404).json({ error: 'remote-agent directory not found' });
+    }
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
+    archive.pipe(res);
+    // Add all files except node_modules and dist
+    const entries = fs.readdirSync(agentDir);
+    for (const entry of entries) {
+      if (entry === 'node_modules' || entry === 'dist') continue;
+      const fullPath = path.join(agentDir, entry);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        archive.directory(fullPath, `nat20-remote-agent/${entry}`);
+      } else {
+        archive.file(fullPath, { name: `nat20-remote-agent/${entry}` });
+      }
+    }
+    archive.finalize();
+  });
+
+  /** GET /api/downloads/workspace-agent — serve workspace-agent/ (excluding node_modules) as a .zip */
+  app.get('/api/downloads/workspace-agent', (_req, res) => {
+    const agentDir = path.join(REPO_ROOT, 'workspace-agent');
+    if (!fs.existsSync(agentDir)) {
+      return res.status(404).json({ error: 'workspace-agent directory not found' });
+    }
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-workspace-agent.zip"');
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
+    archive.pipe(res);
+    const entries = fs.readdirSync(agentDir);
+    for (const entry of entries) {
+      if (entry === 'node_modules' || entry === 'dist') continue;
+      const fullPath = path.join(agentDir, entry);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        archive.directory(fullPath, `nat20-workspace-agent/${entry}`);
+      } else {
+        archive.file(fullPath, { name: `nat20-workspace-agent/${entry}` });
+      }
+    }
+    archive.finalize();
+  });
 
   return httpServer;
 }

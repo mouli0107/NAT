@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -40,42 +40,81 @@ import NRadiVersePixelComparisonPage from "@/pages/nradiverse-pixel-comparison";
 import NRadiVerseSSRSPowerBIPage from "@/pages/nradiverse-ssrs-powerbi";
 import NRadiVerseAPITestingPage from "@/pages/nradiverse-api-testing";
 import NRadiVerseMigrationPage from "@/pages/nradiverse-migration";
+import JavaMigrationPage from "@/pages/java-migration";
 import NRadiVerseICUStreamingPage from "@/pages/nradiverse-icu-streaming";
 import ArchitectureDiagramPage from "@/pages/architecture-diagram";
 import RecorderPage from "@/pages/recorder";
 import TestLibraryPage from "@/pages/test-library";
 import TestManagementPage from "@/pages/test-management";
 import CoveragePage from "@/pages/coverage";
+import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
   const [, setLocation] = useLocation();
-  const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
+  // Render immediately if localStorage says authenticated — no blank flash
+  const [allowed, setAllowed] = useState(
+    localStorage.getItem('isAuthenticated') === 'true'
+  );
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      setLocation("/landing");
-    }
-  }, [isAuthenticated, setLocation]);
+    // Verify with server in background
+    fetch('/api/auth/me')
+      .then(r => r.json())
+      .then((data) => {
+        if (data.loggedIn) {
+          localStorage.setItem('isAuthenticated', 'true');
+          localStorage.setItem('currentUser', JSON.stringify({
+            id: data.userId,
+            username: data.username,
+            tenantId: data.tenantId,
+            allowedModules: data.allowedModules ?? null,
+          }));
+          setAllowed(true);
+        } else {
+          // Server says no session — kick to login
+          localStorage.removeItem('isAuthenticated');
+          localStorage.removeItem('currentUser');
+          setAllowed(false);
+          setLocation('/login');
+        }
+      })
+      .catch(() => {
+        // Network error — keep current state (dev resilience)
+      });
+  }, []); // run once on mount
 
-  if (!isAuthenticated) {
-    return null;
-  }
-
+  if (!allowed) return null;
   return <Component />;
 }
 
 function RootRedirect() {
   const [, setLocation] = useLocation();
-  
+
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
-    if (isAuthenticated) {
-      setLocation("/dashboard");
+    const local = localStorage.getItem('isAuthenticated') === 'true';
+    if (local) {
+      // Looks authenticated — go to dashboard, background-verify session
+      setLocation('/dashboard');
     } else {
-      setLocation("/landing");
+      // No local auth — verify with server first, then decide
+      fetch('/api/auth/me')
+        .then(r => r.json())
+        .then((data) => {
+          if (data.loggedIn) {
+            localStorage.setItem('isAuthenticated', 'true');
+            localStorage.setItem('currentUser', JSON.stringify({
+              id: data.userId, username: data.username, tenantId: data.tenantId,
+              allowedModules: data.allowedModules ?? null,
+            }));
+            setLocation('/dashboard');
+          } else {
+            setLocation('/login');
+          }
+        })
+        .catch(() => setLocation('/login'));
     }
   }, [setLocation]);
-  
+
   return null;
 }
 
@@ -185,6 +224,9 @@ function Router() {
       <Route path="/nradiverse/migration">
         {() => <ProtectedRoute component={NRadiVerseMigrationPage} />}
       </Route>
+      <Route path="/nradiverse/java-migration">
+        {() => <ProtectedRoute component={JavaMigrationPage} />}
+      </Route>
       <Route path="/nradiverse/icu-streaming">
         {() => <ProtectedRoute component={NRadiVerseICUStreamingPage} />}
       </Route>
@@ -203,6 +245,7 @@ function Router() {
       <Route path="/coverage">
         {() => <ProtectedRoute component={CoveragePage} />}
       </Route>
+      <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />
     </Switch>
   );

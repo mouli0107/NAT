@@ -1,0 +1,17 @@
+{
+  "name": "OneSpan",
+  "testCount": 20,
+  "modules": [
+    "OneSpan_sig",
+    "OneSpaneds",
+    "onespanDS",
+    "onspangs",
+    "onespands",
+    "Onespan",
+    "onespans",
+    "test",
+    "ds",
+    "testds"
+  ],
+  "lastRecordedAt": "2026-04-23T05:00:24.263Z"
+}

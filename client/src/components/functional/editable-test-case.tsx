@@ -13,6 +13,19 @@ import {
   Edit2, Save, X, ArrowUp, ArrowDown, RotateCcw 
 } from "lucide-react";
 
+const cleanTitle = (title: string): string => {
+  if (!title) return title;
+  const altDataMatch = title.match(/^\[Alt Data\]\s+"([^"]+)"\s+satisfies:\s*(.+)$/i);
+  if (altDataMatch) return `${altDataMatch[2].trim()} — using ${altDataMatch[1].trim()}`;
+  const downstreamMatch = title.match(/^\[Downstream\]\s+After\s+"([^"]+)"\s+—\s+verify:\s*(.+)$/i);
+  if (downstreamMatch) return `${downstreamMatch[1].trim()} — verify downstream: ${downstreamMatch[2].trim()}`;
+  const violatedMatch = title.match(/^\[Criterion Violated\]\s+System rejects when:\s+"([^"]+)"\s+is not met/i);
+  if (violatedMatch) return `System rejects when not met: ${violatedMatch[1].trim()}`;
+  let cleaned = title.replace(/^\[[^\]]+\]\s*/g, '');
+  cleaned = cleaned.replace(/^"([^"]+)"$/, '$1');
+  return cleaned.trim();
+};
+
 export interface EditableTestStep {
   step_number: number;
   action: string;
@@ -214,7 +227,7 @@ export function EditableTestCaseCard({
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <span className="font-mono text-sm text-muted-foreground">{testCase.testCaseId}</span>
-                <span className="font-medium truncate">{testCase.title}</span>
+                <span className="font-medium break-words whitespace-normal">{cleanTitle(testCase.title)}</span>
               </div>
               <div className="flex items-center gap-2">
                 <Badge className={`${getPriorityColor(testCase.priority)} text-xs`}>

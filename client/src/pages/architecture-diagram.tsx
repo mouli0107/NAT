@@ -1,4 +1,5 @@
 import { Card } from "@/components/ui/card";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { Badge } from "@/components/ui/badge";
 import { 
   Brain, 
@@ -153,8 +154,10 @@ function ConnectionArrow({ direction = "down", className = "" }: { direction?: "
 
 export default function ArchitectureDiagram() {
   return (
-    <div className="h-full overflow-y-auto bg-gradient-to-b from-background via-background to-slate-950 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <div className="h-full flex flex-col bg-background">
+      <DashboardHeader />
+      <div className="flex-1 overflow-y-auto bg-gradient-to-b from-background via-background to-slate-950 p-6">
+      <div className="w-full space-y-6">
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-3 mb-4">
             <div className="h-1 w-12 bg-gradient-to-r from-transparent to-cyan-500 rounded" />
@@ -486,6 +489,7 @@ export default function ArchitectureDiagram() {
             </div>
           </div>
         </Card>
+      </div>
       </div>
     </div>
   );

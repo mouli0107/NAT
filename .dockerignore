@@ -1,0 +1,13 @@
+node_modules
+dist
+.git
+.claude
+*.log
+*.tar.gz
+screenshots
+test-results
+recorder-data
+projects
+.env
+.env.local
+remote-agent/node_modules

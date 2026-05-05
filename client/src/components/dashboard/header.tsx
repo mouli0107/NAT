@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ThemeSelector } from "@/components/theme-selector";
 import { ProjectSelector } from "@/components/project-selector";
 import { useProject } from "@/contexts/ProjectContext";
 import { 
@@ -88,11 +87,20 @@ export function DashboardHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [notifications, setNotifications] = useState(mockNotifications);
 
+  // Resolve display name from session (server) then localStorage fallback
+  const currentUser = (() => {
+    try { return JSON.parse(localStorage.getItem('currentUser') || '{}'); } catch { return {}; }
+  })();
+  const displayName = currentUser.username || 'User';
+
   const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleLogout = () => {
-    localStorage.removeItem("isAuthenticated");
-    setLocation("/landing");
+    fetch('/api/auth/logout', { method: 'POST' }).finally(() => {
+      localStorage.removeItem('isAuthenticated');
+      localStorage.removeItem('currentUser');
+      setLocation('/login');
+    });
   };
 
   const markAllRead = () => {
@@ -237,7 +245,7 @@ export function DashboardHeader() {
             <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
               <User className="w-4 h-4 text-primary" />
             </div>
-            <span data-testid="text-username">Demo User</span>
+            <span data-testid="text-username">{displayName}</span>
           </div>
           
           <div className="w-px h-6 bg-border" />
@@ -252,9 +260,7 @@ export function DashboardHeader() {
             {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
           </Button>
 
-          <ThemeSelector />
-          
-          <Button 
+          <Button
             variant="ghost" 
             size="sm" 
             onClick={handleLogout}

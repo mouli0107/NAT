@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
+import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
 
 // ─── Object Repository Builder ────────────────────────────────────────────────
 
@@ -68,8 +70,11 @@ function _derivePageName(url: string): string {
     if (!raw) {
       raw = parsed.hostname.split('.')[0] || 'Home';
     }
-    // PascalCase
-    const pascal = raw.charAt(0).toUpperCase() + raw.slice(1);
+    // PascalCase — split on hyphens/underscores/spaces so 'customer-addition' → 'CustomerAddition'
+    const pascal = raw.split(/[-_\s]+/)
+      .filter(Boolean)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join('');
     // Avoid double "Page" suffix (case-insensitive)
     const pageName = pascal.toLowerCase().endsWith('page') ? pascal : pascal + 'Page';
     // Avoid conflict with Playwright's Page type
@@ -274,6 +279,18 @@ function buildObjectRepository(events: RecordingEvent[]): Map<string, ObjRepoEnt
     if (!locData?.primary) continue;
 
     const eff = locData.effectiveEl;
+
+    // Skip non-interactive container elements — these are never valid test targets.
+    // A click on a <form>, <main>, <div> etc. is always a recorder noise event;
+    // it produces garbage locators like loginLogin, customerManagementCustomerIn.
+    const NON_INTERACTIVE_TAGS = new Set([
+      'form', 'div', 'span', 'main', 'section', 'header', 'footer', 'nav',
+      'article', 'aside', 'ul', 'ol', 'li', 'table', 'tbody', 'thead', 'tfoot',
+      'tr', 'td', 'th', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'accordion', 'fieldset', 'figure', 'details', 'summary', 'template',
+    ]);
+    if (NON_INTERACTIVE_TAGS.has(eff.tag?.toLowerCase())) continue;
+
     // Skip GUID-style IDs — they are dynamically generated and change each run
     const _guidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     const _isGuid = eff.id && _guidRe.test(eff.id);
@@ -503,8 +520,18 @@ function generatePlaywrightScript(events: RecordingEvent[], nlSteps: string[], s
   for (let si = 0; si < nlSteps.length; si++) {
     if (skipIndices.has(si)) continue;
     const step = nlSteps[si];
-    const pg = inPopup ? 'popup' : 'page';
     const srcEvent = events[nlToEvent[si]] as any;
+
+    // Detect iframe context — use frameLocator() for elements from a different origin
+    let pg = inPopup ? 'popup' : 'page';
+    if (srcEvent?.inIframe && srcEvent?.iframeOrigin) {
+      const iframeVar = `iframeOn_${srcEvent.iframeOrigin.replace(/https?:\/\//, '').replace(/[^a-zA-Z0-9]/g, '_')}`;
+      // Emit frame variable declaration once per iframe origin
+      if (!lines.some(l => l.includes(`const ${iframeVar}`))) {
+        lines.push(`  const ${iframeVar} = page.frameLocator('iframe[src*="${srcEvent.iframeOrigin}"]');`);
+      }
+      pg = iframeVar;
+    }
     // Snapshot and reset the radio/checkbox flag — Kendo date handlers read it
     const prevWasRadioCheck = prevWasRadioOrCheckbox;
     prevWasRadioOrCheckbox = false;
@@ -1865,6 +1892,34 @@ function AssertionPanel({
   const needsExpected = !['visible','hidden','enabled','disabled','checked','unchecked'].includes(assertType);
   const needsAttr     = assertType === 'attribute';
 
+  // Resolved human label for the element (same fallback chain as buildAssertNlStep)
+  const elLabel = (
+    elementInfo.label ||
+    elementInfo.ariaLabel ||
+    elementInfo.text.slice(0, 50) ||
+    elementInfo.placeholder ||
+    elementInfo.name ||
+    (elementInfo.type ? `${elementInfo.type} ${elementInfo.tag}` : elementInfo.tag)
+  ).slice(0, 50);
+
+  // Live plain-English preview of what will be asserted
+  const buildPreview = (): string => {
+    const q = (s: string) => `"${s}"`;
+    switch (assertType) {
+      case 'visible':   return `Make sure ${q(elLabel)} is visible on the page`;
+      case 'hidden':    return `Make sure ${q(elLabel)} is NOT visible on the page`;
+      case 'enabled':   return `Make sure ${q(elLabel)} is enabled (not greyed out)`;
+      case 'disabled':  return `Make sure ${q(elLabel)} is disabled`;
+      case 'checked':   return `Make sure ${q(elLabel)} is checked`;
+      case 'unchecked': return `Make sure ${q(elLabel)} is unchecked`;
+      case 'text':      return `Make sure ${q(elLabel)} text ${op.replace('_',' ')} ${q(expected || '…')}`;
+      case 'value':     return `Make sure ${q(elLabel)} input value ${op.replace('_',' ')} ${q(expected || '…')}`;
+      case 'attribute': return `Make sure ${q(elLabel)} attribute "${attrName}" ${op.replace('_',' ')} ${q(expected || '…')}`;
+      case 'count':     return `Make sure ${expected || '?'} elements matching ${q(elLabel)} exist`;
+      default:          return `Assert ${q(elLabel)}`;
+    }
+  };
+
   // Update expected value when type changes
   const handleTypeChange = (t: AssertType) => {
     setAssertType(t);
@@ -1896,10 +1951,19 @@ function AssertionPanel({
           <span className="text-sm">✓</span>
           <span className="text-xs font-bold text-amber-300">Add Assertion</span>
           <span className="text-[10px] text-slate-500 ml-1 bg-slate-800 px-1.5 py-0.5 rounded font-mono truncate max-w-[200px]">
-            {elementInfo.tag}{elementInfo.label ? ` · "${elementInfo.label.slice(0, 40)}"` : ''}
+            {elementInfo.tag}{(() => {
+              const l = elementInfo.label || elementInfo.ariaLabel || elementInfo.text.slice(0,40) || elementInfo.placeholder || elementInfo.name || elementInfo.type;
+              return l ? ` · "${l.slice(0, 40)}"` : '';
+            })()}
           </span>
         </div>
         <button onClick={onCancel} className="text-slate-600 hover:text-slate-400 text-sm leading-none px-1">✕</button>
+      </div>
+
+      {/* Live assertion preview */}
+      <div className="px-4 py-2 bg-amber-50 border-b border-amber-100 flex items-center gap-2">
+        <span className="text-amber-500 text-xs flex-shrink-0">👁</span>
+        <span className="text-xs text-amber-800 font-medium italic truncate">{buildPreview()}</span>
       </div>
 
       <div className="px-4 py-3 grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
@@ -2397,6 +2461,7 @@ function _friendlyError(raw: string): string {
 
 export default function RecorderPage() {
   const [, navigate] = useLocation();
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true); // default collapsed to give recorder max space
 
   const [sessionId, setSessionId]       = useState<string | null>(null);
   const [sessionStatus, setSessionStatus] = useState<"idle" | "waiting" | "recording" | "completed">("idle");
@@ -2496,6 +2561,67 @@ export default function RecorderPage() {
   const [thinkingBlocks, setThinkingBlocks]   = useState<{label:string;content:string;open:boolean}[]>([]);
   const [showAudit, setShowAudit]             = useState(false);
 
+  // ─── Rename dialog ────────────────────────────────────────────────────────────
+  interface RenameHit { file: string; line: number; before: string; after: string; }
+  interface RenameDialogState {
+    open: boolean;
+    scope: 'locator' | 'method';
+    file: string;
+    oldName: string;
+    newName: string;
+    preview: RenameHit[] | null;
+    loading: boolean;
+    error: string | null;
+    applied: boolean;
+  }
+  const [renameDialog, setRenameDialog] = useState<RenameDialogState>({
+    open: false, scope: 'locator', file: '', oldName: '', newName: '',
+    preview: null, loading: false, error: null, applied: false,
+  });
+
+  const openRenameDialog = () => {
+    // Pre-fill file from active locator/page file if one is selected
+    const active = frameworkFiles.find(f => f.path === activeFilePath);
+    const file = active
+      ? active.path.replace(/^(locators|pages)\//, '').replace(/(\.locators)?\.ts$/, '')
+      : '';
+    const scope: 'locator' | 'method' = active?.path.startsWith('locators/') ? 'locator' : 'method';
+    setRenameDialog({ open: true, scope, file, oldName: '', newName: '', preview: null, loading: false, error: null, applied: false });
+  };
+
+  const previewRename = async () => {
+    if (!renameDialog.file || !renameDialog.oldName || !renameDialog.newName) return;
+    setRenameDialog(d => ({ ...d, loading: true, error: null, preview: null }));
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectName.trim())}/rename`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: renameDialog.scope, file: renameDialog.file, oldName: renameDialog.oldName, newName: renameDialog.newName, dryRun: true }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Preview failed');
+      setRenameDialog(d => ({ ...d, preview: data.hits || [], loading: false }));
+    } catch (e: any) {
+      setRenameDialog(d => ({ ...d, loading: false, error: e.message }));
+    }
+  };
+
+  const applyRename = async () => {
+    setRenameDialog(d => ({ ...d, loading: true, error: null }));
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectName.trim())}/rename`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope: renameDialog.scope, file: renameDialog.file, oldName: renameDialog.oldName, newName: renameDialog.newName, dryRun: false }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Rename failed');
+      setRenameDialog(d => ({ ...d, loading: false, applied: true }));
+    } catch (e: any) {
+      setRenameDialog(d => ({ ...d, loading: false, error: e.message }));
+    }
+  };
+
   // ─── Locator Audit ────────────────────────────────────────────────────────────
   type AuditClass = 'STABLE' | 'ACCEPTABLE' | 'FRAGILE' | 'FORBIDDEN';
   interface AuditRow {
@@ -2582,13 +2708,20 @@ export default function RecorderPage() {
     const locatorFiles = frameworkFiles.filter(f => f.type === 'pom' && f.path.startsWith('locators/'));
 
     for (const file of locatorFiles) {
-      // Match: varName: (page: Page) => page.locator('xpath=EXPR'),
-      const pattern = /(\w+)\s*:\s*\(page\s*:\s*Page\)\s*=>\s*page\.locator\(\s*['"`]xpath=([^'"`]+)['"`]\s*\)/g;
+      // Match: varName: (page: Page) => page.locator('xpath=EXPR')  — any quote style
+      // Handles escaped inner quotes (e.g. \'Solutions\' inside a single-quoted string)
+      // and raw inner single quotes inside double-quoted or backtick strings.
+      //   Group 2 → captured from single-quoted  'xpath=...'
+      //   Group 3 → captured from double-quoted  "xpath=..."
+      //   Group 4 → captured from backtick       `xpath=...`
+      const pattern = /(\w+)\s*:\s*\(page\s*:\s*Page\)\s*=>\s*page\.locator\(\s*(?:'xpath=((?:[^'\\]|\\.)*)'|"xpath=((?:[^"\\]|\\.)*)"|`xpath=([^`]*)`)\s*\)/g;
       let m: RegExpExecArray | null;
       while ((m = pattern.exec(file.content)) !== null) {
-        const [, name, xpath] = m;
-        const { cls, reason, fix } = _classifyXPath(xpath);
-        rows.push({ elementName: name, file: file.path.split('/').pop() || file.path, xpath, classification: cls, reason, suggestedFix: fix });
+        const name = m[1];
+        // Whichever quote style matched — unescape backslash-escaped chars for display
+        const rawXpath = (m[2] ?? m[3] ?? m[4] ?? '').replace(/\\(['"`\\])/g, '$1');
+        const { cls, reason, fix } = _classifyXPath(rawXpath);
+        rows.push({ elementName: name, file: file.path.split('/').pop() || file.path, xpath: rawXpath, classification: cls, reason, suggestedFix: fix });
       }
     }
     setAuditRows(rows);
@@ -2718,9 +2851,43 @@ export default function RecorderPage() {
 
       setEvents(prev => [...prev, event]);
 
-      // Add natural language step
+      // Add natural language step — with deduplication and cleanup
       if (event.naturalLanguage) {
         setNlSteps(prev => {
+          // ── Filter 1: Skip "Page loaded" steps entirely — not useful to the user
+          if (/^Step \d+: Page loaded/i.test(event.naturalLanguage!)) return prev;
+
+          // ── Filter 2: Skip duplicate input after dropdown select for the same field
+          // When user picks from a dropdown, both "Select X from dropdown" AND
+          // "Enter X in field" fire — keep only the Select, drop the Enter
+          const isInputStep = /^Step \d+: Enter ".+" in the ".+" field/i.test(event.naturalLanguage!);
+          if (isInputStep) {
+            const inputFieldMatch = event.naturalLanguage!.match(/in the "(.+?)" field/i);
+            if (inputFieldMatch) {
+              const fieldKey = inputFieldMatch[1].toLowerCase();
+              // Check if the last real step was a Select on the same field
+              const lastStep = prev[prev.length - 1] || '';
+              const isLastSelect = /Select ".+" from the ".+" dropdown/i.test(lastStep) ||
+                                   /Select ".+" from the ".+" Kendo/i.test(lastStep);
+              if (isLastSelect) {
+                const selectFieldMatch = lastStep.match(/from the "(.+?)" (?:dropdown|Kendo)/i);
+                if (selectFieldMatch) {
+                  const selectField = selectFieldMatch[1].toLowerCase();
+                  if (selectField.includes(fieldKey) || fieldKey.includes(selectField)) {
+                    return prev; // drop duplicate input step
+                  }
+                }
+              }
+            }
+          }
+
+          // ── Filter 3: Skip "Navigate to" if immediately preceded by a click that caused it
+          const isNavigateStep = /^Step \d+: Navigate to /i.test(event.naturalLanguage!);
+          if (isNavigateStep) {
+            const lastStep = prev[prev.length - 1] || '';
+            if (/^Step \d+: Click (link|button)/i.test(lastStep)) return prev; // redundant navigation
+          }
+
           // Re-number to local position — server stamps steps using session.events.length
           // which may carry over from a previous recording in the same session.
           const localNum  = prev.length + 1;
@@ -2981,7 +3148,15 @@ export default function RecorderPage() {
       const res = await fetch('/api/playwright/generate-framework', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nlSteps, startUrl: originUrl, testName, events })
+        body: JSON.stringify({
+          nlSteps,
+          startUrl: originUrl,
+          testName,
+          events,
+          projectName: projectName.trim() || undefined,
+          tcId: tcId.trim() || undefined,
+          moduleName: moduleName.trim() || undefined,
+        })
       });
 
       const reader = res.body!.getReader();
@@ -3406,16 +3581,24 @@ export default function RecorderPage() {
   // Toggle assert mode — sends to iframe (proxy mode) OR Playwright browser (PW mode)
   const toggleAssertMode = useCallback(async () => {
     const next = !assertMode;
+    // Update UI immediately — NEVER revert based on API result.
+    // The banner must always reflect what the user clicked.
     setAssertMode(next);
     setPendingAssert(null);
 
     if (isPlaywrightRecording && sessionId) {
-      // Playwright mode: tell the server to dispatch the message inside the real browser
-      await fetch('/api/recorder/assert-mode', {
+      // Playwright mode: tell the server to inject assert mode into the real browser.
+      // Fire-and-forget — failures are logged to console only, UI state is not reverted.
+      fetch('/api/recorder/assert-mode', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ sessionId, mode: next ? 'on' : 'off' })
-      });
+      })
+        .then(res => {
+          if (!res.ok) res.json().catch(() => ({}))
+            .then(b => console.warn('[Assert mode] server error:', b.error || res.status));
+        })
+        .catch(err => console.warn('[Assert mode] fetch failed:', err));
     } else {
       // Iframe proxy mode: postMessage directly into the iframe
       iframeRef.current?.contentWindow?.postMessage(
@@ -3427,7 +3610,16 @@ export default function RecorderPage() {
 
   // Build an NL step from confirmed assertion config
   const buildAssertNlStep = (cfg: AssertConfig, stepNum: number): string => {
-    const lbl = cfg.elementInfo.label.slice(0, 60).replace(/"/g, "'");
+    // Resolve most meaningful label — fallback chain so we never get Assert "" ...
+    const info = cfg.elementInfo;
+    const rawLbl =
+      info.label ||
+      info.ariaLabel ||
+      info.text.slice(0, 60) ||
+      info.placeholder ||
+      info.name ||
+      (info.type ? `${info.type} ${info.tag}` : info.tag);
+    const lbl = rawLbl.slice(0, 60).replace(/"/g, "'");
     switch (cfg.assertType) {
       case 'text':      return `Step ${stepNum}: Assert text ${cfg.op.replace('_',' ')} "${cfg.expected}" on "${lbl}"${cfg.failMode==='soft'?' [soft]':''}`;
       case 'value':     return `Step ${stepNum}: Assert value ${cfg.op.replace('_',' ')} "${cfg.expected}" on "${lbl}"${cfg.failMode==='soft'?' [soft]':''}`;
@@ -3580,10 +3772,19 @@ export default function RecorderPage() {
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div className="h-full bg-slate-100 text-gray-900 flex flex-col overflow-hidden">
+    <div className="flex h-full bg-background">
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
+    <div className="flex-1 bg-white text-gray-900 flex flex-col overflow-hidden">
+      <DashboardHeader />
 
       {/* ── Top bar: Agent pipeline + Test Library link ── */}
       <div className="flex items-center justify-between px-5 py-2 border-b border-slate-300 bg-white shadow-sm flex-shrink-0">
+
+        {/* Left: Back to dashboard */}
+        <a href="/dashboard"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-600 text-[13px] font-semibold transition-all flex-shrink-0">
+          ← Dashboard
+        </a>
 
         {/* Center: Agent orbs with arrows */}
         <div className="flex items-center gap-2">
@@ -3880,9 +4081,27 @@ export default function RecorderPage() {
                         onClick={async () => {
                           try {
                             const JSZip = (await import('jszip')).default;
+                            const XLSX  = (await import('xlsx'));
                             const zip = new JSZip();
-                            // Add every generated file at its full path (preserves folder structure)
-                            frameworkFiles.forEach(f => zip.file(f.path, f.content));
+                            // Add every generated file — excel_data entries need special handling
+                            for (const f of frameworkFiles) {
+                              if (f.type === 'excel_data') {
+                                // Convert JSON row → real .xlsx binary so Excel can open it
+                                try {
+                                  const row = JSON.parse(f.content);
+                                  const wb  = XLSX.utils.book_new();
+                                  const ws  = XLSX.utils.json_to_sheet([row]);
+                                  ws['!cols'] = Object.keys(row).map((k: string) => ({ wch: Math.max(k.length + 2, 22) }));
+                                  XLSX.utils.book_append_sheet(wb, ws, 'TestData');
+                                  const xlsxBuf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+                                  zip.file(f.path, xlsxBuf, { binary: true });
+                                } catch {
+                                  zip.file(f.path, f.content); // fallback
+                                }
+                              } else {
+                                zip.file(f.path, f.content);
+                              }
+                            }
                             const blob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' });
                             const url  = URL.createObjectURL(blob);
                             const a    = document.createElement('a');
@@ -3891,7 +4110,7 @@ export default function RecorderPage() {
                             document.body.appendChild(a);
                             a.click();
                             document.body.removeChild(a);
-                            URL.revokeObjectURL(url);
+                            setTimeout(() => URL.revokeObjectURL(url), 1000);
                           } catch (e: any) {
                             alert(`ZIP download failed: ${e.message}`);
                           }
@@ -3913,6 +4132,14 @@ export default function RecorderPage() {
                           ? <>✅ Saved to project</>
                           : <>📁 Save to Project</>}
                       </button>
+                    )}
+                    {/* Rename — only available when project is saved to disk */}
+                    {projectName.trim() && aiSaveStatus === 'saved' && (
+                      <button
+                        onClick={openRenameDialog}
+                        title="Rename a locator key or page method across all affected files"
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-amber-900/30 border border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 text-xs font-semibold transition-colors whitespace-nowrap"
+                      >✏️ Rename</button>
                     )}
                     <button onClick={openSaveModal}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-xs font-semibold transition-colors whitespace-nowrap">
@@ -5111,6 +5338,110 @@ export default function RecorderPage() {
           </div>
         </div>
       </div>
+
+    {/* ── Rename Dialog ────────────────────────────────────────────────────── */}
+    {renameDialog.open && (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+        <div className="w-[560px] max-h-[85vh] bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+
+          {/* Header */}
+          <div className="flex items-center justify-between px-5 py-4 border-b border-slate-700 flex-shrink-0">
+            <div>
+              <div className="text-sm font-bold text-slate-100">✏️ Rename Propagation</div>
+              <div className="text-[11px] text-slate-400 mt-0.5">Safe cross-layer rename — previews all affected files before writing</div>
+            </div>
+            <button onClick={() => setRenameDialog(d => ({ ...d, open: false }))} className="text-slate-500 hover:text-slate-300 text-lg leading-none">✕</button>
+          </div>
+
+          {/* Form */}
+          <div className="flex-shrink-0 px-5 py-4 space-y-3 border-b border-slate-800">
+            {/* Scope toggle */}
+            <div className="flex gap-2">
+              {(['locator', 'method'] as const).map(s => (
+                <button key={s}
+                  onClick={() => setRenameDialog(d => ({ ...d, scope: s, preview: null }))}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold border transition-colors ${renameDialog.scope === s ? 'bg-amber-600/30 border-amber-500/50 text-amber-300' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-slate-200'}`}
+                >{s === 'locator' ? '🗃️ Locator key' : '📄 Page method'}</button>
+              ))}
+            </div>
+
+            {/* File + names */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] text-slate-400 mb-1">Page file (no extension)</label>
+                <input value={renameDialog.file} onChange={e => setRenameDialog(d => ({ ...d, file: e.target.value, preview: null }))}
+                  placeholder="NousinfosystemsHomePage"
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-amber-500/60 font-mono" />
+              </div>
+              <div />
+              <div>
+                <label className="block text-[10px] text-slate-400 mb-1">Current name</label>
+                <input value={renameDialog.oldName} onChange={e => setRenameDialog(d => ({ ...d, oldName: e.target.value, preview: null }))}
+                  placeholder={renameDialog.scope === 'locator' ? 'submitButton' : 'clickSubmitButton'}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-amber-500/60 font-mono" />
+              </div>
+              <div>
+                <label className="block text-[10px] text-slate-400 mb-1">New name</label>
+                <input value={renameDialog.newName} onChange={e => setRenameDialog(d => ({ ...d, newName: e.target.value, preview: null }))}
+                  placeholder={renameDialog.scope === 'locator' ? 'btnSubmit' : 'submitForm'}
+                  className="w-full bg-slate-800 border border-slate-600 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-amber-500/60 font-mono" />
+              </div>
+            </div>
+
+            {renameDialog.error && (
+              <div className="text-xs text-red-400 bg-red-900/20 border border-red-500/30 rounded-lg px-3 py-2">{renameDialog.error}</div>
+            )}
+
+            <button onClick={previewRename}
+              disabled={renameDialog.loading || !renameDialog.file || !renameDialog.oldName || !renameDialog.newName}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 disabled:opacity-40 border border-slate-600 text-xs font-semibold text-slate-200 transition-colors">
+              {renameDialog.loading ? <><div className="w-3 h-3 border border-slate-400/30 border-t-slate-300 rounded-full animate-spin" /> Scanning...</> : '🔍 Preview changes'}
+            </button>
+          </div>
+
+          {/* Preview results */}
+          {renameDialog.preview !== null && (
+            <div className="flex-1 overflow-auto px-5 py-3 min-h-0">
+              {renameDialog.preview.length === 0 ? (
+                <div className="text-xs text-slate-400 text-center py-6">No references found for <span className="font-mono text-amber-400">{renameDialog.oldName}</span> in project <span className="font-mono text-amber-400">{projectName}</span></div>
+              ) : (
+                <>
+                  <div className="text-[10px] text-slate-400 mb-2 font-semibold">{renameDialog.preview.length} change{renameDialog.preview.length !== 1 ? 's' : ''} across {new Set(renameDialog.preview.map(h => h.file)).size} file{new Set(renameDialog.preview.map(h => h.file)).size !== 1 ? 's' : ''}</div>
+                  <div className="space-y-2">
+                    {renameDialog.preview.map((hit, i) => (
+                      <div key={i} className="rounded-lg bg-slate-800 border border-slate-700 overflow-hidden">
+                        <div className="px-3 py-1.5 bg-slate-800/80 border-b border-slate-700 text-[10px] font-mono text-slate-400">
+                          {hit.file} <span className="text-slate-600 ml-1">line {hit.line}</span>
+                        </div>
+                        <div className="px-3 py-2 space-y-1">
+                          <div className="text-[11px] font-mono text-red-400 line-through opacity-70">- {hit.before}</div>
+                          <div className="text-[11px] font-mono text-emerald-400">+ {hit.after}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Footer actions */}
+          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-700 flex-shrink-0">
+            <button onClick={() => setRenameDialog(d => ({ ...d, open: false }))} className="px-3 py-1.5 text-xs text-slate-400 hover:text-slate-200 border border-slate-700 rounded-lg transition-colors">Cancel</button>
+            {renameDialog.applied ? (
+              <div className="text-xs text-emerald-400 font-semibold">✅ Applied — files updated on disk</div>
+            ) : (
+              <button onClick={applyRename}
+                disabled={renameDialog.loading || !renameDialog.preview || renameDialog.preview.length === 0}
+                className="flex items-center gap-1.5 px-4 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 disabled:opacity-40 text-white text-xs font-bold transition-colors">
+                {renameDialog.loading ? <><div className="w-3 h-3 border border-white/30 border-t-white rounded-full animate-spin" /> Applying...</> : '✏️ Apply Rename'}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    )}
     </div>
+  </div>
   );
 }

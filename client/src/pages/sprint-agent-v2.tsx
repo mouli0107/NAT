@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { CoverageIntelligenceDashboard } from "@/components/coverage-intelligence-dashboard";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { useBranding } from "@/contexts/BrandingContext";
 import { DashboardHeader } from "@/components/dashboard/header";
@@ -377,22 +378,24 @@ export default function SprintAgentV2() {
       const res = await fetch(`/api/sprint-user-stories/${selectedUserStoryId}/test-cases`);
       if (!res.ok) throw new Error("Failed to fetch test cases");
       const data = await res.json();
-      // Transform saved data to TestCase format
-      return data.map((tc: any) => ({
-        id: tc.id,
+      // Transform saved data to TestCase format — use testCaseId (FUN-1) not DB row id (UUID)
+      return data.map((tc: any, idx: number) => ({
+        id: tc.testCaseId || tc.id || `TC-${idx + 1}`,
         title: tc.title,
         description: tc.description || "",
         objective: tc.objective || "",
         category: tc.category,
         priority: tc.priority || "P2",
         preconditions: tc.preconditions || [],
+        traceability: tc.traceability || "",
         steps: tc.testSteps?.map((s: any, i: number) => ({
           step_number: s.step_number || i + 1,
           action: s.action,
           expected_behavior: s.expected_behavior || ""
         })) || [],
         expectedResult: tc.expectedResult || "",
-        postconditions: tc.postconditions || []
+        postconditions: tc.postconditions || [],
+        testData: tc.testData || {},
       }));
     },
     enabled: !!selectedUserStoryId,
@@ -970,6 +973,20 @@ export default function SprintAgentV2() {
                 if (data.type === 'complete') {
                   justGeneratedRef.current = generatedCases.length > 0;
                   setIsGenerating(false);
+                  // Auto-save refined test cases to DB — map id to testCaseId for storage
+                  if (generatedCases.length > 0 && selectedUserStoryId) {
+                    const saveCases = generatedCases.map(tc => ({
+                      ...tc,
+                      testCaseId: tc.id,
+                      testSteps: tc.steps,
+                    }));
+                    fetch(`/api/sprint-user-stories/${selectedUserStoryId}/test-cases`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ testCases: saveCases }),
+                    }).then(() => console.log(`[Auto-save] ${saveCases.length} test cases saved to DB`))
+                      .catch(err => console.error('[Auto-save] Failed:', err));
+                  }
                 } else if (data.type === 'error') {
                   toast({ title: "Error", description: data.message || "Generation failed", variant: "destructive" });
                   setIsGenerating(false);
@@ -1073,6 +1090,24 @@ export default function SprintAgentV2() {
     edge_case: testCases.filter(tc => tc.category === "edge_case").length,
     security: testCases.filter(tc => tc.category === "security").length,
     accessibility: testCases.filter(tc => tc.category === "accessibility").length,
+  };
+
+  const cleanTitle = (title: string): string => {
+    if (!title) return title;
+    // [Alt Data] "val" satisfies: criterion  →  criterion — using val
+    const altDataMatch = title.match(/^\[Alt Data\]\s+"([^"]+)"\s+satisfies:\s*(.+)$/i);
+    if (altDataMatch) return `${altDataMatch[2].trim()} — using ${altDataMatch[1].trim()}`;
+    // [Downstream] After "criterion" — verify: effect  →  criterion — verify downstream: effect
+    const downstreamMatch = title.match(/^\[Downstream\]\s+After\s+"([^"]+)"\s+—\s+verify:\s*(.+)$/i);
+    if (downstreamMatch) return `${downstreamMatch[1].trim()} — verify downstream: ${downstreamMatch[2].trim()}`;
+    // [Criterion Violated] System rejects when: "criterion" is not met  →  System rejects when not met: criterion
+    const violatedMatch = title.match(/^\[Criterion Violated\]\s+System rejects when:\s+"([^"]+)"\s+is not met/i);
+    if (violatedMatch) return `System rejects when not met: ${violatedMatch[1].trim()}`;
+    // Remove any remaining [Tag] prefixes
+    let cleaned = title.replace(/^\[[^\]]+\]\s*/g, '');
+    // Remove leftover wrapping double-quotes around text
+    cleaned = cleaned.replace(/^"([^"]+)"$/, '$1');
+    return cleaned.trim();
   };
 
   const getPriorityColor = (priority: string) => {
@@ -2160,9 +2195,14 @@ export default function SprintAgentV2() {
                       </Card>
                     )}
 
-                    {/* Requirement Traceability Matrix */}
-                    {traceabilityReport && (
-                      <TraceabilityPanel report={traceabilityReport} />
+                    {/* Coverage Intelligence Dashboard */}
+                    {(traceabilityReport || testCases.length > 0) && (
+                      <CoverageIntelligenceDashboard
+                        testCases={testCases}
+                        traceabilityReport={traceabilityReport}
+                        coverageSummary={coverageSummary}
+                        acceptanceCriteria={acceptanceCriteria}
+                      />
                     )}
 
                     {/* Golden Repo / Document Context Banner */}
@@ -2778,9 +2818,14 @@ export default function SprintAgentV2() {
                       />
                     )}
 
-                    {/* Requirement Traceability Matrix */}
-                    {traceabilityReport && (
-                      <TraceabilityPanel report={traceabilityReport} />
+                    {/* Coverage Intelligence Dashboard */}
+                    {(traceabilityReport || testCases.length > 0) && (
+                      <CoverageIntelligenceDashboard
+                        testCases={testCases}
+                        traceabilityReport={traceabilityReport}
+                        coverageSummary={coverageSummary}
+                        acceptanceCriteria={acceptanceCriteria}
+                      />
                     )}
 
                     {/* Golden Repo / Document Context Banner */}
@@ -3855,7 +3900,7 @@ Example:
       </div>
 
       {/* Main Content - Test Cases */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-y-auto">
         {/* Header */}
         <div className="p-4 border-b bg-card">
           <div className="flex items-center justify-between">
@@ -3924,9 +3969,9 @@ Example:
           </div>
         </div>
 
-        {/* Category Tabs */}
+        {/* Category Tabs (sticky) */}
         {testCases.length > 0 && (
-          <div className="border-b bg-card px-4">
+          <div className="border-b bg-card px-4 flex-shrink-0">
             <Tabs value={selectedTab} onValueChange={setSelectedTab}>
               <TabsList className="h-10 bg-transparent border-b-0">
                 <TabsTrigger value="all" className="data-[state=active]:bg-muted" data-testid="tab-all">
@@ -3952,8 +3997,19 @@ Example:
           </div>
         )}
 
-        {/* Test Cases List */}
+        {/* Scrollable content: Dashboard + Test Cases */}
         <ScrollArea className="flex-1 p-4">
+          {/* Coverage Intelligence Dashboard (Local Mode) */}
+          {testCases.length > 0 && (
+            <div className="mb-4">
+              <CoverageIntelligenceDashboard
+                testCases={testCases}
+                traceabilityReport={traceabilityReport}
+                coverageSummary={coverageSummary}
+                acceptanceCriteria={acceptanceCriteria}
+              />
+            </div>
+          )}
           {testCases.length === 0 && !isGenerating ? (
             <div className="flex flex-col items-center justify-center h-full text-center">
               <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
@@ -4030,7 +4086,7 @@ Example:
                         wordBreak: 'break-word',
                         overflowWrap: 'break-word',
                       }}>
-                        {tc.title}
+                        {cleanTitle(tc.title)}
                       </p>
                     </div>
 

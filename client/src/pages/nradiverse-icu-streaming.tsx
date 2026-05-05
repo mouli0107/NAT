@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Sidebar } from "@/components/dashboard/sidebar";
+import { DashboardHeader } from "@/components/dashboard/header";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -488,6 +489,7 @@ export default function ICUStreamingValidatorPage() {
       <Sidebar activeView="testing" onViewChange={() => {}} isRunning={false} />
 
       <div className="flex-1 flex flex-col overflow-hidden">
+        <DashboardHeader />
         {/* Header */}
         <div className="border-b border-border px-6 py-4 flex items-center justify-between flex-shrink-0 flex-wrap gap-3">
           <div className="flex items-center gap-4">

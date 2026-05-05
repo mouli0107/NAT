@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DevX QE Recorder</title>
+  <title>ASTRA QE Recorder</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -284,6 +284,68 @@
     .message-box.info  { background: #0f1f2d; border: 1px solid #1e3a5f; color: #93c5fd; }
     .message-box.success { background: #0f1f14; border: 1px solid #166534; color: #86efac; }
 
+    /* Settings panel */
+    .settings-toggle {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #475569;
+      cursor: pointer;
+      user-select: none;
+      padding: 2px 0;
+    }
+    .settings-toggle:hover { color: #94a3b8; }
+    .settings-toggle .arrow { transition: transform 0.2s; }
+    .settings-toggle.open .arrow { transform: rotate(90deg); }
+
+    .settings-panel {
+      display: none;
+      margin-top: 10px;
+      background: #0a0f1a;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .settings-panel.visible { display: block; }
+
+    .settings-row {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .settings-label {
+      font-size: 10px;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+    .server-url-input {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid #334155;
+      border-radius: 5px;
+      padding: 6px 8px;
+      color: #f1f5f9;
+      font-size: 11px;
+      font-family: 'Courier New', monospace;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .server-url-input:focus { border-color: #3b82f6; }
+    .btn-save-url {
+      background: #1e3a5f;
+      color: #60a5fa;
+      border: 1px solid #2d5f9f;
+      border-radius: 5px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.15s;
+    }
+    .btn-save-url:hover { background: #2563eb; color: white; }
+
     /* Footer */
     .footer {
       padding: 8px 16px;
@@ -306,9 +368,9 @@
 
   <!-- Header -->
   <div class="header">
-    <div class="header-logo">DX</div>
+    <div class="header-logo">AS</div>
     <div class="header-text">
-      <h1>DevX QE Recorder</h1>
+      <h1>ASTRA QE Recorder</h1>
       <p>Autonomous Test Generation Platform</p>
     </div>
   </div>
@@ -345,6 +407,27 @@
       </div>
 
       <div class="message-box" id="sessionMessage"></div>
+    </div>
+
+    <!-- Settings -->
+    <div class="section" id="sectionSettings">
+      <div class="settings-toggle" id="settingsToggle">
+        <span class="arrow">▶</span>
+        <span>Server Settings</span>
+      </div>
+      <div class="settings-panel" id="settingsPanel">
+        <div class="settings-label">NAT 2.0 Server URL</div>
+        <div class="settings-row">
+          <input
+            type="text"
+            class="server-url-input"
+            id="serverUrlInput"
+            placeholder="ws://localhost:5000"
+          />
+          <button class="btn-save-url" id="btnSaveUrl">Save</button>
+        </div>
+        <div class="message-box" id="settingsMessage"></div>
+      </div>
     </div>
 
     <!-- Step 2: Record -->

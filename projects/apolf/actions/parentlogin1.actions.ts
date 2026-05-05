@@ -2,50 +2,46 @@ import { Page } from '@playwright/test';
 import { LoadFormPage } from '../pages/LoadFormPage';
 import { PaymentPlanPage } from '../pages/PaymentPlanPage';
 import { PaymentCardDetailsPage } from '../pages/PaymentCardDetailsPage';
-import { Index.htmlPage } from '../pages/Index.htmlPage';
 import { prepareSite } from '../helpers/universal';
-import { selectKendoDropdown, selectKendoDate, waitAndDismissAnyKendoAlert, fillKendoGridDates } from '../helpers/kendo';
+import { TestDataRow } from '../fixtures/excel-reader';
 
 export async function executeparentlogin1Workflow(
   page: Page,
-  data: Record<string, any>
-) {
-  await page.goto(data.startUrl || 'https://apolf-web-preprod.azurewebsites.net/ApplicantForm/LoadForm?formUID=988564b2b7614d0c99da82fba5f8909d&fToken=74958D0757BFAD8F4D881C51039E1C53033D21EF50700CF03321E72244FA7ACB&fapIDs=iOzYLpMN3vgOcuAedWbp6jw4jt1NkT1osBO3oGou%2F78%3D');
+  data: TestDataRow
+): Promise<void> {
+  await page.goto(data.startUrl || data.baseUrl);
   await prepareSite(page);
 
+  // ── Step 1: Submit the applicant form ────────────────────────────────────────
   const loadFormPage = new LoadFormPage(page);
   await loadFormPage.fillBtnsubmitapplicantform('Pay And Submit');
   await loadFormPage.clickBtnsubmitapplicantform();
-  await page.waitForURL('**https://apolf-web-preprod.azurewebsites.net/Payment/PaymentPlan', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentPlan&title=AdminPlus%20Online%20Forms&referrer=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FApplicantForm%2FLoadForm%3FformUID%3D988564b2b7614d0c99da82fba5f8909d%26fToken%3D74958D0757BFAD8F4D881C51039E1C53033D21EF50700CF03321E72244FA7ACB%26fapIDs%3DiOzYLpMN3vgOcuAedWbp6jw4jt1NkT1osBO3oGou%252F78%253D&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=v3', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://m.stripe.network/inner.html#url=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentPlan&title=AdminPlus%20Online%20Forms&referrer=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FApplicantForm%2FLoadForm%3FformUID%3D988564b2b7614d0c99da82fba5f8909d%26fToken%3D74958D0757BFAD8F4D881C51039E1C53033D21EF50700CF03321E72244FA7ACB%26fapIDs%3DiOzYLpMN3vgOcuAedWbp6jw4jt1NkT1osBO3oGou%252F78%253D&muid=NA&sid=NA&version=6&preview=false&__shared_params__[version]=v3', { waitUntil: 'domcontentloaded' });
+
+  await page.waitForURL('**/Payment/PaymentPlan', { waitUntil: 'domcontentloaded' });
+
+  // ── Step 2: Select payment plan option ──────────────────────────────────────
   const paymentPlanPage = new PaymentPlanPage(page);
   await paymentPlanPage.clickRdopaymentplanoptions2();
   await paymentPlanPage.enableRdopaymentplanoptions2();
   await paymentPlanPage.clickContinue();
-  await page.waitForURL('**https://apolf-web-preprod.azurewebsites.net/Payment/PaymentCardDetails', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.stripe.com/v3/m-outer-3437aaddcdf6922d623e172c2d6f9278.html#url=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentCardDetails&title=AdminPlus%20Online%20Forms&referrer=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentPlan&muid=86a7c016-9ae5-4e22-93b8-f323e39a42411c68a4&sid=3da4dfac-1fdb-486a-a161-f99bc98dcf40a62ab3&version=6&preview=false&__shared_params__[version]=v3', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://m.stripe.network/inner.html#url=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentCardDetails&title=AdminPlus%20Online%20Forms&referrer=https%3A%2F%2Fapolf-web-preprod.azurewebsites.net%2FPayment%2FPaymentPlan&muid=86a7c016-9ae5-4e22-93b8-f323e39a42411c68a4&sid=3da4dfac-1fdb-486a-a161-f99bc98dcf40a62ab3&version=6&preview=false&__shared_params__[version]=v3', { waitUntil: 'domcontentloaded' });
+
+  await page.waitForURL('**/Payment/PaymentCardDetails', { waitUntil: 'domcontentloaded' });
+
+  // ── Step 3: Enter payment card details ───────────────────────────────────────
   const paymentCardDetailsPage = new PaymentCardDetailsPage(page);
   await paymentCardDetailsPage.clickNewPaymentMethod();
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImFkZHJlc3MuY2l0eSIsInBheW1lbnRJbnN0cnVtZW50VHlwZSI6IlBBWU1FTlRfQ0FSRCIsInN0eWxlcyI6eyJkZWZhdWx0Ijp7ImNvbG9yIjoiIzAwMCIsImJvcmRlciI6IjFweCBzb2xpZCAjZThlOGU4IiwicGFkZGluZyI6IjhweCAxNnB4IiwiZm9udEZhbWlseSI6IkhlbHZldGljYSIsImZvbnRTaXplIjoiMTZweCIsImJveFNoYWRvdyI6IjBweCAxcHggMXB4IHJnYmEoMCwgMCwgMCwgMC4wMyksIDBweCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4wMykiLCJ3aWR0aCI6Ijk5LjglIn0sInN1Y2Nlc3MiOnsiY29sb3IiOiIjNWNiODVjIn0sImVycm9yIjp7ImNvbG9yIjoiI2Q5NTM0ZiIsImJvcmRlciI6IjFweCBzb2xpZCByZ2JhKDI1NSwwLDAsIDAuMykifSwiZm9jdXNlZCI6e319LCJwbGFjZWhvbGRlciI6eyJ0ZXh0IjoiQ2l0eSIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJyZXF1aXJlZCIsImF1dG9Db21wbGV0ZSI6ImFkZHJlc3MtbGV2ZWwyIiwiZXJyb3JNZXNzYWdlIjoiUGxlYXNlIGVudGVyIGEgdmFsaWQgY2l0eSIsImRlZmF1bHRWYWx1ZSI6IiIsImVuYWJsZURhcmtNb2RlIjpmYWxzZX0=', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImFkZHJlc3MuY291bnRyeSIsInBheW1lbnRJbnN0cnVtZW50VHlwZSI6IlBBWU1FTlRfQ0FSRCIsInN0eWxlcyI6eyJkZWZhdWx0Ijp7ImNvbG9yIjoiIzAwMCIsImJvcmRlciI6IjFweCBzb2xpZCAjZThlOGU4IiwicGFkZGluZyI6IjhweCAxNnB4IiwiZm9udEZhbWlseSI6IkhlbHZldGljYSIsImZvbnRTaXplIjoiMTZweCIsImJveFNoYWRvdyI6IjBweCAxcHggMXB4IHJnYmEoMCwgMCwgMCwgMC4wMyksIDBweCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4wMykiLCJ3aWR0aCI6Ijk5LjglIn0sInN1Y2Nlc3MiOnsiY29sb3IiOiIjNWNiODVjIn0sImVycm9yIjp7ImNvbG9yIjoiI2Q5NTM0ZiIsImJvcmRlciI6IjFweCBzb2xpZCByZ2JhKDI1NSwwLDAsIDAuMykifSwiZm9jdXNlZCI6e319LCJwbGFjZWhvbGRlciI6eyJ0ZXh0IjoiQ291bnRyeSIsImhpZGVPbkZvY3VzIjp0cnVlfSwiYXV0b0NvbXBsZXRlIjoiY291bnRyeSIsIm9wdGlvbnMiOiJjb3VudHJ5IiwiZGVmYXVsdE9wdGlvbiI6IlVTQSIsImVuYWJsZURhcmtNb2RlIjpmYWxzZX0=', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImV4cGlyYXRpb25fZGF0ZSIsInBheW1lbnRJbnN0cnVtZW50VHlwZSI6IlBBWU1FTlRfQ0FSRCIsInN0eWxlcyI6eyJkZWZhdWx0Ijp7ImNvbG9yIjoiIzAwMCIsImJvcmRlciI6IjFweCBzb2xpZCAjZThlOGU4IiwicGFkZGluZyI6IjhweCAxNnB4IiwiZm9udEZhbWlseSI6IkhlbHZldGljYSIsImZvbnRTaXplIjoiMTZweCIsImJveFNoYWRvdyI6IjBweCAxcHggMXB4IHJnYmEoMCwgMCwgMCwgMC4wMyksIDBweCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4wMykiLCJ3aWR0aCI6Ijk5LjglIn0sInN1Y2Nlc3MiOnsiY29sb3IiOiIjNWNiODVjIn0sImVycm9yIjp7ImNvbG9yIjoiI2Q5NTM0ZiIsImJvcmRlciI6IjFweCBzb2xpZCByZ2JhKDI1NSwwLDAsIDAuMykifSwiZm9jdXNlZCI6e319LCJwbGFjZWhvbGRlciI6eyJ0ZXh0IjoiTU0gLyBZWSIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJjYXJkRXhwaXJ5IiwiYXV0b0NvbXBsZXRlIjoiY2MtZXhwIiwiZW5hYmxlRGFya01vZGUiOmZhbHNlfQ==', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6Im51bWJlciIsInBheW1lbnRJbnN0cnVtZW50VHlwZSI6IlBBWU1FTlRfQ0FSRCIsInN0eWxlcyI6eyJkZWZhdWx0Ijp7ImNvbG9yIjoiIzAwMCIsImJvcmRlciI6IjFweCBzb2xpZCAjZThlOGU4IiwicGFkZGluZyI6IjhweCAxNnB4IiwiZm9udEZhbWlseSI6IkhlbHZldGljYSIsImZvbnRTaXplIjoiMTZweCIsImJveFNoYWRvdyI6IjBweCAxcHggMXB4IHJnYmEoMCwgMCwgMCwgMC4wMyksIDBweCAycHggNHB4IHJnYmEoMCwgMCwgMCwgMC4wMykiLCJ3aWR0aCI6Ijk5LjglIn0sInN1Y2Nlc3MiOnsiY29sb3IiOiIjNWNiODVjIn0sImVycm9yIjp7ImNvbG9yIjoiI2Q5NTM0ZiIsImJvcmRlciI6IjFweCBzb2xpZCByZ2JhKDI1NSwwLDAsIDAuMykifSwiZm9jdXNlZCI6e319LCJwbGFjZWhvbGRlciI6eyJ0ZXh0IjoiNDExMSAxMTExIDExMTEgMTExMSIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJjYXJkTnVtYmVyIiwiYXV0b0NvbXBsZXRlIjoiY2MtbnVtYmVyIiwiZW5hYmxlRGFya01vZGUiOmZhbHNlfQ==', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImFkZHJlc3MucmVnaW9uIiwicGF5bWVudEluc3RydW1lbnRUeXBlIjoiUEFZTUVOVF9DQVJEIiwic3R5bGVzIjp7ImRlZmF1bHQiOnsiY29sb3IiOiIjMDAwIiwiYm9yZGVyIjoiMXB4IHNvbGlkICNlOGU4ZTgiLCJwYWRkaW5nIjoiOHB4IDE2cHgiLCJmb250RmFtaWx5IjoiSGVsdmV0aWNhIiwiZm9udFNpemUiOiIxNnB4IiwiYm94U2hhZG93IjoiMHB4IDFweCAxcHggcmdiYSgwLCAwLCAwLCAwLjAzKSwgMHB4IDJweCA0cHggcmdiYSgwLCAwLCAwLCAwLjAzKSIsIndpZHRoIjoiOTkuOCUifSwic3VjY2VzcyI6eyJjb2xvciI6IiM1Y2I4NWMifSwiZXJyb3IiOnsiY29sb3IiOiIjZDk1MzRmIiwiYm9yZGVyIjoiMXB4IHNvbGlkIHJnYmEoMjU1LDAsMCwgMC4zKSJ9LCJmb2N1c2VkIjp7fX0sInBsYWNlaG9sZGVyIjp7InRleHQiOiJTdGF0ZSIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJyZXF1aXJlZCIsImF1dG9Db21wbGV0ZSI6ImFkZHJlc3MtbGV2ZWwxIiwib3B0aW9ucyI6InN0YXRlIiwiZGVmYXVsdE9wdGlvbiI6IiIsImVuYWJsZURhcmtNb2RlIjpmYWxzZX0=', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImFkZHJlc3MucG9zdGFsX2NvZGUiLCJwYXltZW50SW5zdHJ1bWVudFR5cGUiOiJQQVlNRU5UX0NBUkQiLCJzdHlsZXMiOnsiZGVmYXVsdCI6eyJjb2xvciI6IiMwMDAiLCJib3JkZXIiOiIxcHggc29saWQgI2U4ZThlOCIsInBhZGRpbmciOiI4cHggMTZweCIsImZvbnRGYW1pbHkiOiJIZWx2ZXRpY2EiLCJmb250U2l6ZSI6IjE2cHgiLCJib3hTaGFkb3ciOiIwcHggMXB4IDFweCByZ2JhKDAsIDAsIDAsIDAuMDMpLCAwcHggMnB4IDRweCByZ2JhKDAsIDAsIDAsIDAuMDMpIiwid2lkdGgiOiI5OS44JSJ9LCJzdWNjZXNzIjp7ImNvbG9yIjoiIzVjYjg1YyJ9LCJlcnJvciI6eyJjb2xvciI6IiNkOTUzNGYiLCJib3JkZXIiOiIxcHggc29saWQgcmdiYSgyNTUsMCwwLCAwLjMpIn0sImZvY3VzZWQiOnt9fSwicGxhY2Vob2xkZXIiOnsidGV4dCI6IlpJUCIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJyZXF1aXJlZCIsImF1dG9Db21wbGV0ZSI6InBvc3RhbC1jb2RlIiwiZXJyb3JNZXNzYWdlIjoiWklQIGlzIHJlcXVpcmVkIiwiZGVmYXVsdFZhbHVlIjoiIiwiZW5hYmxlRGFya01vZGUiOmZhbHNlfQ==', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6ImFkZHJlc3MubGluZTEiLCJwYXltZW50SW5zdHJ1bWVudFR5cGUiOiJQQVlNRU5UX0NBUkQiLCJzdHlsZXMiOnsiZGVmYXVsdCI6eyJjb2xvciI6IiMwMDAiLCJib3JkZXIiOiIxcHggc29saWQgI2U4ZThlOCIsInBhZGRpbmciOiI4cHggMTZweCIsImZvbnRGYW1pbHkiOiJIZWx2ZXRpY2EiLCJmb250U2l6ZSI6IjE2cHgiLCJib3hTaGFkb3ciOiIwcHggMXB4IDFweCByZ2JhKDAsIDAsIDAsIDAuMDMpLCAwcHggMnB4IDRweCByZ2JhKDAsIDAsIDAsIDAuMDMpIiwid2lkdGgiOiI5OS44JSJ9LCJzdWNjZXNzIjp7ImNvbG9yIjoiIzVjYjg1YyJ9LCJlcnJvciI6eyJjb2xvciI6IiNkOTUzNGYiLCJib3JkZXIiOiIxcHggc29saWQgcmdiYSgyNTUsMCwwLCAwLjMpIn0sImZvY3VzZWQiOnt9fSwicGxhY2Vob2xkZXIiOnsidGV4dCI6IkFkZHJlc3MgTGluZSAxIiwiaGlkZU9uRm9jdXMiOnRydWV9LCJ2YWxpZGF0aW9ucyI6InJlcXVpcmVkIiwiYXV0b0NvbXBsZXRlIjoiYWRkcmVzcy1saW5lMSIsImVycm9yTWVzc2FnZSI6IkFkZHJlc3MgaXMgcmVxdWlyZWQiLCJkZWZhdWx0VmFsdWUiOiIiLCJlbmFibGVEYXJrTW9kZSI6ZmFsc2V9', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6Im5hbWUiLCJwYXltZW50SW5zdHJ1bWVudFR5cGUiOiJQQVlNRU5UX0NBUkQiLCJzdHlsZXMiOnsiZGVmYXVsdCI6eyJjb2xvciI6IiMwMDAiLCJib3JkZXIiOiIxcHggc29saWQgI2U4ZThlOCIsInBhZGRpbmciOiI4cHggMTZweCIsImZvbnRGYW1pbHkiOiJIZWx2ZXRpY2EiLCJmb250U2l6ZSI6IjE2cHgiLCJib3hTaGFkb3ciOiIwcHggMXB4IDFweCByZ2JhKDAsIDAsIDAsIDAuMDMpLCAwcHggMnB4IDRweCByZ2JhKDAsIDAsIDAsIDAuMDMpIiwid2lkdGgiOiI5OS44JSJ9LCJzdWNjZXNzIjp7ImNvbG9yIjoiIzVjYjg1YyJ9LCJlcnJvciI6eyJjb2xvciI6IiNkOTUzNGYiLCJib3JkZXIiOiIxcHggc29saWQgcmdiYSgyNTUsMCwwLCAwLjMpIn0sImZvY3VzZWQiOnt9fSwicGxhY2Vob2xkZXIiOnsidGV4dCI6IkZ1bGwgTmFtZSIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJyZXF1aXJlZCIsImF1dG9Db21wbGV0ZSI6ImNjLW5hbWUiLCJlcnJvck1lc3NhZ2UiOiJQbGVhc2UgZW50ZXIgYSB2YWxpZCBuYW1lIiwiZGVmYXVsdFZhbHVlIjoiIiwiZW5hYmxlRGFya01vZGUiOmZhbHNlfQ==', { waitUntil: 'domcontentloaded' });
-  await page.waitForURL('**https://js.finix.com/v/1/payment-fields/index.html?eyJmb3JtSWQiOiJmb3JtLTE3NzYwOTkxNzE4ODctMC41NDczMjQ3MjkwNzUxNTY1IiwiZm9ybVR5cGUiOiJjYXJkIiwidHlwZSI6InNlY3VyaXR5X2NvZGUiLCJwYXltZW50SW5zdHJ1bWVudFR5cGUiOiJQQVlNRU5UX0NBUkQiLCJzdHlsZXMiOnsiZGVmYXVsdCI6eyJjb2xvciI6IiMwMDAiLCJib3JkZXIiOiIxcHggc29saWQgI2U4ZThlOCIsInBhZGRpbmciOiI4cHggMTZweCIsImZvbnRGYW1pbHkiOiJIZWx2ZXRpY2EiLCJmb250U2l6ZSI6IjE2cHgiLCJib3hTaGFkb3ciOiIwcHggMXB4IDFweCByZ2JhKDAsIDAsIDAsIDAuMDMpLCAwcHggMnB4IDRweCByZ2JhKDAsIDAsIDAsIDAuMDMpIiwid2lkdGgiOiI5OS44JSJ9LCJzdWNjZXNzIjp7ImNvbG9yIjoiIzVjYjg1YyJ9LCJlcnJvciI6eyJjb2xvciI6IiNkOTUzNGYiLCJib3JkZXIiOiIxcHggc29saWQgcmdiYSgyNTUsMCwwLCAwLjMpIn0sImZvY3VzZWQiOnt9fSwicGxhY2Vob2xkZXIiOnsidGV4dCI6IkNWQyIsImhpZGVPbkZvY3VzIjp0cnVlfSwidmFsaWRhdGlvbnMiOiJjYXJkQ1ZDIiwiYXV0b0NvbXBsZXRlIjoiY2MtY3NjIiwiZW5hYmxlRGFya01vZGUiOmZhbHNlfQ==', { waitUntil: 'domcontentloaded' });
-  const index.htmlPage = new Index.htmlPage(page);
-  await index.htmlPage.fillFullName('chandramouli');
-  await index.htmlPage.fill4111111111111111('4242 4242 4242 4242');
-  await index.htmlPage.fillMmYy('01 / 28');
-  await index.htmlPage.fillCvc('123');
-  await index.htmlPage.fillAddressLine1('nOUS infosystems');
-  await index.htmlPage.fillCity('hyderabad');
-  await index.htmlPage.fillAddressRegion('KS');
-  await index.htmlPage.fillZip('45432');
+
+  // Card fields — all values come from Excel (fixtures/test-data.xlsx row TC0011)
+  await page.waitForTimeout(2000); // wait for Finix iframes to load
+  await page.fill('[placeholder="Full Name"]',       data.fullName);
+  await page.fill('[placeholder="4111 1111 1111 1111"]', data.cardNumber);
+  await page.fill('[placeholder="MM / YY"]',         data.expiryDate);
+  await page.fill('[placeholder="CVC"]',             data.cvc);
+  await page.fill('[placeholder="Address Line 1"]',  data.addressLine1);
+  await page.fill('[placeholder="City"]',            data.city);
+  await page.fill('[placeholder="State"]',           data.addressRegion);
+  await page.fill('[placeholder="ZIP"]',             data.zip);
+
   await paymentCardDetailsPage.clickSave();
   await paymentCardDetailsPage.clickCardAccountTypeCardAccountNu();
 }

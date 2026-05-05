@@ -1,0 +1,9 @@
+{
+  "name": "Nous",
+  "testCount": 6,
+  "modules": [
+    "test",
+    "testq"
+  ],
+  "lastRecordedAt": "2026-05-03T13:56:58.172Z"
+}

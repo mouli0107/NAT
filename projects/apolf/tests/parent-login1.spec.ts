@@ -1,9 +1,11 @@
-import { test, expect } from '@playwright/test';
-import { TestData } from '../fixtures/test-data';
+import { test } from '@playwright/test';
+import { getTestData } from '../fixtures/excel-reader';
 import { executeparentlogin1Workflow } from '../actions/parentlogin1.actions';
 
-test.describe('parent login1', () => {
-  test('Execute recorded workflow', async ({ page }) => {
-    await executeparentlogin1Workflow(page, TestData);
+const data = getTestData('TC0011');
+
+test.describe('TC0011 — Parent Login & Payment Flow', () => {
+  test('Submit applicant form and complete payment', async ({ page }) => {
+    await executeparentlogin1Workflow(page, data);
   });
 });

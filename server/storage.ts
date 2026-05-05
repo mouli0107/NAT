@@ -12,6 +12,11 @@ export type { GeneratedTestCase } from "./claude-test-generator";
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
+  getUsersByTenantId(tenantId: string): Promise<User[]>;
+  deleteUser(id: string): Promise<void>;
+  updateUserPassword(id: string, passwordHash: string): Promise<void>;
+  updateUserMustChangePassword(id: string, value: boolean): Promise<void>;
+  updateUserModules(id: string, modules: string[] | null): Promise<void>;
   createUser(user: InsertUser): Promise<User>;
   
   createProject(project: InsertProject): Promise<Project>;
@@ -181,9 +186,32 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async getUsersByTenantId(tenantId: string): Promise<User[]> {
+    return Array.from(this.users.values()).filter((u) => u.tenantId === tenantId);
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    this.users.delete(id);
+  }
+
+  async updateUserPassword(id: string, passwordHash: string): Promise<void> {
+    const u = this.users.get(id);
+    if (u) { this.users.set(id, { ...u, password: passwordHash }); }
+  }
+
+  async updateUserMustChangePassword(id: string, value: boolean): Promise<void> {
+    const u = this.users.get(id);
+    if (u) { this.users.set(id, { ...u, mustChangePassword: value }); }
+  }
+
+  async updateUserModules(id: string, modules: string[] | null): Promise<void> {
+    const u = this.users.get(id);
+    if (u) { this.users.set(id, { ...u, allowedModules: modules }); }
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
-    const user: User = { ...insertUser, id };
+    const user: User = { ...insertUser, id, allowedModules: insertUser.allowedModules ?? null };
     this.users.set(id, user);
     return user;
   }
@@ -699,6 +727,26 @@ export class PgStorage implements IStorage {
     return result[0];
   }
 
+  async getUsersByTenantId(tenantId: string): Promise<User[]> {
+    return db.select().from(users).where(eq(users.tenantId, tenantId));
+  }
+
+  async deleteUser(id: string): Promise<void> {
+    await db.delete(users).where(eq(users.id, id));
+  }
+
+  async updateUserPassword(id: string, passwordHash: string): Promise<void> {
+    await db.update(users).set({ password: passwordHash }).where(eq(users.id, id));
+  }
+
+  async updateUserMustChangePassword(id: string, value: boolean): Promise<void> {
+    await db.update(users).set({ mustChangePassword: value }).where(eq(users.id, id));
+  }
+
+  async updateUserModules(id: string, modules: string[] | null): Promise<void> {
+    await db.update(users).set({ allowedModules: modules }).where(eq(users.id, id));
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const result = await db.insert(users).values(insertUser).returning();
     return result[0];
@@ -1192,7 +1240,7 @@ export class PgStorage implements IStorage {
   async saveTestCasesToUserStory(sprintUserStoryId: string, sprintId: string, testCases: any[]): Promise<void> {
     // Delete existing test cases for this user story
     await db.delete(sprintTestCases).where(eq(sprintTestCases.sprintUserStoryId, sprintUserStoryId));
-    
+
     // Insert new test cases
     if (testCases.length > 0) {
       const records = testCases.map(tc => ({
@@ -1206,6 +1254,20 @@ export class PgStorage implements IStorage {
         testType: tc.category || "functional",
       }));
       await db.insert(sprintTestCases).values(records);
+    }
+
+    // Also save full test cases as JSONB on the user story for complete data retrieval
+    try {
+      await db.update(sprintUserStories)
+        .set({
+          generatedTestCases: testCases,
+          testCaseCount: testCases.length,
+          generatedAt: new Date(),
+          updatedAt: new Date(),
+        })
+        .where(eq(sprintUserStories.id, sprintUserStoryId));
+    } catch (err: any) {
+      console.warn("[Storage] Could not save full test cases to user story:", err.message);
     }
   }
 

@@ -3,17 +3,35 @@
     "id": "suite-001",
     "name": "Smoke Tests",
     "type": "smoke",
-    "testIds": ["login-flow", "homepage-load", "nav-check"],
-    "tags": ["smoke", "critical"],
+    "testIds": [
+      "login-flow",
+      "homepage-load",
+      "nav-check",
+      "1776323415199-fnoqjx"
+    ],
+    "tags": [
+      "smoke",
+      "critical"
+    ],
     "createdAt": 1742515200000,
-    "updatedAt": 1743897600000
+    "updatedAt": 1777025076517
   },
   {
     "id": "suite-002",
     "name": "Sprint 24 Regression",
     "type": "regression",
-    "testIds": ["login-flow", "cart-add-item", "checkout-flow", "order-history", "product-search", "profile-update"],
-    "tags": ["sprint-24", "regression"],
+    "testIds": [
+      "login-flow",
+      "cart-add-item",
+      "checkout-flow",
+      "order-history",
+      "product-search",
+      "profile-update"
+    ],
+    "tags": [
+      "sprint-24",
+      "regression"
+    ],
     "createdAt": 1742601600000,
     "updatedAt": 1743897600000
   },
@@ -21,8 +39,15 @@
     "id": "suite-003",
     "name": "Sanity — Post Deploy",
     "type": "sanity",
-    "testIds": ["login-flow", "homepage-load", "cart-add-item"],
-    "tags": ["sanity", "post-deploy"],
+    "testIds": [
+      "login-flow",
+      "homepage-load",
+      "cart-add-item"
+    ],
+    "tags": [
+      "sanity",
+      "post-deploy"
+    ],
     "createdAt": 1742688000000,
     "updatedAt": 1743897600000
   },
@@ -30,8 +55,16 @@
     "id": "suite-004",
     "name": "Sprint 25 — New Features",
     "type": "sprint",
-    "testIds": ["password-reset", "cookie-consent", "keyboard-nav", "admin-user-mgmt"],
-    "tags": ["sprint-25", "new-features"],
+    "testIds": [
+      "password-reset",
+      "cookie-consent",
+      "keyboard-nav",
+      "admin-user-mgmt"
+    ],
+    "tags": [
+      "sprint-25",
+      "new-features"
+    ],
     "createdAt": 1743292800000,
     "updatedAt": 1743897600000
   }

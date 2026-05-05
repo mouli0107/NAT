@@ -1,0 +1,22 @@
+{
+  "name": "recorded-test-framework",
+  "version": "1.0.0",
+  "description": "Auto-generated POM test framework from NAT 2.0 Recording Studio",
+  "scripts": {
+    "postinstall": "npx playwright install --with-deps chromium",
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:ui": "npx playwright test --ui",
+    "test:auth": "npx playwright test --project=setup",
+    "test:ci": "npx playwright test --reporter=junit,html",
+    "test:debug": "npx playwright test --debug",
+    "report": "npx playwright show-report"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.44.0",
+    "typescript": "^5.4.0"
+  }
+}

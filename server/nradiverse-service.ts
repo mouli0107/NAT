@@ -487,7 +487,7 @@ Provide 5-10 prioritized issues, ranked by impact. Include BOTH automated findin
     async () => {
       return await limit(async () => {
         const result = await anthropic.messages.create({
-          model: "claude-sonnet-4-5",
+          model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
           max_tokens: 4096,
           messages: [{
             role: "user",
@@ -890,7 +890,7 @@ Provide 3-6 clinical findings based on what you actually observe, and 3-4 specif
     async () => {
       return await limit(async () => {
         const result = await anthropic.messages.create({
-          model: "claude-sonnet-4-5",
+          model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
           max_tokens: 4096,
           messages: [{
             role: "user",
@@ -1025,7 +1025,7 @@ Return valid JSON:
     async () => {
       return await limit(async () => {
         const result = await anthropic.messages.create({
-          model: "claude-sonnet-4-5",
+          model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
           max_tokens: 2048,
           messages: [{ role: "user", content: prompt }],
         });
@@ -1290,7 +1290,7 @@ Return valid JSON:
     async () => {
       return await limit(async () => {
         const result = await anthropic.messages.create({
-          model: "claude-sonnet-4-5",
+          model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
           max_tokens: 2048,
           messages: [{ role: "user", content: prompt }],
         });

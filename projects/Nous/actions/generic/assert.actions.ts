@@ -1,8 +1,18 @@
 import { Page, expect } from '@playwright/test';
 
-/** Assert visible text exists on the page (substring match by default) */
+/** Assert visible text exists on the page (substring match by default).
+ *  Uses Playwright's :text()/:text-is() + :visible pseudo-class combination so we only
+ *  match elements that are actually rendered on screen — not hidden mobile menus,
+ *  collapsed accordions, breadcrumbs inside display:none containers, etc.
+ */
 export async function verifyText(page: Page, text: string, exact = false) {
-  await expect(page.getByText(text, { exact }).first()).toBeVisible();
+  const escaped = text.replace(/"/g, '\\"');
+  // :text-is() / :text() are Playwright's built-in text pseudo-classes.
+  // :visible ensures the matched element is visible (not display:none / hidden).
+  const sel = exact
+    ? `:text-is("${escaped}"):visible`
+    : `:text("${escaped}"):visible`;
+  await expect(page.locator(sel).first()).toBeVisible({ timeout: 10000 });
 }
 
 /** Assert current URL contains a path */

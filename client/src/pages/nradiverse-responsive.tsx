@@ -194,7 +194,7 @@ export default function NRadiVerseResponsivePage() {
         <DashboardHeader />
         
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto space-y-6">
+          <div className="w-full space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-2xl font-bold text-foreground flex items-center gap-3" data-testid="heading-responsive">

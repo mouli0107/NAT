@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Test artifacts
+test-results/
+playwright-report/
+screenshots/
+recorded-scripts/
+recorder-data/
+site_explore/
+
+# Logs
+*.log
+server-log.txt
+server-restart.log
+server-run.log
+server.log
+
+# Large/binary assets
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.zip
+*.tar.gz
+attached_assets/
+tmp-framework/
+
+# Playwright cache
+.playwright/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

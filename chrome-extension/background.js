@@ -1,13 +1,14 @@
 /**
- * DevX QE Recorder — background.js
+ * ASTRA QE Recorder — background.js
  * Service worker. Manages WebSocket connection to NAT 2.0 server (port 5000).
  * Bridges content.js events → server → NAT 2.0 UI.
  */
 
-const SERVER_URL = 'ws://localhost:5000/ws/recorder';
+const DEFAULT_SERVER_URL = 'ws://localhost:5000';
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 
+let serverUrl = DEFAULT_SERVER_URL; // overridden by chrome.storage.sync on init
 let ws = null;
 let sessionId = null;
 let isRecording = false;
@@ -15,16 +16,33 @@ let reconnectAttempts = 0;
 let reconnectTimer = null;
 let pendingEvents = []; // Buffer events while disconnected
 
+function getRecorderWsUrl() {
+  const base = serverUrl.replace(/\/$/, '');
+  // Ensure ws:// or wss:// protocol
+  if (base.startsWith('http://')) return base.replace('http://', 'ws://') + '/ws/recorder';
+  if (base.startsWith('https://')) return base.replace('https://', 'wss://') + '/ws/recorder';
+  if (base.startsWith('ws://') || base.startsWith('wss://')) return base + '/ws/recorder';
+  return 'ws://' + base + '/ws/recorder';
+}
+
+function getHttpBaseUrl() {
+  const base = serverUrl.replace(/\/$/, '');
+  if (base.startsWith('ws://')) return base.replace('ws://', 'http://');
+  if (base.startsWith('wss://')) return base.replace('wss://', 'https://');
+  if (base.startsWith('http://') || base.startsWith('https://')) return base;
+  return 'http://' + base;
+}
+
 // ─── WebSocket Management ─────────────────────────────────────────────────────
 
 function connectWebSocket() {
   if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
 
   try {
-    ws = new WebSocket(SERVER_URL);
+    ws = new WebSocket(getRecorderWsUrl());
 
     ws.onopen = () => {
-      console.log('[DevXQE] WebSocket connected');
+      console.log('[ASTRAQE] WebSocket connected');
       reconnectAttempts = 0;
 
       // Identify this extension to the server
@@ -47,14 +65,14 @@ function connectWebSocket() {
     };
 
     ws.onclose = () => {
-      console.log('[DevXQE] WebSocket disconnected');
+      console.log('[ASTRAQE] WebSocket disconnected from', getRecorderWsUrl());
       ws = null;
       broadcastToPopup({ type: 'CONNECTION_STATUS', connected: false });
       scheduleReconnect();
     };
 
     ws.onerror = (err) => {
-      console.warn('[DevXQE] WebSocket error', err);
+      console.warn('[ASTRAQE] WebSocket error', err);
     };
 
     ws.onmessage = (event) => {
@@ -65,14 +83,14 @@ function connectWebSocket() {
     };
 
   } catch (err) {
-    console.warn('[DevXQE] WebSocket connection failed', err);
+    console.warn('[ASTRAQE] WebSocket connection failed', err);
     scheduleReconnect();
   }
 }
 
 function scheduleReconnect() {
   if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-    console.warn('[DevXQE] Max reconnect attempts reached');
+    console.warn('[ASTRAQE] Max reconnect attempts reached');
     broadcastToPopup({ type: 'CONNECTION_STATUS', connected: false, maxRetriesReached: true });
     return;
   }
@@ -249,7 +267,9 @@ async function handlePopupMessage(msg, sendResponse) {
       sendResponse({
         isRecording,
         sessionId,
-        connected: ws?.readyState === WebSocket.OPEN
+        connected: ws?.readyState === WebSocket.OPEN,
+        serverUrl,
+        httpBaseUrl: getHttpBaseUrl(),
       });
       break;
 
@@ -282,6 +302,28 @@ async function handlePopupMessage(msg, sendResponse) {
       connectWebSocket();
       sendResponse({ success: true });
       break;
+
+    case 'GET_SERVER_URL':
+      sendResponse({ serverUrl });
+      break;
+
+    case 'SET_SERVER_URL': {
+      const newUrl = (msg.serverUrl || '').trim();
+      if (!newUrl) {
+        sendResponse({ success: false, error: 'URL cannot be empty' });
+        return;
+      }
+      serverUrl = newUrl;
+      chrome.storage.sync.set({ serverUrl: newUrl });
+      // Disconnect and reconnect to new server
+      reconnectAttempts = 0;
+      if (ws) { ws.close(); ws = null; }
+      clearTimeout(reconnectTimer);
+      connectWebSocket();
+      broadcastToPopup({ type: 'SERVER_URL_CHANGED', serverUrl: newUrl });
+      sendResponse({ success: true });
+      break;
+    }
   }
 }
 
@@ -303,10 +345,16 @@ setInterval(() => {
 
 // ─── Init: Restore state on service worker wake-up ───────────────────────────
 
-chrome.storage.session.get(['isRecording', 'sessionId'], (data) => {
-  if (data.isRecording && data.sessionId) {
-    isRecording = true;
-    sessionId = data.sessionId;
+// Load saved server URL first, then restore session state and connect
+chrome.storage.sync.get(['serverUrl'], (syncData) => {
+  if (syncData.serverUrl) {
+    serverUrl = syncData.serverUrl;
   }
-  connectWebSocket();
+  chrome.storage.session.get(['isRecording', 'sessionId'], (data) => {
+    if (data.isRecording && data.sessionId) {
+      isRecording = true;
+      sessionId = data.sessionId;
+    }
+    connectWebSocket();
+  });
 });

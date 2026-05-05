@@ -8,7 +8,7 @@ dotenv.config();
  */
 export const testData = {
   /** Base URL of the application under test */
-  baseUrl: process.env.BASE_URL || 'https://smartbear.com',
+  baseUrl: process.env.BASE_URL || 'https://www.nousinfosystems.com',
 
 } as const;
 

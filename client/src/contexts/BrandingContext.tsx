@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import pgLogoSvg from "@/assets/pg-logo.svg";
 import devxLogoSvg from "@/assets/devx-logo.svg";
+import astraLogoPng from "@/assets/astra-logo.png";
 import amerisureLogoSvg from "@/assets/amerisure-logo.svg";
 
 export interface BrandProfile {
@@ -22,21 +23,21 @@ export interface BrandProfile {
 }
 
 export const brandProfiles: Record<string, BrandProfile> = {
-  devx: {
-    id: "devx",
-    label: "DevX",
-    platformName: "DevX",
-    platformShortName: "DevX",
+  astra: {
+    id: "astra",
+    label: "ASTRA",
+    platformName: "ASTRA",
+    platformShortName: "ASTRA",
     subtitle: "Agentic Testing",
-    commandCenter: "DevX Agentic Testing Command Center",
-    tagline: "DevX — Autonomous Testing Platform",
-    loginTitle: "Log In to DevX",
-    heroTitle: "DevX",
+    commandCenter: "ASTRA Agentic Testing Command Center",
+    tagline: "ASTRA — Autonomous Testing Platform",
+    loginTitle: "Log In to ASTRA",
+    heroTitle: "ASTRA",
     heroSubtitle: "Agentic Testing Platform",
     logoType: "image",
-    logoSrc: devxLogoSvg,
-    accentColor: "#1B6FE4",
-    pdfTitle: "DevX Agentic Testing Platform",
+    logoSrc: astraLogoPng,
+    accentColor: "#1B2D8C",
+    pdfTitle: "ASTRA Agentic Testing Platform",
   },
   gold: {
     id: "gold",
@@ -116,12 +117,12 @@ export function BrandingProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem("selectedBrand");
     // Migrate legacy "365retail" key to "envestnet"
     if (stored === "365retail") return "envestnet";
-    // Migrate old default "gold" to "devx"
-    if (!stored || stored === "gold") return "devx";
+    // Migrate old default "gold" / "devx" to "astra"
+    if (!stored || stored === "gold" || stored === "devx") return "astra";
     return stored;
   });
 
-  const brand = brandProfiles[brandId] || brandProfiles.gold;
+  const brand = brandProfiles[brandId] || brandProfiles.astra;
 
   useEffect(() => {
     localStorage.setItem("selectedBrand", brandId);

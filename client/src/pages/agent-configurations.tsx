@@ -143,7 +143,7 @@ export default function AgentConfigurations() {
       <div className="flex-1 flex flex-col overflow-hidden">
         <DashboardHeader />
         <main className="flex-1 overflow-y-auto p-6">
-          <div className="max-w-7xl mx-auto">
+          <div className="w-full">
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Integration Management</h1>
               <p className="text-muted-foreground">
