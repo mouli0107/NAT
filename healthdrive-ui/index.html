@@ -1,0 +1,1379 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthDrive — Internal Ticket Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            hd: {
+              green:       '#2A7D4F',
+              'green-dark':'#1A5C32',
+              'green-mid': '#3A9E67',
+              'green-light':'#E6F4EC',
+              'green-pale': '#F0FAF4',
+              teal:        '#0E9B8A',
+              'teal-light':'#E0F5F2',
+              navy:        '#1A3350',
+              'navy-mid':  '#254D75',
+              'navy-light':'#E8EFF7',
+              gold:        '#E8A020',
+              'gold-light':'#FEF3DC',
+              gray:        '#6B7280',
+              'gray-light':'#F3F4F6',
+              'gray-border':'#E5E7EB',
+              danger:      '#DC3545',
+              'danger-light':'#FDECEA',
+              warning:     '#F59E0B',
+              'warning-light':'#FEF3C7',
+              success:     '#2A7D4F',
+              'success-light':'#E6F4EC',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui'],
+          }
+        }
+      }
+    }
+  </script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .screen { display: none; }
+    .screen.active { display: flex; }
+    .sidebar-item:hover { background: rgba(255,255,255,0.1); }
+    .sidebar-item.active { background: rgba(255,255,255,0.15); border-left: 3px solid #fff; }
+    .aging-green  { background: #E6F4EC; color: #1A5C32; border: 1px solid #A3D9B8; }
+    .aging-yellow { background: #FEF3C7; color: #92400E; border: 1px solid #FCD34D; }
+    .aging-red    { background: #FDECEA; color: #991B1B; border: 1px solid #FCA5A5; }
+    .status-open       { background: #E8EFF7; color: #1A3350; }
+    .status-inprogress { background: #E0F5F2; color: #065F46; }
+    .status-blocked    { background: #FDECEA; color: #991B1B; }
+    .status-done       { background: #E6F4EC; color: #1A5C32; }
+    .urgency-normal   { background: #F3F4F6; color: #374151; }
+    .urgency-urgent   { background: #FEF3C7; color: #92400E; }
+    .urgency-critical { background: #FDECEA; color: #991B1B; }
+    .card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04); }
+    .btn-primary { background: #2A7D4F; color: white; border-radius: 8px; padding: 8px 20px; font-weight: 600; cursor: pointer; transition: all 0.2s; border: none; }
+    .btn-primary:hover { background: #1A5C32; }
+    .btn-outline { background: white; color: #2A7D4F; border: 1.5px solid #2A7D4F; border-radius: 8px; padding: 7px 20px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-outline:hover { background: #E6F4EC; }
+    .btn-danger { background: #DC3545; color: white; border-radius: 8px; padding: 8px 20px; font-weight: 600; cursor: pointer; border: none; }
+    .input { border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 14px; font-size: 14px; width: 100%; outline: none; transition: border 0.2s; }
+    .input:focus { border-color: #2A7D4F; box-shadow: 0 0 0 3px rgba(42,125,79,0.1); }
+    .select { border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 10px 14px; font-size: 14px; width: 100%; outline: none; background: white; cursor: pointer; }
+    .select:focus { border-color: #2A7D4F; box-shadow: 0 0 0 3px rgba(42,125,79,0.1); }
+    label { font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; display: block; }
+    .ticket-row:hover { background: #F9FAFB; cursor: pointer; }
+    .nav-tab { padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; color: #6B7280; }
+    .nav-tab.active { background: #E6F4EC; color: #1A5C32; font-weight: 600; }
+    .nav-tab:hover:not(.active) { background: #F3F4F6; }
+    .tooltip { position: relative; }
+    .stat-card { border-left: 4px solid; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 3px; }
+    .fade-in { animation: fadeIn 0.3s ease-in; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 50; display: flex; align-items: center; justify-content: center; }
+    .modal-overlay.hidden { display: none; }
+    .progress-bar { height: 6px; border-radius: 3px; background: #E5E7EB; overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+    .region-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+<!-- ============================================================ -->
+<!-- SCREEN NAV (developer helper bar) -->
+<!-- ============================================================ -->
+<div id="devNav" style="position:fixed;bottom:0;left:0;right:0;z-index:999;background:#1A3350;display:flex;gap:4px;padding:8px 16px;align-items:center;overflow-x:auto;flex-shrink:0;">
+  <span style="color:#9CA3AF;font-size:11px;font-weight:600;white-space:nowrap;margin-right:8px;">SCREENS:</span>
+  <button onclick="showScreen('login')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Login</button>
+  <button onclick="showScreen('dashboard')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Dashboard</button>
+  <button onclick="showScreen('ticketList')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Ticket List</button>
+  <button onclick="showScreen('ticketCreate')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Create Ticket</button>
+  <button onclick="showScreen('ticketDetail')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Ticket Detail</button>
+  <button onclick="showScreen('adminRegions')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Admin — Regions</button>
+  <button onclick="showScreen('adminRouting')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Admin — Routing</button>
+  <button onclick="showScreen('search')" style="background:#2A7D4F;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">Search</button>
+  <button onclick="showScreen('adminAI')" style="background:#0E9B8A;color:white;border:none;border-radius:6px;padding:4px 12px;font-size:11px;cursor:pointer;white-space:nowrap;">✦ AI Feature Flags</button>
+</div>
+
+<!-- ============================================================ -->
+<!-- SCREEN 1: LOGIN -->
+<!-- ============================================================ -->
+<div id="login" class="screen active" style="min-height:100vh;padding-bottom:48px;">
+  <div class="flex min-h-screen w-full">
+    <!-- Left Panel -->
+    <div class="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 relative overflow-hidden" style="background: linear-gradient(145deg, #1A5C32 0%, #2A7D4F 50%, #0E9B8A 100%);">
+      <div class="absolute inset-0 opacity-10">
+        <div style="position:absolute;top:-80px;right:-80px;width:400px;height:400px;border-radius:50%;background:white;"></div>
+        <div style="position:absolute;bottom:-100px;left:-60px;width:350px;height:350px;border-radius:50%;background:white;"></div>
+      </div>
+      <div class="relative z-10">
+        <div class="flex items-center gap-3 mb-2">
+          <div style="width:42px;height:42px;background:white;border-radius:10px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-heartbeat" style="color:#2A7D4F;font-size:20px;"></i>
+          </div>
+          <span style="color:white;font-size:22px;font-weight:800;letter-spacing:-0.5px;">HealthDrive</span>
+        </div>
+        <p style="color:rgba(255,255,255,0.7);font-size:13px;font-weight:500;letter-spacing:1px;text-transform:uppercase;margin-top:4px;">Take Care Forward</p>
+      </div>
+      <div class="relative z-10">
+        <h2 style="color:white;font-size:36px;font-weight:800;line-height:1.15;margin-bottom:16px;">Operational<br/>Coordination,<br/>Simplified.</h2>
+        <p style="color:rgba(255,255,255,0.8);font-size:15px;line-height:1.6;">Track, route, and resolve regional follow-up items — across all facilities and departments — from one place.</p>
+        <div class="flex gap-4 mt-8">
+          <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:16px 20px;flex:1;">
+            <div style="color:white;font-size:28px;font-weight:800;">4,000+</div>
+            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:2px;">Facilities Served</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:16px 20px;flex:1;">
+            <div style="color:white;font-size:28px;font-weight:800;">10</div>
+            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:2px;">Regional Teams</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.15);border-radius:10px;padding:16px 20px;flex:1;">
+            <div style="color:white;font-size:28px;font-weight:800;">190+</div>
+            <div style="color:rgba(255,255,255,0.75);font-size:12px;margin-top:2px;">Providers</div>
+          </div>
+        </div>
+      </div>
+      <div class="relative z-10 text-sm" style="color:rgba(255,255,255,0.5);">© 2026 HealthDrive Corporation. Proprietary & Confidential.</div>
+    </div>
+
+    <!-- Right Panel — Login Form -->
+    <div class="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 bg-white">
+      <div class="w-full max-w-md">
+        <div class="lg:hidden flex items-center gap-2 mb-8">
+          <div style="width:36px;height:36px;background:#2A7D4F;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-heartbeat" style="color:white;font-size:16px;"></i>
+          </div>
+          <span style="font-size:20px;font-weight:800;color:#1A3350;">HealthDrive</span>
+        </div>
+
+        <h1 style="font-size:28px;font-weight:800;color:#1A3350;margin-bottom:6px;">Welcome back</h1>
+        <p style="color:#6B7280;font-size:15px;margin-bottom:32px;">Sign in with your HealthDrive credentials</p>
+
+        <div style="background:#E8EFF7;border-radius:12px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:flex-start;gap:12px;">
+          <i class="fas fa-shield-alt" style="color:#254D75;margin-top:2px;"></i>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Single Sign-On via Auth0</div>
+            <div style="font-size:12px;color:#6B7280;margin-top:2px;">You will be redirected to HealthDrive's secure identity provider. Use your @healthdrive.com credentials.</div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:20px;">
+          <label>Email Address</label>
+          <div style="position:relative;">
+            <input class="input" type="email" placeholder="you@healthdrive.com" value="sarah.johnson@healthdrive.com" />
+            <i class="fas fa-envelope" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);color:#9CA3AF;"></i>
+          </div>
+        </div>
+
+        <button class="btn-primary w-full flex items-center justify-center gap-2 mb-4" style="padding:13px;font-size:15px;" onclick="showScreen('dashboard')">
+          <i class="fas fa-sign-in-alt"></i>
+          Continue with HealthDrive SSO
+        </button>
+
+        <div style="text-align:center;color:#9CA3AF;font-size:12px;margin-top:8px;">
+          <i class="fas fa-lock" style="margin-right:4px;"></i>
+          Protected by Auth0 · MFA enforced · HIPAA compliant
+        </div>
+
+        <div style="border-top:1px solid #E5E7EB;margin-top:32px;padding-top:20px;display:flex;justify-content:center;gap:24px;">
+          <a href="#" style="color:#6B7280;font-size:12px;text-decoration:none;">Help Desk</a>
+          <a href="#" style="color:#6B7280;font-size:12px;text-decoration:none;">Privacy Policy</a>
+          <a href="#" style="color:#6B7280;font-size:12px;text-decoration:none;">HIPAA Notice</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SHARED LAYOUT WRAPPER (Sidebar + Main) -->
+<!-- ============================================================ -->
+<div id="appLayout" style="display:none;min-height:calc(100vh - 40px);">
+  <div class="flex" style="min-height:calc(100vh - 40px);">
+
+    <!-- SIDEBAR -->
+    <aside style="width:240px;min-width:240px;background:linear-gradient(180deg,#1A5C32 0%,#1A3350 100%);display:flex;flex-direction:column;padding:0;position:sticky;top:0;height:calc(100vh - 40px);overflow-y:auto;">
+      <!-- Logo -->
+      <div style="padding:20px 20px 16px;border-bottom:1px solid rgba(255,255,255,0.1);">
+        <div class="flex items-center gap-2 mb-1">
+          <div style="width:32px;height:32px;background:white;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-heartbeat" style="color:#2A7D4F;font-size:14px;"></i>
+          </div>
+          <div>
+            <div style="color:white;font-size:15px;font-weight:800;line-height:1;">HealthDrive</div>
+            <div style="color:rgba(255,255,255,0.55);font-size:10px;font-weight:500;">Ticket Tracker</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Info -->
+      <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,0.08);">
+        <div class="flex items-center gap-2">
+          <div style="width:34px;height:34px;background:#2A7D4F;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:13px;font-weight:700;color:white;">SJ</div>
+          <div style="overflow:hidden;">
+            <div style="color:white;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">Sarah Johnson</div>
+            <div style="color:rgba(255,255,255,0.5);font-size:11px;">Regional Admin · Southeast</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav style="padding:10px 10px;flex:1;">
+        <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:8px 10px 4px;">Main</div>
+        <a class="sidebar-item active flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('dashboard')" style="color:white;text-decoration:none;">
+          <i class="fas fa-tachometer-alt w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Dashboard</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('ticketList')" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-ticket-alt w-4"></i>
+          <span style="font-size:14px;font-weight:500;">All Tickets</span>
+          <span style="margin-left:auto;background:#DC3545;color:white;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;">12</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-user-check w-4"></i>
+          <span style="font-size:14px;font-weight:500;">My Assignments</span>
+          <span style="margin-left:auto;background:rgba(255,255,255,0.2);color:white;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;">4</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('search')" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-search w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Search</span>
+        </a>
+
+        <div style="color:rgba(255,255,255,0.4);font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;padding:12px 10px 4px;">Administration</div>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('adminRegions')" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-map-marker-alt w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Regions</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('adminRouting')" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-route w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Routing Rules</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" onclick="showScreen('adminAI')" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-robot w-4" style="color:#0E9B8A;"></i>
+          <span style="font-size:14px;font-weight:500;">AI Features</span>
+          <span style="margin-left:auto;background:#0E9B8A;color:white;border-radius:10px;padding:1px 7px;font-size:10px;font-weight:700;">ON</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-users w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Users</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-sliders-h w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Feature Flags</span>
+        </a>
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg mb-1 cursor-pointer" style="color:rgba(255,255,255,0.8);text-decoration:none;">
+          <i class="fas fa-history w-4"></i>
+          <span style="font-size:14px;font-weight:500;">Audit Log</span>
+        </a>
+      </nav>
+
+      <!-- Bottom -->
+      <div style="padding:12px 16px;border-top:1px solid rgba(255,255,255,0.1);">
+        <a class="sidebar-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer" onclick="showScreen('login')" style="color:rgba(255,255,255,0.6);text-decoration:none;">
+          <i class="fas fa-sign-out-alt w-4"></i>
+          <span style="font-size:14px;">Sign Out</span>
+        </a>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main style="flex:1;overflow-y:auto;padding-bottom:40px;background:#F8FAFC;">
+
+      <!-- TOPBAR -->
+      <div style="background:white;border-bottom:1px solid #E5E7EB;padding:12px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;">
+        <div class="flex items-center gap-3">
+          <div style="background:#E6F4EC;border-radius:8px;padding:6px 12px;display:flex;align-items:center;gap:6px;">
+            <span class="region-dot" style="background:#2A7D4F;"></span>
+            <span style="font-size:13px;font-weight:600;color:#1A5C32;">Southeast Region</span>
+          </div>
+          <span style="color:#D1D5DB;">|</span>
+          <span style="font-size:13px;color:#6B7280;">Monday, April 27, 2026</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <div style="position:relative;">
+            <button style="background:#F3F4F6;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;position:relative;">
+              <i class="fas fa-bell" style="color:#6B7280;"></i>
+              <span style="position:absolute;top:5px;right:6px;width:8px;height:8px;background:#DC3545;border-radius:50%;border:2px solid white;"></span>
+            </button>
+          </div>
+          <button class="btn-primary flex items-center gap-2" onclick="showScreen('ticketCreate')">
+            <i class="fas fa-plus"></i>
+            New Ticket
+          </button>
+        </div>
+      </div>
+
+      <!-- PAGE CONTENT SLOTS -->
+      <div id="page-dashboard" class="page-content" style="padding:24px 28px;"></div>
+      <div id="page-ticketList" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-ticketCreate" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-ticketDetail" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-adminRegions" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-adminRouting" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-adminAI" class="page-content" style="padding:24px 28px;display:none;"></div>
+      <div id="page-search" class="page-content" style="padding:24px 28px;display:none;"></div>
+
+    </main>
+  </div>
+</div>
+
+<!-- ============================================================ -->
+<!-- MODAL: Ticket Status Change -->
+<!-- ============================================================ -->
+<div id="statusModal" class="modal-overlay hidden">
+  <div class="card fade-in" style="width:440px;padding:28px;">
+    <h3 style="font-size:18px;font-weight:700;color:#1A3350;margin-bottom:6px;">Move to Blocked</h3>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:20px;">Please provide a reason why this ticket is blocked. This will be recorded in the ticket thread.</p>
+    <label>Blocked Reason <span style="color:#DC3545;">*</span></label>
+    <textarea class="input" rows="3" placeholder="e.g. Waiting for facility to confirm resident appointment availability..."></textarea>
+    <div class="flex gap-3 mt-5 justify-end">
+      <button class="btn-outline" onclick="document.getElementById('statusModal').classList.add('hidden')">Cancel</button>
+      <button class="btn-danger" onclick="document.getElementById('statusModal').classList.add('hidden')">Mark as Blocked</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── PAGE CONTENT ─────────────────────────────────────────────────
+
+const pages = {
+
+dashboard: `
+<div class="fade-in">
+  <!-- Header -->
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">Dashboard</h1>
+      <p style="color:#6B7280;font-size:14px;margin-top:2px;">Southeast Region · Overview for Apr 2026</p>
+    </div>
+    <div class="flex gap-2">
+      <select class="select" style="width:auto;font-size:13px;">
+        <option>This Month</option>
+        <option>Last 7 Days</option>
+        <option>Last 90 Days</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Alert Banner -->
+  <div style="background:#FDECEA;border:1px solid #FCA5A5;border-radius:10px;padding:12px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+    <i class="fas fa-exclamation-triangle" style="color:#DC3545;"></i>
+    <span style="font-size:13px;font-weight:600;color:#991B1B;">3 tickets are critically overdue — immediate attention required</span>
+    <button onclick="showScreen('ticketList')" style="margin-left:auto;background:#DC3545;color:white;border:none;border-radius:6px;padding:4px 14px;font-size:12px;font-weight:600;cursor:pointer;">View Now</button>
+  </div>
+
+  <!-- Stat Cards -->
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;">
+    <div class="card stat-card p-5" style="border-left-color:#2A7D4F;">
+      <div style="font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Total Open</div>
+      <div style="font-size:36px;font-weight:800;color:#1A3350;margin:4px 0;">47</div>
+      <div style="font-size:12px;color:#2A7D4F;"><i class="fas fa-arrow-up"></i> +8 from last week</div>
+    </div>
+    <div class="card stat-card p-5" style="border-left-color:#0E9B8A;">
+      <div style="font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">In Progress</div>
+      <div style="font-size:36px;font-weight:800;color:#1A3350;margin:4px 0;">23</div>
+      <div style="font-size:12px;color:#0E9B8A;"><i class="fas fa-check"></i> On track</div>
+    </div>
+    <div class="card stat-card p-5" style="border-left-color:#F59E0B;">
+      <div style="font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Blocked</div>
+      <div style="font-size:36px;font-weight:800;color:#1A3350;margin:4px 0;">6</div>
+      <div style="font-size:12px;color:#F59E0B;"><i class="fas fa-clock"></i> 2 beyond 24h</div>
+    </div>
+    <div class="card stat-card p-5" style="border-left-color:#6B7280;">
+      <div style="font-size:12px;font-weight:600;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Resolved (Month)</div>
+      <div style="font-size:36px;font-weight:800;color:#1A3350;margin:4px 0;">112</div>
+      <div style="font-size:12px;color:#2A7D4F;"><i class="fas fa-arrow-up"></i> 94% SLA met</div>
+    </div>
+  </div>
+
+  <!-- Row 2: Charts & Aging -->
+  <div style="display:grid;grid-template-columns:1.5fr 1fr;gap:16px;margin-bottom:20px;">
+
+    <!-- Tickets by Department -->
+    <div class="card p-5">
+      <div class="flex items-center justify-between mb-4">
+        <h3 style="font-weight:700;color:#1A3350;">Tickets by Department</h3>
+        <span style="font-size:12px;color:#9CA3AF;">This Month</span>
+      </div>
+      ${['Scheduling & Logistics','Billing & Revenue Cycle','Clinical Operations','Credentialing','HR','Compliance','Facilities','Legal'].map((d,i)=>{
+        const vals=[34,28,22,18,12,10,8,6];const colors=['#2A7D4F','#0E9B8A','#254D75','#E8A020','#9333EA','#DC3545','#6B7280','#374151'];
+        const pct=Math.round(vals[i]/134*100);
+        return `<div style="margin-bottom:12px;">
+          <div class="flex justify-between mb-1"><span style="font-size:13px;color:#374151;">${d}</span><span style="font-size:13px;font-weight:600;color:#1A3350;">${vals[i]}</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:${pct}%;background:${colors[i]};"></div></div>
+        </div>`;
+      }).join('')}
+    </div>
+
+    <!-- SLA & Aging -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;margin-bottom:14px;">SLA Performance</h3>
+        <div style="display:flex;justify-content:center;margin-bottom:12px;">
+          <div style="position:relative;width:100px;height:100px;">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#E5E7EB" stroke-width="10"/>
+              <circle cx="50" cy="50" r="40" fill="none" stroke="#2A7D4F" stroke-width="10" stroke-dasharray="226" stroke-dashoffset="34" stroke-linecap="round" transform="rotate(-90 50 50)"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span style="font-size:20px;font-weight:800;color:#1A3350;">85%</span>
+              <span style="font-size:10px;color:#6B7280;">Met</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;">
+          <div style="text-align:center;"><div style="font-weight:700;color:#2A7D4F;">95</div><div style="color:#6B7280;">On Time</div></div>
+          <div style="text-align:center;"><div style="font-weight:700;color:#DC3545;">17</div><div style="color:#6B7280;">Breached</div></div>
+        </div>
+      </div>
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;margin-bottom:14px;">Ticket Aging</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div style="width:10px;height:10px;border-radius:50%;background:#2A7D4F;"></div><span style="font-size:13px;">On Track</span></div>
+            <span class="px-3 py-1 rounded-full text-sm font-bold aging-green">38</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div style="width:10px;height:10px;border-radius:50%;background:#F59E0B;"></div><span style="font-size:13px;">Approaching SLA</span></div>
+            <span class="px-3 py-1 rounded-full text-sm font-bold aging-yellow">9</span>
+          </div>
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2"><div style="width:10px;height:10px;border-radius:50%;background:#DC3545;"></div><span style="font-size:13px;">SLA Breached</span></div>
+            <span class="px-3 py-1 rounded-full text-sm font-bold aging-red">3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Tickets -->
+  <div class="card">
+    <div class="flex items-center justify-between p-5 border-b border-gray-100">
+      <h3 style="font-weight:700;color:#1A3350;">Recent Tickets</h3>
+      <button onclick="showScreen('ticketList')" class="btn-outline" style="padding:5px 14px;font-size:12px;">View All</button>
+    </div>
+    <div>
+      ${[
+        {id:'HD-1042',subject:'Resident appointment follow-up at Sunrise SNF',dept:'Scheduling',status:'Open',urgency:'Urgent',age:'2h 15m',aging:'aging-yellow'},
+        {id:'HD-1041',subject:'Provider credentialing delay — Dr. Martinez at Oak Grove',dept:'Credentialing',status:'Blocked',urgency:'Urgent',age:'6h 40m',aging:'aging-red'},
+        {id:'HD-1040',subject:'Medicare claim dispute — Brookdale Facility #214',dept:'Billing',status:'In Progress',urgency:'Normal',age:'18h',aging:'aging-green'},
+        {id:'HD-1039',subject:'Missing BAA follow-up — Georgia LTC (new acquisition)',dept:'Legal',status:'Open',urgency:'Critical',age:'30m',aging:'aging-green'},
+        {id:'HD-1038',subject:'Q2 QSR preparation — Southeast portfolio',dept:'Clinical Ops',status:'In Progress',urgency:'Normal',age:'1d 4h',aging:'aging-yellow'},
+      ].map(t => `
+        <div class="ticket-row flex items-center gap-4 px-5 py-3.5 border-b border-gray-50" onclick="showScreen('ticketDetail')">
+          <span style="font-size:12px;font-weight:700;color:#9CA3AF;width:72px;flex-shrink:0;">${t.id}</span>
+          <span style="font-size:14px;color:#1A3350;flex:1;font-weight:500;">${t.subject}</span>
+          <span style="font-size:12px;background:#F3F4F6;color:#6B7280;padding:3px 10px;border-radius:20px;white-space:nowrap;">${t.dept}</span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold status-${t.status.toLowerCase().replace(' ','')} whitespace-nowrap">${t.status}</span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold urgency-${t.urgency.toLowerCase()} whitespace-nowrap">${t.urgency}</span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${t.aging} whitespace-nowrap flex items-center gap-1"><i class="fas fa-clock text-xs"></i>${t.age}</span>
+        </div>
+      `).join('')}
+    </div>
+  </div>
+</div>
+`,
+
+ticketList: `
+<div class="fade-in">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">All Tickets</h1>
+      <p style="color:#6B7280;font-size:14px;margin-top:2px;">Southeast Region · 47 open tickets</p>
+    </div>
+    <button class="btn-primary flex items-center gap-2" onclick="showScreen('ticketCreate')">
+      <i class="fas fa-plus"></i> New Ticket
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card p-4 mb-4">
+    <div style="display:grid;grid-template-columns:1fr auto auto auto auto;gap:12px;align-items:end;">
+      <div style="position:relative;">
+        <i class="fas fa-search" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+        <input class="input" placeholder="Search tickets..." style="padding-left:36px;" />
+      </div>
+      <select class="select" style="width:140px;font-size:13px;">
+        <option>All Statuses</option>
+        <option>Open</option>
+        <option>In Progress</option>
+        <option>Blocked</option>
+        <option>Done</option>
+      </select>
+      <select class="select" style="width:150px;font-size:13px;">
+        <option>All Departments</option>
+        <option>Scheduling</option>
+        <option>Billing</option>
+        <option>Credentialing</option>
+        <option>Clinical Ops</option>
+        <option>Legal</option>
+      </select>
+      <select class="select" style="width:130px;font-size:13px;">
+        <option>All Urgency</option>
+        <option>Critical</option>
+        <option>Urgent</option>
+        <option>Normal</option>
+      </select>
+      <select class="select" style="width:120px;font-size:13px;">
+        <option>All Aging</option>
+        <option>🟢 On Track</option>
+        <option>🟡 Near SLA</option>
+        <option>🔴 Breached</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Tab Bar -->
+  <div class="flex gap-2 mb-4">
+    <button class="nav-tab active" onclick="switchTicketTab(this,'All Tickets')">All Tickets <span style="background:#2A7D4F;color:white;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:700;">47</span></button>
+    <button class="nav-tab" onclick="switchTicketTab(this,'Unassigned')">Unassigned <span style="background:#F59E0B;color:white;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:700;">11</span></button>
+    <button class="nav-tab" onclick="switchTicketTab(this,'My Assignments')">My Assignments <span style="background:#0E9B8A;color:white;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:700;">4</span></button>
+    <button class="nav-tab" onclick="switchTicketTab(this,'Overdue')">Overdue <span style="background:#DC3545;color:white;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:700;">3</span></button>
+    <button class="nav-tab" onclick="switchTicketTab(this,'Blocked')">Blocked <span style="background:#F59E0B;color:white;border-radius:10px;padding:1px 8px;font-size:11px;margin-left:4px;font-weight:700;">6</span></button>
+  </div>
+
+  <!-- Table -->
+  <div class="card">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#F8FAFC;border-bottom:2px solid #E5E7EB;">
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:80px;">ID</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">Subject</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:140px;">Type</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:140px;">Department</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:110px;">Status</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:90px;">Urgency</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:120px;">Assigned To</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;width:100px;">Age</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[
+          {id:'HD-1042',subject:'Resident appt follow-up at Sunrise SNF Atlanta',type:'Resident Appt',dept:'Scheduling',status:'Open',urgency:'Urgent',assigned:'M. Torres',age:'2h 15m',aging:'aging-yellow'},
+          {id:'HD-1041',subject:'Provider credentialing delay — Dr. Martinez, Oak Grove',type:'Credentialing',dept:'Credentialing',status:'Blocked',urgency:'Urgent',assigned:'K. Shah',age:'6h 40m',aging:'aging-red'},
+          {id:'HD-1039',subject:'Missing BAA follow-up — Georgia LTC acquisition',type:'Contract',dept:'Legal',status:'Open',urgency:'Critical',assigned:'Unassigned',age:'30m',aging:'aging-green'},
+          {id:'HD-1040',subject:'Medicare claim dispute — Brookdale #214',type:'Billing',dept:'Billing',status:'In Progress',urgency:'Normal',assigned:'J. Williams',age:'18h',aging:'aging-green'},
+          {id:'HD-1038',subject:'Q2 Quarterly Service Report — Southeast portfolio',type:'QSR',dept:'Clinical Ops',status:'In Progress',urgency:'Normal',assigned:'S. Johnson',age:'1d 4h',aging:'aging-yellow'},
+          {id:'HD-1037',subject:'Dental supply shortage — Sunrise Memory Care',type:'Vendor',dept:'Facilities',status:'Open',urgency:'Urgent',assigned:'Unassigned',age:'3h 20m',aging:'aging-green'},
+          {id:'HD-1036',subject:'Staff HR onboarding issue — new dental hygienist',type:'Staff HR',dept:'HR',status:'Done',urgency:'Normal',assigned:'HR Team',age:'2d',aging:'aging-green'},
+          {id:'HD-1035',subject:'CMS enrollment renewal — Dr. Patel (podiatry)',type:'Regulatory',dept:'Compliance',status:'Open',urgency:'Critical',assigned:'L. Chen',age:'4h',aging:'aging-yellow'},
+          {id:'HD-1034',subject:'Resident safety flag — Fall incident Oak Grove #3B',type:'Resident Safety',dept:'Clinical Ops',status:'In Progress',urgency:'Critical',assigned:'R. Gupta',age:'45m',aging:'aging-green'},
+          {id:'HD-1033',subject:'Provider coverage gap — No optometrist for Heritage Park',type:'Coverage Gap',dept:'Scheduling',status:'Open',urgency:'Urgent',assigned:'Unassigned',age:'5h',aging:'aging-red'},
+        ].map(t => `
+          <tr class="ticket-row border-b border-gray-50" onclick="showScreen('ticketDetail')" style="cursor:pointer;">
+            <td style="padding:12px 16px;font-size:12px;font-weight:700;color:#9CA3AF;">${t.id}</td>
+            <td style="padding:12px 16px;font-size:13px;color:#1A3350;font-weight:500;max-width:280px;"><div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.subject}</div></td>
+            <td style="padding:12px 16px;"><span style="font-size:11px;background:#F3F4F6;color:#374151;padding:3px 8px;border-radius:6px;">${t.type}</span></td>
+            <td style="padding:12px 16px;font-size:13px;color:#6B7280;">${t.dept}</td>
+            <td style="padding:12px 16px;"><span class="px-2.5 py-1 rounded-full text-xs font-semibold status-${t.status.toLowerCase().replace(' ','')} whitespace-nowrap">${t.status}</span></td>
+            <td style="padding:12px 16px;"><span class="px-2.5 py-1 rounded-full text-xs font-semibold urgency-${t.urgency.toLowerCase()} whitespace-nowrap">${t.urgency}</span></td>
+            <td style="padding:12px 16px;font-size:12px;color:#6B7280;">${t.assigned === 'Unassigned' ? '<span style="color:#F59E0B;font-weight:600;font-size:12px;">Unassigned</span>' : t.assigned}</td>
+            <td style="padding:12px 16px;"><span class="px-2 py-1 rounded-full text-xs font-semibold ${t.aging}">${t.age}</span></td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>
+`,
+
+ticketCreate: `
+<div class="fade-in" style="max-width:760px;margin:0 auto;">
+  <div class="flex items-center gap-3 mb-6">
+    <button onclick="showScreen('ticketList')" style="background:#F3F4F6;border:none;border-radius:8px;padding:8px 12px;cursor:pointer;color:#6B7280;">
+      <i class="fas fa-arrow-left"></i>
+    </button>
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">New Ticket</h1>
+      <p style="color:#6B7280;font-size:14px;">Target: created in under 30 seconds</p>
+    </div>
+    <div style="margin-left:auto;background:#E6F4EC;border-radius:8px;padding:6px 14px;display:flex;align-items:center;gap:6px;">
+      <i class="fas fa-stopwatch" style="color:#2A7D4F;font-size:13px;"></i>
+      <span style="font-size:13px;font-weight:700;color:#1A5C32;" id="timerDisplay">0:00</span>
+    </div>
+  </div>
+
+  <div class="card p-7">
+    <!-- Subject - Most prominent -->
+    <div style="margin-bottom:24px;">
+      <label style="font-size:15px;font-weight:700;color:#1A3350;">What needs to be followed up? <span style="color:#DC3545;">*</span></label>
+      <input class="input" style="font-size:16px;padding:14px;margin-top:8px;border-width:2px;" placeholder="Describe the issue or follow-up item..." />
+      <p style="font-size:12px;color:#9CA3AF;margin-top:5px;">This is the only required field. Everything else is optional.</p>
+    </div>
+
+    <!-- Facility & Resident Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label>Facility</label>
+        <div style="position:relative;">
+          <select class="select">
+            <option value="">Search or select facility...</option>
+            <option selected>Sunrise SNF Atlanta (SNF · Southeast)</option>
+            <option>Oak Grove Memory Care (MC · Southeast)</option>
+            <option>Heritage Park Assisted Living (AL · Southeast)</option>
+            <option>Brookdale Care Center #214 (SNF · Southeast)</option>
+          </select>
+        </div>
+        <p style="font-size:11px;color:#9CA3AF;margin-top:3px;">From HealthDrive facility master index</p>
+      </div>
+      <div>
+        <label>Resident Reference <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(PHI — encrypted)</span></label>
+        <input class="input" placeholder="EMR resident ID or name..." />
+      </div>
+    </div>
+
+    <!-- Type, Urgency, Department Row -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label>Ticket Type</label>
+        <select class="select">
+          <option>Select type...</option>
+          <option>Resident Appointment Follow-up</option>
+          <option>Provider Coverage Gap</option>
+          <option>Provider Credentialing</option>
+          <option>Billing & Claims Issue</option>
+          <option>Facility Onboarding</option>
+          <option>Resident Safety Flag</option>
+          <option>Regulatory Deadline</option>
+          <option>Contract Follow-up</option>
+          <option>Staff HR Request</option>
+          <option>QSR Preparation</option>
+          <option>Vendor / Supply Issue</option>
+          <option>General Operations</option>
+        </select>
+      </div>
+      <div>
+        <label>Urgency</label>
+        <select class="select">
+          <option>Normal</option>
+          <option selected>Urgent</option>
+          <option>Critical</option>
+        </select>
+      </div>
+      <div>
+        <label>Department <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(auto-routed)</span></label>
+        <select class="select">
+          <option>Auto (from routing rules)</option>
+          <option selected>Scheduling & Logistics</option>
+          <option>Billing & Revenue Cycle</option>
+          <option>Credentialing</option>
+          <option>Clinical Operations</option>
+          <option>Legal</option>
+          <option>Compliance</option>
+          <option>HR</option>
+          <option>Facilities</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Provider & Description -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px;">
+      <div>
+        <label>Provider <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(optional)</span></label>
+        <select class="select">
+          <option value="">Select provider...</option>
+          <option>Dr. Sarah Martinez (Dental)</option>
+          <option>Dr. James Patel (Podiatry)</option>
+          <option>Dr. Lisa Chen (Optometry)</option>
+          <option>Dr. Robert Gupta (Behavioral Health)</option>
+        </select>
+      </div>
+      <div>
+        <label>Contact Info <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(optional)</span></label>
+        <input class="input" placeholder="Facility contact name / phone..." />
+      </div>
+    </div>
+
+    <div style="margin-bottom:24px;">
+      <label>Description <span style="font-size:11px;font-weight:400;color:#9CA3AF;">(optional — add more context)</span></label>
+      <textarea class="input" rows="3" placeholder="Additional details, context, or steps already taken..."></textarea>
+    </div>
+
+    <!-- AI Enrichment Panel (simulated — from inbound email) -->
+    <div id="aiEnrichmentPanel" style="border:1.5px solid #2A7D4F;border-radius:10px;margin-bottom:24px;overflow:hidden;">
+      <div onclick="toggleEnrichment()" style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:#E6F4EC;cursor:pointer;">
+        <i class="fas fa-robot" style="color:#2A7D4F;font-size:13px;"></i>
+        <span style="font-size:13px;font-weight:700;color:#1A5C32;">✦ AI Suggestions</span>
+        <span style="margin-left:6px;background:#2A7D4F;color:white;border-radius:10px;padding:1px 8px;font-size:11px;font-weight:700;">87% confidence</span>
+        <span style="margin-left:auto;font-size:11px;color:#6B7280;font-weight:400;">via Azure OpenAI · GPT-4o-mini</span>
+        <i class="fas fa-chevron-up" id="enrichChevron" style="color:#2A7D4F;font-size:11px;margin-left:8px;"></i>
+      </div>
+      <div id="enrichBody" style="padding:10px 14px;">
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Subject</span>
+          <span style="flex:1;font-size:13px;">Provider credentialing delay at Sunrise SNF — urgent follow-up needed</span>
+          <button onclick="applySuggestion('subject','Provider credentialing delay at Sunrise SNF — urgent follow-up needed')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Facility</span>
+          <span style="flex:1;font-size:13px;">Sunrise SNF Atlanta</span>
+          <button onclick="applySuggestion('facility','Sunrise SNF Atlanta')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Contact</span>
+          <span style="flex:1;font-size:13px;">Maria Gutierrez (DON)</span>
+          <button onclick="applySuggestion('contact','Maria Gutierrez (DON)')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Urgency</span>
+          <span style="flex:1;font-size:13px;font-weight:700;color:#92400E;background:#FEF3C7;border-radius:6px;padding:2px 8px;display:inline-block;">Urgent</span>
+          <button onclick="applySuggestion('urgency','Urgent')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Type</span>
+          <span style="flex:1;font-size:13px;">Provider Credentialing</span>
+          <button onclick="applySuggestion('type','Provider Credentialing')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #F0F0F0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Department</span>
+          <span style="flex:1;font-size:13px;">Credentialing
+            <span style="margin-left:6px;background:#E6F4EC;color:#1A5C32;border:1px solid #2A7D4F;border-radius:8px;padding:1px 7px;font-size:10px;font-weight:700;">✦ AI Routed · 91%</span>
+          </span>
+          <button onclick="applySuggestion('department','Credentialing')" style="background:#2A7D4F;color:white;border:none;border-radius:5px;padding:2px 10px;font-size:11px;cursor:pointer;white-space:nowrap;">Use</button>
+        </div>
+        <div style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;">
+          <span style="min-width:80px;font-size:12px;font-weight:700;color:#555;">Intent</span>
+          <span style="flex:1;font-size:12px;color:#666;font-style:italic;">Facility is flagging that a provider's credentialing paperwork has been delayed and is requesting an urgent status update before next week's scheduled visits.</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid #E5E7EB;margin-top:4px;">
+          <button onclick="applyAllSuggestions()" style="background:#1A5C32;color:white;border:none;border-radius:7px;padding:6px 18px;font-size:12px;font-weight:700;cursor:pointer;">Apply all suggestions</button>
+          <span style="font-size:11px;color:#9CA3AF;">No PHI detected · Safe to process</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="flex justify-between items-center">
+      <button class="btn-outline" onclick="showScreen('ticketList')">Cancel</button>
+      <div class="flex gap-3">
+        <button class="btn-outline" onclick="showToast('Draft saved — ticket queued for review')">Save as Draft</button>
+        <button class="btn-primary flex items-center gap-2" onclick="showScreen('ticketDetail')">
+          <i class="fas fa-paper-plane"></i>
+          Submit Ticket
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`,
+
+ticketDetail: `
+<div class="fade-in" style="max-width:960px;margin:0 auto;">
+  <!-- Breadcrumb -->
+  <div class="flex items-center gap-2 mb-4 text-sm" style="color:#9CA3AF;">
+    <button onclick="showScreen('ticketList')" style="background:none;border:none;cursor:pointer;color:#9CA3AF;padding:0;"><i class="fas fa-chevron-left"></i> All Tickets</button>
+    <span>/</span>
+    <span style="color:#1A3350;font-weight:600;">HD-1042</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 320px;gap:20px;">
+
+    <!-- Left: Main Content -->
+    <div>
+      <!-- Header Card -->
+      <div class="card p-6 mb-4">
+        <div class="flex items-start justify-between mb-3">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="px-3 py-1 rounded-full text-sm font-semibold status-open">Open</span>
+            <span class="px-3 py-1 rounded-full text-sm font-semibold urgency-urgent">Urgent</span>
+            <span class="px-2.5 py-1 rounded-full text-xs font-semibold aging-yellow"><i class="fas fa-clock text-xs"></i> 2h 15m</span>
+          </div>
+          <span style="font-size:13px;font-weight:700;color:#9CA3AF;">HD-1042</span>
+        </div>
+        <h1 style="font-size:20px;font-weight:800;color:#1A3350;margin-bottom:6px;line-height:1.3;">Resident appointment follow-up at Sunrise SNF Atlanta</h1>
+        <p style="font-size:14px;color:#6B7280;line-height:1.6;">Dr. Martinez was unable to complete the dental exam for resident during scheduled visit. Resident was uncooperative and visit was cut short. Need to reschedule and coordinate with facility charge nurse before next visit.</p>
+
+        <!-- Meta grid -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:20px;padding-top:16px;border-top:1px solid #E5E7EB;">
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Facility</div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Sunrise SNF Atlanta</div>
+            <div style="font-size:11px;color:#9CA3AF;">Chain: Sunrise Health Group</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Provider</div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Dr. Sarah Martinez</div>
+            <div style="font-size:11px;color:#9CA3AF;">Dental · Southeast</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Resident Ref</div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">HD-EMR-RES-00492847</div>
+            <div style="font-size:11px;color:#9CA3AF;"><i class="fas fa-lock" style="font-size:10px;"></i> PHI — encrypted</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Department</div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Scheduling & Logistics</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">Created</div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Apr 27, 2026 · 10:32 AM</div>
+            <div style="font-size:11px;color:#9CA3AF;">by Marcus Williams (Email)</div>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:600;color:#9CA3AF;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:3px;">SLA Deadline</div>
+            <div style="font-size:13px;font-weight:600;color:#F59E0B;">Apr 27, 2026 · 2:32 PM</div>
+            <div style="font-size:11px;color:#9CA3AF;">Urgent · 4h SLA · 1h 45m left</div>
+          </div>
+        </div>
+
+        <!-- SLA Progress -->
+        <div style="margin-top:16px;">
+          <div class="flex justify-between mb-1">
+            <span style="font-size:12px;font-weight:600;color:#F59E0B;">SLA: 56% elapsed</span>
+            <span style="font-size:12px;color:#9CA3AF;">1h 45m remaining</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" style="width:56%;background:#F59E0B;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes Thread -->
+      <div class="card">
+        <div style="padding:16px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-between;">
+          <h3 style="font-weight:700;color:#1A3350;">Notes & Activity</h3>
+          <span style="font-size:12px;color:#9CA3AF;">3 notes</span>
+        </div>
+
+        <div style="padding:20px;display:flex;flex-direction:column;gap:16px;">
+          <!-- System note -->
+          <div style="display:flex;gap:12px;">
+            <div style="width:32px;height:32px;background:#E8EFF7;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-envelope" style="color:#254D75;font-size:12px;"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:12px 16px;">
+                <div style="font-size:12px;font-weight:600;color:#254D75;margin-bottom:4px;"><i class="fas fa-bolt" style="font-size:10px;"></i> System · Ticket created from inbound email</div>
+                <div style="font-size:13px;color:#374151;">Email received from: marcus.williams@sunrisesnf.com. Subject: "Follow up needed - Dental visit incomplete". AI routing assigned to Scheduling & Logistics department.</div>
+              </div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:4px;padding-left:12px;">Apr 27 · 10:32 AM</div>
+            </div>
+          </div>
+
+          <!-- User note -->
+          <div style="display:flex;gap:12px;">
+            <div style="width:32px;height:32px;background:#2A7D4F;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:white;flex-shrink:0;">SJ</div>
+            <div style="flex:1;">
+              <div style="background:white;border:1.5px solid #E5E7EB;border-radius:10px;padding:12px 16px;">
+                <div style="font-size:12px;font-weight:600;color:#1A3350;margin-bottom:4px;">Sarah Johnson <span style="font-weight:400;color:#9CA3AF;">· Regional Admin</span></div>
+                <div style="font-size:13px;color:#374151;">Assigned to Miguel Torres. Miguel — please coordinate with the charge nurse at Sunrise SNF to find a suitable rescheduling window. Resident has dementia and early morning visits work best.</div>
+              </div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:4px;padding-left:12px;">Apr 27 · 11:05 AM</div>
+            </div>
+          </div>
+
+          <!-- Status change note -->
+          <div style="display:flex;gap:12px;">
+            <div style="width:32px;height:32px;background:#E0F5F2;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-exchange-alt" style="color:#0E9B8A;font-size:11px;"></i>
+            </div>
+            <div style="flex:1;">
+              <div style="background:#F8FAFC;border:1px solid #E5E7EB;border-radius:10px;padding:12px 16px;">
+                <div style="font-size:12px;font-weight:600;color:#0E9B8A;margin-bottom:4px;"><i class="fas fa-arrow-right" style="font-size:10px;"></i> Status changed to In Progress · Miguel Torres</div>
+                <div style="font-size:13px;color:#374151;">Called charge nurse. Reschedule requested for Thursday AM. Awaiting confirmation.</div>
+              </div>
+              <div style="font-size:11px;color:#9CA3AF;margin-top:4px;padding-left:12px;">Apr 27 · 11:48 AM</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Add Note -->
+        <div style="padding:16px 20px;border-top:1px solid #E5E7EB;">
+          <div class="flex gap-3">
+            <div style="width:32px;height:32px;background:#2A7D4F;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700;color:white;">SJ</div>
+            <div style="flex:1;">
+              <textarea class="input" rows="2" placeholder="Add a note or update..." style="resize:none;"></textarea>
+              <div class="flex justify-end mt-2">
+                <button class="btn-primary" style="padding:7px 18px;font-size:13px;" onclick="showToast('Note added to ticket')"><i class="fas fa-paper-plane" style="margin-right:6px;"></i>Add Note</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Right Sidebar: Actions + Meta -->
+    <div style="display:flex;flex-direction:column;gap:14px;">
+
+      <!-- Status Actions -->
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;font-size:14px;margin-bottom:14px;">Actions</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <button class="btn-primary w-full" style="padding:10px;" onclick="showToast('Status → In Progress')"><i class="fas fa-play" style="margin-right:6px;"></i>Start Working</button>
+          <button style="background:#FEF3C7;color:#92400E;border:1.5px solid #FCD34D;border-radius:8px;padding:9px;font-weight:600;cursor:pointer;font-size:14px;" onclick="document.getElementById('statusModal').classList.remove('hidden')">
+            <i class="fas fa-ban" style="margin-right:6px;"></i>Mark as Blocked
+          </button>
+          <button style="background:#E6F4EC;color:#1A5C32;border:1.5px solid #A3D9B8;border-radius:8px;padding:9px;font-weight:600;cursor:pointer;font-size:14px;" onclick="showToast('✓ Ticket marked as Done')">
+            <i class="fas fa-check" style="margin-right:6px;"></i>Mark as Done
+          </button>
+        </div>
+      </div>
+
+      <!-- Assignment -->
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;font-size:14px;margin-bottom:12px;">Assigned To</h3>
+        <div class="flex items-center gap-2 mb-3">
+          <div style="width:32px;height:32px;background:#0E9B8A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:white;">MT</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">Miguel Torres</div>
+            <div style="font-size:11px;color:#9CA3AF;">Scheduling · Southeast</div>
+          </div>
+        </div>
+        <select class="select" style="font-size:13px;">
+          <option>Re-assign to...</option>
+          <option>Sarah Johnson</option>
+          <option>Maria Torres</option>
+          <option>Kevin Shah</option>
+          <option>Lisa Chen</option>
+        </select>
+      </div>
+
+      <!-- Details -->
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;font-size:14px;margin-bottom:12px;">Details</h3>
+        <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;">
+          <div class="flex justify-between"><span style="color:#9CA3AF;">Region</span><span style="font-weight:600;color:#1A3350;">Southeast</span></div>
+          <div class="flex justify-between"><span style="color:#9CA3AF;">Ticket Type</span><span style="font-weight:600;color:#1A3350;">Resident Appt</span></div>
+          <div class="flex justify-between"><span style="color:#9CA3AF;">Source</span><span style="background:#E8EFF7;color:#254D75;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;">Email</span></div>
+          <div class="flex justify-between"><span style="color:#9CA3AF;">EHR Ref</span><span style="font-weight:600;color:#1A3350;font-size:11px;">HD-EMR-0049</span></div>
+          <div class="flex justify-between"><span style="color:#9CA3AF;">Routing</span><span style="background:#E0F5F2;color:#065F46;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;"><i class="fas fa-robot" style="font-size:9px;"></i> AI</span></div>
+        </div>
+      </div>
+
+      <!-- Audit snippet -->
+      <div class="card p-5">
+        <h3 style="font-weight:700;color:#1A3350;font-size:14px;margin-bottom:12px;">Audit Trail</h3>
+        <div style="display:flex;flex-direction:column;gap:8px;font-size:12px;color:#6B7280;">
+          <div class="flex gap-2"><i class="fas fa-circle" style="color:#2A7D4F;font-size:8px;margin-top:3px;flex-shrink:0;"></i><span><strong>10:32 AM</strong> — Created via email intake</span></div>
+          <div class="flex gap-2"><i class="fas fa-circle" style="color:#2A7D4F;font-size:8px;margin-top:3px;flex-shrink:0;"></i><span><strong>11:05 AM</strong> — Assigned by S. Johnson</span></div>
+          <div class="flex gap-2"><i class="fas fa-circle" style="color:#2A7D4F;font-size:8px;margin-top:3px;flex-shrink:0;"></i><span><strong>11:48 AM</strong> — Status → In Progress (M. Torres)</span></div>
+        </div>
+        <button style="margin-top:10px;background:none;border:none;color:#2A7D4F;font-size:12px;font-weight:600;cursor:pointer;padding:0;" onclick="showToast('Opening full audit log...')">View full audit log →</button>
+      </div>
+    </div>
+  </div>
+</div>
+`,
+
+adminRegions: `
+<div class="fade-in">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">Regions</h1>
+      <p style="color:#6B7280;font-size:14px;">Configure the ~10 HealthDrive regional groups</p>
+    </div>
+    <button class="btn-primary flex items-center gap-2" onclick="showToast('New region form — coming soon')"><i class="fas fa-plus"></i> Add Region</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px;">
+    ${[
+      {code:'SE',name:'Southeast',color:'#2A7D4F',email:'southeast@intake.healthdrive.com',users:8,tickets:47,facilities:412},
+      {code:'NE',name:'Northeast',color:'#254D75',email:'northeast@intake.healthdrive.com',users:11,tickets:63,facilities:501},
+      {code:'MW',name:'Midwest',color:'#E8A020',email:'midwest@intake.healthdrive.com',users:9,tickets:38,facilities:387},
+      {code:'SW',name:'Southwest',color:'#DC3545',email:'southwest@intake.healthdrive.com',users:7,tickets:29,facilities:298},
+      {code:'NW',name:'Northwest',color:'#9333EA',email:'northwest@intake.healthdrive.com',users:6,tickets:21,facilities:241},
+      {code:'GL',name:'Great Lakes',color:'#0E9B8A',email:'greatlakes@intake.healthdrive.com',users:10,tickets:55,facilities:443},
+      {code:'SE2',name:'South Central',color:'#F59E0B',email:'southcentral@intake.healthdrive.com',users:8,tickets:34,facilities:318},
+      {code:'MA',name:'Mid-Atlantic',color:'#374151',email:'midatlantic@intake.healthdrive.com',users:12,tickets:71,facilities:598},
+    ].map(r => `
+      <div class="card p-5">
+        <div class="flex items-center gap-3 mb-4">
+          <div style="width:44px;height:44px;background:${r.color};border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:white;flex-shrink:0;">${r.code}</div>
+          <div>
+            <div style="font-size:16px;font-weight:700;color:#1A3350;">${r.name} Region</div>
+            <div style="font-size:12px;color:#9CA3AF;">${r.email}</div>
+          </div>
+          <div class="flex gap-2" style="margin-left:auto;">
+            <button style="background:#F3F4F6;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;color:#374151;" onclick="showToast('Editing ${r.name} region...')"><i class="fas fa-edit"></i></button>
+            <button style="background:#FDECEA;border:none;border-radius:6px;padding:6px 10px;cursor:pointer;font-size:12px;color:#DC3545;" onclick="showToast('Delete region requires confirmation')"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+          <div style="text-align:center;background:#F8FAFC;border-radius:8px;padding:10px;">
+            <div style="font-size:20px;font-weight:800;color:#1A3350;">${r.users}</div>
+            <div style="font-size:11px;color:#9CA3AF;">Users</div>
+          </div>
+          <div style="text-align:center;background:#F8FAFC;border-radius:8px;padding:10px;">
+            <div style="font-size:20px;font-weight:800;color:#1A3350;">${r.tickets}</div>
+            <div style="font-size:11px;color:#9CA3AF;">Open Tickets</div>
+          </div>
+          <div style="text-align:center;background:#F8FAFC;border-radius:8px;padding:10px;">
+            <div style="font-size:20px;font-weight:800;color:#1A3350;">${r.facilities}</div>
+            <div style="font-size:11px;color:#9CA3AF;">Facilities</div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="region-dot" style="background:${r.color};width:8px;height:8px;"></div>
+          <span style="font-size:12px;color:#6B7280;">Inbound email active</span>
+          <span style="margin-left:auto;background:#E6F4EC;color:#1A5C32;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600;">Active</span>
+        </div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+adminRouting: `
+<div class="fade-in">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">Routing Rules</h1>
+      <p style="color:#6B7280;font-size:14px;">Configure how tickets are auto-routed to departments</p>
+    </div>
+    <div class="flex gap-3">
+      <div style="background:#E0F5F2;border-radius:8px;padding:7px 14px;display:flex;align-items:center;gap:6px;">
+        <i class="fas fa-robot" style="color:#0E9B8A;font-size:13px;"></i>
+        <span style="font-size:13px;font-weight:600;color:#065F46;">AI Routing: On</span>
+        <div style="width:32px;height:16px;background:#0E9B8A;border-radius:8px;margin-left:4px;position:relative;cursor:pointer;">
+          <div style="width:12px;height:12px;background:white;border-radius:50%;position:absolute;top:2px;right:2px;"></div>
+        </div>
+      </div>
+      <button class="btn-primary flex items-center gap-2" onclick="showToast('New routing rule builder — coming soon')"><i class="fas fa-plus"></i> Add Rule</button>
+    </div>
+  </div>
+
+  <div style="background:#E8EFF7;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:10px;">
+    <i class="fas fa-info-circle" style="color:#254D75;flex-shrink:0;"></i>
+    <span style="font-size:13px;color:#1A3350;">Rules are evaluated in order (lowest number first). The first matching rule wins. If no rule matches, AI routing is used (if enabled), then ticket type default.</span>
+  </div>
+
+  <div class="card">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="background:#F8FAFC;border-bottom:2px solid #E5E7EB;">
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;width:60px;">Order</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;">Condition</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;">Match Value</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;">Routes To</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;width:80px;">Region</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;width:80px;">Status</th>
+          <th style="padding:12px 16px;text-align:left;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;width:100px;"></th>
+        </tr>
+      </thead>
+      <tbody>
+        ${[
+          {order:1,cond:'Ticket Type',val:'Resident Safety Flag',dept:'Clinical Operations',region:'All',active:true},
+          {order:2,cond:'Ticket Type',val:'Provider Coverage Gap',dept:'Scheduling & Logistics',region:'All',active:true},
+          {order:3,cond:'Ticket Type',val:'Provider Credentialing',dept:'Credentialing',region:'All',active:true},
+          {order:4,cond:'Ticket Type',val:'Billing & Claims Issue',dept:'Billing & Revenue Cycle',region:'All',active:true},
+          {order:5,cond:'Keyword',val:'medicare, medicaid, claim, billing',dept:'Billing & Revenue Cycle',region:'All',active:true},
+          {order:6,cond:'Keyword',val:'credentialing, license, DEA, NPI',dept:'Credentialing',region:'All',active:true},
+          {order:7,cond:'Keyword',val:'BAA, contract, agreement, legal',dept:'Legal',region:'All',active:true},
+          {order:8,cond:'Sender Domain',val:'@sunrise-health.com',dept:'Scheduling & Logistics',region:'SE',active:true},
+          {order:9,cond:'Urgency Level',val:'Critical',dept:'Clinical Operations',region:'All',active:true},
+          {order:10,cond:'Keyword',val:'supply, shortage, equipment',dept:'Facilities',region:'All',active:false},
+        ].map(r => `
+          <tr class="ticket-row border-b border-gray-50">
+            <td style="padding:12px 16px;text-align:center;"><span style="font-size:13px;font-weight:700;color:#9CA3AF;">${r.order}</span></td>
+            <td style="padding:12px 16px;"><span style="background:#E8EFF7;color:#254D75;padding:3px 10px;border-radius:6px;font-size:12px;font-weight:600;">${r.cond}</span></td>
+            <td style="padding:12px 16px;font-size:13px;color:#374151;font-style:italic;">"${r.val}"</td>
+            <td style="padding:12px 16px;font-size:13px;font-weight:600;color:#1A3350;">${r.dept}</td>
+            <td style="padding:12px 16px;font-size:12px;color:#6B7280;">${r.region}</td>
+            <td style="padding:12px 16px;"><span style="background:${r.active?'#E6F4EC':'#F3F4F6'};color:${r.active?'#1A5C32':'#9CA3AF'};padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;">${r.active?'Active':'Inactive'}</span></td>
+            <td style="padding:12px 16px;">
+              <div class="flex gap-2">
+                <button style="background:#F3F4F6;border:none;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px;color:#374151;" onclick="showToast('Editing rule #${r.order}: ${r.cond}')"><i class="fas fa-edit"></i></button>
+                <button style="background:#FDECEA;border:none;border-radius:6px;padding:5px 9px;cursor:pointer;font-size:11px;color:#DC3545;" onclick="showToast('Delete rule requires confirmation')"><i class="fas fa-trash"></i></button>
+              </div>
+            </td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>
+`,
+
+search: `
+<div class="fade-in">
+  <div class="mb-6">
+    <h1 style="font-size:24px;font-weight:800;color:#1A3350;margin-bottom:16px;">Search Tickets</h1>
+    <div style="position:relative;max-width:700px;">
+      <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:16px;"></i>
+      <input class="input" style="padding:14px 16px 14px 48px;font-size:16px;border-width:2px;" placeholder="Search by subject, description, notes, facility, or resident reference..." value="credentialing" />
+      <button class="btn-primary" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);padding:7px 18px;font-size:13px;" onclick="showToast('Searching tickets...')">Search</button>
+    </div>
+  </div>
+
+  <!-- Search filters -->
+  <div class="flex gap-3 mb-5 flex-wrap">
+    <span style="background:#E6F4EC;color:#1A5C32;border:1.5px solid #A3D9B8;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;">
+      <i class="fas fa-tag" style="font-size:11px;"></i> Keyword: "credentialing"
+      <button style="background:none;border:none;cursor:pointer;color:#1A5C32;font-size:12px;padding:0;margin-left:2px;" onclick="event.stopPropagation();this.closest('span').remove();showToast('Filter removed')">×</button>
+    </span>
+    <span style="background:#F3F4F6;color:#6B7280;border:1.5px solid #E5E7EB;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;cursor:pointer;">+ All Regions</span>
+    <span style="background:#F3F4F6;color:#6B7280;border:1.5px solid #E5E7EB;border-radius:20px;padding:5px 14px;font-size:13px;font-weight:500;cursor:pointer;">+ Date Range</span>
+  </div>
+
+  <div style="margin-bottom:12px;font-size:14px;color:#6B7280;">
+    <span style="font-weight:700;color:#1A3350;">3 results</span> for "credentialing" in Southeast Region
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    ${[
+      {id:'HD-1041',subject:'Provider credentialing delay — Dr. Martinez at Oak Grove',match:'credentialing delay — Dr. Martinez',dept:'Credentialing',status:'Blocked',urgency:'Urgent',date:'Apr 27, 2026'},
+      {id:'HD-1028',subject:'New credentialing requirement — Florida state board update',match:'credentialing requirement — Florida state board',dept:'Compliance',status:'Done',urgency:'Normal',date:'Apr 15, 2026'},
+      {id:'HD-1019',subject:'Credentialing packet missing for Dr. Chen (Optometry)',match:'Credentialing packet missing for Dr. Chen',dept:'Credentialing',status:'Done',urgency:'Urgent',date:'Apr 8, 2026'},
+    ].map(t => `
+      <div class="card p-5 ticket-row" onclick="showScreen('ticketDetail')" style="cursor:pointer;">
+        <div class="flex items-center gap-3 mb-2">
+          <span style="font-size:12px;font-weight:700;color:#9CA3AF;">${t.id}</span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold status-${t.status.toLowerCase().replace(' ','')} whitespace-nowrap">${t.status}</span>
+          <span class="px-2.5 py-1 rounded-full text-xs font-semibold urgency-${t.urgency.toLowerCase()} whitespace-nowrap">${t.urgency}</span>
+          <span style="margin-left:auto;font-size:12px;color:#9CA3AF;">${t.date}</span>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:#1A3350;margin-bottom:6px;">${t.subject.replace(t.match,'<mark style="background:#FEF3C7;border-radius:3px;padding:0 2px;">'+t.match+'</mark>')}</div>
+        <div style="font-size:13px;color:#9CA3AF;"><i class="fas fa-building" style="font-size:11px;margin-right:4px;"></i>${t.dept} Department</div>
+      </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+adminAI: `
+<div class="fade-in">
+  <div class="flex items-center justify-between mb-6">
+    <div>
+      <h1 style="font-size:24px;font-weight:800;color:#1A3350;">AI Features</h1>
+      <p style="color:#6B7280;font-size:14px;margin-top:2px;">Toggle AI capabilities on or off — changes take effect within 30 seconds, no deployment required.</p>
+    </div>
+    <div style="background:#E0F5F2;border:1px solid #A7E3DC;border-radius:8px;padding:8px 16px;font-size:13px;color:#065F46;display:flex;align-items:center;gap:8px;">
+      <i class="fas fa-shield-alt"></i>
+      <span><strong>BAA-eligible</strong> · Azure OpenAI · GPT-4o-mini</span>
+    </div>
+  </div>
+
+  <!-- PHI Policy Banner -->
+  <div style="background:#FEF3C7;border:1px solid #FCD34D;border-radius:10px;padding:12px 18px;margin-bottom:24px;display:flex;align-items:flex-start;gap:10px;">
+    <i class="fas fa-lock" style="color:#E8A020;margin-top:2px;"></i>
+    <div>
+      <div style="font-size:13px;font-weight:700;color:#7d5a00;margin-bottom:2px;">PHI Protection Policy</div>
+      <div style="font-size:12px;color:#92400E;">Email bodies are scanned for PHI (SSN, MRN, DOB, phone) before any text is sent to the LLM. If PHI is detected, AI enrichment is automatically skipped and the ticket is flagged for manual review. This cannot be disabled.</div>
+    </div>
+  </div>
+
+  <!-- Feature Flag Cards -->
+  <div style="display:flex;flex-direction:column;gap:14px;max-width:700px;">
+
+    <!-- AI Email Enrichment -->
+    <div class="card p-5" style="display:flex;align-items:center;gap:16px;">
+      <div style="width:44px;height:44px;background:#E6F4EC;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-envelope-open-text" style="color:#2A7D4F;font-size:18px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:#1A3350;margin-bottom:3px;">AI Email Enrichment</div>
+        <div style="font-size:13px;color:#555;margin-bottom:4px;">Analyses inbound emails to pre-fill subject, facility name, contact, urgency, and ticket type — saving staff 20–30 seconds per ticket.</div>
+        <div style="font-size:11px;color:#9CA3AF;">Flag: <code>AI_EMAIL_ENRICHMENT</code> · Last changed: Apr 27 2026 by admin@healthdrive.com</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:50px;height:26px;flex-shrink:0;margin:0;">
+        <input type="checkbox" checked onchange="toggleFlag(this,'AI Email Enrichment')" style="opacity:0;width:0;height:0;" />
+        <span onclick="this.previousElementSibling.click()" style="position:absolute;inset:0;background:#2A7D4F;border-radius:26px;cursor:pointer;transition:background .2s;">
+          <span style="position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform .2s;transform:translateX(24px);"></span>
+        </span>
+      </label>
+    </div>
+
+    <!-- AI Department Routing -->
+    <div class="card p-5" style="display:flex;align-items:center;gap:16px;">
+      <div style="width:44px;height:44px;background:#E0F5F2;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-project-diagram" style="color:#0E9B8A;font-size:18px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:#1A3350;margin-bottom:3px;">AI Department Routing</div>
+        <div style="font-size:13px;color:#555;margin-bottom:4px;">Infers intent from email subject and body to suggest the correct department. Falls back to deterministic keyword rules when confidence is below 75%.</div>
+        <div style="font-size:11px;color:#9CA3AF;">Flag: <code>AI_DEPARTMENT_ROUTING</code> · Last changed: Apr 26 2026 by admin@healthdrive.com</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:50px;height:26px;flex-shrink:0;margin:0;">
+        <input type="checkbox" checked onchange="toggleFlag(this,'AI Department Routing')" style="opacity:0;width:0;height:0;" />
+        <span onclick="this.previousElementSibling.click()" style="position:absolute;inset:0;background:#2A7D4F;border-radius:26px;cursor:pointer;transition:background .2s;">
+          <span style="position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transition:transform .2s;transform:translateX(24px);"></span>
+        </span>
+      </label>
+    </div>
+
+    <!-- AI PHI Scanning -->
+    <div class="card p-5" style="display:flex;align-items:center;gap:16px;">
+      <div style="width:44px;height:44px;background:#FEF3C7;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas fa-user-shield" style="color:#E8A020;font-size:18px;"></i>
+      </div>
+      <div style="flex:1;">
+        <div style="font-size:15px;font-weight:700;color:#1A3350;margin-bottom:3px;">PHI Pre-Scan <span style="background:#FDECEA;color:#991B1B;border-radius:6px;padding:1px 7px;font-size:10px;font-weight:700;margin-left:6px;">Always On</span></div>
+        <div style="font-size:13px;color:#555;margin-bottom:4px;">Regex-based scan for SSN, MRN, DOB, phone, NPI patterns before email body is sent to any LLM. This cannot be disabled — it is a HIPAA compliance control.</div>
+        <div style="font-size:11px;color:#9CA3AF;">Flag: <code>AI_PHI_SCANNING</code> · Enforced at infrastructure layer</div>
+      </div>
+      <label style="position:relative;display:inline-block;width:50px;height:26px;flex-shrink:0;margin:0;opacity:0.5;pointer-events:none;">
+        <input type="checkbox" checked disabled style="opacity:0;width:0;height:0;" />
+        <span style="position:absolute;inset:0;background:#2A7D4F;border-radius:26px;">
+          <span style="position:absolute;height:20px;width:20px;left:3px;bottom:3px;background:white;border-radius:50%;transform:translateX(24px);"></span>
+        </span>
+      </label>
+    </div>
+
+  </div>
+
+  <!-- Audit Log Preview -->
+  <div style="margin-top:32px;max-width:700px;">
+    <h2 style="font-size:16px;font-weight:700;color:#1A3350;margin-bottom:12px;">Recent Flag Changes</h2>
+    <div class="card" style="overflow:hidden;">
+      <table style="width:100%;border-collapse:collapse;font-size:13px;">
+        <thead>
+          <tr style="background:#F9FAFB;border-bottom:1px solid #E5E7EB;">
+            <th style="padding:10px 16px;text-align:left;font-weight:600;color:#6B7280;">Timestamp</th>
+            <th style="padding:10px 16px;text-align:left;font-weight:600;color:#6B7280;">Flag</th>
+            <th style="padding:10px 16px;text-align:left;font-weight:600;color:#6B7280;">Change</th>
+            <th style="padding:10px 16px;text-align:left;font-weight:600;color:#6B7280;">Changed By</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${[
+            {ts:'Apr 27 2026 09:14',flag:'AI_EMAIL_ENRICHMENT',from:'OFF',to:'ON',by:'admin@healthdrive.com'},
+            {ts:'Apr 26 2026 17:02',flag:'AI_DEPARTMENT_ROUTING',from:'OFF',to:'ON',by:'admin@healthdrive.com'},
+            {ts:'Apr 25 2026 11:30',flag:'AI_EMAIL_ENRICHMENT',from:'ON',to:'OFF',by:'ops@healthdrive.com'},
+          ].map(r=>`
+          <tr style="border-bottom:1px solid #F3F4F6;">
+            <td style="padding:10px 16px;color:#6B7280;">${r.ts}</td>
+            <td style="padding:10px 16px;font-family:monospace;font-size:12px;color:#1A3350;">${r.flag}</td>
+            <td style="padding:10px 16px;">
+              <span style="color:#991B1B;font-weight:600;">${r.from}</span>
+              <span style="color:#9CA3AF;margin:0 4px;">→</span>
+              <span style="color:#1A5C32;font-weight:600;">${r.to}</span>
+            </td>
+            <td style="padding:10px 16px;color:#6B7280;">${r.by}</td>
+          </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+`
+};
+
+// ── SCREEN CONTROLLER ─────────────────────────────────────────────
+
+function showScreen(name) {
+  // Hide all screens
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+
+  if (name === 'login') {
+    document.getElementById('login').classList.add('active');
+    document.getElementById('appLayout').style.display = 'none';
+    return;
+  }
+
+  // Show app layout
+  document.getElementById('login').style.display = 'none';
+  document.getElementById('appLayout').style.display = 'block';
+
+  // Hide all page content
+  document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+
+  // Show target page
+  const target = document.getElementById('page-' + name);
+  if (target) {
+    target.style.display = 'block';
+    if (!target.innerHTML.trim()) {
+      target.innerHTML = pages[name] || '<div class="p-8 text-gray-400">Page coming soon.</div>';
+    }
+  }
+
+  // Scroll main area to top
+  const main = document.querySelector('main');
+  if (main) main.scrollTop = 0;
+}
+
+// ── AI ENRICHMENT PANEL helpers ───────────────────────────────────
+function toggleEnrichment() {
+  const body = document.getElementById('enrichBody');
+  const chevron = document.getElementById('enrichChevron');
+  if (!body) return;
+  const hidden = body.style.display === 'none';
+  body.style.display = hidden ? 'block' : 'none';
+  if (chevron) chevron.className = hidden ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+}
+
+function applySuggestion(field, value) {
+  // Visual confirmation only in prototype — real app wires to Angular form control
+  const label = {subject:'Subject',facility:'Facility',contact:'Contact',urgency:'Urgency',type:'Ticket Type',department:'Department'}[field] || field;
+  showToast('Applied: ' + label + ' → ' + value);
+}
+
+function applyAllSuggestions() {
+  showToast('All AI suggestions applied to form ✓');
+  const panel = document.getElementById('aiEnrichmentPanel');
+  if (panel) panel.style.border = '1.5px solid #0E9B8A';
+}
+
+function toggleFlag(checkbox, name) {
+  const state = checkbox.checked ? 'ENABLED' : 'DISABLED';
+  showToast(name + ' ' + state);
+  // Update slider color
+  const slider = checkbox.nextElementSibling;
+  if (slider) slider.style.background = checkbox.checked ? '#2A7D4F' : '#ccc';
+  const knob = slider ? slider.querySelector('span') : null;
+  if (knob) knob.style.transform = checkbox.checked ? 'translateX(24px)' : 'translateX(0)';
+}
+
+let toastTimer = null;
+function switchTicketTab(el, label) {
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  showToast('Showing: ' + label);
+}
+
+function showToast(msg) {
+  let t = document.getElementById('hdToast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'hdToast';
+    t.style.cssText = 'position:fixed;bottom:60px;left:50%;transform:translateX(-50%);background:#1A3350;color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:1000;box-shadow:0 4px 12px rgba(0,0,0,0.2);transition:opacity .3s;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  if (toastTimer) clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+
+// ── TIMER for create form ─────────────────────────────────────────
+let timerInterval = null;
+function startTimer() {
+  let seconds = 0;
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    seconds++;
+    const el = document.getElementById('timerDisplay');
+    if (el) el.textContent = Math.floor(seconds/60) + ':' + String(seconds%60).padStart(2,'0');
+  }, 1000);
+}
+
+// Init
+document.addEventListener('DOMContentLoaded', () => {
+  showScreen('login');
+  // Pre-render dashboard for faster first switch
+  const d = document.getElementById('page-dashboard');
+  if (d) d.innerHTML = pages.dashboard;
+});
+
+// Watch for ticketCreate to start timer
+const origShow = showScreen;
+window.showScreen = function(name) {
+  origShow(name);
+  if (name === 'ticketCreate') {
+    setTimeout(startTimer, 300);
+  }
+};
+</script>
+</body>
+</html>

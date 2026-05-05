@@ -1,0 +1,19 @@
+[
+  {
+    "id": "cp_1777789193403",
+    "custodianName": "Fidelity",
+    "providerName": "Fidelity Investments",
+    "description": "4-line pipe-delimited IRA accounts",
+    "fileFormat": "pipe_multiline (4 lines/record)",
+    "columnCount": 0,
+    "createdAt": "2026-05-03T06:19:53.403Z",
+    "updatedAt": "2026-05-03T06:19:53.403Z",
+    "schema": {
+      "format": "pipe_multiline",
+      "delimiter": "|",
+      "linesPerRecord": 4,
+      "sampleRecordCount": 14,
+      "columns": []
+    }
+  }
+]

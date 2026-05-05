@@ -1,0 +1,25 @@
+{
+  "name": "nat20-workspace-agent",
+  "version": "1.0.0",
+  "description": "NAT 2.0 Local Workspace Agent — syncs generated test scripts to your machine for Claude Code iteration",
+  "type": "module",
+  "bin": {
+    "nat20-agent": "./agent.ts"
+  },
+  "scripts": {
+    "start": "tsx agent.ts",
+    "login": "tsx agent.ts login",
+    "dev": "tsx --watch agent.ts"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "open": "^10.1.0",
+    "ws": "^8.14.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/ws": "^8.5.10",
+    "tsx": "^4.7.0",
+    "typescript": "^5.3.0"
+  }
+}

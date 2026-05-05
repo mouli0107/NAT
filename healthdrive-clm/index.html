@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HealthDrive CLM — Contract Management</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: 'Inter', sans-serif; background: #F5F7FA; color: #1A3350; margin: 0; }
+
+    /* ── TOP NAV ── */
+    .topnav {
+      background: #fff;
+      border-bottom: 1px solid #E5E7EB;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      padding: 0 28px;
+      position: fixed; top: 0; left: 0; right: 0;
+      z-index: 100;
+      box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    }
+    .topnav__logo { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: 32px; }
+    .topnav__logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg,#2A7D4F,#0E9B8A); border-radius: 9px; display: flex; align-items: center; justify-content: center; }
+    .topnav__logo-text { font-size: 16px; font-weight: 800; color: #1A3350; line-height: 1; }
+    .topnav__logo-sub { font-size: 10px; font-weight: 600; color: #2A7D4F; letter-spacing: 0.8px; text-transform: uppercase; }
+    .topnav__nav { display: flex; align-items: center; gap: 2px; flex: 1; }
+    .topnav__item { padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 500; color: #6B7280; cursor: pointer; display: flex; align-items: center; gap: 7px; text-decoration: none; white-space: nowrap; transition: all .15s; position: relative; }
+    .topnav__item:hover { background: #F0FAF4; color: #2A7D4F; }
+    .topnav__item.active { background: #E6F4EC; color: #1A5C32; font-weight: 600; }
+    .topnav__item .badge { background: #2A7D4F; color: #fff; border-radius: 10px; padding: 1px 6px; font-size: 10px; font-weight: 700; }
+    .topnav__item .badge-gold { background: #E8A020; }
+    .topnav__actions { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+
+    /* ── LEFT PANEL ── */
+    .layout { display: flex; padding-top: 60px; min-height: 100vh; }
+    .left-panel {
+      width: 260px; flex-shrink: 0;
+      background: #fff;
+      border-right: 1px solid #E5E7EB;
+      position: fixed; top: 60px; left: 0; bottom: 0;
+      overflow-y: auto; padding: 20px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .panel-section { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #9CA3AF; padding: 10px 8px 4px; }
+    .panel-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 500; color: #4B5563; transition: all .15s; text-decoration: none; }
+    .panel-item:hover { background: #F0FAF4; color: #2A7D4F; }
+    .panel-item.active { background: #E6F4EC; color: #1A5C32; font-weight: 600; }
+    .panel-item .pi-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 13px; }
+    .panel-item .pi-count { margin-left: auto; font-size: 11px; font-weight: 700; background: #F3F4F6; color: #6B7280; border-radius: 8px; padding: 1px 7px; }
+    .panel-item .pi-count.urgent { background: #FEF3C7; color: #92400E; }
+    .panel-divider { height: 1px; background: #F3F4F6; margin: 6px 0; }
+
+    /* ── MAIN CONTENT ── */
+    .main { margin-left: 260px; flex: 1; padding: 28px; min-width: 0; }
+
+    /* ── CARDS ── */
+    .card { background: #fff; border-radius: 12px; border: 1px solid #E5E7EB; }
+    .card-hover { transition: box-shadow .15s, border-color .15s; cursor: pointer; }
+    .card-hover:hover { box-shadow: 0 4px 16px rgba(42,125,79,.12); border-color: #A3D9B8; }
+
+    /* ── BUTTONS ── */
+    .btn { border-radius: 8px; padding: 8px 18px; font-weight: 600; cursor: pointer; font-size: 13px; display: inline-flex; align-items: center; gap: 7px; border: none; transition: all .15s; }
+    .btn-primary { background: linear-gradient(135deg, #2A7D4F, #1A5C32); color: #fff; }
+    .btn-primary:hover { background: linear-gradient(135deg, #1A5C32, #0f3d1f); box-shadow: 0 3px 10px rgba(42,125,79,.3); }
+    .btn-secondary { background: #fff; color: #2A7D4F; border: 1.5px solid #A3D9B8; }
+    .btn-secondary:hover { background: #F0FAF4; }
+    .btn-ghost { background: #F3F4F6; color: #4B5563; }
+    .btn-ghost:hover { background: #E5E7EB; }
+    .btn-danger { background: #fff; color: #DC3545; border: 1.5px solid #FCA5A5; }
+    .btn-danger:hover { background: #FDECEA; }
+    .btn-approve { background: linear-gradient(135deg,#2A7D4F,#0E9B8A); color: #fff; }
+    .btn-approve:hover { opacity: .9; }
+    .btn-sm { padding: 5px 12px; font-size: 12px; }
+
+    /* ── FORM ── */
+    .input { border: 1.5px solid #E5E7EB; border-radius: 8px; padding: 9px 13px; font-size: 13px; width: 100%; outline: none; background: #fff; transition: border .15s; }
+    .input:focus { border-color: #2A7D4F; box-shadow: 0 0 0 3px rgba(42,125,79,.1); }
+    label.lbl { font-size: 12px; font-weight: 600; color: #374151; display: block; margin-bottom: 5px; }
+
+    /* ── STATUS CHIPS ── */
+    .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .chip-draft     { background:#F3F4F6; color:#6B7280; }
+    .chip-review    { background:#E6F4EC; color:#1A5C32; }
+    .chip-pending   { background:#FEF3C7; color:#92400E; }
+    .chip-approved  { background:#E6F4EC; color:#1A5C32; }
+    .chip-active    { background:#E0F5F2; color:#065F46; }
+    .chip-expiring  { background:#FEF3C7; color:#92400E; }
+    .chip-expired   { background:#FDECEA; color:#991B1B; }
+    .chip-signed    { background:#F0FAF4; color:#1A5C32; border:1px solid #A3D9B8; }
+
+    /* ── CONTRACT CARD ── */
+    .contract-card { background:#fff; border:1px solid #E5E7EB; border-radius:12px; padding:16px; cursor:pointer; transition:all .15s; }
+    .contract-card:hover { border-color:#A3D9B8; box-shadow:0 4px 16px rgba(42,125,79,.1); transform:translateY(-1px); }
+    .contract-card__type-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+
+    /* ── AI BADGE ── */
+    .ai-badge { display:inline-flex; align-items:center; gap:5px; background:#E6F4EC; border:1px solid #A3D9B8; border-radius:8px; padding:3px 9px; font-size:11px; font-weight:700; color:#1A5C32; }
+
+    /* ── STEP INDICATOR ── */
+    .step-done    { background:#2A7D4F; color:#fff; }
+    .step-current { background:#1A3350; color:#fff; }
+    .step-waiting { background:#F3F4F6; color:#9CA3AF; border:2px dashed #D1D5DB; }
+
+    /* ── DOCUSIGN ── */
+    .ds-badge { background: linear-gradient(135deg,#E8A020,#c47a10); color:#fff; border-radius:7px; padding:3px 9px; font-size:11px; font-weight:700; display:inline-flex; align-items:center; gap:5px; }
+
+    /* ── DRAG DROP ── */
+    .drop-zone { border:2px dashed #A3D9B8; border-radius:14px; padding:48px 32px; text-align:center; cursor:pointer; transition:all .2s; background:#F9FEFB; }
+    .drop-zone:hover { border-color:#2A7D4F; background:#F0FAF4; }
+
+    /* ── TIMELINE ── */
+    .tl-dot { width:12px; height:12px; border-radius:50%; flex-shrink:0; }
+
+    /* ── PROGRESS ── */
+    .prog-track { height:6px; background:#E5E7EB; border-radius:3px; overflow:hidden; }
+    .prog-fill { height:100%; border-radius:3px; }
+
+    /* ── SCREEN ── */
+    .screen { display:none; }
+    .screen.active { display:block; }
+
+    /* ── FADE ── */
+    .fade-in { animation: fadeIn .25s ease; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:translateY(0); } }
+
+    /* ── TABS ── */
+    .tab-bar { display:flex; gap:4px; border-bottom:2px solid #E5E7EB; margin-bottom:20px; padding-bottom:0; }
+    .tab { padding:8px 16px; font-size:13px; font-weight:500; color:#6B7280; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .15s; }
+    .tab.active { color:#2A7D4F; border-bottom-color:#2A7D4F; font-weight:700; }
+    .tab:hover:not(.active) { color:#1A3350; }
+
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-thumb { background:#D1D5DB; border-radius:3px; }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================ DEV NAV -->
+<div style="position:fixed;bottom:0;left:0;right:0;z-index:999;background:#1A3350;display:flex;gap:4px;padding:6px 16px;align-items:center;overflow-x:auto;">
+  <span style="color:#9CA3AF;font-size:10px;font-weight:700;white-space:nowrap;margin-right:6px;">CLM:</span>
+  <button onclick="showScreen('login')"          style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Login</button>
+  <button onclick="showScreen('dashboard')"      style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Dashboard</button>
+  <button onclick="showScreen('contractList')"   style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Contracts</button>
+  <button onclick="showScreen('contractDetail')" style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Detail</button>
+  <button onclick="showScreen('upload')"         style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Upload</button>
+  <button onclick="showScreen('approvals')"      style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Approvals</button>
+  <button onclick="showScreen('esign')"          style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">E-Sign</button>
+  <button onclick="showScreen('adminTypes')"     style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Types</button>
+  <button onclick="showScreen('adminApproval')"  style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Workflows</button>
+  <button onclick="showScreen('search')"         style="background:#2A7D4F;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:10px;cursor:pointer;">Search</button>
+</div>
+
+<!-- ============================================================ LOGIN -->
+<div id="login" class="screen active" style="min-height:100vh;background:linear-gradient(135deg,#F0FAF4 0%,#E6F4EC 40%,#E0F5F2 100%);">
+  <div style="display:flex;min-height:100vh;">
+
+    <!-- Left: branding panel -->
+    <div style="width:480px;flex-shrink:0;background:linear-gradient(145deg,#1A5C32 0%,#2A7D4F 50%,#0E9B8A 100%);padding:48px 44px;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden;">
+      <div style="position:absolute;top:-60px;right:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.07);"></div>
+      <div style="position:absolute;bottom:-80px;left:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.05);"></div>
+
+      <div style="position:relative;z-index:1;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:4px;">
+          <div style="width:46px;height:46px;background:rgba(255,255,255,.2);border-radius:12px;backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-heartbeat" style="color:#fff;font-size:22px;"></i>
+          </div>
+          <div>
+            <div style="color:#fff;font-size:22px;font-weight:800;line-height:1;">HealthDrive</div>
+            <div style="color:rgba(255,255,255,.65);font-size:11px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;">Take Care Forward</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative;z-index:1;">
+        <div style="display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 14px;margin-bottom:20px;">
+          <i class="fas fa-file-contract" style="color:rgba(255,255,255,.8);font-size:13px;"></i>
+          <span style="color:rgba(255,255,255,.9);font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">Contract Management System</span>
+        </div>
+        <h2 style="color:#fff;font-size:38px;font-weight:800;line-height:1.15;margin-bottom:18px;">From Intake<br/>to Signature —<br/><span style="color:#A3D9B8;">Automated.</span></h2>
+        <p style="color:rgba(255,255,255,.8);font-size:14px;line-height:1.7;margin-bottom:28px;">AI-powered contract ingestion, configurable approval workflows, and DocuSign e-signature in a single HIPAA-compliant platform.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
+          <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;border:1px solid rgba(255,255,255,.15);">
+            <div style="color:#fff;font-size:22px;font-weight:800;">1,247</div>
+            <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:2px;">Active Contracts</div>
+          </div>
+          <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;border:1px solid rgba(255,255,255,.15);">
+            <div style="color:#fff;font-size:22px;font-weight:800;">94%</div>
+            <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:2px;">AI Accuracy</div>
+          </div>
+          <div style="background:rgba(255,255,255,.12);border-radius:10px;padding:14px 16px;border:1px solid rgba(255,255,255,.15);">
+            <div style="color:#fff;font-size:22px;font-weight:800;">48 hr</div>
+            <div style="color:rgba(255,255,255,.7);font-size:11px;margin-top:2px;">Avg. Cycle Time</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="position:relative;z-index:1;color:rgba(255,255,255,.45);font-size:11px;">© 2026 HealthDrive Corporation · Proprietary & Confidential</div>
+    </div>
+
+    <!-- Right: login form -->
+    <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:40px;">
+      <div style="width:100%;max-width:420px;">
+        <div style="text-align:center;margin-bottom:32px;">
+          <div style="width:52px;height:52px;background:linear-gradient(135deg,#2A7D4F,#0E9B8A);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;">
+            <i class="fas fa-file-contract" style="color:#fff;font-size:22px;"></i>
+          </div>
+          <h1 style="font-size:26px;font-weight:800;color:#1A3350;margin-bottom:4px;">Welcome back</h1>
+          <p style="color:#6B7280;font-size:14px;">Sign in to HealthDrive CLM</p>
+        </div>
+
+        <div style="background:#fff;border-radius:16px;border:1px solid #E5E7EB;padding:28px;box-shadow:0 4px 24px rgba(42,125,79,.08);">
+          <!-- SSO block -->
+          <div style="background:#F0FAF4;border:1.5px solid #A3D9B8;border-radius:10px;padding:14px 16px;margin-bottom:22px;display:flex;align-items:center;gap:12px;">
+            <div style="width:34px;height:34px;background:#E6F4EC;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <i class="fas fa-shield-halved" style="color:#2A7D4F;font-size:15px;"></i>
+            </div>
+            <div>
+              <div style="font-size:13px;font-weight:700;color:#1A5C32;">Single Sign-On via Auth0</div>
+              <div style="font-size:11px;color:#4B5563;margin-top:1px;">Use your @healthdrive.com credentials</div>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;">
+            <label class="lbl">Email Address</label>
+            <div style="position:relative;">
+              <input class="input" value="sarah.johnson@healthdrive.com" style="padding-right:38px;" />
+              <i class="fas fa-envelope" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:13px;"></i>
+            </div>
+          </div>
+
+          <button onclick="showScreen('dashboard')" class="btn btn-primary" style="width:100%;justify-content:center;padding:12px;font-size:14px;border-radius:10px;">
+            <i class="fas fa-arrow-right-to-bracket"></i>Continue with HealthDrive SSO
+          </button>
+
+          <div style="text-align:center;margin-top:16px;font-size:11px;color:#9CA3AF;">
+            <i class="fas fa-lock" style="margin-right:5px;"></i>Protected by Auth0 · MFA required · HIPAA compliant
+          </div>
+        </div>
+
+        <div style="display:flex;justify-content:center;gap:24px;margin-top:20px;">
+          <a href="#" style="font-size:12px;color:#9CA3AF;text-decoration:none;">Help</a>
+          <a href="#" style="font-size:12px;color:#9CA3AF;text-decoration:none;">Privacy</a>
+          <a href="#" style="font-size:12px;color:#9CA3AF;text-decoration:none;">HIPAA Notice</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================ APP SHELL -->
+<div id="appLayout" style="display:none;">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <a class="topnav__logo">
+      <div class="topnav__logo-icon"><i class="fas fa-heartbeat" style="color:#fff;font-size:16px;"></i></div>
+      <div>
+        <div class="topnav__logo-text">HealthDrive</div>
+        <div class="topnav__logo-sub">CLM</div>
+      </div>
+    </a>
+
+    <div class="topnav__nav">
+      <a class="topnav__item" onclick="showScreen('dashboard')"><i class="fas fa-gauge-high"></i>Dashboard</a>
+      <a class="topnav__item" onclick="showScreen('contractList')"><i class="fas fa-folder-open"></i>Contracts <span class="badge">124</span></a>
+      <a class="topnav__item" onclick="showScreen('approvals')"><i class="fas fa-check-double"></i>Approvals <span class="badge badge-gold">7</span></a>
+      <a class="topnav__item" onclick="showScreen('esign')"><i class="fas fa-signature"></i>E-Signature <span class="badge">3</span></a>
+      <a class="topnav__item" onclick="showScreen('upload')"><i class="fas fa-cloud-arrow-up"></i>Upload</a>
+      <a class="topnav__item" onclick="showScreen('search')"><i class="fas fa-search"></i>Search</a>
+    </div>
+
+    <div class="topnav__actions">
+      <button onclick="showScreen('upload')" class="btn btn-primary btn-sm">
+        <i class="fas fa-plus"></i>New Contract
+      </button>
+      <div style="position:relative;cursor:pointer;">
+        <i class="fas fa-bell" style="color:#9CA3AF;font-size:17px;"></i>
+        <span style="position:absolute;top:-4px;right:-4px;background:#DC3545;color:#fff;border-radius:50%;width:14px;height:14px;font-size:8px;display:flex;align-items:center;justify-content:center;font-weight:700;">4</span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:4px 10px;border-radius:8px;border:1px solid #E5E7EB;">
+        <div style="width:28px;height:28px;background:linear-gradient(135deg,#2A7D4F,#0E9B8A);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:11px;">SJ</div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#1A3350;line-height:1.2;">Sarah Johnson</div>
+          <div style="font-size:10px;color:#9CA3AF;">Legal Ops Manager</div>
+        </div>
+        <i class="fas fa-chevron-down" style="color:#9CA3AF;font-size:10px;margin-left:2px;"></i>
+      </div>
+    </div>
+  </nav>
+
+  <!-- LAYOUT -->
+  <div class="layout">
+
+    <!-- LEFT PANEL -->
+    <aside class="left-panel">
+      <div class="panel-section">My Work</div>
+
+      <a class="panel-item" onclick="showScreen('dashboard')">
+        <span class="pi-icon" style="background:#E6F4EC;"><i class="fas fa-gauge-high" style="color:#2A7D4F;"></i></span>
+        Dashboard
+      </a>
+      <a class="panel-item" onclick="showScreen('approvals')">
+        <span class="pi-icon" style="background:#FEF3C7;"><i class="fas fa-check-double" style="color:#E8A020;"></i></span>
+        My Approvals
+        <span class="pi-count urgent">7</span>
+      </a>
+      <a class="panel-item" onclick="showScreen('esign')">
+        <span class="pi-icon" style="background:#F0FAF4;"><i class="fas fa-signature" style="color:#2A7D4F;"></i></span>
+        E-Signature
+        <span class="pi-count">3</span>
+      </a>
+
+      <div class="panel-divider"></div>
+      <div class="panel-section">Contracts</div>
+
+      <a class="panel-item" onclick="showScreen('contractList')">
+        <span class="pi-icon" style="background:#E6F4EC;"><i class="fas fa-folder-open" style="color:#1A5C32;"></i></span>
+        All Contracts
+        <span class="pi-count">124</span>
+      </a>
+      <a class="panel-item" onclick="showScreen('contractList')">
+        <span class="pi-icon" style="background:#FEF3C7;"><i class="fas fa-triangle-exclamation" style="color:#E8A020;"></i></span>
+        Expiring Soon
+        <span class="pi-count urgent">18</span>
+      </a>
+      <a class="panel-item" onclick="showScreen('contractList')">
+        <span class="pi-icon" style="background:#FDECEA;"><i class="fas fa-circle-xmark" style="color:#DC3545;"></i></span>
+        Expired
+        <span class="pi-count">5</span>
+      </a>
+      <a class="panel-item" onclick="showScreen('contractList')">
+        <span class="pi-icon" style="background:#E6F4EC;"><i class="fas fa-circle-check" style="color:#2A7D4F;"></i></span>
+        Active
+        <span class="pi-count">892</span>
+      </a>
+      <a class="panel-item" onclick="showScreen('upload')">
+        <span class="pi-icon" style="background:#F3F4F6;"><i class="fas fa-cloud-arrow-up" style="color:#6B7280;"></i></span>
+        Upload / Ingest
+      </a>
+
+      <div class="panel-divider"></div>
+      <div class="panel-section">Administration</div>
+
+      <a class="panel-item" onclick="showScreen('adminTypes')">
+        <span class="pi-icon" style="background:#F3F4F6;"><i class="fas fa-tags" style="color:#6B7280;"></i></span>
+        Contract Types
+      </a>
+      <a class="panel-item" onclick="showScreen('adminApproval')">
+        <span class="pi-icon" style="background:#F3F4F6;"><i class="fas fa-sitemap" style="color:#6B7280;"></i></span>
+        Approval Workflows
+      </a>
+      <a class="panel-item">
+        <span class="pi-icon" style="background:#F3F4F6;"><i class="fas fa-users" style="color:#6B7280;"></i></span>
+        Users & Roles
+      </a>
+      <a class="panel-item">
+        <span class="pi-icon" style="background:#E6F4EC;"><i class="fas fa-robot" style="color:#2A7D4F;"></i></span>
+        AI Features
+        <span style="margin-left:auto;background:#2A7D4F;color:#fff;border-radius:8px;padding:1px 7px;font-size:9px;font-weight:700;">ON</span>
+      </a>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="main" style="padding-bottom:56px;">
+      <div id="page-dashboard"      class="page-content"></div>
+      <div id="page-contractList"   class="page-content" style="display:none;"></div>
+      <div id="page-contractDetail" class="page-content" style="display:none;"></div>
+      <div id="page-upload"         class="page-content" style="display:none;"></div>
+      <div id="page-approvals"      class="page-content" style="display:none;"></div>
+      <div id="page-esign"          class="page-content" style="display:none;"></div>
+      <div id="page-adminTypes"     class="page-content" style="display:none;"></div>
+      <div id="page-adminApproval"  class="page-content" style="display:none;"></div>
+      <div id="page-search"         class="page-content" style="display:none;"></div>
+    </main>
+  </div>
+</div>
+
+<script>
+const pages = {
+
+// ── DASHBOARD ─────────────────────────────────────────────────────
+dashboard: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">Contract Dashboard</h1>
+      <p style="font-size:13px;color:#9CA3AF;">Portfolio overview · April 2026</p>
+    </div>
+    <button onclick="showScreen('upload')" class="btn btn-primary">
+      <i class="fas fa-plus"></i>New Contract
+    </button>
+  </div>
+
+  <!-- Alert banner -->
+  <div style="background:#fff;border:1px solid #FCD34D;border-left:4px solid #E8A020;border-radius:10px;padding:12px 18px;margin-bottom:22px;display:flex;align-items:center;gap:12px;">
+    <i class="fas fa-clock" style="color:#E8A020;font-size:16px;"></i>
+    <div>
+      <span style="font-size:13px;font-weight:700;color:#92400E;">5 contracts expiring within 60 days</span>
+      <span style="font-size:13px;color:#92400E;"> — review and initiate renewals.</span>
+    </div>
+    <button onclick="showScreen('contractList')" class="btn btn-ghost btn-sm" style="margin-left:auto;white-space:nowrap;color:#92400E;">View All</button>
+  </div>
+
+  <!-- KPI row -->
+  <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px;">
+    ${[
+      {icon:'fa-folder-open',   bg:'#E6F4EC',  ic:'#2A7D4F',  val:'1,247', lbl:'Total Contracts',  sub:'All time'},
+      {icon:'fa-circle-check',  bg:'#E0F5F2',  ic:'#0E9B8A',  val:'892',   lbl:'Active',           sub:'Currently live'},
+      {icon:'fa-hourglass-half',bg:'#FEF3C7',  ic:'#E8A020',  val:'31',    lbl:'Pending Approval', sub:'Awaiting sign-off'},
+      {icon:'fa-triangle-exclamation',bg:'#FDECEA',ic:'#DC3545',val:'18',  lbl:'Expiring Soon',    sub:'Within 90 days'},
+      {icon:'fa-stopwatch',     bg:'#F0FAF4',  ic:'#2A7D4F',  val:'3.2d',  lbl:'Avg. Cycle Time',  sub:'Intake to signed'},
+    ].map(k=>`
+    <div class="card" style="padding:18px;border-top:3px solid ${k.ic};">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="width:34px;height:34px;background:${k.bg};border-radius:8px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas ${k.icon}" style="color:${k.ic};font-size:14px;"></i>
+        </div>
+        <span style="font-size:11px;color:#9CA3AF;">${k.sub}</span>
+      </div>
+      <div style="font-size:28px;font-weight:800;color:#1A3350;line-height:1;">${k.val}</div>
+      <div style="font-size:12px;color:#6B7280;margin-top:4px;">${k.lbl}</div>
+    </div>
+    `).join('')}
+  </div>
+
+  <div style="display:grid;grid-template-columns:3fr 2fr;gap:18px;margin-bottom:18px;">
+
+    <!-- Pending approvals -->
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:15px;font-weight:700;color:#1A3350;">Pending My Approval</h2>
+        <button onclick="showScreen('approvals')" class="btn btn-secondary btn-sm">View all (7)</button>
+      </div>
+      ${[
+        {id:'CLM-2041',name:'Sunrise SNF — Service Agreement FY26',  type:'Service Agreement',val:'$240K',age:2,hot:true},
+        {id:'CLM-2038',name:'MedSupply Co. — Equipment Lease Renewal',type:'Equipment Lease',  val:'$88K', age:4,hot:false},
+        {id:'CLM-2035',name:'Heritage Park — Provider Amendment',      type:'Amendment',        val:'$12K', age:6,hot:false},
+      ].map(c=>`
+      <div onclick="showScreen('contractDetail')" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:10px;cursor:pointer;transition:background .15s;margin-bottom:4px;" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+        <div style="width:38px;height:38px;background:${c.hot?'#FDECEA':'#F0FAF4'};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-file-contract" style="color:${c.hot?'#DC3545':'#2A7D4F'};font-size:15px;"></i>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:13px;font-weight:600;color:#1A3350;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:1px;">${c.id} · ${c.type}</div>
+        </div>
+        <div style="text-align:right;flex-shrink:0;">
+          <div style="font-size:13px;font-weight:700;color:#2A7D4F;">${c.val}</div>
+          <div style="font-size:11px;color:${c.hot?'#DC3545':'#E8A020'};font-weight:600;">${c.age}d waiting</div>
+        </div>
+      </div>
+      `).join('')}
+      <button onclick="showScreen('approvals')" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px;">
+        <i class="fas fa-check-double"></i>Open Approval Queue (7)
+      </button>
+    </div>
+
+    <!-- Expiring soon -->
+    <div class="card" style="padding:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <h2 style="font-size:15px;font-weight:700;color:#1A3350;">Expiring Soon</h2>
+        <span style="font-size:11px;color:#9CA3AF;">Next 90 days</span>
+      </div>
+      ${[
+        {name:'Oak Grove MSA',     days:8,  val:'$320K'},
+        {name:'Dental Supplies Q2',days:22, val:'$45K'},
+        {name:'Sunrise NDA',       days:31, val:'—'},
+        {name:'ATL Lab Services',  days:47, val:'$180K'},
+        {name:'Heritage IT SLA',   days:63, val:'$96K'},
+        {name:'Podiatry MSA FL',   days:88, val:'$210K'},
+      ].map(c=>`
+      <div onclick="showScreen('contractDetail')" style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB;cursor:pointer;">
+        <div style="width:40px;text-align:center;flex-shrink:0;">
+          <div style="font-size:17px;font-weight:800;color:${c.days<=14?'#DC3545':c.days<=45?'#E8A020':'#2A7D4F'};line-height:1;">${c.days}</div>
+          <div style="font-size:9px;color:#9CA3AF;text-transform:uppercase;">days</div>
+        </div>
+        <div style="flex:1;min-width:0;">
+          <div style="font-size:12px;font-weight:600;color:#1A3350;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${c.name}</div>
+          <div style="font-size:11px;color:#9CA3AF;">${c.val}</div>
+        </div>
+        <i class="fas fa-chevron-right" style="color:#E5E7EB;font-size:10px;"></i>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <!-- Bottom row -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+    <div class="card" style="padding:20px;">
+      <h2 style="font-size:15px;font-weight:700;color:#1A3350;margin-bottom:16px;">Portfolio by Type</h2>
+      ${[
+        {type:'Master Service Agreement',count:312,pct:35,color:'#2A7D4F'},
+        {type:'Service Agreement',       count:228,pct:26,color:'#0E9B8A'},
+        {type:'NDA / Confidentiality',   count:187,pct:21,color:'#E8A020'},
+        {type:'Equipment Lease',         count:96, pct:11,color:'#1A3350'},
+        {type:'Amendment / Addendum',    count:62, pct:7, color:'#9CA3AF'},
+      ].map(t=>`
+      <div style="margin-bottom:12px;">
+        <div style="display:flex;justify-content:space-between;margin-bottom:5px;">
+          <span style="font-size:12px;color:#374151;">${t.type}</span>
+          <span style="font-size:12px;font-weight:700;color:#1A3350;">${t.count}</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" style="width:${t.pct}%;background:${t.color};"></div></div>
+      </div>
+      `).join('')}
+    </div>
+    <div class="card" style="padding:20px;">
+      <h2 style="font-size:15px;font-weight:700;color:#1A3350;margin-bottom:16px;">Recent Activity</h2>
+      ${[
+        {icon:'fa-cloud-arrow-up',bg:'#E6F4EC',ic:'#2A7D4F',text:'CLM-2041 uploaded and AI-extracted',     time:'9 min ago'},
+        {icon:'fa-check-circle',  bg:'#E6F4EC',ic:'#2A7D4F',text:'CLM-2038 approved by CFO',               time:'1hr ago'},
+        {icon:'fa-signature',     bg:'#F0FAF4',ic:'#1A5C32',text:'CLM-2031 fully executed via DocuSign',    time:'2hr ago'},
+        {icon:'fa-robot',         bg:'#E0F5F2',ic:'#0E9B8A',text:'AI extracted 12 clauses — 91% confidence',time:'3hr ago'},
+        {icon:'fa-bell',          bg:'#FEF3C7',ic:'#E8A020',text:'Auto-renewal notice sent for Oak Grove MSA',time:'Yesterday'},
+      ].map(a=>`
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #F9FAFB;">
+        <div style="width:30px;height:30px;background:${a.bg};border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;">
+          <i class="fas ${a.icon}" style="color:${a.ic};font-size:11px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:12px;color:#1A3350;line-height:1.4;">${a.text}</div>
+          <div style="font-size:10px;color:#9CA3AF;margin-top:2px;">${a.time}</div>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+</div>
+`,
+
+// ── CONTRACT LIST ─────────────────────────────────────────────────
+contractList: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">All Contracts</h1>
+      <p style="font-size:13px;color:#9CA3AF;">124 contracts · filtered view</p>
+    </div>
+    <button onclick="showScreen('upload')" class="btn btn-primary"><i class="fas fa-plus"></i>New Contract</button>
+  </div>
+
+  <!-- Filters strip -->
+  <div class="card" style="padding:14px 18px;margin-bottom:18px;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;">
+    <div style="flex:1;min-width:200px;">
+      <label class="lbl">Search</label>
+      <div style="position:relative;"><i class="fas fa-search" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:12px;"></i><input class="input" style="padding-left:32px;font-size:12px;" placeholder="Name, counterparty, ID..."/></div>
+    </div>
+    <div style="min-width:140px;"><label class="lbl">Status</label><select class="input" style="font-size:12px;"><option>All Statuses</option><option>Draft</option><option>Review</option><option>Pending</option><option>Active</option><option>Expiring</option><option>Expired</option></select></div>
+    <div style="min-width:140px;"><label class="lbl">Type</label><select class="input" style="font-size:12px;"><option>All Types</option><option>MSA</option><option>Service Agreement</option><option>NDA</option><option>Equipment Lease</option></select></div>
+    <button class="btn btn-primary btn-sm" onclick="showToast('Filter applied')">Apply</button>
+  </div>
+
+  <!-- Contract card grid -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px;">
+    ${[
+      {id:'CLM-2041',name:'Sunrise SNF — Service Agreement FY26',party:'Sunrise Senior Living',type:'SA',  status:'pending', val:'$240K',exp:'Dec 31 2026',ai:true, hot:true},
+      {id:'CLM-2038',name:'MedSupply Co. — Equipment Lease Renewal',party:'MedSupply Corp',    type:'EL',  status:'review',  val:'$88K', exp:'Mar 15 2027',ai:true, hot:false},
+      {id:'CLM-2035',name:'Heritage Park — Provider Coverage Amendment',party:'Heritage Park',  type:'AMD', status:'approved',val:'$12K', exp:'Jun 30 2026',ai:false,hot:false},
+      {id:'CLM-2031',name:'Oak Grove Master Service Agreement',         party:'Oak Grove MC',   type:'MSA', status:'expiring',val:'$320K',exp:'Aug 8 2026', ai:false,hot:false},
+      {id:'CLM-2028',name:'HealthDrive — Brookdale NDA 2026',           party:'Brookdale SL',   type:'NDA', status:'active',  val:'—',   exp:'Jan 1 2027', ai:false,hot:false},
+      {id:'CLM-2021',name:'ATL Lab Services Master Agreement',          party:'Atlanta Lab',    type:'MSA', status:'expiring',val:'$180K',exp:'Jun 16 2026',ai:false,hot:true},
+      {id:'CLM-2018',name:'Georgia LTC Equipment Lease Q2',             party:'Georgia LTC',    type:'EL',  status:'active',  val:'$62K', exp:'Sep 30 2026',ai:false,hot:false},
+      {id:'CLM-2014',name:'Podiatry Coverage MSA — Florida',            party:'FL Podiatry',    type:'MSA', status:'draft',   val:'$210K',exp:'TBD',        ai:true, hot:false},
+      {id:'CLM-2009',name:'Dental Supply Agreement Q1 2026',            party:'DentalPro',      type:'SA',  status:'expired', val:'$45K', exp:'Mar 31 2026',ai:false,hot:false},
+    ].map(c=>{
+      const typeColor={'MSA':'#2A7D4F','SA':'#0E9B8A','NDA':'#1A3350','EL':'#E8A020','AMD':'#9CA3AF'};
+      const statusMap={'draft':'chip-draft','review':'chip-review','pending':'chip-pending','approved':'chip-approved','active':'chip-active','expiring':'chip-expiring','expired':'chip-expired'};
+      return `
+      <div class="contract-card card-hover" onclick="showScreen('contractDetail')">
+        <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:12px;">
+          <div style="width:38px;height:38px;border-radius:9px;background:${c.hot?'#FDECEA':'#F0FAF4'};display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-file-contract" style="color:${c.hot?'#DC3545':'#2A7D4F'};font-size:15px;"></i>
+          </div>
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:13px;font-weight:700;color:#1A3350;line-height:1.35;margin-bottom:3px;">${c.name}</div>
+            <div style="font-size:11px;color:#9CA3AF;">${c.id} · ${c.party}</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:12px;">
+          <span style="background:${typeColor[c.type]||'#9CA3AF'}22;color:${typeColor[c.type]||'#9CA3AF'};border-radius:5px;padding:2px 8px;font-size:10px;font-weight:700;">${c.type}</span>
+          <span class="chip ${statusMap[c.status]}">${c.status.charAt(0).toUpperCase()+c.status.slice(1)}</span>
+          ${c.ai?`<span class="ai-badge"><i class="fas fa-robot" style="font-size:9px;"></i>AI</span>`:''}
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-top:10px;border-top:1px solid #F3F4F6;">
+          <div>
+            <div style="font-size:10px;color:#9CA3AF;font-weight:600;">VALUE</div>
+            <div style="font-size:13px;font-weight:700;color:#1A3350;">${c.val}</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:10px;color:#9CA3AF;font-weight:600;">EXPIRES</div>
+            <div style="font-size:13px;font-weight:600;color:${c.status==='expiring'?'#E8A020':c.status==='expired'?'#DC3545':'#1A3350'};">${c.exp}</div>
+          </div>
+        </div>
+      </div>
+      `;
+    }).join('')}
+  </div>
+</div>
+`,
+
+// ── CONTRACT DETAIL ───────────────────────────────────────────────
+contractDetail: `
+<div class="fade-in">
+  <!-- Back + header -->
+  <div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:22px;">
+    <button onclick="showScreen('contractList')" class="btn btn-ghost btn-sm" style="margin-top:4px;"><i class="fas fa-arrow-left"></i></button>
+    <div style="flex:1;">
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;">
+        <span style="font-size:11px;font-weight:700;color:#9CA3AF;">CLM-2041</span>
+        <span class="chip chip-pending">Pending Approval</span>
+        <span class="ds-badge"><i class="fas fa-pen-nib"></i>DocuSign · Awaiting</span>
+        <span class="ai-badge"><i class="fas fa-robot" style="font-size:9px;"></i>AI Extracted · 91%</span>
+      </div>
+      <h1 style="font-size:21px;font-weight:800;color:#1A3350;margin-bottom:4px;">Sunrise SNF — Service Agreement FY26</h1>
+      <p style="font-size:13px;color:#6B7280;">Counterparty: <strong style="color:#1A3350;">Sunrise Senior Living LLC</strong> · Service Agreement · $240,000 annual</p>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm" onclick="showToast('⬇ Downloading PDF...')"><i class="fas fa-download"></i>PDF</button>
+      <button onclick="showScreen('esign')" class="btn btn-primary btn-sm"><i class="fas fa-signature"></i>Send for Signature</button>
+    </div>
+  </div>
+
+  <!-- Approval workflow card -->
+  <div class="card" style="padding:20px;margin-bottom:20px;border-left:4px solid #2A7D4F;">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+      <span style="font-size:14px;font-weight:700;color:#1A3350;">Approval Workflow</span>
+      <span style="font-size:12px;color:#2A7D4F;font-weight:600;">Step 2 of 3 · In Progress</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:0;margin-bottom:18px;">
+      ${[
+        {label:'Legal Review',  who:'S. Johnson',  state:'done',    date:'Apr 25'},
+        {label:'CFO Approval',  who:'M. Torres',   state:'current', date:'Waiting'},
+        {label:'CEO Sign-off',  who:'K. Williams', state:'waiting', date:'—'},
+      ].map((s,i)=>`
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;position:relative;">
+        ${i>0?`<div style="position:absolute;left:0;top:19px;width:50%;height:2px;background:${s.state==='done'||i===1?'#2A7D4F':'#E5E7EB'};"></div>`:''}
+        ${i<2?`<div style="position:absolute;right:0;top:19px;width:50%;height:2px;background:${s.state==='done'?'#2A7D4F':'#E5E7EB'};"></div>`:''}
+        <div style="width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;position:relative;z-index:1;margin-bottom:8px;" class="step-${s.state}">
+          ${s.state==='done'?'<i class="fas fa-check"></i>':i+1}
+        </div>
+        <div style="font-size:12px;font-weight:600;color:#1A3350;">${s.label}</div>
+        <div style="font-size:11px;color:#9CA3AF;">${s.who}</div>
+        <div style="font-size:11px;color:${s.state==='current'?'#E8A020':'#9CA3AF'};font-weight:${s.state==='current'?'700':'400'};">${s.date}</div>
+      </div>
+      `).join('')}
+    </div>
+    <div style="display:flex;gap:8px;padding-top:14px;border-top:1px solid #F3F4F6;align-items:center;">
+      <button class="btn btn-approve btn-sm" onclick="showToast('✓ Contract approved — CFO Approval step complete')"><i class="fas fa-check"></i>Approve</button>
+      <button class="btn btn-danger btn-sm" onclick="showToast('✗ Contract rejected — requester notified')"><i class="fas fa-times"></i>Reject</button>
+      <button class="btn btn-ghost btn-sm" onclick="showToast('↗ Delegated to next approver')"><i class="fas fa-share"></i>Delegate</button>
+      <input class="input" style="flex:1;font-size:12px;padding:6px 10px;" placeholder="Add comment (optional)..." />
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <span class="tab active" onclick="switchTab('overview',this)">Overview</span>
+    <span class="tab" onclick="switchTab('documents',this)">Documents <span style="background:#E5E7EB;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:4px;">3</span></span>
+    <span class="tab" onclick="switchTab('clauses',this)">AI Clauses <span style="background:#E6F4EC;color:#1A5C32;border-radius:8px;padding:1px 6px;font-size:10px;margin-left:4px;">12</span></span>
+    <span class="tab" onclick="switchTab('history',this)">History</span>
+    <span class="tab" onclick="switchTab('activity',this)">Activity</span>
+  </div>
+
+  <div id="detail-overview">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;">
+      <!-- AI Extraction -->
+      <div class="card" style="padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;">
+          <div style="width:32px;height:32px;background:#E6F4EC;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+            <i class="fas fa-robot" style="color:#2A7D4F;font-size:13px;"></i>
+          </div>
+          <span style="font-size:14px;font-weight:700;color:#1A3350;">AI-Extracted Metadata</span>
+          <span class="ai-badge" style="margin-left:auto;">91% conf.</span>
+        </div>
+        ${[
+          ['Contract Value',    '$240,000 annual / $720,000 TCV',       'high'],
+          ['Effective Date',    'January 1, 2026',                       'high'],
+          ['Expiration Date',   'December 31, 2026',                     'high'],
+          ['Auto-Renewal',      'Yes — 30-day written notice to cancel', 'high'],
+          ['Governing Law',     'State of Georgia',                      'high'],
+          ['Counterparty Signer','David Chen, CEO',                      'medium'],
+          ['Payment Terms',     'Net 30, invoiced monthly',              'high'],
+          ['Termination',       '90 days written notice',                'medium'],
+        ].map(([f,v,c])=>`
+        <div style="display:flex;align-items:flex-start;gap:10px;padding:8px;border-radius:7px;background:#F9FAFB;margin-bottom:6px;border-left:3px solid ${c==='high'?'#2A7D4F':c==='medium'?'#E8A020':'#DC3545'};">
+          <div style="flex:1;">
+            <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px;">${f}</div>
+            <div style="font-size:13px;color:#1A3350;font-weight:500;">${v}</div>
+          </div>
+          <span style="font-size:10px;font-weight:700;color:${c==='high'?'#2A7D4F':c==='medium'?'#E8A020':'#DC3545'};white-space:nowrap;margin-top:2px;">${c==='high'?'✓ High':c==='medium'?'~ Med':'⚠ Low'}</span>
+        </div>
+        `).join('')}
+        <button class="btn btn-secondary btn-sm" style="width:100%;justify-content:center;margin-top:8px;" onclick="showToast('✎ Opening field editor...')"><i class="fas fa-pencil"></i>Edit Fields</button>
+      </div>
+
+      <!-- Contract info + Key dates -->
+      <div style="display:flex;flex-direction:column;gap:14px;">
+        <div class="card" style="padding:18px;">
+          <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">Contract Details</div>
+          ${[['ID','CLM-2041'],['Type','Service Agreement'],['Counterparty','Sunrise Senior Living LLC'],['Region','Southeast'],['Facility','Sunrise SNF Atlanta'],['Owner','Sarah Johnson'],['Created','Apr 27, 2026'],['Source','Email Intake (AI)']].map(([k,v])=>`
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #F9FAFB;">
+            <span style="font-size:12px;color:#9CA3AF;">${k}</span>
+            <span style="font-size:12px;font-weight:600;color:#1A3350;">${v}</span>
+          </div>
+          `).join('')}
+        </div>
+        <div class="card" style="padding:18px;">
+          <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">Key Dates</div>
+          ${[
+            ['Execution Date','Apr 28, 2026','#2A7D4F'],
+            ['Effective Date','Jan 1, 2026','#0E9B8A'],
+            ['Expiry Date','Dec 31, 2026','#E8A020'],
+            ['Auto-Renewal Deadline','Dec 1, 2026','#DC3545'],
+          ].map(([k,v,c])=>`
+          <div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #F9FAFB;">
+            <div class="tl-dot" style="background:${c};"></div>
+            <span style="font-size:12px;color:#6B7280;flex:1;">${k}</span>
+            <span style="font-size:12px;font-weight:700;color:#1A3350;">${v}</span>
+          </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="detail-documents" style="display:none;">
+    <div class="card" style="padding:20px;">
+      <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">Attached Documents</div>
+      ${[
+        ['Sunrise_SNF_ServiceAgreement_FY26_v3.pdf','2.4 MB','Apr 27 2026',true],
+        ['Exhibit_A_ServiceSchedule.pdf','480 KB','Apr 27 2026',false],
+        ['Certificate_of_Insurance_2026.pdf','310 KB','Apr 20 2026',false],
+      ].map(([n,s,d,p])=>`
+      <div style="display:flex;align-items:center;gap:12px;padding:12px;border:1px solid #E5E7EB;border-radius:9px;margin-bottom:8px;">
+        <div style="width:36px;height:36px;background:#FDECEA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-file-pdf" style="color:#DC3545;font-size:15px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;color:#1A3350;">${n} ${p?'<span style="background:#E6F4EC;color:#1A5C32;border-radius:4px;padding:1px 6px;font-size:9px;font-weight:700;">PRIMARY</span>':''}</div>
+          <div style="font-size:11px;color:#9CA3AF;">${s} · ${d}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening document preview...')"><i class="fas fa-eye"></i>View</button>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('⬇ Downloading document...')"><i class="fas fa-download"></i></button>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div id="detail-clauses" style="display:none;">
+    <div class="card" style="padding:20px;">
+      <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">AI Clause Analysis <span class="ai-badge" style="margin-left:8px;">12 clauses</span></div>
+      ${[
+        {tag:'Termination',risk:'low',  text:'Either party may terminate with 90 days written notice.'},
+        {tag:'Auto-Renewal',risk:'med', text:'Contract auto-renews annually unless cancelled 30 days prior to expiry.'},
+        {tag:'Liability Cap',risk:'high',text:'Liability capped at 1× annual contract value — below HealthDrive standard of 2×.'},
+        {tag:'Indemnification',risk:'low',text:'Mutual indemnification clause. Standard language.'},
+        {tag:'Governing Law',risk:'low', text:'State of Georgia. Consistent with facility jurisdiction.'},
+        {tag:'Payment',risk:'low',       text:'Net 30, invoiced monthly. Standard terms.'},
+      ].map(c=>`
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px;border-radius:8px;background:#F9FAFB;margin-bottom:8px;border-left:3px solid ${c.risk==='high'?'#DC3545':c.risk==='med'?'#E8A020':'#2A7D4F'};">
+        <span style="font-size:10px;font-weight:700;background:${c.risk==='high'?'#FDECEA':c.risk==='med'?'#FEF3C7':'#E6F4EC'};color:${c.risk==='high'?'#DC3545':c.risk==='med'?'#92400E':'#1A5C32'};border-radius:5px;padding:2px 7px;white-space:nowrap;">${c.tag}</span>
+        <span style="font-size:12px;color:#374151;flex:1;">${c.text}</span>
+        <span style="font-size:10px;font-weight:700;color:${c.risk==='high'?'#DC3545':c.risk==='med'?'#E8A020':'#2A7D4F'};white-space:nowrap;">${c.risk==='high'?'⚠ Review':'✓ OK'}</span>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div id="detail-history" style="display:none;">
+    <div class="card" style="padding:20px;">
+      <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">Version History</div>
+      ${[
+        {ver:'v3 (Current)',date:'Apr 27, 2026',by:'Sarah Johnson',note:'Final terms — sent for CFO approval'},
+        {ver:'v2',          date:'Apr 24, 2026',by:'Sarah Johnson',note:'Revised liability cap per legal review'},
+        {ver:'v1',          date:'Apr 20, 2026',by:'AI Intake',    note:'Initial AI extraction from email attachment'},
+      ].map(h=>`
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F9FAFB;">
+        <div style="width:32px;height:32px;background:#E6F4EC;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-code-branch" style="color:#2A7D4F;font-size:12px;"></i></div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:3px;">
+            <span style="font-size:12px;font-weight:700;color:#1A3350;">${h.ver}</span>
+            <span style="font-size:11px;color:#9CA3AF;">${h.date} · ${h.by}</span>
+          </div>
+          <div style="font-size:12px;color:#6B7280;">${h.note}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Opening version ${h.ver}...')"><i class="fas fa-eye"></i>View</button>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+
+  <div id="detail-activity" style="display:none;">
+    <div class="card" style="padding:20px;">
+      <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:14px;">Activity Log</div>
+      ${[
+        {icon:'fa-check',       color:'#2A7D4F', bg:'#E6F4EC', time:'Today 9:14 AM', actor:'Sarah Johnson',  action:'Submitted for CFO Approval'},
+        {icon:'fa-robot',       color:'#0E9B8A', bg:'#E0F5F2', time:'Today 9:10 AM', actor:'AI Engine',      action:'Clause risk analysis completed — 1 high-risk clause flagged'},
+        {icon:'fa-pencil',      color:'#E8A020', bg:'#FEF3C7', time:'Apr 24 4:32 PM',actor:'Sarah Johnson',  action:'Edited liability cap field'},
+        {icon:'fa-eye',         color:'#1A3350', bg:'#F3F4F6', time:'Apr 24 2:00 PM',actor:'Legal Reviewer',  action:'Reviewed contract — approved Legal step'},
+        {icon:'fa-cloud-arrow-up',color:'#2A7D4F',bg:'#E6F4EC',time:'Apr 20 11:02 AM',actor:'AI Intake',    action:'Contract ingested from email attachment'},
+      ].map(a=>`
+      <div style="display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #F9FAFB;">
+        <div style="width:30px;height:30px;background:${a.bg};border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas ${a.icon}" style="color:${a.color};font-size:11px;"></i></div>
+        <div>
+          <div style="font-size:12px;font-weight:600;color:#1A3350;">${a.actor} <span style="font-weight:400;color:#6B7280;">— ${a.action}</span></div>
+          <div style="font-size:11px;color:#9CA3AF;">${a.time}</div>
+        </div>
+      </div>
+      `).join('')}
+    </div>
+  </div>
+</div>
+`,
+
+// ── UPLOAD ─────────────────────────────────────────────────────────
+upload: `
+<div class="fade-in" style="max-width:780px;margin:0 auto;">
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px;">
+    <button onclick="showScreen('contractList')" class="btn btn-ghost btn-sm"><i class="fas fa-arrow-left"></i></button>
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">Upload / Ingest Contract</h1>
+      <p style="font-size:13px;color:#9CA3AF;">Drop a file or paste email — AI extracts metadata automatically.</p>
+    </div>
+  </div>
+
+  <div class="card" style="padding:28px;margin-bottom:18px;">
+    <div class="drop-zone" id="dropZone" onclick="simulateUpload()">
+      <div style="width:56px;height:56px;background:linear-gradient(135deg,#2A7D4F,#0E9B8A);border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+        <i class="fas fa-cloud-arrow-up" style="color:#fff;font-size:22px;"></i>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:#1A3350;margin-bottom:5px;">Drop contract files here</div>
+      <div style="font-size:13px;color:#9CA3AF;margin-bottom:18px;">PDF, DOCX · Max 50 MB</div>
+      <button class="btn btn-primary" onclick="event.stopPropagation();simulateUpload()"><i class="fas fa-folder-open"></i>Browse Files</button>
+    </div>
+
+    <div id="uploadProgress" style="display:none;margin-top:18px;padding:16px;background:#F9FAFB;border-radius:10px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+        <div style="width:34px;height:34px;background:#FDECEA;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-file-pdf" style="color:#DC3545;font-size:14px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="font-size:13px;font-weight:600;color:#1A3350;">Sunrise_SNF_ServiceAgreement_FY26_v3.pdf</div>
+          <div style="font-size:11px;color:#9CA3AF;">2.4 MB · Uploading...</div>
+        </div>
+        <span id="uploadPct" style="font-size:13px;font-weight:700;color:#2A7D4F;">0%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" id="uploadBar" style="width:0%;background:linear-gradient(90deg,#2A7D4F,#0E9B8A);"></div></div>
+    </div>
+  </div>
+
+  <!-- AI Extraction Result -->
+  <div id="extractionResult" style="display:none;">
+    <div class="card" style="padding:22px;margin-bottom:18px;border:1.5px solid #A3D9B8;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1px solid #E5E7EB;">
+        <div style="width:38px;height:38px;background:linear-gradient(135deg,#2A7D4F,#0E9B8A);border-radius:9px;display:flex;align-items:center;justify-content:center;">
+          <i class="fas fa-robot" style="color:#fff;font-size:16px;"></i>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:800;color:#1A3350;">✦ AI Extraction Complete</div>
+          <div style="font-size:12px;color:#9CA3AF;">12 fields extracted · 91% confidence · 1.2s</div>
+        </div>
+        <div style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+          <div style="width:8px;height:8px;background:#2A7D4F;border-radius:50%;animation:pulse 1.5s infinite;"></div>
+          <span style="font-size:12px;color:#2A7D4F;font-weight:600;">Ready to review</span>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        ${[
+          ['Contract Name','Sunrise SNF — Service Agreement FY26','high',true],
+          ['Counterparty','Sunrise Senior Living LLC','high',true],
+          ['Contract Type','Service Agreement','high',true],
+          ['Contract Value','$240,000 / year','high',true],
+          ['Effective Date','January 1, 2026','high',true],
+          ['Expiry Date','December 31, 2026','high',true],
+          ['Auto-Renewal','Yes — 30-day notice required','medium',true],
+          ['Governing Law','Georgia','high',true],
+        ].map(([f,v,c,e])=>`
+        <div style="padding:10px 12px;background:#F9FAFB;border-radius:8px;border-left:3px solid ${c==='high'?'#2A7D4F':c==='medium'?'#E8A020':'#DC3545'};">
+          <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">${f}</div>
+          <input class="input" value="${v}" style="background:transparent;border:none;padding:0;font-size:12px;font-weight:600;color:#1A3350;width:100%;" />
+          <div style="font-size:10px;margin-top:2px;color:${c==='high'?'#2A7D4F':c==='medium'?'#E8A020':'#DC3545'};font-weight:700;">${c==='high'?'✓ High':c==='medium'?'~ Medium':'⚠ Low — verify'}</div>
+        </div>
+        `).join('')}
+      </div>
+
+      <!-- Clauses detected -->
+      <div style="background:#F0FAF4;border:1px solid #A3D9B8;border-radius:9px;padding:12px 14px;margin-bottom:14px;">
+        <div style="font-size:12px;font-weight:700;color:#1A5C32;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><i class="fas fa-list-check"></i>12 Key Clauses Detected</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px;">
+          ${['Indemnification','Limitation of Liability','Auto-Renewal','Termination for Cause','Termination for Convenience','Force Majeure','Governing Law','Dispute Resolution','Payment Terms','Confidentiality','HIPAA BAA','Insurance'].map(c=>`
+          <span style="background:#fff;border:1px solid #A3D9B8;border-radius:5px;padding:3px 9px;font-size:11px;color:#1A5C32;font-weight:600;">${c}</span>`).join('')}
+        </div>
+      </div>
+
+      <!-- PHI + Routing -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;">
+        <div style="background:#F0FAF4;border:1px solid #A3D9B8;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-shield-alt" style="color:#2A7D4F;"></i>
+          <span style="font-size:12px;color:#1A5C32;font-weight:600;">No PHI detected · BAA clause on page 4</span>
+        </div>
+        <div style="background:#F0FAF4;border:1px solid #A3D9B8;border-radius:8px;padding:10px 12px;display:flex;align-items:center;gap:8px;">
+          <i class="fas fa-project-diagram" style="color:#2A7D4F;"></i>
+          <div><div style="font-size:12px;font-weight:700;color:#1A5C32;">AI Routed → Legal Ops</div><div style="font-size:10px;color:#6B7280;">Service Agreement track · 88% conf.</div></div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button onclick="showScreen('contractDetail')" class="btn btn-primary" style="flex:1;justify-content:center;">
+          <i class="fas fa-check"></i>Confirm &amp; Start Approval Workflow
+        </button>
+        <button class="btn btn-secondary" onclick="showToast('Draft saved — contract queued for review')"><i class="fas fa-save"></i>Save as Draft</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email intake -->
+  <div class="card" style="padding:20px;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+      <div style="width:32px;height:32px;background:#E6F4EC;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+        <i class="fas fa-envelope" style="color:#2A7D4F;font-size:13px;"></i>
+      </div>
+      <span style="font-size:14px;font-weight:700;color:#1A3350;">Email Intake</span>
+    </div>
+    <p style="font-size:13px;color:#6B7280;margin-bottom:12px;">Forward contract emails to the address below — AI auto-extracts and queues for review.</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;background:#F0FAF4;border:1px solid #A3D9B8;border-radius:8px;padding:10px 14px;">
+      <span style="font-family:monospace;font-size:13px;color:#2A7D4F;font-weight:600;">contracts@intake.healthdrive.com</span>
+      <button class="btn btn-ghost btn-sm" onclick="navigator.clipboard.writeText('contracts@intake.healthdrive.com').then(()=>showToast('📋 Email address copied!'))"><i class="fas fa-copy"></i>Copy</button>
+    </div>
+  </div>
+</div>
+`,
+
+// ── APPROVALS ─────────────────────────────────────────────────────
+approvals: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">Approval Queue</h1>
+      <p style="font-size:13px;color:#9CA3AF;">7 contracts awaiting your decision</p>
+    </div>
+    <button class="btn btn-approve" onclick="showToast('✓ Selected contracts approved')"><i class="fas fa-check-double"></i>Bulk Approve Selected</button>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;">
+    ${[
+      {label:'Awaiting Me', val:7,  color:'#E8A020', bg:'#FEF3C7'},
+      {label:'Approved Today',val:3,color:'#2A7D4F', bg:'#E6F4EC'},
+      {label:'Rejected This Week',val:1,color:'#DC3545',bg:'#FDECEA'},
+      {label:'SLA Breached',val:2,  color:'#DC3545', bg:'#FDECEA'},
+    ].map(s=>`
+    <div class="card" style="padding:16px;border-top:3px solid ${s.color};text-align:center;">
+      <div style="font-size:26px;font-weight:800;color:${s.color};">${s.val}</div>
+      <div style="font-size:11px;color:#9CA3AF;margin-top:3px;">${s.label}</div>
+    </div>
+    `).join('')}
+  </div>
+
+  <div style="display:flex;flex-direction:column;gap:12px;">
+    ${[
+      {id:'CLM-2041',name:'Sunrise SNF — Service Agreement FY26',party:'Sunrise Senior Living',type:'Service Agreement',val:'$240K',step:'CFO Approval',days:2,sla:true,urgent:true},
+      {id:'CLM-2038',name:'MedSupply Co. — Equipment Lease Renewal',party:'MedSupply Corp',type:'Equipment Lease',val:'$88K',step:'CFO Approval',days:4,sla:false,urgent:false},
+      {id:'CLM-2044',name:'Heritage Park — Addendum to MSA',party:'Heritage Park AL',type:'Amendment',val:'$12K',step:'Legal Approval',days:1,sla:false,urgent:false},
+      {id:'CLM-2046',name:'New Vendor NDA — BioTech Devices',party:'BioTech Devices Inc.',type:'NDA',val:'—',step:'Legal Approval',days:6,sla:true,urgent:false},
+      {id:'CLM-2043',name:'FL Podiatry — Coverage Expansion MSA',party:'FL Podiatry Associates',type:'MSA',val:'$210K',step:'CEO Sign-off',days:8,sla:true,urgent:true},
+    ].map(c=>`
+    <div class="card" style="padding:18px;border-left:4px solid ${c.urgent?'#DC3545':'#A3D9B8'};">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <input type="checkbox" style="margin-top:4px;accent-color:#2A7D4F;" />
+        <div style="width:40px;height:40px;background:${c.urgent?'#FDECEA':'#F0FAF4'};border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-file-contract" style="color:${c.urgent?'#DC3545':'#2A7D4F'};font-size:16px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:5px;">
+            <span style="font-size:11px;font-weight:700;color:#9CA3AF;">${c.id}</span>
+            <span style="font-size:11px;background:#E6F4EC;color:#1A5C32;border-radius:5px;padding:1px 8px;font-weight:600;">${c.step}</span>
+            ${c.sla?'<span style="font-size:11px;background:#FDECEA;color:#991B1B;border-radius:5px;padding:1px 8px;font-weight:700;"><i class="fas fa-exclamation-triangle" style="margin-right:3px;"></i>SLA Breached</span>':''}
+          </div>
+          <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:3px;cursor:pointer;" onclick="showScreen('contractDetail')">${c.name}</div>
+          <div style="font-size:12px;color:#6B7280;">${c.party} · ${c.type} · <strong style="color:#2A7D4F;">${c.val}</strong> · Waiting <strong>${c.days}d</strong></div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          <button class="btn btn-approve btn-sm" onclick="showToast('✓ ${c.id} approved')"><i class="fas fa-check"></i>Approve</button>
+          <button class="btn btn-danger btn-sm" onclick="showToast('✗ ${c.id} rejected — requester notified')"><i class="fas fa-times"></i>Reject</button>
+          <button class="btn btn-ghost btn-sm" onclick="showScreen('contractDetail')"><i class="fas fa-eye"></i>Review</button>
+        </div>
+      </div>
+    </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+// ── E-SIGN ─────────────────────────────────────────────────────────
+esign: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">E-Signature</h1>
+      <p style="font-size:13px;color:#9CA3AF;">DocuSign integration · 3 envelopes pending</p>
+    </div>
+    <span class="ds-badge" style="font-size:13px;padding:7px 14px;"><i class="fas fa-pen-nib"></i>Powered by DocuSign</span>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:22px;">
+    ${[
+      {icon:'fa-hourglass-half',  bg:'#FEF3C7', ic:'#E8A020', val:3,  lbl:'Pending Signature'},
+      {icon:'fa-circle-check',    bg:'#E6F4EC', ic:'#2A7D4F', val:14, lbl:'Fully Executed'},
+      {icon:'fa-circle-xmark',    bg:'#FDECEA', ic:'#DC3545', val:1,  lbl:'Declined'},
+      {icon:'fa-ban',             bg:'#F3F4F6', ic:'#9CA3AF', val:2,  lbl:'Voided'},
+    ].map(s=>`
+    <div class="card" style="padding:16px;display:flex;align-items:center;gap:12px;">
+      <div style="width:38px;height:38px;background:${s.bg};border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="fas ${s.icon}" style="color:${s.ic};font-size:16px;"></i>
+      </div>
+      <div>
+        <div style="font-size:22px;font-weight:800;color:${s.ic};line-height:1;">${s.val}</div>
+        <div style="font-size:11px;color:#9CA3AF;margin-top:2px;">${s.lbl}</div>
+      </div>
+    </div>
+    `).join('')}
+  </div>
+
+  <div class="card" style="margin-bottom:18px;overflow:hidden;">
+    <div style="padding:14px 20px;border-bottom:1px solid #E5E7EB;display:flex;align-items:center;justify-content:space-between;">
+      <span style="font-size:14px;font-weight:700;color:#1A3350;">Pending Envelopes</span>
+    </div>
+    ${[
+      {id:'ENV-8821',contract:'CLM-2038 — MedSupply Equipment Lease',   sent:'Apr 26',exp:'May 10',signers:[{n:'Sarah Johnson',r:'Internal Signer',done:true},{n:'David Kim',r:'CFO, MedSupply',done:false}]},
+      {id:'ENV-8819',contract:'CLM-2041 — Sunrise SNF Service Agreement',sent:'Apr 25',exp:'May 9', signers:[{n:'Sarah Johnson',r:'Legal Ops',done:false},{n:'Mark Torres',r:'CFO',done:false},{n:'David Chen',r:'CEO, Sunrise',done:false}]},
+      {id:'ENV-8815',contract:'CLM-2043 — FL Podiatry MSA',              sent:'Apr 24',exp:'May 8', signers:[{n:'Sarah Johnson',r:'Legal Ops',done:true},{n:'Kevin Williams',r:'CEO, HealthDrive',done:false}]},
+    ].map(e=>`
+    <div style="padding:16px 20px;border-bottom:1px solid #F3F4F6;">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div style="width:36px;height:36px;background:#FEF3C7;border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+          <i class="fas fa-envelope-open-text" style="color:#E8A020;font-size:14px;"></i>
+        </div>
+        <div style="flex:1;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;">
+            <span style="font-size:11px;font-weight:700;color:#9CA3AF;">${e.id}</span>
+            <span class="ds-badge" style="font-size:10px;padding:2px 7px;">DocuSign</span>
+            <span style="font-size:11px;color:#9CA3AF;margin-left:auto;">Sent ${e.sent} · Expires ${e.exp}</span>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:#1A3350;margin-bottom:10px;cursor:pointer;" onclick="showScreen('contractDetail')">${e.contract}</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;">
+            ${e.signers.map(s=>`
+            <div style="display:flex;align-items:center;gap:7px;background:${s.done?'#E6F4EC':'#FEF3C7'};border-radius:8px;padding:6px 10px;">
+              <div style="width:22px;height:22px;background:${s.done?'#2A7D4F':'#E8A020'};border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <i class="fas ${s.done?'fa-check':'fa-clock'}" style="color:#fff;font-size:9px;"></i>
+              </div>
+              <div>
+                <div style="font-size:11px;font-weight:600;color:#1A3350;">${s.n}</div>
+                <div style="font-size:10px;color:#6B7280;">${s.r}</div>
+              </div>
+            </div>
+            `).join('')}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0;">
+          <button class="btn btn-primary btn-sm" onclick="showToast('Opening envelope ${e.id} in DocuSign...')"><i class="fas fa-external-link-alt"></i>Open in DocuSign</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Reminder sent to pending signers for ${e.id}')"><i class="fas fa-bell"></i>Remind</button>
+        </div>
+      </div>
+    </div>
+    `).join('')}
+  </div>
+
+  <!-- Executed table -->
+  <div class="card" style="overflow:hidden;">
+    <div style="padding:14px 20px;border-bottom:1px solid #E5E7EB;">
+      <span style="font-size:14px;font-weight:700;color:#1A3350;">Recently Executed</span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;">
+      <thead><tr style="background:#F9FAFB;">
+        ${['Contract','Counterparty','Executed','Status'].map(h=>`<th style="padding:10px 16px;text-align:left;font-size:11px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;">${h}</th>`).join('')}
+      </tr></thead>
+      <tbody>
+        ${[
+          ['CLM-2031','Oak Grove MSA','Oak Grove Memory Care','Apr 23 2026'],
+          ['CLM-2028','Brookdale NDA 2026','Brookdale Senior Living','Apr 20 2026'],
+          ['CLM-2025','ATL Lab Master Agreement','Atlanta Lab Partners','Apr 15 2026'],
+        ].map(([id,name,party,date])=>`
+        <tr style="border-bottom:1px solid #F9FAFB;cursor:pointer;" onclick="showScreen('contractDetail')" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background=''">
+          <td style="padding:10px 16px;">
+            <div style="font-size:13px;font-weight:600;color:#1A3350;">${name}</div>
+            <div style="font-size:11px;color:#9CA3AF;">${id}</div>
+          </td>
+          <td style="padding:10px 16px;font-size:12px;color:#6B7280;">${party}</td>
+          <td style="padding:10px 16px;font-size:12px;color:#6B7280;">${date}</td>
+          <td style="padding:10px 16px;"><span class="chip chip-signed"><i class="fas fa-circle-check" style="font-size:9px;"></i>Fully Executed</span></td>
+        </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  </div>
+</div>
+`,
+
+// ── ADMIN TYPES ─────────────────────────────────────────────────
+adminTypes: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">Contract Types</h1>
+      <p style="font-size:13px;color:#9CA3AF;">Configure types, metadata fields and AI extraction templates.</p>
+    </div>
+    <button class="btn btn-primary" onclick="showToast('New contract type form — coming soon')"><i class="fas fa-plus"></i>New Type</button>
+  </div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:14px;">
+    ${[
+      {name:'Master Service Agreement',abbr:'MSA',count:312,approvers:3,color:'#2A7D4F',fields:['Effective Date','Expiry','Auto-Renewal','Payment Terms','Governing Law','SLA','Limitation of Liability']},
+      {name:'Service Agreement',abbr:'SA',count:228,approvers:2,color:'#0E9B8A',fields:['Effective Date','Expiry','Payment Terms','SLA']},
+      {name:'NDA / Confidentiality',abbr:'NDA',count:187,approvers:1,color:'#1A3350',fields:['Effective Date','Expiry','Governing Law']},
+      {name:'Equipment Lease',abbr:'EL',count:96,approvers:2,color:'#E8A020',fields:['Lease Term','Monthly Payment','Purchase Option','Equipment Schedule']},
+      {name:'Amendment / Addendum',abbr:'AMD',count:62,approvers:2,color:'#9CA3AF',fields:['Amends Contract ID','Amendment Date','Changed Clauses']},
+    ].map(t=>`
+    <div class="card card-hover" style="padding:18px;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+        <div style="width:42px;height:42px;border-radius:10px;background:${t.color};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;color:#fff;flex-shrink:0;">${t.abbr}</div>
+        <div style="flex:1;">
+          <div style="font-size:14px;font-weight:700;color:#1A3350;">${t.name}</div>
+          <div style="font-size:11px;color:#9CA3AF;margin-top:2px;">${t.count} contracts · ${t.approvers} approver${t.approvers>1?'s':''}</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="showToast('Editing ${t.name}...')"><i class="fas fa-pencil"></i></button>
+      </div>
+      <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px;">AI Extraction Fields</div>
+      <div style="display:flex;flex-wrap:wrap;gap:5px;">
+        ${t.fields.map(f=>`<span style="background:#F0FAF4;border:1px solid #A3D9B8;border-radius:5px;padding:2px 8px;font-size:11px;color:#1A5C32;font-weight:500;">${f}</span>`).join('')}
+      </div>
+    </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+// ── ADMIN WORKFLOWS ─────────────────────────────────────────────
+adminApproval: `
+<div class="fade-in">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:3px;">Approval Workflows</h1>
+      <p style="font-size:13px;color:#9CA3AF;">Configure multi-step chains by contract type and value threshold.</p>
+    </div>
+    <button class="btn btn-primary" onclick="showToast('New workflow builder — coming soon')"><i class="fas fa-plus"></i>New Workflow</button>
+  </div>
+  <div style="display:flex;flex-direction:column;gap:14px;">
+    ${[
+      {name:'Standard Service Agreement',applies:'Service Agreement · any value',steps:[
+        {role:'Legal Ops Manager',sla:'2 business days',cond:'Always',color:'#E6F4EC',tc:'#2A7D4F'},
+        {role:'CFO',sla:'3 business days',cond:'Value > $50K',color:'#E0F5F2',tc:'#0E9B8A'},
+        {role:'CEO',sla:'5 business days',cond:'Value > $200K',color:'#F0FAF4',tc:'#1A5C32'},
+      ]},
+      {name:'MSA Fast-Track',applies:'MSA · Value ≤ $25K',steps:[
+        {role:'Regional Admin',sla:'1 business day',cond:'Always',color:'#E6F4EC',tc:'#2A7D4F'},
+      ]},
+      {name:'NDA One-Click',applies:'NDA / Confidentiality · any value',steps:[
+        {role:'Legal Ops Manager',sla:'1 business day',cond:'Always',color:'#E6F4EC',tc:'#2A7D4F'},
+      ]},
+    ].map(w=>`
+    <div class="card" style="padding:18px;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:#1A3350;margin-bottom:3px;">${w.name}</div>
+          <div style="font-size:12px;color:#9CA3AF;">Applies to: ${w.applies}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary btn-sm" onclick="showToast('Editing workflow: ${w.name}')"><i class="fas fa-pencil"></i>Edit</button>
+          <button class="btn btn-ghost btn-sm" onclick="showToast('Cloned: ${w.name} (copy)')"><i class="fas fa-copy"></i>Clone</button>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${w.steps.map((s,i)=>`
+        ${i>0?`<i class="fas fa-chevron-right" style="color:#A3D9B8;"></i>`:''}
+        <div style="flex:1;padding:12px;background:${s.color};border-radius:9px;border:1px solid #A3D9B8;">
+          <div style="font-size:10px;font-weight:700;color:#9CA3AF;text-transform:uppercase;margin-bottom:5px;">Step ${i+1}</div>
+          <div style="font-size:13px;font-weight:700;color:#1A3350;margin-bottom:3px;">${s.role}</div>
+          <div style="font-size:11px;color:#6B7280;">SLA: ${s.sla}</div>
+          <div style="font-size:11px;color:#6B7280;font-style:italic;margin-top:1px;">When: ${s.cond}</div>
+        </div>
+        `).join('')}
+      </div>
+    </div>
+    `).join('')}
+  </div>
+</div>
+`,
+
+// ── SEARCH ──────────────────────────────────────────────────────
+search: `
+<div class="fade-in" style="max-width:760px;margin:0 auto;">
+  <h1 style="font-size:22px;font-weight:800;color:#1A3350;margin-bottom:4px;">Search Contracts</h1>
+  <p style="font-size:13px;color:#9CA3AF;margin-bottom:18px;">Full-text search across names, counterparties, extracted clauses and metadata.</p>
+  <div style="position:relative;margin-bottom:16px;">
+    <i class="fas fa-search" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);color:#9CA3AF;font-size:15px;"></i>
+    <input class="input" style="padding:13px 16px 13px 46px;font-size:15px;border-width:2px;" placeholder="Search contracts, clauses, counterparties..." value="auto-renewal" />
+    <button class="btn btn-primary btn-sm" style="position:absolute;right:8px;top:50%;transform:translateY(-50%);" onclick="showToast('Searching contracts...')">Search</button>
+  </div>
+  <div style="display:flex;gap:7px;margin-bottom:16px;flex-wrap:wrap;">
+    ${['Active','Expiring','Pending Approval'].map(f=>`<span style="background:#E6F4EC;color:#1A5C32;border:1.5px solid #A3D9B8;border-radius:20px;padding:4px 14px;font-size:12px;font-weight:600;">
+      <i class="fas fa-tag" style="font-size:10px;margin-right:5px;"></i>${f} <button style="background:none;border:none;cursor:pointer;color:#1A5C32;margin-left:3px;" onclick="event.stopPropagation();this.closest('span').remove();showToast('Filter removed: ${f}')">×</button></span>`).join('')}
+  </div>
+  <div style="font-size:13px;color:#9CA3AF;margin-bottom:14px;"><strong style="color:#1A3350;">4 results</strong> for "auto-renewal"</div>
+  <div style="display:flex;flex-direction:column;gap:10px;">
+    ${[
+      {id:'CLM-2041',name:'Sunrise SNF — Service Agreement FY26',s:'30-day written notice required to prevent <mark style="background:#FEF3C7;border-radius:2px;padding:0 2px;">auto-renewal</mark>.',type:'Service Agreement',exp:'Dec 31 2026',status:'pending'},
+      {id:'CLM-2031',name:'Oak Grove Master Service Agreement',s:'Contract will <mark style="background:#FEF3C7;border-radius:2px;padding:0 2px;">auto-renew</mark> for successive 12-month terms unless...',type:'MSA',exp:'Aug 8 2026',status:'expiring'},
+      {id:'CLM-2021',name:'ATL Lab Services Master Agreement',s:'60-day advance notice to terminate <mark style="background:#FEF3C7;border-radius:2px;padding:0 2px;">auto-renewal</mark>.',type:'MSA',exp:'Jun 16 2026',status:'expiring'},
+      {id:'CLM-2018',name:'Georgia LTC Equipment Lease Q2',s:'Lessee may decline <mark style="background:#FEF3C7;border-radius:2px;padding:0 2px;">auto-renewal</mark> by written notice 45 days prior...',type:'Equipment Lease',exp:'Sep 30 2026',status:'active'},
+    ].map(c=>`
+    <div class="card card-hover" style="padding:16px;" onclick="showScreen('contractDetail')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+        <span style="font-size:11px;font-weight:700;color:#9CA3AF;">${c.id}</span>
+        <span class="chip chip-${c.status}">${c.status.charAt(0).toUpperCase()+c.status.slice(1)}</span>
+        <span style="font-size:11px;background:#F3F4F6;color:#6B7280;border-radius:5px;padding:1px 7px;">${c.type}</span>
+        <span style="margin-left:auto;font-size:11px;color:#9CA3AF;">Expires ${c.exp}</span>
+      </div>
+      <div style="font-size:14px;font-weight:600;color:#1A3350;margin-bottom:5px;">${c.name}</div>
+      <div style="font-size:12px;color:#6B7280;font-style:italic;">"${c.s}"</div>
+    </div>
+    `).join('')}
+  </div>
+</div>
+`
+};
+
+// ── CONTROLLER ─────────────────────────────────────────────────
+
+function showScreen(name) {
+  if (name === 'login') {
+    document.getElementById('login').classList.add('active');
+    document.getElementById('appLayout').style.display = 'none';
+    return;
+  }
+  document.getElementById('login').classList.remove('active');
+  document.getElementById('appLayout').style.display = 'block';
+  document.querySelectorAll('.page-content').forEach(p => p.style.display = 'none');
+  const target = document.getElementById('page-' + name);
+  if (target) {
+    target.style.display = 'block';
+    if (!target.innerHTML.trim())
+      target.innerHTML = pages[name] || '<div style="padding:32px;color:#9CA3AF;">Page coming soon.</div>';
+  }
+  // update topnav active state
+  document.querySelectorAll('.topnav__item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.panel-item').forEach(el => el.classList.remove('active'));
+  document.querySelector('main').scrollTop = 0;
+}
+
+function switchTab(name, el) {
+  document.querySelectorAll('.tab-bar .tab').forEach(t => t.classList.remove('active'));
+  if (el) el.classList.add('active');
+  ['overview','documents','clauses','history','activity'].forEach(t => {
+    const d = document.getElementById('detail-' + t);
+    if (d) d.style.display = t === name ? 'block' : 'none';
+  });
+}
+
+function simulateUpload() {
+  const prog = document.getElementById('uploadProgress');
+  const bar  = document.getElementById('uploadBar');
+  const pct  = document.getElementById('uploadPct');
+  const res  = document.getElementById('extractionResult');
+  if (!prog) return;
+  prog.style.display = 'block';
+  res.style.display = 'none';
+  let p = 0;
+  const iv = setInterval(() => {
+    p += Math.random() * 18 + 5;
+    if (p >= 100) { p = 100; clearInterval(iv); }
+    bar.style.width = p + '%';
+    pct.textContent = Math.round(p) + '%';
+    if (p >= 100) setTimeout(() => { prog.style.display = 'none'; res.style.display = 'block'; res.scrollIntoView({behavior:'smooth'}); }, 400);
+  }, 140);
+}
+
+let _tt = null;
+function showToast(msg) {
+  let t = document.getElementById('hdToast');
+  if (!t) { t = document.createElement('div'); t.id = 'hdToast'; t.style.cssText='position:fixed;bottom:56px;left:50%;transform:translateX(-50%);background:#1A3350;color:#fff;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:600;z-index:1000;box-shadow:0 4px 14px rgba(0,0,0,.2);transition:opacity .3s;'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  if (_tt) clearTimeout(_tt);
+  _tt = setTimeout(() => t.style.opacity = '0', 2500);
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  showScreen('login');
+  const d = document.getElementById('page-dashboard');
+  if (d) d.innerHTML = pages.dashboard;
+});
+</script>
+</body>
+</html>

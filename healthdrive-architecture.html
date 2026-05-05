@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HealthDrive Platform — Architecture & Solution Diagrams</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet"/>
+<style>
+  :root {
+    --green:    #2A7D4F;
+    --green-dk: #1A5C32;
+    --teal:     #0E9B8A;
+    --navy:     #1A3350;
+    --gold:     #E8A020;
+    --red:      #DC3545;
+    --green-lt: #E6F4EC;
+    --teal-lt:  #E0F5F2;
+    --navy-lt:  #E8EFF7;
+    --bg:       #F0F4F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--navy); min-height: 100vh; }
+
+  /* ── HEADER ── */
+  header {
+    background: linear-gradient(135deg, var(--navy) 0%, #243b55 50%, var(--green-dk) 100%);
+    padding: 28px 48px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: relative; overflow: hidden;
+  }
+  header::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 70% 50%, rgba(42,125,79,.25) 0%, transparent 60%);
+  }
+  .hdr-brand { display: flex; align-items: center; gap: 16px; position: relative; z-index: 1; }
+  .hdr-logo { width: 52px; height: 52px; background: linear-gradient(135deg,var(--green),var(--teal)); border-radius: 14px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 20px rgba(42,125,79,.4); }
+  .hdr-title { color: #fff; font-size: 26px; font-weight: 900; line-height: 1; }
+  .hdr-sub   { color: rgba(255,255,255,.55); font-size: 12px; font-weight: 500; letter-spacing: 1.5px; text-transform: uppercase; margin-top: 3px; }
+  .hdr-badges { display: flex; gap: 10px; position: relative; z-index: 1; }
+  .hdr-badge { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 6px 14px; font-size: 11px; font-weight: 600; color: rgba(255,255,255,.8); backdrop-filter: blur(4px); }
+  .hdr-badge i { margin-right: 5px; }
+
+  /* ── TABS ── */
+  .tab-strip { background: #fff; border-bottom: 1px solid #E5E7EB; display: flex; gap: 0; padding: 0 48px; box-shadow: 0 1px 4px rgba(0,0,0,.05); }
+  .tab-btn { padding: 16px 26px; font-size: 13px; font-weight: 600; color: #9CA3AF; cursor: pointer; border: none; background: none; border-bottom: 3px solid transparent; transition: all .2s; display: flex; align-items: center; gap: 7px; }
+  .tab-btn:hover { color: var(--green); }
+  .tab-btn.active { color: var(--green); border-bottom-color: var(--green); }
+  .tab-btn i { font-size: 14px; }
+
+  /* ── PANELS ── */
+  .panel { display: none; padding: 36px 48px 60px; }
+  .panel.active { display: block; }
+
+  /* ── SECTION TITLE ── */
+  .sec-title { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 1.5px; color: #9CA3AF; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .sec-title::after { content: ''; flex: 1; height: 1px; background: #E5E7EB; }
+
+  /* ════════════════════════════════════════════
+     ARCHITECTURE DIAGRAM
+  ════════════════════════════════════════════ */
+  .arch-wrap { max-width: 1100px; margin: 0 auto; display: flex; flex-direction: column; gap: 0; }
+
+  .arch-layer {
+    border-radius: 16px;
+    padding: 20px 24px;
+    position: relative;
+    border: 1.5px solid transparent;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .arch-layer:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(0,0,0,.1); }
+
+  .arch-connector {
+    display: flex; justify-content: center; align-items: center;
+    height: 42px; position: relative;
+  }
+  .arch-connector::before {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: linear-gradient(180deg, #CBD5E1 0%, #94A3B8 100%);
+  }
+  .conn-label {
+    background: #fff; border: 1px solid #E5E7EB; border-radius: 20px;
+    padding: 3px 12px; font-size: 10px; font-weight: 700; color: #6B7280;
+    position: relative; z-index: 1; display: flex; align-items: center; gap: 5px;
+    letter-spacing: .5px; text-transform: uppercase;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  }
+  .conn-label i { font-size: 9px; color: var(--green); }
+  .arch-connector-arrow { position: absolute; bottom: -1px; left: 50%; transform: translateX(-50%); width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #94A3B8; }
+
+  .layer-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .layer-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0; }
+  .layer-name { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 1.5px; }
+  .layer-desc { font-size: 12px; font-weight: 400; margin-top: 1px; opacity: .65; }
+  .layer-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 3px 9px; border-radius: 20px; text-transform: uppercase; letter-spacing: .5px; }
+
+  .cards-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .arch-card {
+    background: rgba(255,255,255,.7);
+    border-radius: 10px;
+    padding: 12px 14px;
+    border: 1px solid rgba(255,255,255,.9);
+    backdrop-filter: blur(4px);
+    flex: 1; min-width: 160px;
+    transition: transform .15s, box-shadow .15s;
+    cursor: default;
+  }
+  .arch-card:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+  .arch-card-icon { font-size: 18px; margin-bottom: 7px; }
+  .arch-card-name { font-size: 12px; font-weight: 700; color: var(--navy); line-height: 1.3; }
+  .arch-card-detail { font-size: 10px; color: #6B7280; margin-top: 3px; line-height: 1.4; }
+  .arch-card-tag { display: inline-block; margin-top: 6px; font-size: 9px; font-weight: 700; padding: 2px 7px; border-radius: 4px; text-transform: uppercase; letter-spacing: .3px; }
+
+  /* Layer colour themes */
+  .layer-users    { background: linear-gradient(135deg,#EEF2FF 0%,#E0E7FF 100%); border-color: #C7D2FE; }
+  .layer-api      { background: linear-gradient(135deg,var(--navy-lt) 0%,#D4E4F0 100%); border-color: #A8C4DC; }
+  .layer-app      { background: linear-gradient(135deg,var(--green-lt) 0%,#D4F0E3 100%); border-color: #A3D9B8; }
+  .layer-infra    { background: linear-gradient(135deg,var(--teal-lt) 0%,#C7EDE8 100%); border-color: #7DD3CC; }
+  .layer-data     { background: linear-gradient(135deg,#FEF3C7 0%,#FDE8A8 100%); border-color: #F9CC6A; }
+  .layer-external { background: linear-gradient(135deg,#F0FDF4 0%,#DCFCE7 100%); border-color: #86EFAC; }
+
+  /* ════════════════════════════════════════════
+     SOLUTION FLOW DIAGRAM
+  ════════════════════════════════════════════ */
+  .solution-wrap { max-width: 1100px; margin: 0 auto; }
+
+  .swimlane-container { display: flex; flex-direction: column; gap: 0; border-radius: 16px; overflow: hidden; border: 1.5px solid #E5E7EB; box-shadow: 0 4px 24px rgba(0,0,0,.07); }
+  .swimlane {
+    display: flex; align-items: stretch; min-height: 110px;
+    border-bottom: 1px solid #E5E7EB;
+  }
+  .swimlane:last-child { border-bottom: none; }
+  .lane-label {
+    width: 160px; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 6px; padding: 16px 12px;
+    text-align: center;
+  }
+  .lane-label i { font-size: 20px; opacity: .8; }
+  .lane-label span { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; line-height: 1.3; }
+  .lane-body { flex: 1; background: #fff; padding: 20px 24px; display: flex; align-items: center; gap: 0; }
+
+  /* Flow nodes */
+  .flow-nodes { display: flex; align-items: center; gap: 0; width: 100%; }
+  .flow-node {
+    background: #F8FAFC; border: 1.5px solid #E5E7EB;
+    border-radius: 10px; padding: 10px 14px;
+    min-width: 130px; max-width: 170px;
+    transition: all .2s; cursor: default;
+    position: relative;
+  }
+  .flow-node:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); border-color: var(--green); }
+  .flow-node-icon { font-size: 16px; margin-bottom: 5px; }
+  .flow-node-title { font-size: 11px; font-weight: 700; color: var(--navy); line-height: 1.3; }
+  .flow-node-sub   { font-size: 9px; color: #9CA3AF; margin-top: 2px; line-height: 1.4; }
+  .flow-node.highlight { background: var(--green-lt); border-color: var(--green); }
+  .flow-node.highlight .flow-node-title { color: var(--green-dk); }
+  .flow-node.warn     { background: #FEF3C7; border-color: var(--gold); }
+  .flow-node.warn .flow-node-title { color: #92400E; }
+  .flow-node.danger   { background: #FDECEA; border-color: var(--red); }
+  .flow-node.danger .flow-node-title { color: #991B1B; }
+  .flow-node.teal     { background: var(--teal-lt); border-color: var(--teal); }
+  .flow-node.teal .flow-node-title { color: #065F46; }
+  .flow-node.navy     { background: var(--navy-lt); border-color: #7FA8C9; }
+  .flow-node.navy .flow-node-title { color: var(--navy); }
+
+  /* Arrows */
+  .flow-arrow { display: flex; align-items: center; padding: 0 6px; flex-shrink: 0; }
+  .flow-arrow svg { width: 32px; height: 20px; }
+  .flow-arrow.branch { flex-direction: column; gap: 4px; }
+  .branch-label { font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+  .branch-yes { color: var(--green); }
+  .branch-no  { color: var(--red); }
+
+  /* ════════════════════════════════════════════
+     AI PIPELINE DIAGRAM
+  ════════════════════════════════════════════ */
+  .pipeline-wrap { max-width: 1100px; margin: 0 auto; }
+
+  .pipeline-row { display: flex; align-items: center; justify-content: center; gap: 0; margin-bottom: 0; }
+  .pipe-node {
+    border-radius: 14px; padding: 18px 20px; min-width: 165px; text-align: center;
+    border: 2px solid transparent; position: relative;
+    transition: transform .2s, box-shadow .2s;
+    cursor: default;
+  }
+  .pipe-node:hover { transform: translateY(-3px); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+  .pipe-node-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 800; margin: 0 auto 8px; }
+  .pipe-node-icon { font-size: 24px; margin-bottom: 8px; }
+  .pipe-node-name { font-size: 12px; font-weight: 800; color: var(--navy); margin-bottom: 4px; }
+  .pipe-node-detail { font-size: 10px; color: #6B7280; line-height: 1.5; }
+  .pipe-node-badge { display: inline-block; margin-top: 7px; font-size: 9px; font-weight: 700; padding: 2px 8px; border-radius: 20px; text-transform: uppercase; letter-spacing: .3px; }
+
+  .pipe-arrow { flex-shrink: 0; padding: 0 4px; display: flex; align-items: center; flex-direction: column; gap: 4px; }
+  .pipe-arrow svg { width: 36px; height: 24px; }
+  .pipe-arrow-label { font-size: 9px; font-weight: 700; color: #9CA3AF; text-transform: uppercase; letter-spacing: .5px; white-space: nowrap; }
+
+  .pipe-phi   { background: linear-gradient(135deg,#FDECEA,#FED7D7); border-color: var(--red); }
+  .pipe-enrich{ background: linear-gradient(135deg,var(--teal-lt),#C7EDE8); border-color: var(--teal); }
+  .pipe-route { background: linear-gradient(135deg,var(--navy-lt),#C5D9EC); border-color: #5B8FB9; }
+  .pipe-ticket{ background: linear-gradient(135deg,var(--green-lt),#C2E8D4); border-color: var(--green); }
+  .pipe-flag  { background: linear-gradient(135deg,#FEF3C7,#FDDFA0); border-color: var(--gold); }
+
+  .pipe-num-red   { background: var(--red); color: #fff; }
+  .pipe-num-teal  { background: var(--teal); color: #fff; }
+  .pipe-num-navy  { background: var(--navy); color: #fff; }
+  .pipe-num-green { background: var(--green); color: #fff; }
+  .pipe-num-gold  { background: var(--gold); color: #fff; }
+
+  /* Detail cards below pipeline */
+  .pipe-detail-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; }
+  .pipe-detail-card {
+    background: #fff; border-radius: 12px; padding: 18px; border: 1px solid #E5E7EB;
+    box-shadow: 0 2px 8px rgba(0,0,0,.04);
+  }
+  .pipe-detail-card h4 { font-size: 12px; font-weight: 800; color: var(--navy); margin-bottom: 10px; display: flex; align-items: center; gap: 7px; }
+  .pipe-detail-card h4 i { font-size: 13px; }
+  .pipe-detail-card ul { list-style: none; display: flex; flex-direction: column; gap: 6px; }
+  .pipe-detail-card li { font-size: 11px; color: #4B5563; display: flex; align-items: flex-start; gap: 7px; line-height: 1.4; }
+  .pipe-detail-card li::before { content: '→'; color: var(--green); font-weight: 800; flex-shrink: 0; font-size: 10px; margin-top: 1px; }
+  .phi-indicators { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .phi-chip { background: #FDECEA; color: var(--red); border-radius: 5px; padding: 2px 8px; font-size: 9px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px; border: 1px solid #FCA5A5; }
+
+  /* ── LEGEND ── */
+  .legend { display: flex; gap: 24px; flex-wrap: wrap; margin-top: 24px; padding: 16px 20px; background: #fff; border-radius: 10px; border: 1px solid #E5E7EB; }
+  .legend-item { display: flex; align-items: center; gap: 8px; font-size: 11px; color: #6B7280; font-weight: 500; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+  /* ── STAT ROW ── */
+  .stat-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; margin-bottom: 32px; }
+  .stat-card { background: #fff; border-radius: 12px; padding: 16px 18px; border: 1px solid #E5E7EB; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.04); }
+  .stat-val { font-size: 26px; font-weight: 900; line-height: 1; }
+  .stat-lbl { font-size: 11px; color: #9CA3AF; margin-top: 4px; font-weight: 500; }
+
+  /* ── COMPLIANCE BANNER ── */
+  .compliance-bar {
+    background: linear-gradient(135deg, var(--navy) 0%, #243b55 100%);
+    border-radius: 14px; padding: 20px 28px; margin-bottom: 32px;
+    display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  }
+  .compliance-bar h3 { color: #fff; font-size: 14px; font-weight: 800; margin-bottom: 2px; }
+  .compliance-bar p  { color: rgba(255,255,255,.6); font-size: 12px; }
+  .comp-badges { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+  .comp-badge { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.2); border-radius: 8px; padding: 6px 14px; font-size: 11px; font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .comp-badge i { color: var(--teal); }
+
+  /* ── FOOTER ── */
+  footer { text-align: center; padding: 24px; color: #9CA3AF; font-size: 11px; border-top: 1px solid #E5E7EB; background: #fff; }
+  footer strong { color: var(--green); }
+
+  /* ── ANIMATIONS ── */
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .pulse { animation: pulse 2s infinite; }
+  @keyframes flow { 0%{stroke-dashoffset:20} 100%{stroke-dashoffset:0} }
+  .flow-line { stroke-dasharray: 5 3; animation: flow 1s linear infinite; }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════ HEADER ══════════════════════════════ -->
+<header>
+  <div class="hdr-brand">
+    <div class="hdr-logo"><i class="fas fa-heartbeat" style="color:#fff;font-size:22px;"></i></div>
+    <div>
+      <div class="hdr-title">HealthDrive Platform</div>
+      <div class="hdr-sub">Architecture &amp; Solution Diagrams · April 2026</div>
+    </div>
+  </div>
+  <div class="hdr-badges">
+    <div class="hdr-badge"><i class="fas fa-shield-halved"></i>HIPAA Eligible</div>
+    <div class="hdr-badge"><i class="fas fa-cloud"></i>Azure BAA-Covered</div>
+    <div class="hdr-badge"><i class="fas fa-robot"></i>AI-Augmented</div>
+    <div class="hdr-badge"><i class="fas fa-code-branch"></i>v2.0</div>
+  </div>
+</header>
+
+<!-- ══════════════════════════════ TAB STRIP ══════════════════════════════ -->
+<div class="tab-strip">
+  <button class="tab-btn active" onclick="switchTab('arch')"><i class="fas fa-layer-group"></i>Architecture</button>
+  <button class="tab-btn" onclick="switchTab('solution')"><i class="fas fa-diagram-project"></i>Solution Flow</button>
+  <button class="tab-btn" onclick="switchTab('ai')"><i class="fas fa-robot"></i>AI &amp; Compliance Pipeline</button>
+</div>
+
+<!-- ══════════════════════════════ PANEL 1: ARCHITECTURE ══════════════════════════════ -->
+<div id="panel-arch" class="panel active">
+
+  <!-- Stat row -->
+  <div class="stat-row">
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);">2</div><div class="stat-lbl">Applications</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--navy);">5</div><div class="stat-lbl">Arch Layers</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--teal);">8</div><div class="stat-lbl">PHI Patterns</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gold);">3</div><div class="stat-lbl">Feature Flags</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--green);">0.75</div><div class="stat-lbl">AI Conf Threshold</div></div>
+  </div>
+
+  <div class="arch-wrap">
+
+    <!-- LAYER 1: USER LAYER -->
+    <div class="arch-layer layer-users">
+      <div class="layer-header">
+        <div class="layer-icon" style="background:#6366F1;"><i class="fas fa-display" style="color:#fff;font-size:14px;"></i></div>
+        <div>
+          <div class="layer-name" style="color:#4338CA;">Presentation Layer</div>
+          <div class="layer-desc" style="color:#4338CA;">End-user interfaces served to browser</div>
+        </div>
+        <span class="layer-badge" style="background:#EEF2FF;color:#4338CA;border:1px solid #C7D2FE;">Client-Side</span>
+      </div>
+      <div class="cards-row">
+        <div class="arch-card">
+          <div class="arch-card-icon">🎫</div>
+          <div class="arch-card-name">App A — Internal Ticket Tracker</div>
+          <div class="arch-card-detail">Angular 17 · Standalone components · HttpClient · Feature flag toggles · AI enrichment panel</div>
+          <span class="arch-card-tag" style="background:#EEF2FF;color:#4338CA;">Port 8770</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">📄</div>
+          <div class="arch-card-name">App B — Contract Management System</div>
+          <div class="arch-card-detail">HTML5 + Vanilla JS prototype · White top-nav · Card-grid layout · AI clause extraction UI · DocuSign tracker</div>
+          <span class="arch-card-tag" style="background:#EEF2FF;color:#4338CA;">Port 4001</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🛠️</div>
+          <div class="arch-card-name">NAT 2.0 Recording Studio</div>
+          <div class="arch-card-detail">Playwright · 5-layer test framework · Script generator · Validator gates · Coverage intelligence</div>
+          <span class="arch-card-tag" style="background:#EEF2FF;color:#4338CA;">Port 5173</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="arch-connector">
+      <div class="conn-label"><i class="fas fa-lock"></i>HTTPS / REST</div>
+      <div class="arch-connector-arrow"></div>
+    </div>
+
+    <!-- LAYER 2: API LAYER -->
+    <div class="arch-layer layer-api">
+      <div class="layer-header">
+        <div class="layer-icon" style="background:var(--navy);"><i class="fas fa-server" style="color:#fff;font-size:13px;"></i></div>
+        <div>
+          <div class="layer-name" style="color:var(--navy);">API Layer</div>
+          <div class="layer-desc" style="color:var(--navy);">ASP.NET Core 8 · RESTful controllers · Action filters</div>
+        </div>
+        <span class="layer-badge" style="background:var(--navy-lt);color:var(--navy);border:1px solid #A8C4DC;">Port 5000</span>
+      </div>
+      <div class="cards-row">
+        <div class="arch-card">
+          <div class="arch-card-icon">📥</div>
+          <div class="arch-card-name">EmailIntakeController</div>
+          <div class="arch-card-detail">POST /api/email-intake/inbound · Azure Event Grid webhook · GET for validation handshake</div>
+          <span class="arch-card-tag" style="background:var(--navy-lt);color:var(--navy);">Webhook</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🚩</div>
+          <div class="arch-card-name">FeatureFlagsController</div>
+          <div class="arch-card-detail">GET /api/admin/feature-flags · PUT /api/admin/feature-flags/{name} · Admin role guard</div>
+          <span class="arch-card-tag" style="background:var(--navy-lt);color:var(--navy);">Admin</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🛡️</div>
+          <div class="arch-card-name">WebhookSecretFilter</div>
+          <div class="arch-card-detail">IActionFilter · Validates X-Webhook-Secret header · Reads from EmailIntake:WebhookSecret config</div>
+          <span class="arch-card-tag" style="background:#FDECEA;color:var(--red);">Security</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="arch-connector">
+      <div class="conn-label"><i class="fas fa-code"></i>DI / Interfaces</div>
+      <div class="arch-connector-arrow"></div>
+    </div>
+
+    <!-- LAYER 3: APPLICATION SERVICES -->
+    <div class="arch-layer layer-app">
+      <div class="layer-header">
+        <div class="layer-icon" style="background:var(--green);"><i class="fas fa-gear" style="color:#fff;font-size:13px;"></i></div>
+        <div>
+          <div class="layer-name" style="color:var(--green-dk);">Application Services Layer</div>
+          <div class="layer-desc" style="color:var(--green-dk);">Business logic · AI orchestration · PHI gate</div>
+        </div>
+        <span class="layer-badge" style="background:var(--green-lt);color:var(--green-dk);border:1px solid #A3D9B8;">Core Logic</span>
+      </div>
+      <div class="cards-row">
+        <div class="arch-card">
+          <div class="arch-card-icon">🔍</div>
+          <div class="arch-card-name">PhiScannerService</div>
+          <div class="arch-card-detail">Singleton · Pure regex · 8 HIPAA patterns · SSN, MRN, DOB, Phone, NPI, ZIP+4 · Zero I/O · Source-generated [GeneratedRegex]</div>
+          <span class="arch-card-tag" style="background:#FDECEA;color:var(--red);">PHI Gate</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">✨</div>
+          <div class="arch-card-name">EmailEnrichmentService</div>
+          <div class="arch-card-detail">PHI gate → truncate 3K chars → JSON mode → parse urgency, facility, ticket type, intent · EventId 1001/1002 audit log</div>
+          <span class="arch-card-tag" style="background:var(--green-lt);color:var(--green-dk);">AI Feature</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🗺️</div>
+          <div class="arch-card-name">AIDepartmentRoutingService</div>
+          <div class="arch-card-detail">PHI gate → AI routing (conf ≥ 0.75) → keyword fallback · EventId 1003/1004 audit log · Never routes PHI to LLM</div>
+          <span class="arch-card-tag" style="background:var(--green-lt);color:var(--green-dk);">AI Feature</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="arch-connector">
+      <div class="conn-label"><i class="fas fa-plug"></i>Provider Pattern</div>
+      <div class="arch-connector-arrow"></div>
+    </div>
+
+    <!-- LAYER 4: INFRASTRUCTURE -->
+    <div class="arch-layer layer-infra">
+      <div class="layer-header">
+        <div class="layer-icon" style="background:var(--teal);"><i class="fas fa-database" style="color:#fff;font-size:13px;"></i></div>
+        <div>
+          <div class="layer-name" style="color:#065F46;">Infrastructure Layer</div>
+          <div class="layer-desc" style="color:#065F46;">Provider implementations · Caching · Config binding</div>
+        </div>
+        <span class="layer-badge" style="background:var(--teal-lt);color:#065F46;border:1px solid #7DD3CC;">Infra</span>
+      </div>
+      <div class="cards-row">
+        <div class="arch-card">
+          <div class="arch-card-icon">🤖</div>
+          <div class="arch-card-name">AzureOpenAIProvider</div>
+          <div class="arch-card-detail">Azure.AI.OpenAI SDK · AzureKeyCredential · ChatClient · JsonMode · Stopwatch latency · LogLevel Warning cap</div>
+          <span class="arch-card-tag" style="background:var(--teal-lt);color:#065F46;">BAA-Covered</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">⭕</div>
+          <div class="arch-card-name">NullLlmProvider</div>
+          <div class="arch-card-detail">Auto-registered when AzureOpenAI:ApiKey absent · Returns empty response · Never throws · Safe local dev default</div>
+          <span class="arch-card-tag" style="background:#F3F4F6;color:#6B7280;">No-Op</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🚩</div>
+          <div class="arch-card-name">FeatureFlagService</div>
+          <div class="arch-card-detail">SQL MERGE upsert · IMemoryCache 30s TTL · Cache-bust on Set · AI_EMAIL_ENRICHMENT · AI_DEPT_ROUTING · AI_PHI_SCANNING</div>
+          <span class="arch-card-tag" style="background:var(--teal-lt);color:#065F46;">Cached</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🧪</div>
+          <div class="arch-card-name">MockLlmProvider</div>
+          <div class="arch-card-detail">CI/test use only · SetNextResponse(json) · Deterministic responses · No HTTP calls</div>
+          <span class="arch-card-tag" style="background:#F3F4F6;color:#6B7280;">Test Only</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONNECTOR -->
+    <div class="arch-connector">
+      <div class="conn-label"><i class="fas fa-network-wired"></i>TCP / HTTPS</div>
+      <div class="arch-connector-arrow"></div>
+    </div>
+
+    <!-- LAYER 5: DATA + EXTERNAL -->
+    <div class="arch-layer layer-data">
+      <div class="layer-header">
+        <div class="layer-icon" style="background:var(--gold);"><i class="fas fa-cloud" style="color:#fff;font-size:13px;"></i></div>
+        <div>
+          <div class="layer-name" style="color:#92400E;">Data &amp; External Services</div>
+          <div class="layer-desc" style="color:#92400E;">Persistence · BAA-covered AI · Email gateway · E-signature</div>
+        </div>
+        <span class="layer-badge" style="background:#FEF3C7;color:#92400E;border:1px solid #F9CC6A;">External</span>
+      </div>
+      <div class="cards-row">
+        <div class="arch-card">
+          <div class="arch-card-icon">🗄️</div>
+          <div class="arch-card-name">SQL Server</div>
+          <div class="arch-card-detail">HealthDriveTracker DB · Tickets · Departments · Feature flags · DepartmentKeywords · Dapper micro-ORM</div>
+          <span class="arch-card-tag" style="background:#FEF3C7;color:#92400E;">On-Premise</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">🧠</div>
+          <div class="arch-card-name">Azure OpenAI</div>
+          <div class="arch-card-detail">gpt-4o-mini deployment · HIPAA-eligible · Microsoft BAA · Endpoint: {resource}.openai.azure.com · 30s timeout</div>
+          <span class="arch-card-tag" style="background:#E6F4EC;color:var(--green-dk);">BAA-Covered ✓</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">📧</div>
+          <div class="arch-card-name">Azure Communication Services</div>
+          <div class="arch-card-detail">Inbound email routing · Event Grid subscription · Regional inboxes (southeast@, northeast@...) · Webhook to API</div>
+          <span class="arch-card-tag" style="background:#FEF3C7;color:#92400E;">Azure</span>
+        </div>
+        <div class="arch-card">
+          <div class="arch-card-icon">✍️</div>
+          <div class="arch-card-name">DocuSign</div>
+          <div class="arch-card-detail">E-signature envelopes · Signer status tracking · CLM contract execution · Pending / Executed / Declined / Voided states</div>
+          <span class="arch-card-tag" style="background:#FEF3C7;color:#92400E;">SaaS</span>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /arch-wrap -->
+
+  <!-- Legend -->
+  <div class="legend" style="max-width:1100px;margin:24px auto 0;">
+    <div style="font-size:11px;font-weight:800;color:var(--navy);margin-right:8px;white-space:nowrap;">Legend:</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#6366F1;"></div>Presentation</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--navy);"></div>API</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--green);"></div>Application</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--teal);"></div>Infrastructure</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--gold);"></div>Data / External</div>
+    <div class="legend-item"><div class="legend-dot" style="background:var(--red);"></div>Security boundary</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#86EFAC;"></div>BAA-covered</div>
+  </div>
+
+</div><!-- /panel-arch -->
+
+
+<!-- ══════════════════════════════ PANEL 2: SOLUTION FLOW ══════════════════════════════ -->
+<div id="panel-solution" class="panel">
+
+  <div class="compliance-bar">
+    <div>
+      <h3>End-to-End Solution Architecture</h3>
+      <p>Two integrated applications covering internal ticket management and contract lifecycle — unified by AI, PHI safety, and HealthDrive identity.</p>
+    </div>
+    <div class="comp-badges">
+      <div class="comp-badge"><i class="fas fa-shield-halved"></i>HIPAA Eligible</div>
+      <div class="comp-badge"><i class="fas fa-robot"></i>AI-Augmented</div>
+      <div class="comp-badge"><i class="fas fa-pen-nib"></i>DocuSign Integrated</div>
+    </div>
+  </div>
+
+  <!-- APP A FLOW -->
+  <div class="sec-title"><i class="fas fa-ticket" style="color:var(--green);"></i>App A — Ticket Tracker Flow</div>
+
+  <div class="solution-wrap" style="margin-bottom:32px;">
+    <div class="swimlane-container">
+
+      <!-- Lane 1: Email Source -->
+      <div class="swimlane">
+        <div class="lane-label" style="background:var(--navy-lt);">
+          <i class="fas fa-envelope" style="color:var(--navy);"></i>
+          <span style="color:var(--navy);">Email Source</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node navy">
+              <div class="flow-node-icon">📧</div>
+              <div class="flow-node-title">Inbound Email</div>
+              <div class="flow-node-sub">LTC facility staff sends to regional inbox</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node navy">
+              <div class="flow-node-icon">📮</div>
+              <div class="flow-node-title">Azure Comm Services</div>
+              <div class="flow-node-sub">Receives email, fires Event Grid webhook</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node navy">
+              <div class="flow-node-icon">🔐</div>
+              <div class="flow-node-title">WebhookSecretFilter</div>
+              <div class="flow-node-sub">Validates X-Webhook-Secret header</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node navy">
+              <div class="flow-node-icon">📥</div>
+              <div class="flow-node-title">EmailIntakeController</div>
+              <div class="flow-node-sub">POST /api/email-intake/inbound</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane 2: PHI Gate -->
+      <div class="swimlane">
+        <div class="lane-label" style="background:#FDECEA;">
+          <i class="fas fa-shield-halved" style="color:var(--red);"></i>
+          <span style="color:#991B1B;">PHI Gate</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node danger">
+              <div class="flow-node-icon">🔍</div>
+              <div class="flow-node-title">PHI Scanner</div>
+              <div class="flow-node-sub">Scans subject + body · 8 HIPAA patterns · Synchronous, zero I/O</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+              <span class="branch-label branch-no">PHI found?</span>
+            </div>
+            <div class="flow-node danger" style="min-width:145px;">
+              <div class="flow-node-icon">⛔</div>
+              <div class="flow-node-title">Block + Flag</div>
+              <div class="flow-node-sub">EventId 1001 · AI skipped · Ticket flagged for manual review</div>
+            </div>
+            <div style="flex:1;display:flex;align-items:center;justify-content:center;padding:0 12px;">
+              <div style="background:var(--green-lt);border:1.5px dashed #A3D9B8;border-radius:10px;padding:10px 16px;text-align:center;">
+                <div style="font-size:10px;font-weight:800;color:var(--green-dk);text-transform:uppercase;letter-spacing:.5px;">✓ PHI Clear</div>
+                <div style="font-size:9px;color:#6B7280;margin-top:2px;">EventId 1002 logged<br/>Proceed to AI</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane 3: AI Enrichment -->
+      <div class="swimlane">
+        <div class="lane-label" style="background:var(--teal-lt);">
+          <i class="fas fa-robot" style="color:var(--teal);"></i>
+          <span style="color:#065F46;">AI Enrichment</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node teal">
+              <div class="flow-node-icon">✂️</div>
+              <div class="flow-node-title">Truncate Body</div>
+              <div class="flow-node-sub">3,000 char limit · [TRUNCATED] marker</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">🧠</div>
+              <div class="flow-node-title">Azure OpenAI</div>
+              <div class="flow-node-sub">gpt-4o-mini · JSON mode · 500 tokens · BAA-covered endpoint</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">📊</div>
+              <div class="flow-node-title">Parse &amp; Validate</div>
+              <div class="flow-node-sub">Subject · Facility · Urgency · TicketType · Confidence</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">🗺️</div>
+              <div class="flow-node-title">AI Dept Routing</div>
+              <div class="flow-node-sub">Conf ≥ 0.75 → AI · else keyword rules · EventId 1004</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Lane 4: Ticket Creation -->
+      <div class="swimlane">
+        <div class="lane-label" style="background:var(--green-lt);">
+          <i class="fas fa-ticket" style="color:var(--green);"></i>
+          <span style="color:var(--green-dk);">Ticket Output</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">📋</div>
+              <div class="flow-node-title">Draft Ticket Created</div>
+              <div class="flow-node-sub">All AI fields populated · PHI flag · Routing source · Confidence scores</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">💾</div>
+              <div class="flow-node-title">Persisted to SQL</div>
+              <div class="flow-node-sub">HealthDriveTracker DB · Dapper · TicketId returned</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">👤</div>
+              <div class="flow-node-title">Agent Reviews</div>
+              <div class="flow-node-sub">Angular UI · AI suggestion badges · Apply / Edit fields</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">✅</div>
+              <div class="flow-node-title">Ticket Resolved</div>
+              <div class="flow-node-sub">Status → Done · Audit trail logged</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- APP B FLOW -->
+  <div class="sec-title" style="margin-top:36px;"><i class="fas fa-file-contract" style="color:var(--teal);"></i>App B — Contract Lifecycle Flow</div>
+
+  <div class="solution-wrap">
+    <div class="swimlane-container">
+
+      <div class="swimlane">
+        <div class="lane-label" style="background:#E0F5F2;">
+          <i class="fas fa-cloud-arrow-up" style="color:var(--teal);"></i>
+          <span style="color:#065F46;">Ingestion</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node teal">
+              <div class="flow-node-icon">📄</div>
+              <div class="flow-node-title">Upload / Email</div>
+              <div class="flow-node-sub">PDF upload or contracts@intake email</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">🤖</div>
+              <div class="flow-node-title">AI Extraction</div>
+              <div class="flow-node-sub">Metadata · Dates · Value · Counterparty · 91% conf</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">⚖️</div>
+              <div class="flow-node-title">Clause Analysis</div>
+              <div class="flow-node-sub">Risk-tagged · High / Med / Low · Auto-renewal flags</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node teal">
+              <div class="flow-node-icon">👁️</div>
+              <div class="flow-node-title">Legal Review</div>
+              <div class="flow-node-sub">CLM UI · Edit fields · Confirm metadata</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="swimlane">
+        <div class="lane-label" style="background:var(--green-lt);">
+          <i class="fas fa-check-double" style="color:var(--green);"></i>
+          <span style="color:var(--green-dk);">Approval</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">🔄</div>
+              <div class="flow-node-title">Workflow Triggered</div>
+              <div class="flow-node-sub">Type + value → selects workflow template</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">⚖️</div>
+              <div class="flow-node-title">Legal Ops</div>
+              <div class="flow-node-sub">Step 1 · SLA 2 days · Always required</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">💼</div>
+              <div class="flow-node-title">CFO Approval</div>
+              <div class="flow-node-sub">Step 2 · SLA 3 days · Value &gt; $50K</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node highlight">
+              <div class="flow-node-icon">👔</div>
+              <div class="flow-node-title">CEO Sign-off</div>
+              <div class="flow-node-sub">Step 3 · SLA 5 days · Value &gt; $200K</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="swimlane">
+        <div class="lane-label" style="background:#FEF3C7;">
+          <i class="fas fa-pen-nib" style="color:var(--gold);"></i>
+          <span style="color:#92400E;">E-Signature</span>
+        </div>
+        <div class="lane-body">
+          <div class="flow-nodes">
+            <div class="flow-node warn">
+              <div class="flow-node-icon">✉️</div>
+              <div class="flow-node-title">DocuSign Envelope</div>
+              <div class="flow-node-sub">Sent to all signatories · Tracked by ENV-ID</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node warn">
+              <div class="flow-node-icon">🖊️</div>
+              <div class="flow-node-title">Signer Status</div>
+              <div class="flow-node-sub">Pending / Signed per party · Reminder capability</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node warn">
+              <div class="flow-node-icon">✅</div>
+              <div class="flow-node-title">Fully Executed</div>
+              <div class="flow-node-sub">All parties signed · Contract Active</div>
+            </div>
+            <div class="flow-arrow">
+              <svg viewBox="0 0 36 20"><line x1="0" y1="10" x2="30" y2="10" stroke="#CBD5E1" stroke-width="2" class="flow-line"/><polygon points="26,6 36,10 26,14" fill="#94A3B8"/></svg>
+            </div>
+            <div class="flow-node warn">
+              <div class="flow-node-icon">🔔</div>
+              <div class="flow-node-title">Expiry Monitoring</div>
+              <div class="flow-node-sub">60-day alert · Auto-renewal deadline tracking</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /panel-solution -->
+
+
+<!-- ══════════════════════════════ PANEL 3: AI PIPELINE ══════════════════════════════ -->
+<div id="panel-ai" class="panel">
+
+  <div class="compliance-bar">
+    <div>
+      <h3>AI &amp; Compliance Pipeline — Detailed View</h3>
+      <p>Every email passes through this ordered pipeline. PHI is never transmitted to any LLM. All gate events carry structured EventIds for compliance queries.</p>
+    </div>
+    <div class="comp-badges">
+      <div class="comp-badge"><i class="fas fa-shield-halved"></i>Defence-in-Depth</div>
+      <div class="comp-badge"><i class="fas fa-list-check"></i>4 EventIds</div>
+      <div class="comp-badge"><i class="fas fa-ban"></i>Zero PHI to LLM</div>
+    </div>
+  </div>
+
+  <!-- Pipeline nodes -->
+  <div class="pipeline-wrap">
+    <div class="pipeline-row">
+
+      <div class="pipe-node pipe-flag" style="min-width:155px;">
+        <div class="pipe-node-num pipe-num-gold">①</div>
+        <div class="pipe-node-icon">📥</div>
+        <div class="pipe-node-name">Email Received</div>
+        <div class="pipe-node-detail">MessageId · From · Subject · PlainTextBody · RegionCode</div>
+        <span class="pipe-node-badge" style="background:#FDE68A;color:#92400E;">Webhook</span>
+      </div>
+
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 36 24"><line x1="0" y1="12" x2="30" y2="12" stroke="#CBD5E1" stroke-width="2.5" class="flow-line"/><polygon points="26,7 36,12 26,17" fill="#94A3B8"/></svg>
+        <span class="pipe-arrow-label">validate</span>
+      </div>
+
+      <div class="pipe-node pipe-phi">
+        <div class="pipe-node-num pipe-num-red">②</div>
+        <div class="pipe-node-icon">🔍</div>
+        <div class="pipe-node-name">PHI Gate</div>
+        <div class="pipe-node-detail">Scans subject + body combined · 8 source-generated regexes · Synchronous · Zero I/O · &lt;1ms</div>
+        <span class="pipe-node-badge" style="background:#FCA5A5;color:#991B1B;">EventId 1001/1002</span>
+      </div>
+
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 36 24"><line x1="0" y1="12" x2="30" y2="12" stroke="#CBD5E1" stroke-width="2.5" class="flow-line"/><polygon points="26,7 36,12 26,17" fill="#94A3B8"/></svg>
+        <span class="pipe-arrow-label">if clear</span>
+      </div>
+
+      <div class="pipe-node pipe-enrich">
+        <div class="pipe-node-num pipe-num-teal">③</div>
+        <div class="pipe-node-icon">✨</div>
+        <div class="pipe-node-name">AI Enrichment</div>
+        <div class="pipe-node-detail">Truncate 3K chars · JSON mode · gpt-4o-mini · Max 500 tokens · Extract 7 fields · 30s timeout</div>
+        <span class="pipe-node-badge" style="background:#99F6E4;color:#065F46;">Azure OpenAI BAA</span>
+      </div>
+
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 36 24"><line x1="0" y1="12" x2="30" y2="12" stroke="#CBD5E1" stroke-width="2.5" class="flow-line"/><polygon points="26,7 36,12 26,17" fill="#94A3B8"/></svg>
+        <span class="pipe-arrow-label">route</span>
+      </div>
+
+      <div class="pipe-node pipe-route">
+        <div class="pipe-node-num pipe-num-navy">④</div>
+        <div class="pipe-node-icon">🗺️</div>
+        <div class="pipe-node-name">AI Routing</div>
+        <div class="pipe-node-detail">PHI guard first · Conf ≥ 0.75 → AI · else keyword fallback · Validates departmentId · EventId 1003/1004</div>
+        <span class="pipe-node-badge" style="background:#BFDBFE;color:#1D4ED8;">EventId 1003/1004</span>
+      </div>
+
+      <div class="pipe-arrow">
+        <svg viewBox="0 0 36 24"><line x1="0" y1="12" x2="30" y2="12" stroke="#CBD5E1" stroke-width="2.5" class="flow-line"/><polygon points="26,7 36,12 26,17" fill="#94A3B8"/></svg>
+        <span class="pipe-arrow-label">persist</span>
+      </div>
+
+      <div class="pipe-node pipe-ticket">
+        <div class="pipe-node-num pipe-num-green">⑤</div>
+        <div class="pipe-node-icon">📋</div>
+        <div class="pipe-node-name">Draft Ticket</div>
+        <div class="pipe-node-detail">All AI fields · PHI flag · RoutingSource (AI / Rule / Default) · EnrichmentConfidence · RoutingConfidence</div>
+        <span class="pipe-node-badge" style="background:#A7F3D0;color:#065F46;">SQL Server</span>
+      </div>
+
+    </div>
+
+    <!-- PHI bypass path -->
+    <div style="max-width:900px;margin:16px auto 0;background:#FEF3C7;border:1.5px dashed var(--gold);border-radius:12px;padding:14px 20px;display:flex;align-items:center;gap:14px;">
+      <i class="fas fa-exclamation-triangle" style="color:var(--gold);font-size:20px;flex-shrink:0;"></i>
+      <div>
+        <div style="font-size:12px;font-weight:800;color:#92400E;margin-bottom:3px;">PHI Detected — Bypass Path</div>
+        <div style="font-size:11px;color:#6B7280;line-height:1.5;">
+          When PHI is found at gate ② → <strong>both</strong> AI Enrichment (③) and AI Routing (④) LLM calls are skipped entirely.
+          Routing falls back to keyword-only rules using <em>subject only</em> (body is withheld from all processing).
+          Ticket is created and flagged <code style="background:#FDECEA;border-radius:3px;padding:1px 5px;color:var(--red);">ContainsSuspectedPhi = true</code>.
+          EventId <strong>1001</strong> (BLOCKED) is emitted; agent is prompted to review manually.
+        </div>
+      </div>
+    </div>
+
+    <!-- Detail grid -->
+    <div class="pipe-detail-grid">
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-virus-slash" style="color:var(--red);"></i>PHI Patterns Detected (8)</h4>
+        <div class="phi-indicators">
+          <span class="phi-chip">SSN</span>
+          <span class="phi-chip">MRN</span>
+          <span class="phi-chip">DOB (labeled)</span>
+          <span class="phi-chip">DOB (bare date)</span>
+          <span class="phi-chip">Phone</span>
+          <span class="phi-chip">Email Addr</span>
+          <span class="phi-chip">NPI</span>
+          <span class="phi-chip">ZIP+4</span>
+        </div>
+        <ul style="margin-top:12px;">
+          <li>Source-generated <code>[GeneratedRegex]</code> — zero allocation</li>
+          <li>Conservative (high recall) — false positives preferred over misses</li>
+          <li>Scans subject <em>and</em> body, not just body</li>
+          <li>Returns redacted sample — never logs full PHI value</li>
+        </ul>
+      </div>
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-list-ol" style="color:var(--teal);"></i>Audit EventIds</h4>
+        <ul>
+          <li><strong>1001 PHI_GATE_BLOCKED</strong> — enrichment blocked, PHI detected</li>
+          <li><strong>1002 PHI_GATE_PASSED</strong> — cleared gate, proceeding to LLM</li>
+          <li><strong>1003 ROUTING_PHI_SKIP</strong> — routing LLM skipped due to PHI flag</li>
+          <li><strong>1004 ROUTING_LLM_CALLED</strong> — routing LLM initiated (length only, no content)</li>
+          <li>Query compliance: <code>WHERE EventId = 1001</code> in App Insights / Seq</li>
+          <li>Azure SDK capped at Warning — no HTTP bodies in logs</li>
+        </ul>
+      </div>
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-toggle-on" style="color:var(--green);"></i>Feature Flags (3)</h4>
+        <ul>
+          <li><strong>AI_EMAIL_ENRICHMENT</strong> — controls LLM enrichment call</li>
+          <li><strong>AI_DEPARTMENT_ROUTING</strong> — controls LLM routing call; keyword rules always available as fallback</li>
+          <li><strong>AI_PHI_SCANNING</strong> — PHI scanner runs regardless; flag gates whether to block vs warn</li>
+          <li>DB-backed · 30s IMemoryCache TTL · No deployment needed to toggle</li>
+          <li>Admin UI at <code>/api/admin/feature-flags</code> — role-gated</li>
+        </ul>
+      </div>
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-shield-halved" style="color:var(--navy);"></i>BAA Compliance Controls</h4>
+        <ul>
+          <li>Azure OpenAI endpoint only — never OpenAI.com direct</li>
+          <li>ApiKey in env var / Azure Key Vault — never in source control</li>
+          <li>appsettings.json caps <code>Azure.*</code> SDK at <code>Warning</code></li>
+          <li>System prompt: "NEVER include patient names, SSNs, DOBs, MRNs"</li>
+          <li>LLM output validated — PHI-like content in response causes confidence=0</li>
+          <li>NullLlmProvider when credentials absent — safe local dev default</li>
+        </ul>
+      </div>
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-route" style="color:var(--gold);"></i>Routing Decision Tree</h4>
+        <ul>
+          <li>PHI detected → keyword rules on subject only (body withheld)</li>
+          <li>AI_DEPT_ROUTING flag off → keyword rules on full text</li>
+          <li>LLM confidence &lt; 0.75 → keyword fallback</li>
+          <li>LLM returns unknown departmentId → keyword fallback</li>
+          <li>No keyword match → first department (catch-all, conf=0.3)</li>
+          <li>Source tagged: <code>AI</code> / <code>Rule</code> / <code>TicketTypeDefault</code></li>
+        </ul>
+      </div>
+
+      <div class="pipe-detail-card">
+        <h4><i class="fas fa-vial" style="color:#6366F1;"></i>Resilience &amp; Degradation</h4>
+        <ul>
+          <li>All LLM calls wrapped in try/catch — exception returns empty result, never throws</li>
+          <li>NullLlmProvider — drop-in replacement for zero-config environments</li>
+          <li>MockLlmProvider — deterministic CI responses via SetNextResponse()</li>
+          <li>Feature flags DB-backed — disable AI instantly without redeploy</li>
+          <li>Routing always has keyword fallback — ticket always gets a department</li>
+          <li>Email intake returns 200 OK even on AI failure — no webhook retries</li>
+        </ul>
+      </div>
+
+    </div>
+
+  </div><!-- /pipeline-wrap -->
+</div><!-- /panel-ai -->
+
+<footer>
+  HealthDrive Platform · Application A (Ticket Tracker) + Application B (CLM) · Designed for <strong>HIPAA-eligible</strong> BAA-covered AI operations · April 2026
+</footer>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  event.currentTarget.classList.add('active');
+}
+</script>
+</body>
+</html>

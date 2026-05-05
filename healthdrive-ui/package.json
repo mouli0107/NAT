@@ -1,0 +1,12 @@
+{
+  "name": "healthdrive-tracker",
+  "version": "1.0.0",
+  "description": "HealthDrive Internal Ticket Tracker",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
