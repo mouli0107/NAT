@@ -2397,18 +2397,74 @@ export function registerPlaywrightRoutes(app: Express) {
       res.write(`data: ${JSON.stringify({ message: msg, done })}\n\n`);
     };
 
-    send('Installing Playwright browsers (chromium)...');
+    send('Checking Playwright browser installation...');
 
-    // Install @playwright/test into /tmp/pw-install (NOT PROJECT_ROOT — that would read
-    // the full package.json and install 691 MB of deps). Then use its cli.js to download
-    // the Chromium browser binary.
-    const PW_PREFIX = '/tmp/pw-install';
-    const cliPath = path.join(PW_PREFIX, 'node_modules', '@playwright', 'test', 'cli.js');
     const nodeBin = process.execPath;
 
-    const runInstallBrowsers = () => {
+    // 1. Check PLAYWRIGHT_BROWSERS_PATH (set to /ms-playwright in Docker via Dockerfile)
+    const pwBrowsersPath = process.env.PLAYWRIGHT_BROWSERS_PATH;
+    if (pwBrowsersPath && fs.existsSync(pwBrowsersPath)) {
+      const entries = fs.readdirSync(pwBrowsersPath);
+      const hasChromium = entries.some(e => e.startsWith('chromium'));
+      if (hasChromium) {
+        send('✅ Chromium already installed at ' + pwBrowsersPath, true);
+        res.end();
+        return;
+      }
+    }
+
+    // 2. Check if @playwright/test CLI is available in project node_modules
+    const localCli = path.join(PROJECT_ROOT, 'node_modules', '@playwright', 'test', 'cli.js');
+    const playwrightCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
+    const cliToUse = fs.existsSync(localCli) ? localCli : (fs.existsSync(playwrightCli) ? playwrightCli : null);
+
+    if (cliToUse) {
       send('Installing Chromium browser binaries...');
-      const proc2 = spawn(nodeBin, [cliPath, 'install', 'chromium'], {
+      const proc = spawn(nodeBin, [cliToUse, 'install', 'chromium'], {
+        cwd: PROJECT_ROOT, shell: false, env: { ...process.env }
+      });
+      proc.stdout.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      proc.stderr.on('data', d => {
+        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+      });
+      proc.on('close', code => {
+        if (code === 0) {
+          send('✅ Playwright browsers installed successfully!', true);
+        } else {
+          send('❌ Installation failed. Check server logs.', true);
+        }
+        res.end();
+      });
+      proc.on('error', err => {
+        send(`❌ Error: ${err.message}`, true);
+        res.end();
+      });
+      return;
+    }
+
+    // 3. Last resort — npm install @playwright/test to /tmp/pw-install
+    send('Installing @playwright/test (one-time setup)...');
+    const PW_PREFIX = '/tmp/pw-install';
+    const tmpCli = path.join(PW_PREFIX, 'node_modules', '@playwright', 'test', 'cli.js');
+    const npm = spawn('sh', ['-c',
+      `mkdir -p ${PW_PREFIX} && npm install @playwright/test --prefix ${PW_PREFIX} --no-package-lock`
+    ], { shell: false, env: { ...process.env } });
+    npm.stdout.on('data', d => {
+      d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+    });
+    npm.stderr.on('data', d => {
+      d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
+    });
+    npm.on('close', code => {
+      if (code !== 0) {
+        send('❌ npm install @playwright/test failed. Check server logs.', true);
+        res.end();
+        return;
+      }
+      send('Installing Chromium browser binaries...');
+      const proc2 = spawn(nodeBin, [tmpCli, 'install', 'chromium'], {
         cwd: PW_PREFIX, shell: false, env: { ...process.env }
       });
       proc2.stdout.on('data', d => {
@@ -2417,48 +2473,13 @@ export function registerPlaywrightRoutes(app: Express) {
       proc2.stderr.on('data', d => {
         d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
       });
-      proc2.on('close', code => {
-        if (code === 0) {
-          send('✅ Playwright browsers installed successfully!', true);
-        } else {
-          send('❌ Installation failed. Check server logs.', true);
-        }
+      proc2.on('close', c => {
+        send(c === 0 ? '✅ Playwright browsers installed successfully!' : '❌ Installation failed. Check server logs.', true);
         res.end();
       });
-      proc2.on('error', err => {
-        send(`❌ Error: ${err.message}`, true);
-        res.end();
-      });
-    };
-
-    // If cli.js already exists in /tmp/pw-install, skip npm install
-    if (fs.existsSync(cliPath)) {
-      runInstallBrowsers();
-    } else {
-      send('Installing @playwright/test to /tmp/pw-install...');
-      // mkdir -p /tmp/pw-install then npm install — isolated from project package.json
-      const npm = spawn('sh', ['-c',
-        `mkdir -p ${PW_PREFIX} && npm install @playwright/test --prefix ${PW_PREFIX} --no-package-lock`
-      ], { shell: false, env: { ...process.env } });
-      npm.stdout.on('data', d => {
-        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
-      });
-      npm.stderr.on('data', d => {
-        d.toString().split('\n').filter((l: string) => l.trim()).forEach((l: string) => send(l));
-      });
-      npm.on('close', code => {
-        if (code === 0) {
-          runInstallBrowsers();
-        } else {
-          send('❌ npm install @playwright/test failed. Check server logs.', true);
-          res.end();
-        }
-      });
-      npm.on('error', err => {
-        send(`❌ Error: ${err.message}`, true);
-        res.end();
-      });
-    }
+      proc2.on('error', err => { send(`❌ Error: ${err.message}`, true); res.end(); });
+    });
+    npm.on('error', err => { send(`❌ Error: ${err.message}`, true); res.end(); });
   });
 
   // GET /api/playwright/video/:execId — serve the failure video file
