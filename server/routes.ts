@@ -156,6 +156,46 @@ function inferDomainFromPages(pages: any[]): DomainInferenceResult {
   return { inferredDomain, confidence, signals };
 }
 
+// Build a synthetic integration config from environment variables so settings survive deployments.
+// Returns null if no env vars are configured for the platform.
+function buildEnvFallbackIntegration(platform: string): Record<string, any> | null {
+  if (platform === 'jira') {
+    const jiraInstanceUrl = process.env.JIRA_BASE_URL || process.env.JIRA_DOMAIN
+      ? `https://${(process.env.JIRA_BASE_URL || process.env.JIRA_DOMAIN || '').replace(/^https?:\/\//, '').replace(/\/$/, '')}`
+      : null;
+    const username = process.env.JIRA_EMAIL || null;
+    const apiAccessToken = process.env.JIRA_API_TOKEN || null;
+    if (!jiraInstanceUrl || !username || !apiAccessToken) return null;
+    return {
+      id: 'env-jira',
+      platform: 'jira',
+      name: 'JIRA (env)',
+      status: 'connected',
+      lastSyncedAt: null,
+      lastError: null,
+      config: { jiraInstanceUrl, username, apiAccessToken: '***' },
+      _fromEnv: true, // flag so UI can show env-var badge
+    };
+  }
+  if (platform === 'azure_devops') {
+    const organization = process.env.AZURE_DEVOPS_ORG || null;
+    const project = process.env.AZURE_DEVOPS_PROJECT || null;
+    const pat = process.env.AZURE_DEVOPS_PAT || null;
+    if (!organization || !project || !pat) return null;
+    return {
+      id: 'env-azure_devops',
+      platform: 'azure_devops',
+      name: 'Azure DevOps (env)',
+      status: 'connected',
+      lastSyncedAt: null,
+      lastError: null,
+      config: { organization, project, pat: '***' },
+      _fromEnv: true,
+    };
+  }
+  return null;
+}
+
 // Helper function to mask sensitive fields in integration configs
 function maskSensitiveFields(config: Record<string, any>): Record<string, any> {
   const sensitiveKeys = ['personalAccessToken', 'apiToken', 'apiKey', 'password', 'pat', 'secret', 'token'];
@@ -4359,6 +4399,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...c,
         config: maskSensitiveFields(c.config),
       }));
+      // Merge in env-var fallbacks for platforms not already configured in DB
+      const dbPlatforms = new Set(configs.map(c => c.platform));
+      for (const platform of ['jira', 'azure_devops']) {
+        if (!dbPlatforms.has(platform)) {
+          const envFallback = buildEnvFallbackIntegration(platform);
+          if (envFallback) safeConfigs.push(envFallback as any);
+        }
+      }
       res.json({ success: true, integrations: safeConfigs });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message || "Failed to fetch integrations" });
@@ -4392,11 +4440,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { platform } = req.params;
       const config = await storage.getIntegrationConfigByPlatform(userId, platform as any);
       if (!config) {
-        res.json({ success: true, integration: null });
+        // Fall back to environment-variable based config (survives deployments)
+        const envConfig = buildEnvFallbackIntegration(platform);
+        res.json({ success: true, integration: envConfig });
         return;
       }
-      res.json({ 
-        success: true, 
+      res.json({
+        success: true,
         integration: {
           ...config,
           config: maskSensitiveFields(config.config),
@@ -10308,6 +10358,20 @@ Each element includes a fallback locator strategy (label, placeholder, text).
 
   // Bootstrap default tenant on startup (dev/single-tenant)
   ensureDefaultTenant().catch((err) => console.warn('[Routes] ensureDefaultTenant:', err.message));
+
+  // Startup diagnostic — log DB record counts so Azure logs show if data persists across deployments
+  (async () => {
+    try {
+      const { db } = await import('./db');
+      const { integrationConfigs, users } = await import('../shared/schema');
+      const { count } = await import('drizzle-orm');
+      const [{ value: userCount }] = await db.select({ value: count() }).from(users);
+      const [{ value: intCount }]  = await db.select({ value: count() }).from(integrationConfigs);
+      console.log(`[Startup] DB check — users: ${userCount}, integrationConfigs: ${intCount}`);
+    } catch (e: any) {
+      console.warn('[Startup] DB diagnostic failed:', e.message);
+    }
+  })();
 
   // Agent status endpoint
   app.get('/api/execution-agent/status', (_req, res) => {
