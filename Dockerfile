@@ -28,9 +28,6 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
-# Generate drizzle migration SQL files from the schema (no DB connection needed)
-RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost/placeholder npx drizzle-kit generate
-
 # ── Stage 2: Production runner ─────────────────────────────────────────────────
 FROM node:20-slim AS runner
 
