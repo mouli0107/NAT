@@ -2609,15 +2609,30 @@ export function registerPlaywrightRoutes(app: Express) {
   // GET /api/playwright/setup-check — verify Node + Playwright are available
   app.get('/api/playwright/setup-check', async (_req, res) => {
     try {
-      const nodeBin = process.execPath;
+      // Azure: the Remote Agent handles all browser launching — Playwright does not
+      // need to be installed on the server. Always report ready to suppress the banner.
+      if (isAzureEnvironment()) {
+        return res.json({ nodeVersion: process.version, playwrightInstalled: true, chromiumInstalled: true, ready: true, isAzure: true });
+      }
+
       const pwCli = path.join(PROJECT_ROOT, 'node_modules', 'playwright', 'cli.js');
       const pwInstalled = fs.existsSync(pwCli);
 
-      // Check if browsers are installed — check both Playwright cache and PLAYWRIGHT_BROWSERS_PATH
-      const browsersDir = process.env.PLAYWRIGHT_BROWSERS_PATH ||
-        path.join(PROJECT_ROOT, 'node_modules', 'playwright-core', '.local-browsers');
-      const chromiumInstalled = fs.existsSync(browsersDir) &&
-        fs.readdirSync(browsersDir).some(d => d.startsWith('chromium'));
+      // Use chromium.executablePath() for accurate cross-platform detection.
+      // playwright install puts browsers in the OS cache (~/.cache/ms-playwright on Linux,
+      // %LOCALAPPDATA%\ms-playwright on Windows) — NOT in node_modules/.local-browsers.
+      let chromiumInstalled = false;
+      try {
+        const { chromium: _pwChromium } = await import('playwright-core');
+        const execPath = _pwChromium.executablePath();
+        chromiumInstalled = fs.existsSync(execPath);
+      } catch {
+        // Fallback: scan PLAYWRIGHT_BROWSERS_PATH or the legacy .local-browsers directory
+        const browsersDir = process.env.PLAYWRIGHT_BROWSERS_PATH ||
+          path.join(PROJECT_ROOT, 'node_modules', 'playwright-core', '.local-browsers');
+        chromiumInstalled = fs.existsSync(browsersDir) &&
+          fs.readdirSync(browsersDir).some(d => d.startsWith('chromium'));
+      }
 
       res.json({
         nodeVersion: process.version,

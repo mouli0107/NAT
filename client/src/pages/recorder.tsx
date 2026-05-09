@@ -2532,12 +2532,21 @@ export default function RecorderPage() {
   }, []);
 
   // ─── Setup Check — verify Playwright is installed on mount ──────────────────
+  // Re-evaluates when isAzureEnv becomes known (agent-status check runs in parallel).
+  // Azure: Remote Agent handles all browser execution — never show the banner.
   useEffect(() => {
+    if (isAzureEnv) {
+      setSetupReady(true);
+      return;
+    }
+    // agentStatusLoaded guard: wait until we know the environment before fetching,
+    // so we never flash the banner on Azure while the agent-status response is in flight.
+    if (!agentStatusLoaded) return;
     fetch('/api/playwright/setup-check')
       .then(r => r.json())
       .then(d => { setSetupReady(d.ready); })
       .catch(() => setSetupReady(false));
-  }, []);
+  }, [isAzureEnv, agentStatusLoaded]);
 
   // ─── Install Playwright ──────────────────────────────────────────────────────
   const installPlaywright = useCallback(async () => {
