@@ -2809,6 +2809,7 @@ export default function RecorderPage() {
   const iframeStepRef = useRef<number>(0); // step counter for iframe events
   const eventsRef     = useRef<RecordingEvent[]>([]); // latest events for autoGenerateAndSave
   const nlStepsRef    = useRef<string[]>([]);          // latest nlSteps for autoGenerateAndSave
+  const hasReceivedStop = useRef(false);               // idempotency guard — recording_stopped fires twice on agent path
   // Keep refs in sync with state (so autoGenerateAndSave reads latest values)
   useEffect(() => { eventsRef.current = events; }, [events]);
   useEffect(() => { nlStepsRef.current = nlSteps; }, [nlSteps]);
@@ -2944,6 +2945,10 @@ export default function RecorderPage() {
     });
 
     sse.addEventListener("recording_stopped", () => {
+      // Guard: on the agent path the server sends recording_stopped immediately on Stop,
+      // then the agent sends a second one after it closes its browser. Skip the duplicate.
+      if (hasReceivedStop.current) return;
+      hasReceivedStop.current = true;
       setPwLiveFrame(null);
     });
 
@@ -3579,6 +3584,7 @@ export default function RecorderPage() {
       });
       if (r.ok) {
         const data = await r.json();
+        hasReceivedStop.current = false; // reset so the next recording_stopped is processed
         setIsPlaywrightRecording(true);
         setSessionStatus('recording'); // show Stop button immediately
         if (data.mode === 'agent') {
