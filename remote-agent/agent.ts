@@ -194,7 +194,6 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
     send({ type: 'recording_event', sessionId, ...eventData });
 
     // Capture a screenshot after significant interactions (non-blocking)
-    const evType = String(eventData.type || '');
     if (['click', 'page_load', 'select', 'check', 'uncheck'].includes(evType)) {
       setImmediate(async () => {
         try {
