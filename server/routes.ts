@@ -56,6 +56,8 @@ import { ensureDefaultTenant, getAuthContext, requireAuth, generateDeviceCode, p
 import { registerTestLibraryRoutes } from "./test-library";
 import { registerCoverageRoutes } from "./coverage";
 import { registerMergerRoutes } from "./merger-routes";
+import { registerProjectMemberRoutes, registerTcLockRoutes, startLockCleanup } from "./routes/project-members.js";
+import { registerPresenceRoutes } from "./routes/presence.js";
 import { generateTestCompleteScripts } from "./generators/testcomplete/index.js";
 import multer from 'multer';
 import {
@@ -10465,6 +10467,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   registerTestLibraryRoutes(app);
   registerCoverageRoutes(app);
   registerMergerRoutes(app);
+  registerProjectMemberRoutes(app);
+  registerTcLockRoutes(app);
+  registerPresenceRoutes(app);
+  startLockCleanup();
 
   // Remote Playwright execution agent WebSocket
   const agentWss = setupAgentWebSocket(httpServer);

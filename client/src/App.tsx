@@ -45,6 +45,7 @@ import NRadiVerseICUStreamingPage from "@/pages/nradiverse-icu-streaming";
 import ArchitectureDiagramPage from "@/pages/architecture-diagram";
 import RecorderPage from "@/pages/recorder";
 import TestLibraryPage from "@/pages/test-library";
+import ConflictReviewPage from "@/pages/ConflictReview";
 import TestManagementPage from "@/pages/test-management";
 import CoveragePage from "@/pages/coverage";
 import LoginPage from "@/pages/login";
@@ -238,6 +239,9 @@ function Router() {
       </Route>
       <Route path="/test-library">
         {() => <ProtectedRoute component={TestLibraryPage} />}
+      </Route>
+      <Route path="/conflicts">
+        {() => <ProtectedRoute component={ConflictReviewPage} />}
       </Route>
       <Route path="/test-management">
         {() => <ProtectedRoute component={TestManagementPage} />}

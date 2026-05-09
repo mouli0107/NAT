@@ -1,11 +1,12 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// NAT 2.0 — Sprint 5: Test Library (redesign)
+// NAT 2.0 — Sprint 5+6: Test Library (redesign + collaboration)
 // client/src/pages/test-library.tsx
 //
 // Three-panel layout:
 //   Left  240px  — project tree (modules → features)
-//   Center flex  — TC list (specs from merger engine)
-//   Right  320px — TC detail + script preview
+//   Center flex  — TC list (specs from merger engine) / Board / Progress
+//   Right  320px — TC detail + script preview + activity feed
+// Sprint 6 adds: presence SSE, view toggle, planning board, progress dashboard
 // ─────────────────────────────────────────────────────────────────────────────
 
 import { useState, useEffect, useCallback, useRef } from 'react';
@@ -15,7 +16,12 @@ import { DashboardHeader } from '@/components/dashboard/header';
 import { useProject } from '@/contexts/ProjectContext';
 import { useProjectTree } from '@/hooks/useProjectTree';
 import { useDownload } from '@/hooks/useDownload';
+import { usePresence } from '@/hooks/usePresence';
+import { PlanningBoard } from '@/components/PlanningBoard';
+import { ProgressDashboard } from '@/components/ProgressDashboard';
+import { ImportPlanDialog } from '@/components/ImportPlanDialog';
 import type { FrameworkModule, FrameworkFeature } from '@/hooks/useProjectTree';
+import type { PresenceUser, ActivityEvent } from '@/hooks/usePresence';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -321,6 +327,7 @@ function TestCaseList({
   activeTcKey,
   selectedModule,
   selectedFeature,
+  onlineUsers,
   onToggle,
   onSelectTc,
   onRecordNew,
@@ -331,6 +338,7 @@ function TestCaseList({
   activeTcKey: string | null;
   selectedModule: FrameworkModule | null;
   selectedFeature: FrameworkFeature | null;
+  onlineUsers: PresenceUser[];
   onToggle: (key: string) => void;
   onSelectTc: (spec: SpecAsset) => void;
   onRecordNew: () => void;
@@ -428,9 +436,18 @@ function TestCaseList({
                   <span className="font-mono text-[10px] text-slate-400 flex-shrink-0">{spec.assetKey}</span>
                   <span className="text-xs font-medium text-slate-700 truncate">{spec.filePath.split('/').pop()?.replace('.spec.ts', '')}</span>
                 </div>
-                <div className="text-[10px] text-slate-400 mt-0.5 truncate">
-                  {feature ? `${module} / ${feature}` : module}
-                  {spec.updatedAt && <span className="ml-2">{timeAgo(spec.updatedAt)}</span>}
+                <div className="text-[10px] text-slate-400 mt-0.5 truncate flex items-center gap-2">
+                  <span>{feature ? `${module} / ${feature}` : module}</span>
+                  {spec.updatedAt && <span>{timeAgo(spec.updatedAt)}</span>}
+                  {/* Presence: show who is recording this TC */}
+                  {(() => {
+                    const recorder = onlineUsers.find(u => u.tcId === spec.assetKey && u.action === 'recording');
+                    return recorder ? (
+                      <span className="text-green-600 animate-pulse font-medium">
+                        🎙 {recorder.email.split('@')[0]} recording
+                      </span>
+                    ) : null;
+                  })()}
                 </div>
               </div>
 
@@ -460,13 +477,17 @@ function TestCaseList({
 function TCDetailPanel({
   spec,
   loading,
+  activities,
   onRerecord,
   onDownload,
+  onOpenConflicts,
 }: {
   spec: SpecAssetDetail | null;
   loading: boolean;
+  activities: ActivityEvent[];
   onRerecord: () => void;
   onDownload: (assetKey: string) => void;
+  onOpenConflicts: () => void;
 }) {
   if (!spec && !loading) {
     return (
@@ -493,6 +514,9 @@ function TCDetailPanel({
   const tcName = spec.filePath.split('/').pop()?.replace('.spec.ts', '') ?? spec.assetKey;
   const preview = spec.content ? spec.content.slice(0, 1200) : '';
 
+  // ── Detail tabs (Sprint 6) ───────────────────────────────────────────────
+  const [detailTab, setDetailTab] = useState<'script' | 'activity'>('script');
+
   return (
     <div className="w-80 flex-shrink-0 border-l border-slate-200 flex flex-col bg-white overflow-hidden">
       {/* Header */}
@@ -512,22 +536,73 @@ function TCDetailPanel({
         <MetaRow label="Updated" value={timeAgo(spec.updatedAt)} />
       </div>
 
-      {/* Script preview */}
-      <div className="flex-1 overflow-auto px-4 py-3">
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Script Preview</span>
+      {/* Tab bar (Sprint 6) */}
+      <div className="flex border-b border-slate-200 flex-shrink-0">
+        {(['script', 'activity'] as const).map(tab => (
           <button
-            onClick={() => navigator.clipboard.writeText(spec.content)}
-            className="text-[10px] text-slate-400 hover:text-indigo-600 px-2 py-0.5 rounded bg-slate-100"
+            key={tab}
+            onClick={() => setDetailTab(tab)}
+            className={`flex-1 py-2 text-[11px] font-medium transition-colors ${
+              detailTab === tab
+                ? 'text-indigo-600 border-b-2 border-indigo-500 bg-indigo-50'
+                : 'text-slate-500 hover:text-slate-700'
+            }`}
           >
-            📋 Copy
+            {tab === 'script' ? '📄 Script' : `⚡ Activity${activities.length > 0 ? ` (${activities.length})` : ''}`}
           </button>
-        </div>
-        <pre className="text-[10px] bg-slate-50 border border-slate-100 rounded-lg p-3 overflow-auto max-h-64 font-mono leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin' }}>
-          {preview || 'No script content'}
-          {spec.content && spec.content.length > 1200 && <span className="text-slate-400">\n… ({spec.content.length - 1200} more chars)</span>}
-        </pre>
+        ))}
       </div>
+
+      {/* Script tab */}
+      {detailTab === 'script' && (
+        <div className="flex-1 overflow-auto px-4 py-3">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Script Preview</span>
+            <button
+              onClick={() => navigator.clipboard.writeText(spec.content)}
+              className="text-[10px] text-slate-400 hover:text-indigo-600 px-2 py-0.5 rounded bg-slate-100"
+            >
+              📋 Copy
+            </button>
+          </div>
+          <pre className="text-[10px] bg-slate-50 border border-slate-100 rounded-lg p-3 overflow-auto max-h-64 font-mono leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin' }}>
+            {preview || 'No script content'}
+            {spec.content && spec.content.length > 1200 && <span className="text-slate-400">\n… ({spec.content.length - 1200} more chars)</span>}
+          </pre>
+        </div>
+      )}
+
+      {/* Activity tab (Sprint 6) */}
+      {detailTab === 'activity' && (
+        <div className="flex-1 overflow-auto" style={{ scrollbarWidth: 'thin' }}>
+          {activities.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-10 text-slate-400 gap-2">
+              <div className="text-2xl opacity-30">⚡</div>
+              <div className="text-xs">No recent activity</div>
+            </div>
+          ) : (
+            activities.map(a => (
+              <div key={a.id} className="flex gap-3 px-4 py-3 border-b border-slate-100 last:border-0">
+                <div className="w-6 h-6 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-[10px] font-bold flex-shrink-0">
+                  {(a.email.charAt(0) ?? '?').toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-slate-700 leading-snug">{a.message}</div>
+                  <div className="text-[10px] text-slate-400 mt-0.5">{timeAgo(a.timestamp)}</div>
+                  {a.type === 'conflict_detected' && (
+                    <button
+                      onClick={onOpenConflicts}
+                      className="text-[10px] text-amber-600 mt-1 hover:underline"
+                    >
+                      Review Conflict →
+                    </button>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="px-4 py-3 border-t border-slate-200 flex flex-col gap-2 flex-shrink-0">
@@ -662,6 +737,17 @@ export default function TestLibraryPage() {
   // UI
   const [showAddModule, setShowAddModule] = useState(false);
 
+  // ── Sprint 6: view toggle + presence + planning board ─────────────────────
+  const [view, setView] = useState<'list' | 'board' | 'progress'>('list');
+  const [showImportPlan, setShowImportPlan] = useState(false);
+
+  const { onlineUsers, activities } = usePresence(selectedProjectId, {
+    onTcSaved: () => {
+      fetchSpecs();
+      refreshTree();
+    },
+  });
+
   // Fetch specs for the project
   const fetchSpecs = useCallback(async () => {
     if (!selectedProjectId) return;
@@ -785,9 +871,56 @@ export default function TestLibraryPage() {
           <h1 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Test Library</h1>
 
           <div className="flex items-center gap-3">
+            {/* Sprint 6: Online presence avatars */}
+            {onlineUsers.length > 0 && (
+              <div className="flex items-center gap-1 mr-1">
+                {onlineUsers.slice(0, 5).map(u => (
+                  <div
+                    key={u.userId}
+                    className="relative w-7 h-7 rounded-full bg-indigo-500 flex items-center justify-center text-white text-[10px] font-bold"
+                    title={`${u.email} — ${u.action}`}
+                  >
+                    {u.avatarInitial}
+                    <span className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-400 rounded-full border border-white" />
+                  </div>
+                ))}
+                {onlineUsers.length > 5 && (
+                  <span className="text-xs text-slate-400 ml-1">+{onlineUsers.length - 5}</span>
+                )}
+              </div>
+            )}
+
+            {/* Sprint 6: View toggle */}
+            <div className="flex border border-slate-200 rounded-lg overflow-hidden">
+              {(['list', 'board', 'progress'] as const).map(v => (
+                <button
+                  key={v}
+                  onClick={() => setView(v)}
+                  className={`px-3 py-1.5 text-xs font-medium transition-colors ${
+                    view === v ? 'bg-indigo-500 text-white' : 'text-slate-600 hover:bg-slate-50'
+                  }`}
+                >
+                  {v === 'list' ? '📋 List' : v === 'board' ? '📊 Board' : '📈 Progress'}
+                </button>
+              ))}
+            </div>
+
+            {/* Sprint 6: Import plan (board view) */}
+            {view === 'board' && (
+              <button
+                onClick={() => setShowImportPlan(true)}
+                className="flex items-center gap-1.5 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-600 hover:bg-slate-50"
+              >
+                📥 Import from Excel
+              </button>
+            )}
+
             {/* Conflict badge */}
             {conflicts.length > 0 && (
-              <button className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-xs font-medium hover:bg-amber-100">
+              <button
+                onClick={() => navigate('/conflicts')}
+                className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-xs font-medium hover:bg-amber-100"
+              >
                 ⚠️ {conflicts.length} Conflict{conflicts.length !== 1 ? 's' : ''}
               </button>
             )}
@@ -808,65 +941,87 @@ export default function TestLibraryPage() {
           </div>
         </header>
 
-        {/* ── Three panels ── */}
-        <div className="flex flex-1 overflow-hidden">
+        {/* ── Three panels (list view) ── */}
+        {view === 'list' && (
+          <div className="flex flex-1 overflow-hidden">
 
-          {/* LEFT — Project tree */}
-          <ProjectTree
-            projectId={selectedProjectId}
-            modules={modules}
-            loading={treeLoading}
-            specsForModule={specsForModule}
-            selectedModuleId={selectedModuleId}
-            selectedFeatureId={selectedFeatureId}
-            onSelectModule={m => {
-              setSelectedModuleId(m?.id ?? null);
-              setSelectedFeatureId(null);
-            }}
-            onSelectFeature={(f, m) => {
-              setSelectedModuleId(m.id);
-              setSelectedFeatureId(f?.id ?? null);
-            }}
-            onAddModule={() => setShowAddModule(true)}
-            totalSpecs={specs.length}
-          />
+            {/* LEFT — Project tree */}
+            <ProjectTree
+              projectId={selectedProjectId}
+              modules={modules}
+              loading={treeLoading}
+              specsForModule={specsForModule}
+              selectedModuleId={selectedModuleId}
+              selectedFeatureId={selectedFeatureId}
+              onSelectModule={m => {
+                setSelectedModuleId(m?.id ?? null);
+                setSelectedFeatureId(null);
+              }}
+              onSelectFeature={(f, m) => {
+                setSelectedModuleId(m.id);
+                setSelectedFeatureId(f?.id ?? null);
+              }}
+              onAddModule={() => setShowAddModule(true)}
+              totalSpecs={specs.length}
+            />
 
-          {/* CENTER — TC list */}
-          <TestCaseList
-            specs={filteredSpecs}
-            loading={specsLoading}
-            selectedTcIds={selectedTcIds}
-            activeTcKey={activeTcKey}
-            selectedModule={selectedModule}
-            selectedFeature={selectedFeature}
-            onToggle={toggleTc}
-            onSelectTc={loadTcDetail}
-            onRecordNew={() => navigate('/recorder')}
-          />
+            {/* CENTER — TC list */}
+            <TestCaseList
+              specs={filteredSpecs}
+              loading={specsLoading}
+              selectedTcIds={selectedTcIds}
+              activeTcKey={activeTcKey}
+              selectedModule={selectedModule}
+              selectedFeature={selectedFeature}
+              onlineUsers={onlineUsers}
+              onToggle={toggleTc}
+              onSelectTc={loadTcDetail}
+              onRecordNew={() => navigate('/recorder')}
+            />
 
-          {/* RIGHT — Detail */}
-          <TCDetailPanel
-            spec={activeTcDetail}
-            loading={detailLoading}
-            onRerecord={() => navigate('/recorder')}
-            onDownload={(key) => {
-              fetch(`/api/projects/${selectedProjectId}/framework/download/selected`, {
-                method: 'POST',
-                credentials: 'include',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ selectedTcIds: [key], projectName }),
-              })
-                .then(r => r.blob())
-                .then(blob => {
-                  const a = document.createElement('a');
-                  a.href = URL.createObjectURL(blob);
-                  a.download = `${key}.zip`;
-                  a.click();
+            {/* RIGHT — Detail */}
+            <TCDetailPanel
+              spec={activeTcDetail}
+              loading={detailLoading}
+              activities={activities}
+              onRerecord={() => navigate('/recorder')}
+              onOpenConflicts={() => navigate('/conflicts')}
+              onDownload={(key) => {
+                fetch(`/api/projects/${selectedProjectId}/framework/download/selected`, {
+                  method: 'POST',
+                  credentials: 'include',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ selectedTcIds: [key], projectName }),
                 })
-                .catch(() => {});
-            }}
-          />
-        </div>
+                  .then(r => r.blob())
+                  .then(blob => {
+                    const a = document.createElement('a');
+                    a.href = URL.createObjectURL(blob);
+                    a.download = `${key}.zip`;
+                    a.click();
+                  })
+                  .catch(() => {});
+              }}
+            />
+          </div>
+        )}
+
+        {/* ── Sprint 6: Planning Board (board view) ── */}
+        {view === 'board' && (
+          <div className="flex-1 overflow-hidden">
+            <PlanningBoard
+              projectId={selectedProjectId}
+              onAddTC={() => navigate('/recorder')}
+            />
+          </div>
+        )}
+
+        {/* ── Sprint 6: Progress Dashboard (progress view) ── */}
+        {view === 'progress' && (
+          <div className="flex-1 overflow-hidden">
+            <ProgressDashboard projectId={selectedProjectId} />
+          </div>
+        )}
       </div>
 
       {/* Add Module modal */}
@@ -875,6 +1030,15 @@ export default function TestLibraryPage() {
           projectId={selectedProjectId}
           onCreated={() => { refreshTree(); fetchSpecs(); }}
           onClose={() => setShowAddModule(false)}
+        />
+      )}
+
+      {/* Sprint 6: Import Plan dialog */}
+      {showImportPlan && (
+        <ImportPlanDialog
+          projectId={selectedProjectId}
+          onClose={() => setShowImportPlan(false)}
+          onImported={() => { setShowImportPlan(false); }}
         />
       )}
     </div>
