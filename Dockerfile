@@ -75,6 +75,11 @@ COPY --from=builder /app/dist ./dist
 # Copy generated migration SQL files so the app can auto-migrate on startup
 COPY --from=builder /app/migrations ./migrations
 
+# Copy downloadable package source directories (served as dynamic ZIPs by /api/downloads/*)
+COPY --from=builder /app/chrome-extension ./chrome-extension
+COPY --from=builder /app/remote-agent ./remote-agent
+COPY --from=builder /app/workspace-agent ./workspace-agent
+
 # Copy the Chromium that was already downloaded during builder's npm ci.
 # This avoids any re-download or playwright binary dependency in the runner.
 COPY --from=builder /root/.cache/ms-playwright /ms-playwright
