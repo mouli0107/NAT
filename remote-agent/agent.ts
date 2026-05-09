@@ -190,8 +190,11 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
     const evType = String(eventData.type || '');
     log(`[event] ${evType} url=${eventData.url || ''}`);
 
-    // Forward the raw event to the server (buffered if WS is not ready)
-    send({ type: 'recording_event', sessionId, ...eventData });
+    // Forward the raw event to the server (buffered if WS is not ready).
+    // IMPORTANT: put type:'recording_event' AFTER the spread so it wins over
+    // eventData.type (e.g. 'click', 'page_load') — agent-ws.ts routes on this field.
+    // The original sub-type is preserved as eventType for natural-language generation.
+    send({ ...eventData, type: 'recording_event', sessionId, eventType: evType });
 
     // Capture a screenshot after significant interactions (non-blocking)
     if (['click', 'page_load', 'select', 'check', 'uncheck'].includes(evType)) {

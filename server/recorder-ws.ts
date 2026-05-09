@@ -172,16 +172,20 @@ export function handleAgentRecordingEvent(
   const session = sessions.get(sid);
   if (!session) return;
 
-  const type = String(eventData.type || 'unknown');
+  // Agent always sends type:'recording_event' (routing field) and
+  // eventType:'click'/'page_load'/etc (the actual interaction sub-type).
+  // Fall back to eventData.type for backwards-compat with older agent builds.
+  const outerType = String(eventData.type || 'unknown');
+  const type      = String((eventData.eventType as string) || outerType);
 
   // Screenshot forwarded from agent's local browser
-  if (type === 'pw_screenshot') {
+  if (outerType === 'pw_screenshot' || type === 'pw_screenshot') {
     broadcastToUI(session, 'pw_screenshot', eventData);
     return;
   }
 
   // Agent closed the browser or finished
-  if (type === 'recording_stopped') {
+  if (outerType === 'recording_stopped' || type === 'recording_stopped') {
     session.status = 'stopped';
     agentRecordedSessions.delete(sid);
     broadcastToUI(session, 'recording_stopped', {
@@ -197,15 +201,16 @@ export function handleAgentRecordingEvent(
   session.status = 'recording';
 
   const seq = session.events.length + 1;
+  // Spread eventData first, then override critical fields so they can't be clobbered.
   const ev: RecordingEvent = {
+    ...eventData,
     sequence:  seq,
     timestamp: Date.now(),
     sessionId: sid,
-    type,
+    type,                                       // correct sub-type wins over spread
     url:       String(eventData.url       || ''),
     pageTitle: String(eventData.pageTitle || ''),
-    ...eventData,
-  };
+  } as RecordingEvent;
   const nl = toNaturalLanguage(ev, seq);
   if (nl) (ev as any).naturalLanguage = nl;
 
