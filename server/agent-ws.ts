@@ -7,14 +7,30 @@
  *   Server sends  execute_job  → Agent runs Playwright → Agent streams back results
  *   Server relays results to the SSE stream watched by the NAT 2.0 UI
  *
- * Message flow:
+ * Recording delegation (Azure mode):
+ *   Server sends  start_recording → Agent launches headed Playwright locally
+ *   Agent streams recording_event / pw_screenshot back to server
+ *   Server forwards to session SSE stream via handleAgentRecordingEvent()
+ *
+ * Message flow (execution):
  *   Agent → Server: agent_register, job_accepted, step_result, test_result, job_complete, ping
  *   Server → Agent: execute_job, cancel_job, pong
+ *
+ * Message flow (recording):
+ *   Server → Agent: start_recording { sessionId, targetUrl, initScript }
+ *   Agent  → Server: recording_event { sessionId, type, url, ... }
+ *   Agent  → Server: pw_screenshot   { sessionId, jpeg }
+ *   Server → Agent: stop_recording   { sessionId }
+ *   Agent  → Server: recording_stopped { sessionId }
  */
 
 import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
 import { randomBytes } from 'crypto';
+import {
+  handleAgentRecordingEvent,
+  registerRecordingDelegateCallbacks,
+} from './recorder-ws';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -149,6 +165,62 @@ export function cancelJob(executionRunId: string): void {
   pendingJobs.delete(jobId);
 }
 
+// ─── Recording Delegation ─────────────────────────────────────────────────────
+// Tracks which agent is handling which recording session.
+// sessionId (upper) → agentId
+const sessionAgentMap = new Map<string, string>();
+
+/**
+ * Send start_recording to an idle agent.
+ * Called by recorder-ws.ts when the app is running in Azure.
+ */
+async function _dispatchRecordingToAgent(
+  sessionId: string,
+  targetUrl: string,
+  initScript: string,
+): Promise<void> {
+  const agent = Array.from(agents.values()).find(a => a.status === 'idle');
+  if (!agent) {
+    throw new Error('No idle Remote Agent connected — please ensure the agent is running on your local machine.');
+  }
+
+  sessionAgentMap.set(sessionId.toUpperCase(), agent.agentId);
+
+  agent.ws.send(JSON.stringify({
+    type:       'start_recording',
+    sessionId:  sessionId.toUpperCase(),
+    targetUrl,
+    initScript,
+  }));
+
+  console.log(`[AgentWS] Delegated recording session ${sessionId} to agent ${agent.agentId} (${agent.hostname})`);
+}
+
+/**
+ * Send stop_recording to whichever agent is handling the session.
+ * Called by recorder-ws.ts when the user clicks Stop.
+ */
+function _stopRecordingOnAgent(sessionId: string): void {
+  const sid     = sessionId.toUpperCase();
+  const agentId = sessionAgentMap.get(sid);
+  sessionAgentMap.delete(sid);
+
+  if (!agentId) return;
+  const agent = agents.get(agentId);
+  if (!agent) return;
+
+  agent.ws.send(JSON.stringify({ type: 'stop_recording', sessionId: sid }));
+  console.log(`[AgentWS] Sent stop_recording for session ${sid} to agent ${agentId}`);
+}
+
+/**
+ * Returns true if at least one agent is connected (idle or busy).
+ * Used by the UI to show the agent connection status indicator.
+ */
+export function hasAgentConnected(): boolean {
+  return agents.size > 0;
+}
+
 // ─── Incoming Message Handler ─────────────────────────────────────────────────
 
 function handleAgentMessage(agent: ConnectedAgent, msg: Record<string, unknown>): void {
@@ -227,12 +299,46 @@ function handleAgentMessage(agent: ConnectedAgent, msg: Record<string, unknown>)
       job.reject(new Error(String(msg.message || 'Remote agent error')));
       break;
     }
+
+    // ── Recording events streamed back from the agent's local browser ──────────
+
+    case 'recording_event': {
+      // Agent captured a user interaction — route to the recording session
+      const sid = String(msg.sessionId || '').toUpperCase();
+      if (sid) {
+        handleAgentRecordingEvent(sid, msg as Record<string, unknown>);
+      }
+      break;
+    }
+
+    case 'pw_screenshot': {
+      // JPEG screenshot from agent's local browser — forward to session SSE
+      const sid = String(msg.sessionId || '').toUpperCase();
+      if (sid) {
+        handleAgentRecordingEvent(sid, { type: 'pw_screenshot', ...msg });
+      }
+      break;
+    }
+
+    case 'recording_stopped': {
+      // Agent closed the recording browser
+      const sid = String(msg.sessionId || '').toUpperCase();
+      sessionAgentMap.delete(sid);
+      if (sid) {
+        handleAgentRecordingEvent(sid, { type: 'recording_stopped', sessionId: sid });
+      }
+      break;
+    }
   }
 }
 
 // ─── WebSocket Server Setup ───────────────────────────────────────────────────
 
 export function setupAgentWebSocket(server: Server): WebSocketServer {
+  // Wire up recording delegation callbacks so recorder-ws can delegate
+  // to this agent without creating a circular import.
+  registerRecordingDelegateCallbacks(_dispatchRecordingToAgent, _stopRecordingOnAgent);
+
   const wss = new WebSocketServer({ noServer: true });
 
   wss.on('connection', (ws: WebSocket) => {

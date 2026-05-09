@@ -2498,6 +2498,28 @@ export default function RecorderPage() {
   // Video playback
   const [videoUrl, setVideoUrl]           = useState<string | null>(null);
 
+  // ─── Agent / environment status ──────────────────────────────────────────────
+  const [isAzureEnv,       setIsAzureEnv]       = useState(false);
+  const [agentConnected,   setAgentConnected]    = useState(false);
+  const [agentStatusLoaded, setAgentStatusLoaded] = useState(false);
+
+  useEffect(() => {
+    const checkAgentStatus = () => {
+      fetch('/api/recorder/agent-status')
+        .then(r => r.json())
+        .then(d => {
+          setIsAzureEnv(!!d.isAzure);
+          setAgentConnected(!!d.agentConnected);
+          setAgentStatusLoaded(true);
+        })
+        .catch(() => setAgentStatusLoaded(true));
+    };
+    checkAgentStatus();
+    // Poll every 10 s so the banner updates when the user starts / stops the agent
+    const poll = setInterval(checkAgentStatus, 10000);
+    return () => clearInterval(poll);
+  }, []);
+
   // ─── Setup Check — verify Playwright is installed on mount ──────────────────
   useEffect(() => {
     fetch('/api/playwright/setup-check')
@@ -3530,6 +3552,19 @@ export default function RecorderPage() {
     }
 
     // Start Playwright recorder
+    // On Azure: requires Remote Agent running locally. Show clear error if absent.
+    if (isAzureEnv && !agentConnected) {
+      alert(
+        '⚠️  Recording on Azure requires the NAT Remote Agent running on your local machine.\n\n' +
+        'Steps:\n' +
+        '  1. Open a terminal on your local machine\n' +
+        '  2. cd remote-agent\n' +
+        '  3. SERVER_URL=wss://nat20-astra.azurewebsites.net/ws/execution-agent npx tsx agent.ts\n\n' +
+        'The green "Agent Connected" indicator in the recorder will appear once it\'s ready.'
+      );
+      return;
+    }
+
     recordingWindowUrl.current = targetUrl;
     setIframeUrl(null);
     setIframeError(null);
@@ -3543,11 +3578,26 @@ export default function RecorderPage() {
         body: JSON.stringify({ sessionId: sid, url: targetUrl }),
       });
       if (r.ok) {
+        const data = await r.json();
         setIsPlaywrightRecording(true);
         setSessionStatus('recording'); // show Stop button immediately
+        if (data.mode === 'agent') {
+          // Agent-delegated mode: no screenshot stream from server,
+          // but the agent will send pw_screenshot events via SSE
+          console.log('[Recorder] Recording delegated to Remote Agent');
+        }
       } else {
         const err = await r.json();
-        alert(`Playwright recorder failed to start: ${err.error || 'Unknown error'}`);
+        if (err.requiresAgent) {
+          alert(
+            '⚠️  Remote Agent required for recording on Azure.\n\n' +
+            'Run on your local machine:\n' +
+            '  SERVER_URL=wss://nat20-astra.azurewebsites.net/ws/execution-agent\n' +
+            '  npx tsx remote-agent/agent.ts'
+          );
+        } else {
+          alert(`Playwright recorder failed to start: ${err.error || 'Unknown error'}`);
+        }
       }
     } catch (e: any) {
       alert(`Could not start Playwright recorder: ${e.message}`);
@@ -5243,6 +5293,18 @@ export default function RecorderPage() {
                   </div>
                 )}
 
+                {/* Agent connection status banner (Azure-only) */}
+                {agentStatusLoaded && isAzureEnv && (
+                  <div className={`absolute top-3 right-3 z-20 flex items-center gap-2 backdrop-blur-sm border rounded-full px-3 py-1.5 text-[10px] font-semibold pointer-events-none ${
+                    agentConnected
+                      ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                      : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
+                  }`}>
+                    <div className={`w-1.5 h-1.5 rounded-full ${agentConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
+                    {agentConnected ? 'Agent Connected — Ready to Record Locally' : 'Agent Required — start remote-agent/agent.ts locally'}
+                  </div>
+                )}
+
                 {/* Assert mode active banner */}
                 {assertMode && !pendingAssert && (
                   <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-amber-500/20 backdrop-blur-sm border border-amber-500/40 rounded-full px-3 py-1.5 pointer-events-none">
@@ -5309,8 +5371,12 @@ export default function RecorderPage() {
                     {/* Status bar */}
                     <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border-b border-slate-700 shrink-0">
                       <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
-                      <span className="text-[11px] text-emerald-400 font-semibold">LIVE — Playwright browser</span>
-                      <span className="text-[10px] text-slate-500 ml-auto">Click on the image to interact</span>
+                      <span className="text-[11px] text-emerald-400 font-semibold">
+                        LIVE — {isAzureEnv && agentConnected ? 'Remote Agent Browser (local machine)' : 'Playwright browser'}
+                      </span>
+                      <span className="text-[10px] text-slate-500 ml-auto">
+                        {isAzureEnv && agentConnected ? 'Interact in the browser on your local machine' : 'Click on the image to interact'}
+                      </span>
                     </div>
                     {/* Interactive screenshot */}
                     <div className="flex-1 overflow-hidden relative cursor-crosshair"

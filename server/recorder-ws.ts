@@ -26,6 +26,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Browser, BrowserContext, Page as PwPage } from 'playwright';
 import { UNIVERSAL_HELPERS_CONTENT } from './universal-helpers-content';
 import { KENDO_HELPERS_CONTENT } from './kendo-helpers-content';
+import { isAzureEnvironment } from './utils/environment';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,6 +83,93 @@ setInterval(() => {
     }
   }
 }, 30 * 60 * 1000);
+
+// ─── Remote Agent Recording Delegation ───────────────────────────────────────
+// agent-ws.ts registers these callbacks on startup to avoid circular imports.
+// recorder-ws → agent delegation is done entirely through these callbacks.
+
+type AgentRecordingDispatcher = (sessionId: string, targetUrl: string, initScript: string) => Promise<void>;
+type AgentRecordingStopper    = (sessionId: string) => void;
+
+let _agentDispatcher: AgentRecordingDispatcher | null = null;
+let _agentStopper:    AgentRecordingStopper    | null = null;
+
+/** Set of session IDs currently being recorded by a remote agent (not server Playwright). */
+export const agentRecordedSessions = new Set<string>();
+
+/**
+ * Called once by agent-ws.ts inside setupAgentWebSocket() to wire up
+ * the recording dispatch/stop functions without creating a circular import.
+ */
+export function registerRecordingDelegateCallbacks(
+  dispatcher: AgentRecordingDispatcher,
+  stopper:    AgentRecordingStopper,
+): void {
+  _agentDispatcher = dispatcher;
+  _agentStopper    = stopper;
+}
+
+/**
+ * True when at least one remote agent is connected and can accept a recording
+ * delegation.  Checked by the playwright-start route.
+ */
+export function hasAgentForRecording(): boolean {
+  return _agentDispatcher !== null;
+}
+
+/**
+ * Called by agent-ws.ts when the agent streams back recording_event,
+ * pw_screenshot, or recording_stopped messages.
+ * Routes the data into the correct session and forwards to all SSE clients.
+ */
+export function handleAgentRecordingEvent(
+  sessionId: string,
+  eventData: Record<string, unknown>,
+): void {
+  const sid     = sessionId.toUpperCase();
+  const session = sessions.get(sid);
+  if (!session) return;
+
+  const type = String(eventData.type || 'unknown');
+
+  // Screenshot forwarded from agent's local browser
+  if (type === 'pw_screenshot') {
+    broadcastToUI(session, 'pw_screenshot', eventData);
+    return;
+  }
+
+  // Agent closed the browser or finished
+  if (type === 'recording_stopped') {
+    session.status = 'stopped';
+    agentRecordedSessions.delete(sid);
+    broadcastToUI(session, 'recording_stopped', {
+      sessionId: sid,
+      eventCount: session.events.length,
+      reason: 'agent_stopped',
+    });
+    return;
+  }
+
+  // Regular interaction event — same pipeline as server-side recording
+  if (session.status === 'stopped') return;
+  session.status = 'recording';
+
+  const seq = session.events.length + 1;
+  const ev: RecordingEvent = {
+    sequence:  seq,
+    timestamp: Date.now(),
+    sessionId: sid,
+    type,
+    url:       String(eventData.url       || ''),
+    pageTitle: String(eventData.pageTitle || ''),
+    ...eventData,
+  };
+  const nl = toNaturalLanguage(ev, seq);
+  if (nl) (ev as any).naturalLanguage = nl;
+
+  session.events.push(ev);
+  broadcastToUI(session, 'recording_event', ev);
+}
 
 // ─── Natural Language Converter ──────────────────────────────────────────────
 
@@ -1722,6 +1810,35 @@ export function registerRecorderRoutes(app: Express) {
     const session = sessions.get(sid);
     if (!session) return res.status(404).json({ error: 'Session not found — create one first via POST /api/recorder/sessions' });
 
+    // ── Azure environment check: delegate to Remote Agent if running in cloud ──
+    // On Azure (headless container), a headed browser cannot open on the server.
+    // The Remote Agent runs on the user's local machine and launches the browser there.
+    if (isAzureEnvironment()) {
+      if (!_agentDispatcher) {
+        return res.status(503).json({
+          error: 'Recording requires the NAT Remote Agent running on your local machine. Please start the agent and try again.',
+          requiresAgent: true,
+        });
+      }
+      // Delegate: send start_recording command to the connected local agent.
+      // The init script is forwarded so the agent has identical event capture logic.
+      agentRecordedSessions.add(sid);
+      try {
+        await _agentDispatcher(sid, targetUrl, PW_RECORDER_INIT);
+        session.status = 'recording';
+        return res.json({
+          success: true,
+          mode: 'agent',
+          message: 'Recording delegated to the NAT Remote Agent on your local machine.',
+        });
+      } catch (err: any) {
+        agentRecordedSessions.delete(sid);
+        return res.status(500).json({ error: `Agent recording failed: ${err.message}` });
+      }
+    }
+
+    // ── Local / non-Azure: launch Playwright directly on the server ────────────
+
     // If a browser is already running for this session, close it first
     const existing = pwBrowsers.get(sid);
     if (existing) {
@@ -1919,8 +2036,23 @@ export function registerRecorderRoutes(app: Express) {
 
   // DELETE /api/recorder/playwright-stop/:sessionId
   // Closes the Playwright browser for the given session.
+  // Works for both server-side and agent-delegated recordings.
   app.delete('/api/recorder/playwright-stop/:sessionId', async (req: Request, res: Response) => {
     const sid = (req.params.sessionId as string).toUpperCase();
+
+    // ── Agent-delegated recording: send stop command to agent ─────────────────
+    if (agentRecordedSessions.has(sid)) {
+      agentRecordedSessions.delete(sid);
+      _agentStopper?.(sid);
+      const session = sessions.get(sid);
+      if (session) {
+        session.status = 'stopped';
+        broadcastToUI(session, 'recording_stopped', { sessionId: sid, eventCount: session.events.length, reason: 'user_stopped' });
+      }
+      return res.json({ success: true, message: 'Stop signal sent to Remote Agent.' });
+    }
+
+    // ── Server-side recording: close the local Playwright browser ─────────────
     const pw = pwBrowsers.get(sid);
     if (!pw) return res.status(404).json({ error: 'No active Playwright browser for this session' });
 

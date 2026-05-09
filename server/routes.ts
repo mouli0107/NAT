@@ -43,7 +43,7 @@ import { generateAutomationScripts } from "./script-generator";
 import { captureHarFromUrl, importSwaggerSpec } from "./api-discovery";
 import { registerAutoTestRoutes } from "./autotest-routes";
 import { registerRecorderRoutes, setupRecorderWebSocket, registerPlaywrightRoutes, registerTestManagementRoutes } from "./recorder-ws";
-import { setupAgentWebSocket, dispatchJobToAgent, hasAvailableAgent, getAgentStatus, type AgentJobPayload, type SseCallback } from "./agent-ws";
+import { setupAgentWebSocket, dispatchJobToAgent, hasAvailableAgent, getAgentStatus, hasAgentConnected, type AgentJobPayload, type SseCallback } from "./agent-ws";
 import { setupWorkspaceAgentWebSocket, dispatchSyncProject, getWorkspaceAgentStatus } from "./workspace-agent-ws";
 import { ensureDefaultTenant, getAuthContext, requireAuth, generateDeviceCode, pollDeviceCode, approveDeviceCode } from "./auth-middleware";
 import { registerTestLibraryRoutes } from "./test-library";
@@ -10376,6 +10376,17 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   // Agent status endpoint
   app.get('/api/execution-agent/status', (_req, res) => {
     res.json(getAgentStatus());
+  });
+
+  // Recording-specific agent availability check + Azure environment flag.
+  // Used by the recorder UI to show the agent connection banner.
+  app.get('/api/recorder/agent-status', (_req, res) => {
+    const { isAzureEnvironment } = require('./utils/environment');
+    res.json({
+      isAzure:        isAzureEnvironment(),
+      agentConnected: hasAgentConnected(),
+      ...getAgentStatus(),
+    });
   });
 
   // Workspace agent status

@@ -62,6 +62,12 @@ let pingTimer: NodeJS.Timeout | null = null;
 let currentJobId: string | null = null;
 let cancelRequested = false;
 
+// ─── Recording State ──────────────────────────────────────────────────────────
+let recordingBrowser:    import('playwright').Browser        | null = null;
+let recordingContext:    import('playwright').BrowserContext | null = null;
+let recordingSessionId:  string | null = null;
+let recordingStopTimer:  NodeJS.Timeout | null = null;
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function send(msg: object): void {
@@ -83,6 +89,157 @@ async function captureScreenshot(page: Page): Promise<string | undefined> {
   } catch {
     return undefined;
   }
+}
+
+// ─── Recording Mode ───────────────────────────────────────────────────────────
+
+/**
+ * Launch a headed Playwright browser locally and start capturing user interactions.
+ * Events are streamed back to the server over the existing WebSocket as
+ * `recording_event` and `pw_screenshot` messages.
+ *
+ * @param sessionId  The recorder session ID (e.g. "ABC-4821") to attach events to.
+ * @param targetUrl  The URL the recording browser should navigate to.
+ * @param initScript The PW_RECORDER_INIT JavaScript — injected into every page.
+ */
+async function runRecording(sessionId: string, targetUrl: string, initScript: string): Promise<void> {
+  log(`Starting recording session ${sessionId} → ${targetUrl}`);
+  recordingSessionId = sessionId;
+
+  // Stop any previously running recording browser
+  if (recordingBrowser) {
+    try { await recordingBrowser.close(); } catch {}
+    recordingBrowser = null;
+    recordingContext = null;
+  }
+
+  const { chromium } = await import('playwright');
+
+  // Launch headed browser on the local machine (user can see and interact with it)
+  recordingBrowser = await chromium.launch({
+    headless: false,
+    slowMo: 0,
+    args: [
+      '--start-maximized',
+      '--disable-blink-features=AutomationControlled',
+      '--no-sandbox',
+      '--disable-setuid-sandbox',
+      '--disable-dev-shm-usage',
+      '--disable-infobars',
+    ],
+  });
+
+  recordingContext = await recordingBrowser.newContext({
+    viewport: null,   // null = use the real screen size (maximised window)
+    userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  });
+
+  const page: Page = await recordingContext.newPage();
+  const popupUrls  = new Set<string>();
+
+  // ── Expose __devxqe_send on the CONTEXT so it works on ALL pages/popups ──
+  await recordingContext.exposeFunction('__devxqe_send', (eventData: Record<string, unknown>) => {
+    if (recordingSessionId !== sessionId) return; // stale callback after stop
+
+    // Forward the raw event to the server
+    send({ type: 'recording_event', sessionId, ...eventData });
+
+    // Capture a screenshot after significant interactions (non-blocking)
+    const evType = String(eventData.type || '');
+    if (['click', 'page_load', 'select', 'check', 'uncheck'].includes(evType)) {
+      setImmediate(async () => {
+        try {
+          const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
+          const jpeg = buf.toString('base64');
+          send({ type: 'pw_screenshot', sessionId, jpeg });
+        } catch { /* page may be navigating */ }
+      });
+    }
+  });
+
+  // ── Inject the recorder init script into every page ────────────────────────
+  await recordingContext.addInitScript(initScript);
+
+  // ── Server-side navigation tracking (safety net for redirects) ────────────
+  page.on('framenavigated', (frame) => {
+    if (frame !== page.mainFrame()) return;
+    const navUrl = frame.url();
+    if (!navUrl || navUrl.startsWith('about:') || navUrl.startsWith('data:')) return;
+    send({
+      type: 'recording_event',
+      sessionId,
+      eventType: 'page_load',     // the init script also fires this; server dedupes
+      url: navUrl,
+      pageTitle: '',
+    });
+    // Capture screenshot after navigation
+    setImmediate(async () => {
+      try {
+        const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
+        send({ type: 'pw_screenshot', sessionId, jpeg: buf.toString('base64') });
+      } catch {}
+    });
+  });
+
+  // ── Popup / new window detection ────────────────────────────────────────────
+  recordingContext.on('page', async (popupPage) => {
+    try {
+      await popupPage.waitForLoadState('domcontentloaded').catch(() => {});
+      const popupUrl = popupPage.url();
+      popupUrls.add(popupUrl);
+      send({ type: 'recording_event', sessionId, eventType: 'popup_opened', url: popupUrl, pageTitle: '' });
+
+      popupPage.on('framenavigated', (frame) => {
+        if (frame !== popupPage.mainFrame()) return;
+        const u = frame.url();
+        if (!u || u.startsWith('about:') || u.startsWith('data:')) return;
+        send({ type: 'recording_event', sessionId, eventType: 'page_load', url: u, pageTitle: '', isPopup: true });
+      });
+
+      popupPage.on('close', () => {
+        send({ type: 'recording_event', sessionId, eventType: 'popup_closed', url: popupUrl, pageTitle: '' });
+      });
+    } catch {}
+  });
+
+  // ── Clean up when the user closes the browser window ──────────────────────
+  recordingBrowser.on('disconnected', () => {
+    log(`Recording browser closed for session ${sessionId}`);
+    recordingBrowser   = null;
+    recordingContext   = null;
+    recordingSessionId = null;
+    send({ type: 'recording_stopped', sessionId });
+  });
+
+  // ── Navigate to the target URL ─────────────────────────────────────────────
+  try {
+    await page.goto(targetUrl, { waitUntil: 'commit', timeout: 60000 });
+  } catch (navErr: any) {
+    log(`Initial navigation warning for ${targetUrl}: ${navErr.message} — recording still active`);
+  }
+
+  // Capture an initial screenshot so the UI shows the starting page
+  try {
+    const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
+    send({ type: 'pw_screenshot', sessionId, jpeg: buf.toString('base64') });
+  } catch {}
+
+  log(`Recording browser ready — session ${sessionId} is now capturing events`);
+}
+
+/**
+ * Stop an active recording session and close the browser.
+ */
+async function stopRecording(sessionId: string): Promise<void> {
+  if (recordingSessionId !== sessionId) {
+    log(`stop_recording for ${sessionId} but current session is ${recordingSessionId}`);
+    return;
+  }
+  log(`Stopping recording session ${sessionId}`);
+  recordingSessionId = null;
+  if (recordingContext) { try { await recordingContext.close(); } catch {} recordingContext = null; }
+  if (recordingBrowser) { try { await recordingBrowser.close(); } catch {} recordingBrowser = null; }
+  send({ type: 'recording_stopped', sessionId });
 }
 
 type ActionCmd = {
@@ -365,6 +522,31 @@ function connect(): void {
           cancelRequested = true;
         }
         break;
+
+      // ── Recording commands ───────────────────────────────────────────────────
+
+      case 'start_recording': {
+        const sid        = String(msg.sessionId || '');
+        const targetUrl  = String(msg.targetUrl  || '');
+        const initScript = String(msg.initScript  || '');
+        if (!sid || !targetUrl) {
+          log('start_recording missing sessionId or targetUrl');
+          break;
+        }
+        log(`Received start_recording for session ${sid}`);
+        runRecording(sid, targetUrl, initScript).catch(err => {
+          log(`Recording error: ${err.message}`);
+          send({ type: 'recording_stopped', sessionId: sid, error: err.message });
+        });
+        break;
+      }
+
+      case 'stop_recording': {
+        const sid = String(msg.sessionId || '');
+        log(`Received stop_recording for session ${sid}`);
+        stopRecording(sid).catch(err => log(`stopRecording error: ${err.message}`));
+        break;
+      }
 
       case 'pong':
         break;
