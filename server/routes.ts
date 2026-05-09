@@ -1121,7 +1121,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await pool.query('SELECT 1');
       res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0' });
     } catch (err: any) {
-      res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0', dbError: err.message });
+      res.json({ status: 'error', timestamp: new Date().toISOString(), version: '2.0.0', dbError: err.message });
+    }
+  });
+
+  // GET /api/health/db — database connectivity + row counts for each key table.
+  // No auth required so it can be hit directly from curl or a health monitor.
+  // Strips the password from DATABASE_URL before returning the host.
+  app.get('/api/health/db', async (_req, res) => {
+    try {
+      const { pool } = await import('./db');
+      await pool.query('SELECT 1'); // connection test
+
+      // Row counts via raw SQL — no extra drizzle imports needed
+      const countResult = await pool.query<{ tbl: string; cnt: string }>(`
+        SELECT 'users'                AS tbl, COUNT(*)::text AS cnt FROM users
+        UNION ALL
+        SELECT 'projects',                   COUNT(*)::text FROM projects
+        UNION ALL
+        SELECT 'functional_test_runs',        COUNT(*)::text FROM functional_test_runs
+        UNION ALL
+        SELECT 'functional_test_sessions',    COUNT(*)::text FROM functional_test_sessions
+        UNION ALL
+        SELECT 'test_sessions',               COUNT(*)::text FROM test_sessions
+        UNION ALL
+        SELECT 'sprints',                     COUNT(*)::text FROM sprints
+        UNION ALL
+        SELECT 'test_cases',                  COUNT(*)::text FROM test_cases
+      `);
+
+      const tables: Record<string, number> = {};
+      for (const row of countResult.rows) {
+        tables[row.tbl] = parseInt(row.cnt, 10);
+      }
+
+      // How many projects are stored under the admin user ID (all data lives here)
+      const adminProjResult = await pool.query<{ cnt: string }>(
+        `SELECT COUNT(*)::text AS cnt FROM projects WHERE user_id = $1`,
+        [DEMO_USER.id]
+      );
+      const adminProjectCount = parseInt(adminProjResult.rows[0]?.cnt || '0', 10);
+
+      // DB host — safe to expose, password stripped
+      const dbUrl = process.env.DATABASE_URL || '';
+      let dbHost = 'not configured';
+      try { dbHost = new URL(dbUrl).hostname; } catch {}
+
+      res.json({
+        status: 'connected',
+        dbHost,
+        adminUserId: DEMO_USER.id,
+        adminProjectCount,
+        tables,
+        timestamp: new Date().toISOString(),
+      });
+    } catch (err: any) {
+      console.error('[Health/DB]', err.message);
+      res.status(500).json({ status: 'error', error: err.message, timestamp: new Date().toISOString() });
     }
   });
 
@@ -2218,11 +2274,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
             testRuns: recentRuns.length,
             sessions: recentSessions.length
           }
-        }
+        },
+        // _meta is invisible to the UI but visible in browser DevTools / curl.
+        // On Azure showing zeros, check this field to confirm which user and DB
+        // the query ran against — if adminProjectCount is 0 the database is empty.
+        _meta: {
+          userId: user.id,
+          isDemo: !req.user,
+          adminProjectCount: projectsList.length,
+        },
       });
     } catch (error: any) {
-      console.error('[Analytics] Error fetching overview:', error);
-      res.status(500).json({ error: error.message });
+      console.error('[Analytics] /api/analytics/overview failed — userId:', (req.user as any)?.id ?? DEMO_USER.id, '—', error.message, error.stack);
+      res.status(500).json({ error: error.message, endpoint: '/api/analytics/overview' });
     }
   });
 

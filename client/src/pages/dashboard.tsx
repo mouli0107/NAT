@@ -112,13 +112,18 @@ export default function Dashboard() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [activeAgentIndex, setActiveAgentIndex] = useState(0);
 
-  const { data: analytics, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
+  const { data: analytics, isLoading: analyticsLoading, error: analyticsError } = useQuery<AnalyticsData>({
     queryKey: ['/api/analytics/overview'],
   });
 
-  const { data: allProjects = [], isLoading: projectsLoading } = useQuery<Project[]>({
+  const { data: allProjects = [], isLoading: projectsLoading, error: projectsError } = useQuery<Project[]>({
     queryKey: ['/api/projects'],
   });
+
+  // True when the API responded successfully but returned genuinely empty data.
+  // Distinguished from an API error (non-200) which surfaces separately below.
+  const dbIsEmpty = !analyticsLoading && !analyticsError &&
+    analytics?.projects.total === 0 && analytics?.testCases.total === 0;
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -164,7 +169,57 @@ export default function Dashboard() {
         
         <main className="flex-1 overflow-y-auto">
           <div className="container mx-auto px-8 py-8">
-            
+
+            {/* ── API error banner — shown when /api/analytics/overview returns non-200 ── */}
+            {(analyticsError || projectsError) && (
+              <div className="mb-6 flex items-start gap-3 rounded-xl border border-red-500/30 bg-red-500/10 px-4 py-3">
+                <div className="text-red-400 mt-0.5 flex-shrink-0">⚠</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-red-300">Dashboard API error</p>
+                  <p className="text-xs text-red-400/80 mt-0.5">
+                    {String((analyticsError || projectsError)?.message || 'Unknown error')}
+                  </p>
+                  <p className="text-xs text-red-400/60 mt-1">
+                    Check server logs for details. Hit{' '}
+                    <a href="/api/health/db" target="_blank" rel="noreferrer"
+                       className="underline hover:text-red-300">/api/health/db</a>{' '}
+                    to verify the database connection.
+                  </p>
+                </div>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="flex-shrink-0 text-xs text-red-400 hover:text-red-200 border border-red-500/30 rounded-lg px-2.5 py-1 transition-colors"
+                >
+                  Retry
+                </button>
+              </div>
+            )}
+
+            {/* ── Empty-database hint — shown when API succeeds but returns all zeros ── */}
+            {/* This happens when the Azure database is fresh and no data has been created yet. */}
+            {/* It is NOT an error — the API returned 200 with genuine zero counts.           */}
+            {dbIsEmpty && (
+              <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-500/10 px-4 py-3">
+                <div className="text-amber-400 mt-0.5 flex-shrink-0">ℹ</div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-amber-300">No data in this database</p>
+                  <p className="text-xs text-amber-400/80 mt-0.5">
+                    The API is responding correctly (HTTP 200) but there are no projects, test cases,
+                    or test runs in the connected database. If you expected to see data, this deployment
+                    may be using a different database instance from your local environment.
+                  </p>
+                  <p className="text-xs text-amber-400/60 mt-1">
+                    Verify which database is connected:{' '}
+                    <a href="/api/health/db" target="_blank" rel="noreferrer"
+                       className="underline hover:text-amber-300">/api/health/db</a>
+                    {' '}→ check <code className="font-mono">dbHost</code> and{' '}
+                    <code className="font-mono">adminProjectCount</code>.
+                    Create a project below to get started.
+                  </p>
+                </div>
+              </div>
+            )}
+
             {/* Hero Section with Agent Activity */}
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
