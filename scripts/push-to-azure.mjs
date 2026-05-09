@@ -66,6 +66,9 @@ async function main() {
 
   let grandTotal = 0;
 
+  // Send 500 rows per HTTP call — keeps each request well under 10 MB
+  const HTTP_CHUNK = 500;
+
   for (const table of tables) {
     const { rows } = await local.query(`SELECT * FROM "${table}"`);
 
@@ -74,17 +77,36 @@ async function main() {
       continue;
     }
 
-    try {
-      const result = await postJson({ secret: SECRET, table, rows });
+    let tableTotal = 0;
+    let tableOk = true;
 
-      if (result.status === 200) {
-        process.stdout.write(`  ✓   ${table.padEnd(40)} ${result.body.inserted} rows\n`);
-        grandTotal += result.body.inserted || 0;
-      } else {
-        process.stdout.write(`  ⚠   ${table.padEnd(40)} HTTP ${result.status}: ${JSON.stringify(result.body)}\n`);
+    for (let i = 0; i < rows.length; i += HTTP_CHUNK) {
+      const chunk = rows.slice(i, i + HTTP_CHUNK);
+      try {
+        const result = await postJson({ secret: SECRET, table, rows: chunk });
+
+        if (result.status === 200 && typeof result.body?.inserted === 'number') {
+          tableTotal += result.body.inserted;
+        } else if (result.status === 200 && result.body?.inserted === undefined) {
+          // Old build — SPA returned HTML, endpoint not deployed yet
+          process.stdout.write(`  ✗   ${table.padEnd(40)} deployment not ready (got HTML, not JSON)\n`);
+          tableOk = false;
+          break;
+        } else {
+          process.stdout.write(`  ⚠   ${table.padEnd(40)} HTTP ${result.status}: ${JSON.stringify(result.body)}\n`);
+          tableOk = false;
+          break;
+        }
+      } catch (err) {
+        process.stdout.write(`  ✗   ${table.padEnd(40)} ${err.message}\n`);
+        tableOk = false;
+        break;
       }
-    } catch (err) {
-      process.stdout.write(`  ✗   ${table.padEnd(40)} ${err.message}\n`);
+    }
+
+    if (tableOk) {
+      process.stdout.write(`  ✓   ${table.padEnd(40)} ${tableTotal} rows\n`);
+      grandTotal += tableTotal;
     }
   }
 
