@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
+import { SaveRecordingDialog } from "@/components/SaveRecordingDialog";
 
 // ─── Object Repository Builder ────────────────────────────────────────────────
 
@@ -2821,6 +2822,9 @@ export default function RecorderPage() {
   const [autoSaveResult, setAutoSaveResult] = useState<any>(null);
   const [autoSaveError, setAutoSaveError] = useState('');
 
+  // Framework save dialog (Sprint 5 — merger engine)
+  const [showSaveFrameworkDialog, setShowSaveFrameworkDialog] = useState(false);
+
   // Playwright recording state — declared here (before stopRecording) to avoid TDZ
   const [isPlaywrightRecording, setIsPlaywrightRecording] = useState(false);
 
@@ -4035,6 +4039,10 @@ export default function RecorderPage() {
                           <button onClick={() => setShowFramework(true)}
                             className="px-2 py-1 bg-emerald-600 text-white rounded text-[10px] font-semibold">
                             📁 View Files
+                          </button>
+                          <button onClick={() => setShowSaveFrameworkDialog(true)}
+                            className="px-2 py-1 bg-indigo-600 text-white rounded text-[10px] font-semibold">
+                            📤 Save to Framework
                           </button>
                           <button onClick={() => { setAutoSaveStatus('idle'); setAutoSaveResult(null); }}
                             className="px-2 py-1 bg-slate-200 text-slate-700 rounded text-[10px]">
@@ -5640,6 +5648,41 @@ export default function RecorderPage() {
       </div>
     )}
     </div>
+
+    {/* ── Sprint 5: Save Recording to Merger Engine dialog ──────────────── */}
+    <SaveRecordingDialog
+      isOpen={showSaveFrameworkDialog}
+      generatedScript={frameworkFilesResult?.testContent ?? generatedScript}
+      nlSteps={nlSteps}
+      defaultTcName={testCaseName}
+      onSave={_result => {
+        setShowSaveFrameworkDialog(false);
+      }}
+      onCancel={() => setShowSaveFrameworkDialog(false)}
+    />
+
+    {/* ── Sprint 5: Floating "New Recording" button (shown after save) ───── */}
+    {autoSaveStatus === 'done' && (
+      <button
+        onClick={() => {
+          // Reset recording state for a fresh session
+          setAutoSaveStatus('idle');
+          setAutoSaveResult(null);
+          setAutoSaveError('');
+          setNlSteps([]);
+          setEvents([]);
+          setGeneratedScript('');
+          setFrameworkFilesResult(null);
+          setSessionId(null);
+          setSessionStatus('idle');
+          setAgents(prev => prev.map(a => ({ ...a, status: 'idle' })));
+          hasReceivedStop.current = false;
+        }}
+        className="fixed bottom-6 right-6 flex items-center gap-2 px-5 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full shadow-lg text-sm font-semibold transition-colors z-40"
+      >
+        + New Recording
+      </button>
+    )}
   </div>
   );
 }

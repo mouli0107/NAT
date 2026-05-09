@@ -1,981 +1,903 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { useLocation, Link } from "wouter";
-import { Sidebar } from "@/components/dashboard/sidebar";
-import { DashboardHeader } from "@/components/dashboard/header";
+// ─────────────────────────────────────────────────────────────────────────────
+// NAT 2.0 — Sprint 5: Test Library (redesign)
+// client/src/pages/test-library.tsx
+//
+// Three-panel layout:
+//   Left  240px  — project tree (modules → features)
+//   Center flex  — TC list (specs from merger engine)
+//   Right  320px — TC detail + script preview
+// ─────────────────────────────────────────────────────────────────────────────
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useLocation, Link } from 'wouter';
+import { Sidebar } from '@/components/dashboard/sidebar';
+import { DashboardHeader } from '@/components/dashboard/header';
+import { useProject } from '@/contexts/ProjectContext';
+import { useProjectTree } from '@/hooks/useProjectTree';
+import { useDownload } from '@/hooks/useDownload';
+import type { FrameworkModule, FrameworkFeature } from '@/hooks/useProjectTree';
 
-interface TestFolder {
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+interface SpecAsset {
   id: string;
-  name: string;
-  type: 'module' | 'suite';
-  parentId: string | null;
-  createdAt: number;
+  projectId: string;
+  assetType: string;
+  assetKey: string;   // TC sequence e.g. "TC-001"
+  filePath: string;   // "tests/Login/HappyPath/TC-001-login.spec.ts"
+  contentHash: string | null;
+  unitName: string | null;
+  layer: string | null;
+  createdBy: string | null;
+  updatedBy: string | null;
+  createdAt: string | null;
+  updatedAt: string | null;
+  sourceTcId: string | null;
 }
 
-interface RecordedTest {
+interface SpecAssetDetail extends SpecAsset {
+  content: string;
+}
+
+interface ConflictRow {
   id: string;
-  folderId: string;
-  name: string;
-  url: string;
-  projectName?: string;
-  nlSteps: string[];
-  tags: string[];
-  lastRunStatus: 'passed' | 'failed' | 'never';
-  lastRunAt: number | null;
-  lastRunDuration: number | null;
-  createdAt: number;
-  updatedAt: number;
+  assetKey: string;
+  conflictType: string | null;
+  status: string | null;
+  createdAt: string | null;
 }
 
-interface RunResult {
-  testId: string;
-  testName: string;
-  status: 'passed' | 'failed' | 'skipped';
-  duration: number;
-  error?: string;
+/** Extract module/feature from a spec filePath */
+function parseSpecPath(filePath: string): { module: string; feature: string | null } {
+  // Pattern: tests/<Module>/<Feature>/<file>.spec.ts
+  //      or: tests/<Module>/<file>.spec.ts
+  const parts = filePath.replace(/^tests\//, '').split('/');
+  if (parts.length >= 3) return { module: parts[0], feature: parts[1] };
+  if (parts.length === 2) return { module: parts[0], feature: null };
+  return { module: parts[0] ?? 'Other', feature: null };
 }
 
-interface ActiveRun {
-  id: string;
-  name: string;
-  status: 'running' | 'completed' | 'failed';
-  passCount: number;
-  failCount: number;
-  results: RunResult[];
-  startedAt: number;
-  completedAt: number | null;
+function timeAgo(iso: string | null): string {
+  if (!iso) return '—';
+  const diff = Date.now() - new Date(iso).getTime();
+  if (diff < 60_000)  return 'just now';
+  if (diff < 3_600_000) return `${Math.floor(diff / 60_000)}m ago`;
+  if (diff < 86_400_000) return `${Math.floor(diff / 3_600_000)}h ago`;
+  return `${Math.floor(diff / 86_400_000)}d ago`;
 }
 
-interface FlakinessData {
-  testId: string;
-  testName: string;
-  stability: number;
-  isFlaky: boolean;
-  runCount: number;
-  lastStatus?: string;
-  lastRunAt?: number;
-}
+// ── DownloadDropdown ─────────────────────────────────────────────────────────
 
-interface Suite {
-  id: string;
-  name: string;
-  type: string;
-  testIds: string[];
-}
-
-// ─── Project Tree Node ────────────────────────────────────────────────────────
-
-function ProjectNode({
-  projectName, allFolders, projectTests, selectedFolderId, selectedTestIds,
-  onSelectFolder, onToggleTest, expandedFolderIds, onToggleFolderExpand,
-  expandedProjects, onToggleProject,
+function DownloadDropdown({
+  projectId,
+  selectedModule,
+  selectedFeature,
+  selectedTcIds,
+  projectName,
 }: {
+  projectId: string;
+  selectedModule: FrameworkModule | null;
+  selectedFeature: FrameworkFeature | null;
+  selectedTcIds: Set<string>;
   projectName: string;
-  allFolders: TestFolder[];
-  projectTests: RecordedTest[];
-  selectedFolderId: string | null;
-  selectedTestIds: Set<string>;
-  onSelectFolder: (id: string) => void;
-  onToggleTest: (id: string) => void;
-  expandedFolderIds: Set<string>;
-  onToggleFolderExpand: (id: string) => void;
-  expandedProjects: Set<string>;
-  onToggleProject: (name: string) => void;
 }) {
-  const isExpanded = expandedProjects.has(projectName);
-  const allSel = projectTests.length > 0 && projectTests.every(t => selectedTestIds.has(t.id));
-  const someSel = projectTests.some(t => selectedTestIds.has(t.id));
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const { download, downloadSelected, downloading, progress } = useDownload(projectId);
 
-  // Only show root folders that have at least one test (direct or via children) in this project
-  const rootFolders = allFolders.filter(f => f.parentId === null);
-  const folderHasProjectTests = (folderId: string): boolean => {
-    if (projectTests.some(t => t.folderId === folderId)) return true;
-    return allFolders.filter(f => f.parentId === folderId).some(child => folderHasProjectTests(child.id));
-  };
-  const relevantRootFolders = rootFolders.filter(f => folderHasProjectTests(f.id));
+  // Close on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   return (
-    <div>
-      <div
-        className="group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors hover:bg-white/5 text-slate-300 font-semibold"
-        onClick={() => onToggleProject(projectName)}
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen(v => !v)}
+        disabled={downloading}
+        className="flex items-center gap-2 px-4 py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 disabled:opacity-50"
       >
-        <span className="text-slate-500 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
-          {projectTests.length > 0 ? '▶' : ' '}
-        </span>
-        <input type="checkbox"
-          checked={allSel}
-          ref={(el: HTMLInputElement | null) => { if (el) el.indeterminate = someSel && !allSel; }}
-          onChange={e => { e.stopPropagation(); projectTests.forEach(t => onToggleTest(t.id)); }}
-          onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0 cursor-pointer"
-        />
-        <span className="flex-shrink-0">🏗</span>
-        <span className="flex-1 truncate">{projectName}</span>
-        <span className="text-[10px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-medium">{projectTests.length}</span>
-      </div>
+        {downloading ? '⏳' : '⬇'} Download ▾
+      </button>
 
-      {isExpanded && (
-        <div className="ml-4 border-l border-slate-700 pl-2">
-          {relevantRootFolders.map(folder => (
-            <FolderNode
-              key={`${projectName}-${folder.id}`}
-              folder={folder}
-              allFolders={allFolders}
-              tests={projectTests}
-              selectedFolderId={selectedFolderId}
-              selectedTestIds={selectedTestIds}
-              onSelectFolder={onSelectFolder}
-              onToggleTest={onToggleTest}
-              expandedIds={expandedFolderIds}
-              onToggleExpand={onToggleFolderExpand}
-              onRenameFolder={() => {}}
-              onNewFolder={() => {}}
-              onDeleteFolder={() => {}}
-            />
-          ))}
+      {open && (
+        <div className="absolute right-0 top-full mt-1 w-72 bg-white border border-slate-200 rounded-lg shadow-xl z-50 overflow-hidden">
+          <DownloadOption
+            label="Entire Project"
+            subtitle="All modules and TCs"
+            onClick={() => { download('project', undefined, 'entire project', projectName); setOpen(false); }}
+          />
+          <DownloadOption
+            label={selectedModule ? `Module: ${selectedModule.name}` : 'Module (select one)'}
+            subtitle={selectedModule ? 'All TCs in this module' : 'Select a module first'}
+            disabled={!selectedModule}
+            onClick={() => {
+              if (selectedModule) {
+                download('module', selectedModule.name, selectedModule.name, projectName);
+                setOpen(false);
+              }
+            }}
+          />
+          <DownloadOption
+            label={selectedFeature ? `Feature: ${selectedFeature.name}` : 'Feature (select one)'}
+            subtitle={selectedFeature ? 'All TCs in this feature' : 'Select a feature first'}
+            disabled={!selectedFeature}
+            onClick={() => {
+              if (selectedModule && selectedFeature) {
+                download('feature', `${selectedModule.name}/${selectedFeature.name}`, selectedFeature.name, projectName);
+                setOpen(false);
+              }
+            }}
+          />
+          <DownloadOption
+            label="Selected TCs"
+            subtitle={selectedTcIds.size > 0 ? `${selectedTcIds.size} selected` : 'No TCs selected'}
+            disabled={selectedTcIds.size === 0}
+            onClick={() => {
+              downloadSelected(Array.from(selectedTcIds), projectName);
+              setOpen(false);
+            }}
+          />
+        </div>
+      )}
+
+      {/* Toast when building */}
+      {downloading && progress && (
+        <div className="fixed bottom-4 right-4 bg-white border border-slate-200 rounded-lg shadow-lg px-4 py-3 flex items-center gap-3 z-50">
+          <div className="w-4 h-4 border-2 border-indigo-300 border-t-indigo-600 rounded-full animate-spin" />
+          <span className="text-sm text-slate-700">{progress}</span>
         </div>
       )}
     </div>
   );
 }
 
-// ─── Folder Tree Node ─────────────────────────────────────────────────────────
+function DownloadOption({
+  label, subtitle, disabled, onClick,
+}: { label: string; subtitle: string; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full text-left px-4 py-3 border-b last:border-0 border-slate-100 transition-colors ${disabled ? 'opacity-40 cursor-not-allowed' : 'hover:bg-slate-50'}`}
+    >
+      <div className="text-sm font-medium text-slate-800">{label}</div>
+      <div className="text-xs text-slate-400 mt-0.5">{subtitle}</div>
+    </button>
+  );
+}
 
-function FolderNode({
-  folder, allFolders, tests, selectedFolderId, selectedTestIds,
-  onSelectFolder, onToggleTest, expandedIds, onToggleExpand,
-  onRenameFolder, onNewFolder, onDeleteFolder
+// ── ProjectTree (left panel) ─────────────────────────────────────────────────
+
+function ProjectTree({
+  projectId,
+  modules,
+  loading,
+  specsForModule,
+  selectedModuleId,
+  selectedFeatureId,
+  onSelectModule,
+  onSelectFeature,
+  onAddModule,
+  totalSpecs,
 }: {
-  folder: TestFolder;
-  allFolders: TestFolder[];
-  tests: RecordedTest[];
-  selectedFolderId: string | null;
-  selectedTestIds: Set<string>;
-  onSelectFolder: (id: string) => void;
-  onToggleTest: (id: string) => void;
-  expandedIds: Set<string>;
-  onToggleExpand: (id: string) => void;
-  onRenameFolder: (id: string, name: string) => void;
-  onNewFolder: (parentId: string) => void;
-  onDeleteFolder: (id: string) => void;
+  projectId: string;
+  modules: FrameworkModule[];
+  loading: boolean;
+  specsForModule: (moduleName: string, featureName?: string) => number;
+  selectedModuleId: string | null;
+  selectedFeatureId: string | null;
+  onSelectModule: (m: FrameworkModule | null) => void;
+  onSelectFeature: (f: FrameworkFeature | null, m: FrameworkModule) => void;
+  onAddModule: () => void;
+  totalSpecs: number;
 }) {
-  const children = allFolders.filter(f => f.parentId === folder.id);
-  const folderTests = tests.filter(t => t.folderId === folder.id);
-  const isExpanded = expandedIds.has(folder.id);
-  const isSelected = selectedFolderId === folder.id;
-  const [renaming, setRenaming] = useState(false);
-  const [renameVal, setRenameVal] = useState(folder.name);
-  const [showCtx, setShowCtx] = useState(false);
+  const [expandedModules, setExpandedModules] = useState<Set<string>>(new Set());
 
-  const allSelected = folderTests.length > 0 && folderTests.every(t => selectedTestIds.has(t.id));
-  const someSelected = folderTests.some(t => selectedTestIds.has(t.id));
+  const toggleModule = (id: string) => {
+    setExpandedModules(prev => {
+      const s = new Set(prev);
+      s.has(id) ? s.delete(id) : s.add(id);
+      return s;
+    });
+  };
 
-  const icon = folder.type === 'suite'
-    ? (folder.name === 'Smoke' ? '💨' : folder.name === 'Regression' ? '🔁' : folder.name === 'Sanity' ? '🩺' : '📋')
-    : '📁';
+  const recordedCount = totalSpecs;
+  const totalCount    = Math.max(totalSpecs, modules.reduce((s, m) => s + m.features.length, 0));
+  const pct           = totalCount > 0 ? Math.round((recordedCount / totalCount) * 100) : 0;
 
   return (
-    <div>
-      <div
-        className={`group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors relative ${isSelected ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400' : 'hover:bg-white/5 text-slate-300'}`}
-        onClick={() => { onSelectFolder(folder.id); onToggleExpand(folder.id); }}
-      >
-        {/* Expand arrow */}
-        <span className="text-slate-500 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
-          {(children.length > 0 || folderTests.length > 0) ? '▶' : ' '}
-        </span>
+    <div className="w-60 flex-shrink-0 border-r border-slate-200 flex flex-col bg-slate-900 overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-slate-700/60 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Framework Tree</span>
+        </div>
+      </div>
 
-        {/* Folder checkbox (select all tests in folder) */}
-        <input type="checkbox" checked={allSelected} ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
-          onChange={e => { e.stopPropagation(); folderTests.forEach(t => onToggleTest(t.id)); }}
-          onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0 cursor-pointer"
-        />
-
-        <span className="flex-shrink-0">{icon}</span>
-
-        {renaming ? (
-          <input
-            value={renameVal}
-            autoFocus
-            className="flex-1 bg-slate-800 border border-indigo-400 rounded px-1 py-0 text-xs text-slate-100 outline-none min-w-0"
-            onChange={e => setRenameVal(e.target.value)}
-            onBlur={() => { onRenameFolder(folder.id, renameVal); setRenaming(false); }}
-            onKeyDown={e => { if (e.key === 'Enter') { onRenameFolder(folder.id, renameVal); setRenaming(false); } if (e.key === 'Escape') setRenaming(false); }}
-            onClick={e => e.stopPropagation()}
-          />
-        ) : (
-          <span className="flex-1 truncate font-medium">{folder.name}</span>
+      {/* Tree */}
+      <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.15) transparent' }}>
+        {loading && (
+          <div className="text-xs text-slate-500 text-center py-6">Loading…</div>
         )}
 
-        <span className="text-[10px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-medium">{folderTests.length}</span>
-
-        {/* Context menu trigger */}
-        <button
-          onClick={e => { e.stopPropagation(); setShowCtx(v => !v); }}
-          className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-slate-500 hover:text-indigo-400 px-0.5 transition-opacity"
-        >⋯</button>
-
-        {showCtx && (
-          <div className="absolute right-2 top-7 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs w-36 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <button className="w-full text-left px-3 py-2 hover:bg-white/5 text-slate-300" onClick={() => { setRenaming(true); setShowCtx(false); }}>✏️ Rename</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-white/5 text-slate-300" onClick={() => { onNewFolder(folder.id); setShowCtx(false); }}>📁 New Subfolder</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-400" onClick={() => { onDeleteFolder(folder.id); setShowCtx(false); }}>🗑 Delete Folder</button>
+        {!loading && modules.length === 0 && (
+          <div className="text-xs text-slate-500 text-center py-6 px-3">
+            No modules yet.<br />
+            <span className="text-slate-600">Click + Add Module to start.</span>
           </div>
         )}
+
+        {modules.map(mod => {
+          const modCount = specsForModule(mod.name);
+          const isSelMod = selectedModuleId === mod.id;
+          const isExpanded = expandedModules.has(mod.id);
+
+          return (
+            <div key={mod.id}>
+              {/* Module row */}
+              <div
+                onClick={() => { toggleModule(mod.id); onSelectModule(isSelMod && isExpanded ? null : mod); }}
+                className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors ${
+                  isSelMod && !selectedFeatureId
+                    ? 'bg-indigo-500/20 text-indigo-300'
+                    : 'hover:bg-white/5 text-slate-300'
+                }`}
+              >
+                <span className="text-slate-500 w-3 text-center transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+                  {mod.features.length > 0 ? '▶' : '·'}
+                </span>
+                <span className="text-slate-400">📁</span>
+                <span className="flex-1 font-medium truncate">{mod.name}</span>
+                {/* Progress ring — simple badge */}
+                <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
+                  modCount > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500'
+                }`}>
+                  {modCount}
+                </span>
+              </div>
+
+              {/* Features */}
+              {isExpanded && mod.features.map(feat => {
+                const featCount = specsForModule(mod.name, feat.name);
+                const isSel     = selectedFeatureId === feat.id;
+                return (
+                  <div
+                    key={feat.id}
+                    onClick={() => onSelectFeature(isSel ? null : feat, mod)}
+                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer text-[11px] ml-4 transition-colors ${
+                      isSel
+                        ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400 ml-3'
+                        : 'hover:bg-white/5 text-slate-400'
+                    }`}
+                  >
+                    <span className="text-slate-600">↳</span>
+                    <span className="flex-1 truncate">{feat.name}</span>
+                    <span className={`text-[9px] px-1 py-0.5 rounded-full ${
+                      featCount > 0 ? 'bg-indigo-500/15 text-indigo-400' : 'text-slate-600'
+                    }`}>
+                      {featCount}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        })}
       </div>
 
-      {isExpanded && (
-        <div className="ml-4 border-l border-slate-700 pl-2">
-          {children.map(child => (
-            <FolderNode key={child.id} folder={child} allFolders={allFolders} tests={tests}
-              selectedFolderId={selectedFolderId} selectedTestIds={selectedTestIds}
-              onSelectFolder={onSelectFolder} onToggleTest={onToggleTest}
-              expandedIds={expandedIds} onToggleExpand={onToggleExpand}
-              onRenameFolder={onRenameFolder} onNewFolder={onNewFolder} onDeleteFolder={onDeleteFolder}
-            />
-          ))}
-          {folderTests.map(test => (
-            <TestRow key={test.id} test={test} selected={selectedTestIds.has(test.id)} onToggle={onToggleTest} />
-          ))}
+      {/* Progress bar + Add Module */}
+      <div className="px-3 py-2 border-t border-slate-700/50 flex-shrink-0">
+        <div className="text-[10px] text-slate-500 mb-1">
+          {recordedCount} spec{recordedCount !== 1 ? 's' : ''} recorded
         </div>
-      )}
+        <div className="w-full bg-slate-700 rounded-full h-1.5 mb-2">
+          <div
+            className="bg-indigo-500 h-1.5 rounded-full transition-all"
+            style={{ width: `${pct}%` }}
+          />
+        </div>
+        <button
+          onClick={onAddModule}
+          className="w-full px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs hover:border-indigo-500 hover:text-indigo-400 transition-colors text-left"
+        >
+          + Add Module
+        </button>
+      </div>
     </div>
   );
 }
 
-function TestRow({ test, selected, onToggle }: { test: RecordedTest; selected: boolean; onToggle: (id: string) => void }) {
-  const statusDot = test.lastRunStatus === 'passed' ? 'bg-emerald-400' :
-    test.lastRunStatus === 'failed' ? 'bg-red-400' : 'bg-slate-600';
+// ── TestCaseList (center panel) ──────────────────────────────────────────────
+
+function TestCaseList({
+  specs,
+  loading,
+  selectedTcIds,
+  activeTcKey,
+  selectedModule,
+  selectedFeature,
+  onToggle,
+  onSelectTc,
+  onRecordNew,
+}: {
+  specs: SpecAsset[];
+  loading: boolean;
+  selectedTcIds: Set<string>;
+  activeTcKey: string | null;
+  selectedModule: FrameworkModule | null;
+  selectedFeature: FrameworkFeature | null;
+  onToggle: (key: string) => void;
+  onSelectTc: (spec: SpecAsset) => void;
+  onRecordNew: () => void;
+}) {
+  const [search, setSearch] = useState('');
+
+  const filtered = specs.filter(s =>
+    !search ||
+    s.assetKey.toLowerCase().includes(search.toLowerCase()) ||
+    s.filePath.toLowerCase().includes(search.toLowerCase()),
+  );
+
+  const selectedCount = selectedTcIds.size;
+
+  const breadcrumb = selectedFeature
+    ? `${selectedModule?.name ?? '?'} / ${selectedFeature.name}`
+    : selectedModule
+    ? selectedModule.name
+    : 'All Specs';
 
   return (
-    <div
-      className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-[11px] transition-colors ${selected ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400' : 'hover:bg-white/5 text-slate-400'}`}
-      onClick={() => onToggle(test.id)}
-    >
-      <input type="checkbox" checked={selected} onChange={() => onToggle(test.id)}
-        onClick={e => e.stopPropagation()}
-        className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0" />
-      <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot}`} />
-      <span className="flex-1 truncate">{test.name}</span>
-      {test.lastRunDuration && <span className="text-[9px] text-slate-500">{(test.lastRunDuration / 1000).toFixed(1)}s</span>}
+    <div className="flex-1 flex flex-col min-w-0 border-r border-slate-200 bg-white overflow-hidden">
+      {/* Header bar */}
+      <div className="flex items-center gap-2 px-4 py-3 border-b border-slate-200 flex-shrink-0">
+        <span className="text-sm font-semibold text-slate-700 truncate">{breadcrumb}</span>
+        <span className="text-[10px] text-slate-400 ml-1">{filtered.length} TC{filtered.length !== 1 ? 's' : ''}</span>
+        <div className="ml-auto flex items-center gap-2">
+          <input
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            placeholder="Search TCs…"
+            className="text-xs border border-slate-200 rounded-lg px-3 py-1.5 outline-none focus:border-indigo-400 w-36"
+          />
+        </div>
+      </div>
+
+      {/* Bulk action bar */}
+      {selectedCount > 0 && (
+        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex-shrink-0">
+          <span className="text-xs text-indigo-700 font-medium">{selectedCount} selected</span>
+          <button className="text-xs text-indigo-600 hover:underline" onClick={() => { /* bulk run */ }}>▶ Run</button>
+          <button
+            className="ml-auto text-xs text-slate-500 hover:text-slate-700"
+            onClick={() => { /* clear */ }}
+          >✕ Clear</button>
+        </div>
+      )}
+
+      {/* TC rows */}
+      <div className="flex-1 overflow-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
+        {loading && (
+          <div className="text-xs text-slate-400 text-center py-10">Loading specs…</div>
+        )}
+
+        {!loading && filtered.length === 0 && (
+          <div className="flex flex-col items-center justify-center py-16 text-slate-400 gap-2">
+            <span className="text-3xl opacity-30">📄</span>
+            <span className="text-sm">{search ? 'No matching TCs' : 'No specs recorded yet'}</span>
+            <button
+              onClick={onRecordNew}
+              className="mt-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-xs font-semibold"
+            >
+              + Record New TC
+            </button>
+          </div>
+        )}
+
+        {filtered.map(spec => {
+          const isActive   = activeTcKey === spec.assetKey;
+          const isSelected = selectedTcIds.has(spec.assetKey);
+          const { module, feature } = parseSpecPath(spec.filePath);
+
+          return (
+            <div
+              key={spec.id}
+              onClick={() => onSelectTc(spec)}
+              className={`group flex items-center gap-3 px-4 py-3 border-b border-slate-100 cursor-pointer transition-all ${
+                isActive
+                  ? 'bg-indigo-50 border-l-2 border-l-indigo-500'
+                  : 'hover:bg-slate-50'
+              }`}
+            >
+              <input
+                type="checkbox"
+                checked={isSelected}
+                onChange={() => onToggle(spec.assetKey)}
+                onClick={e => e.stopPropagation()}
+                className="w-3.5 h-3.5 rounded accent-indigo-500 flex-shrink-0"
+              />
+
+              <div className="w-2 h-2 rounded-full bg-emerald-400 flex-shrink-0" title="Recorded" />
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-mono text-[10px] text-slate-400 flex-shrink-0">{spec.assetKey}</span>
+                  <span className="text-xs font-medium text-slate-700 truncate">{spec.filePath.split('/').pop()?.replace('.spec.ts', '')}</span>
+                </div>
+                <div className="text-[10px] text-slate-400 mt-0.5 truncate">
+                  {feature ? `${module} / ${feature}` : module}
+                  {spec.updatedAt && <span className="ml-2">{timeAgo(spec.updatedAt)}</span>}
+                </div>
+              </div>
+
+              <span className="text-[10px] text-indigo-500 opacity-0 group-hover:opacity-100 flex-shrink-0 transition-opacity">
+                View →
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Footer */}
+      <div className="flex items-center justify-between px-4 py-3 border-t border-slate-200 flex-shrink-0">
+        <button
+          onClick={onRecordNew}
+          className="text-sm text-indigo-600 hover:underline"
+        >
+          + Record New TC
+        </button>
+      </div>
     </div>
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+// ── TCDetailPanel (right panel) ──────────────────────────────────────────────
+
+function TCDetailPanel({
+  spec,
+  loading,
+  onRerecord,
+  onDownload,
+}: {
+  spec: SpecAssetDetail | null;
+  loading: boolean;
+  onRerecord: () => void;
+  onDownload: (assetKey: string) => void;
+}) {
+  if (!spec && !loading) {
+    return (
+      <div className="w-80 flex-shrink-0 border-l border-slate-200 flex items-center justify-center bg-slate-50">
+        <div className="text-sm text-slate-400 text-center px-6">
+          <div className="text-3xl mb-2 opacity-20">📋</div>
+          Select a test case to preview
+        </div>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="w-80 flex-shrink-0 border-l border-slate-200 flex items-center justify-center bg-slate-50">
+        <div className="text-xs text-slate-400">Loading…</div>
+      </div>
+    );
+  }
+
+  if (!spec) return null;
+
+  const { module, feature } = parseSpecPath(spec.filePath);
+  const tcName = spec.filePath.split('/').pop()?.replace('.spec.ts', '') ?? spec.assetKey;
+  const preview = spec.content ? spec.content.slice(0, 1200) : '';
+
+  return (
+    <div className="w-80 flex-shrink-0 border-l border-slate-200 flex flex-col bg-white overflow-hidden">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span className="font-mono text-[10px] text-slate-400">{spec.assetKey}</span>
+          <span className="text-[10px] bg-emerald-100 text-emerald-700 px-1.5 py-0.5 rounded-full font-medium">recorded</span>
+        </div>
+        <h2 className="text-sm font-semibold text-slate-800 truncate" title={tcName}>{tcName}</h2>
+      </div>
+
+      {/* Metadata */}
+      <div className="px-4 py-3 border-b border-slate-200 space-y-1.5 text-xs flex-shrink-0">
+        <MetaRow label="Module"  value={module} />
+        {feature && <MetaRow label="Feature" value={feature} />}
+        <MetaRow label="File"    value={spec.filePath.split('/').pop() ?? ''} />
+        <MetaRow label="Updated" value={timeAgo(spec.updatedAt)} />
+      </div>
+
+      {/* Script preview */}
+      <div className="flex-1 overflow-auto px-4 py-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-wider">Script Preview</span>
+          <button
+            onClick={() => navigator.clipboard.writeText(spec.content)}
+            className="text-[10px] text-slate-400 hover:text-indigo-600 px-2 py-0.5 rounded bg-slate-100"
+          >
+            📋 Copy
+          </button>
+        </div>
+        <pre className="text-[10px] bg-slate-50 border border-slate-100 rounded-lg p-3 overflow-auto max-h-64 font-mono leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin' }}>
+          {preview || 'No script content'}
+          {spec.content && spec.content.length > 1200 && <span className="text-slate-400">\n… ({spec.content.length - 1200} more chars)</span>}
+        </pre>
+      </div>
+
+      {/* Actions */}
+      <div className="px-4 py-3 border-t border-slate-200 flex flex-col gap-2 flex-shrink-0">
+        <button
+          onClick={onRerecord}
+          className="w-full py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          🎙 Re-record
+        </button>
+        <button
+          onClick={() => onDownload(spec.assetKey)}
+          className="w-full py-2 border border-slate-200 rounded-lg text-sm text-slate-700 hover:bg-slate-50 transition-colors"
+        >
+          ⬇ Download TC
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function MetaRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-start gap-2">
+      <span className="text-slate-400 w-16 flex-shrink-0">{label}</span>
+      <span className="text-slate-700 truncate flex-1" title={value}>{value || '—'}</span>
+    </div>
+  );
+}
+
+// ── AddModuleModal ────────────────────────────────────────────────────────────
+
+function AddModuleModal({
+  projectId,
+  onCreated,
+  onClose,
+}: {
+  projectId: string;
+  onCreated: () => void;
+  onClose: () => void;
+}) {
+  const [name, setName]   = useState('');
+  const [desc, setDesc]   = useState('');
+  const [saving, setSaving] = useState(false);
+
+  const submit = async () => {
+    if (!name.trim()) return;
+    setSaving(true);
+    try {
+      await fetch(`/api/projects/${projectId}/framework/modules`, {
+        method:      'POST',
+        credentials: 'include',
+        headers:     { 'Content-Type': 'application/json' },
+        body:        JSON.stringify({ name: name.trim(), description: desc.trim() || undefined }),
+      });
+      onCreated();
+      onClose();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="w-80 bg-white rounded-xl shadow-2xl border border-slate-200 p-5">
+        <h3 className="text-sm font-bold text-slate-800 mb-4">Add Module</h3>
+        <div className="space-y-3">
+          <div>
+            <label className="text-xs text-slate-500 block mb-1">Module name *</label>
+            <input
+              autoFocus
+              value={name}
+              onChange={e => setName(e.target.value)}
+              onKeyDown={e => { if (e.key === 'Enter') submit(); if (e.key === 'Escape') onClose(); }}
+              placeholder="e.g. Login, Checkout, Admin"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400"
+            />
+          </div>
+          <div>
+            <label className="text-xs text-slate-500 block mb-1">Description (optional)</label>
+            <input
+              value={desc}
+              onChange={e => setDesc(e.target.value)}
+              placeholder="Brief description…"
+              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-indigo-400"
+            />
+          </div>
+        </div>
+        <div className="flex gap-2 mt-4">
+          <button onClick={onClose} className="flex-1 py-2 border border-slate-200 rounded-lg text-sm text-slate-600 hover:bg-slate-50">Cancel</button>
+          <button
+            onClick={submit}
+            disabled={saving || !name.trim()}
+            className="flex-1 py-2 bg-indigo-500 text-white rounded-lg text-sm font-semibold disabled:opacity-50"
+          >
+            {saving ? 'Creating…' : 'Create'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 
 export default function TestLibraryPage() {
-  const [, navigate] = useLocation();
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [, navigate]                 = useLocation();
+  const [isSidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { selectedProjectId }        = useProject();
 
-  // Data
-  const [folders, setFolders] = useState<TestFolder[]>([]);
-  const [tests, setTests] = useState<RecordedTest[]>([]);
-  const [stats, setStats] = useState({ totalTests: 0, passed: 0, failed: 0, never: 0 });
+  // Tree
+  const { tree, loading: treeLoading, refresh: refreshTree } = useProjectTree(selectedProjectId);
+  const modules = tree?.modules ?? [];
 
-  // Selection
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null);
-  const [selectedTestIds, setSelectedTestIds] = useState<Set<string>>(new Set());
-  const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set(['f-modules', 'f-suites']));
+  // Selection state
+  const [selectedModuleId, setSelectedModuleId]   = useState<string | null>(null);
+  const [selectedFeatureId, setSelectedFeatureId] = useState<string | null>(null);
 
-  // Projects
-  const [selectedProject, setSelectedProject] = useState<string | null>(null);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const selectedModule  = modules.find(m => m.id === selectedModuleId) ?? null;
+  const selectedFeature = selectedModule?.features.find(f => f.id === selectedFeatureId) ?? null;
 
-  // Execution
-  const [runId, setRunId] = useState<string | null>(null);
-  const [activeRun, setActiveRun] = useState<ActiveRun | null>(null);
-  const [runOutput, setRunOutput] = useState<{testId:string;line:string;isError?:boolean}[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const [visualAnalysis, setVisualAnalysis] = useState<{testId: string; text: string; done: boolean} | null>(null);
-  const sseRef = useRef<EventSource | null>(null);
-  const outputRef = useRef<HTMLDivElement>(null);
+  // Specs
+  const [specs, setSpecs]             = useState<SpecAsset[]>([]);
+  const [specsLoading, setSpecsLoading] = useState(false);
+  const [activeTcKey, setActiveTcKey] = useState<string | null>(null);
+  const [activeTcDetail, setActiveTcDetail] = useState<SpecAssetDetail | null>(null);
+  const [detailLoading, setDetailLoading]   = useState(false);
+  const [selectedTcIds, setSelectedTcIds]   = useState<Set<string>>(new Set());
+
+  // Conflicts
+  const [conflicts, setConflicts]   = useState<ConflictRow[]>([]);
 
   // UI
-  const [showNewFolder, setShowNewFolder] = useState(false);
-  const [newFolderName, setNewFolderName] = useState('');
-  const [newFolderParent, setNewFolderParent] = useState('f-modules');
-  const [activeTestId, setActiveTestId] = useState<string | null>(null);
-  const [activeTest, setActiveTest] = useState<RecordedTest & { script?: string } | null>(null);
-  const [showRunHistory, setShowRunHistory] = useState(false);
-  const [runHistory, setRunHistory] = useState<ActiveRun[]>([]);
-  const [editingProject, setEditingProject] = useState(false);
-  const [projectInputVal, setProjectInputVal] = useState('');
-  const [flakinessMap, setFlakinessMap]   = useState<Record<string, FlakinessData>>({});
-  const [suites, setSuites]               = useState<Suite[]>([]);
-  const [showTMLink, setShowTMLink]       = useState(true);
+  const [showAddModule, setShowAddModule] = useState(false);
 
-  // Load data
-  const loadData = useCallback(async () => {
-    const [fRes, sRes] = await Promise.all([
-      fetch('/api/test-library/folders'),
-      fetch('/api/test-library/stats')
-    ]);
-    const [fData, sData] = await Promise.all([fRes.json(), sRes.json()]);
-    setFolders(fData);
-    setStats(sData);
-
-    const tRes = await fetch('/api/test-library/tests');
-    setTests(await tRes.json());
-  }, []);
-
-  useEffect(() => { loadData(); }, [loadData]);
-
-  // Auto-scroll output
-  useEffect(() => {
-    if (outputRef.current) outputRef.current.scrollTop = outputRef.current.scrollHeight;
-  }, [runOutput]);
-
-  // Load flakiness data and suites from test management API
-  useEffect(() => {
-    fetch('/api/tm/flakiness')
-      .then(r => r.json())
-      .then((data: FlakinessData[]) => {
-        const map: Record<string, FlakinessData> = {};
-        data.forEach(d => { map[d.testId] = d; map[d.testName] = d; });
-        setFlakinessMap(map);
-      })
-      .catch(() => {});
-
-    fetch('/api/tm/suites')
-      .then(r => r.json())
-      .then((data: Suite[]) => setSuites(data))
-      .catch(() => {});
-  }, []);
-
-  const addTestToSuite = async (suiteId: string, testId: string) => {
-    const suite = suites.find(s => s.id === suiteId);
-    if (!suite) return;
-    if (suite.testIds.includes(testId)) return;
-    await fetch(`/api/tm/suites/${suiteId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ testIds: [...suite.testIds, testId] }),
-    });
-    // Refresh suites
-    fetch('/api/tm/suites').then(r => r.json()).then(setSuites).catch(() => {});
-  };
-
-  // ── Folder operations ──────────────────────────────────────────────────────
-
-  const createFolder = async () => {
-    if (!newFolderName.trim()) return;
-    await fetch('/api/test-library/folders', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newFolderName.trim(), parentId: newFolderParent || null, type: 'module' })
-    });
-    setNewFolderName('');
-    setShowNewFolder(false);
-    loadData();
-  };
-
-  const renameFolder = async (id: string, name: string) => {
-    await fetch(`/api/test-library/folders/${id}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name })
-    });
-    loadData();
-  };
-
-  const deleteFolder = async (id: string) => {
-    if (!confirm('Delete folder and move its tests to Modules?')) return;
-    await fetch(`/api/test-library/folders/${id}`, { method: 'DELETE' });
-    loadData();
-  };
-
-  // ── Test operations ────────────────────────────────────────────────────────
-
-  const openTest = async (testId: string) => {
-    setActiveTestId(testId);
-    setEditingProject(false);
-    const res = await fetch(`/api/test-library/tests/${testId}`);
-    const data = await res.json();
-    setActiveTest(data);
-    setProjectInputVal(data.projectName || '');
-  };
-
-  const deleteTest = async (testId: string) => {
-    if (!confirm('Delete this test?')) return;
-    await fetch(`/api/test-library/tests/${testId}`, { method: 'DELETE' });
-    setActiveTestId(null);
-    setActiveTest(null);
-    setSelectedTestIds(prev => { const s = new Set(prev); s.delete(testId); return s; });
-    loadData();
-  };
-
-  const moveTest = async (testId: string, folderId: string) => {
-    await fetch(`/api/test-library/tests/${testId}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ folderId })
-    });
-    loadData();
-  };
-
-  const assignProject = async (testId: string, projectName: string) => {
-    await fetch(`/api/test-library/tests/${testId}`, {
-      method: 'PUT', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ projectName: projectName.trim() || '' })
-    });
-    setActiveTest(prev => prev ? { ...prev, projectName: projectName.trim() || undefined } : null);
-    loadData();
-  };
-
-  // ── Selection ──────────────────────────────────────────────────────────────
-
-  const toggleTest = (id: string) => {
-    setSelectedTestIds(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
-  };
-
-  const toggleExpand = (id: string) => {
-    setExpandedIds(prev => { const s = new Set(prev); s.has(id) ? s.delete(id) : s.add(id); return s; });
-  };
-
-  // ── Execution ──────────────────────────────────────────────────────────────
-
-  const executeSelected = async () => {
-    if (selectedTestIds.size === 0) return;
-    setIsRunning(true);
-    setRunOutput([]);
-    setVisualAnalysis(null);
-    setActiveRun(null);
-
-    const res = await fetch('/api/test-library/execute', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ testIds: Array.from(selectedTestIds) })
-    });
-    const { runId: rid } = await res.json();
-    setRunId(rid);
-
-    // Connect SSE
-    sseRef.current?.close();
-    const sse = new EventSource(`/api/test-library/execute/${rid}/stream`);
-    sseRef.current = sse;
-
-    sse.onmessage = (e) => {
-      const event = JSON.parse(e.data);
-      if (event.type === 'test_start') {
-        setVisualAnalysis(null);
-        setRunOutput(prev => [...prev, { testId: event.testId, line: `\n▶ Running: ${event.testName} (${event.index}/${event.total})`, isError: false }]);
-      } else if (event.type === 'output') {
-        setRunOutput(prev => [...prev, { testId: event.testId, line: event.line, isError: event.isError }]);
-      } else if (event.type === 'test_result') {
-        const r: RunResult = event.result;
-        const icon = r.status === 'passed' ? '✅' : '❌';
-        setRunOutput(prev => [...prev, { testId: r.testId, line: `${icon} ${r.testName} — ${(r.duration/1000).toFixed(1)}s${r.error ? '\n   ' + r.error : ''}`, isError: r.status !== 'passed' }]);
-        // Record to test management history
-        fetch('/api/tm/history', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            testId: r.testId || r.testName,
-            testName: r.testName,
-            status: r.status,
-            duration: r.duration,
-            environment: 'default',
-            errorMessage: r.error,
-          }),
-        }).catch(() => {}); // fire and forget
-      } else if (event.type === 'visual_analysis_start') {
-        setVisualAnalysis({ testId: event.testId, text: '', done: false });
-      } else if (event.type === 'visual_analysis_chunk') {
-        setVisualAnalysis(prev => prev ? { ...prev, text: prev.text + event.text } : { testId: event.testId, text: event.text, done: false });
-      } else if (event.type === 'visual_analysis_done') {
-        setVisualAnalysis(prev => prev ? { ...prev, done: true } : null);
-      } else if (event.type === 'run_complete') {
-        setActiveRun(event.run);
-        setIsRunning(false);
-        sse.close();
-        loadData(); // refresh last run status
-      }
-    };
-    sse.onerror = () => { setIsRunning(false); sse.close(); };
-  };
-
-  const loadRunHistory = async () => {
-    const res = await fetch('/api/test-library/runs');
-    setRunHistory(await res.json());
-    setShowRunHistory(true);
-  };
-
-  // Root-level folders
-  const rootFolders = folders.filter(f => f.parentId === null);
-  const selectedCount = selectedTestIds.size;
-  // When a folder is selected inside a project context, filter to that project's tests in that folder
-  // When no project is selected, show unassigned tests for that folder
-  const folderTests = selectedFolderId
-    ? tests.filter(t => t.folderId === selectedFolderId && (selectedProject ? t.projectName?.toLowerCase() === selectedProject.toLowerCase() : !t.projectName))
-    : [];
-
-  // Projects: unique projectNames derived from tests — case-insensitive deduplication
-  // e.g. "OneSpan" and "Onespan" are treated as the same project
-  const projectNameMap = new Map<string, string>(); // lowercase key → original display name (first seen)
-  for (const t of tests) {
-    if (t.projectName) {
-      const key = t.projectName.toLowerCase();
-      if (!projectNameMap.has(key)) projectNameMap.set(key, t.projectName);
+  // Fetch specs for the project
+  const fetchSpecs = useCallback(async () => {
+    if (!selectedProjectId) return;
+    setSpecsLoading(true);
+    try {
+      const res = await fetch(
+        `/api/projects/${selectedProjectId}/framework/assets?type=spec`,
+        { credentials: 'include' },
+      );
+      if (res.ok) setSpecs(await res.json());
+    } finally {
+      setSpecsLoading(false);
     }
+  }, [selectedProjectId]);
+
+  const fetchConflicts = useCallback(async () => {
+    if (!selectedProjectId) return;
+    try {
+      const res = await fetch(
+        `/api/projects/${selectedProjectId}/framework/conflicts`,
+        { credentials: 'include' },
+      );
+      if (res.ok) setConflicts(await res.json());
+    } catch {}
+  }, [selectedProjectId]);
+
+  useEffect(() => {
+    fetchSpecs();
+    fetchConflicts();
+  }, [fetchSpecs, fetchConflicts]);
+
+  // Highlight TC from URL query ?highlight=TC-042
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const hl = params.get('highlight');
+    if (hl) setActiveTcKey(hl);
+  }, []);
+
+  // Load TC detail when selected
+  const loadTcDetail = async (spec: SpecAsset) => {
+    setActiveTcKey(spec.assetKey);
+    setDetailLoading(true);
+    setActiveTcDetail(null);
+    try {
+      const res = await fetch(
+        `/api/projects/${selectedProjectId}/framework/assets/${encodeURIComponent(spec.assetKey)}`,
+        { credentials: 'include' },
+      );
+      if (res.ok) setActiveTcDetail(await res.json());
+    } finally {
+      setDetailLoading(false);
+    }
+  };
+
+  // Filter specs by selected module/feature
+  const filteredSpecs: SpecAsset[] = specs.filter(s => {
+    const { module, feature } = parseSpecPath(s.filePath);
+    if (selectedFeature && selectedModule) {
+      return module === selectedModule.name && feature === selectedFeature.name;
+    }
+    if (selectedModule) {
+      return module === selectedModule.name;
+    }
+    return true;
+  });
+
+  // Count specs per module/feature (used by tree progress rings)
+  const specsForModule = (moduleName: string, featureName?: string): number => {
+    return specs.filter(s => {
+      const { module, feature } = parseSpecPath(s.filePath);
+      if (featureName) return module === moduleName && feature === featureName;
+      return module === moduleName;
+    }).length;
+  };
+
+  const toggleTc = (key: string) => {
+    setSelectedTcIds(prev => {
+      const s = new Set(prev);
+      s.has(key) ? s.delete(key) : s.add(key);
+      return s;
+    });
+  };
+
+  const handleDownloadSingle = (assetKey: string) => {
+    if (!selectedProjectId) return;
+    const { downloadSelected } = useDownloadSingle(selectedProjectId);
+    downloadSelected([assetKey], 'TestSuite');
+  };
+
+  // Project guard
+  if (!selectedProjectId) {
+    return (
+      <div className="flex h-full bg-background">
+        <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(v => !v)} />
+        <div className="flex-1 flex flex-col">
+          <DashboardHeader />
+          <div className="flex-1 flex items-center justify-center text-slate-400 flex-col gap-3">
+            <div className="text-4xl opacity-20">🗂</div>
+            <div className="text-sm">No project selected</div>
+            <Link href="/dashboard">
+              <button className="px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm font-semibold">← Select a Project</button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
   }
-  const projectNames = Array.from(projectNameMap.values()).sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
-  const projectTests = selectedProject
-    ? tests.filter(t => t.projectName?.toLowerCase() === selectedProject.toLowerCase())
-    : [];
+
+  // Derive projectName from URL or use placeholder
+  const projectName = 'TestSuite';
 
   return (
     <div className="flex h-full bg-background">
-      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setIsSidebarCollapsed(!isSidebarCollapsed)} />
-    <div className="flex-1 flex flex-col bg-white text-slate-800 overflow-hidden">
-      <DashboardHeader />
+      <Sidebar isCollapsed={isSidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(v => !v)} />
 
-          {/* Test Management Banner */}
-          {showTMLink && (
-            <div className="flex items-center justify-between px-4 py-2 bg-blue-50 border-b border-blue-200 text-xs">
-              <div className="flex items-center gap-2 text-blue-700">
-                <span>📊</span>
-                <span>View pass rate trends, RTM, CI/CD pipelines and flakiness reports in</span>
-                <a href="/test-management" className="font-bold text-blue-600 underline hover:text-blue-800">Test Management Dashboard →</a>
-              </div>
-              <button onClick={() => setShowTMLink(false)} className="text-blue-400 hover:text-blue-600 ml-4">✕</button>
-            </div>
-          )}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        {/* ── Header ── */}
+        <DashboardHeader />
 
-      {/* ── Quick-action bar (Dashboard + Coverage + New Recording) ─────────── */}
-      <div className="flex-shrink-0 flex items-center justify-between gap-2 px-4 py-2 border-b border-slate-200 bg-white">
-        <Link href="/dashboard">
-          <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors border border-slate-200">
-            ← Dashboard
-          </button>
-        </Link>
-        <div className="flex items-center gap-2">
-          <Link href="/coverage">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold transition-all">
-              📊 Coverage
-            </button>
-          </Link>
-          <Link href="/recorder">
-            <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all">
-              <span className="text-[10px]">⏺</span> New Recording
-            </button>
-          </Link>
-        </div>
-      </div>
+        <header className="flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white flex-shrink-0">
+          <h1 className="text-sm font-bold text-slate-800 uppercase tracking-wide">Test Library</h1>
 
-      <div className="flex flex-1 overflow-hidden">
+          <div className="flex items-center gap-3">
+            {/* Conflict badge */}
+            {conflicts.length > 0 && (
+              <button className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 border border-amber-200 rounded-full text-amber-700 text-xs font-medium hover:bg-amber-100">
+                ⚠️ {conflicts.length} Conflict{conflicts.length !== 1 ? 's' : ''}
+              </button>
+            )}
 
-      {/* ── Left: Folder Tree ────────────────────────────────────────────────── */}
-      <div className="w-72 flex-shrink-0 border-r border-slate-700/50 flex flex-col bg-slate-900">
-        {/* Header */}
-        <div className="px-4 py-3 border-b border-slate-700/50 flex-shrink-0">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center text-xs">🗂</div>
-              <span className="text-sm font-bold text-slate-200">Test Library</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <button onClick={() => setShowNewFolder(true)} title="New Folder"
-                className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">+</button>
-              <button onClick={loadRunHistory} title="Run History"
-                className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">🕘</button>
-            </div>
-          </div>
-
-          {/* Stats bar — inline badge chips */}
-          <div className="flex items-center gap-2 flex-wrap">
-            <span className="inline-flex items-center gap-1 bg-slate-700/50 border border-slate-600 text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded-full">
-              {stats.totalTests} total
-            </span>
-            <span className="inline-flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-medium px-2 py-0.5 rounded-full">
-              {stats.passed} passed
-            </span>
-            <span className="inline-flex items-center gap-1 bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-medium px-2 py-0.5 rounded-full">
-              {stats.failed} failed
-            </span>
-          </div>
-        </div>
-
-        {/* New folder form */}
-        {showNewFolder && (
-          <div className="px-3 py-2 border-b border-slate-700/50 bg-slate-800/50 flex-shrink-0">
-            <div className="text-[10px] text-slate-500 mb-1.5 font-semibold uppercase tracking-widest">NEW FOLDER</div>
-            <input
-              autoFocus
-              value={newFolderName}
-              onChange={e => setNewFolderName(e.target.value)}
-              onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') setShowNewFolder(false); }}
-              placeholder="Folder name..."
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 mb-1.5"
+            <DownloadDropdown
+              projectId={selectedProjectId}
+              selectedModule={selectedModule}
+              selectedFeature={selectedFeature}
+              selectedTcIds={selectedTcIds}
+              projectName={projectName}
             />
-            <select value={newFolderParent} onChange={e => setNewFolderParent(e.target.value)}
-              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 outline-none mb-2">
-              <option value="">Root</option>
-              {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-            </select>
-            <div className="flex gap-1.5">
-              <button onClick={() => setShowNewFolder(false)} className="flex-1 py-1 rounded bg-slate-700 border border-slate-600 text-xs text-slate-300">Cancel</button>
-              <button onClick={createFolder} className="flex-1 py-1 rounded bg-indigo-500 hover:bg-indigo-400 text-xs text-white font-semibold transition-all">Create</button>
-            </div>
+
+            <Link href="/recorder">
+              <button className="flex items-center gap-2 px-4 py-2 bg-indigo-500 hover:bg-indigo-400 text-white rounded-lg text-sm font-semibold transition-all">
+                + New Recording
+              </button>
+            </Link>
           </div>
-        )}
+        </header>
 
-        {/* Tree */}
-        <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
+        {/* ── Three panels ── */}
+        <div className="flex flex-1 overflow-hidden">
 
-          {/* ── Projects section ── */}
-          {projectNames.length > 0 && (
-            <div className="mb-1">
-              <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
-                <span>🏗</span> Projects
-              </div>
-              {projectNames.map(proj => (
-                <ProjectNode
-                  key={proj}
-                  projectName={proj}
-                  allFolders={folders}
-                  projectTests={tests.filter(t => t.projectName?.toLowerCase() === proj.toLowerCase())}
-                  selectedFolderId={selectedFolderId}
-                  selectedTestIds={selectedTestIds}
-                  onSelectFolder={id => { setSelectedFolderId(id); setSelectedProject(proj); }}
-                  onToggleTest={toggleTest}
-                  expandedFolderIds={expandedIds}
-                  onToggleFolderExpand={toggleExpand}
-                  expandedProjects={expandedProjects}
-                  onToggleProject={name => {
-                    setExpandedProjects(prev => { const s = new Set(prev); s.has(name) ? s.delete(name) : s.add(name); return s; });
-                  }}
-                />
-              ))}
-            </div>
-          )}
-        </div>
+          {/* LEFT — Project tree */}
+          <ProjectTree
+            projectId={selectedProjectId}
+            modules={modules}
+            loading={treeLoading}
+            specsForModule={specsForModule}
+            selectedModuleId={selectedModuleId}
+            selectedFeatureId={selectedFeatureId}
+            onSelectModule={m => {
+              setSelectedModuleId(m?.id ?? null);
+              setSelectedFeatureId(null);
+            }}
+            onSelectFeature={(f, m) => {
+              setSelectedModuleId(m.id);
+              setSelectedFeatureId(f?.id ?? null);
+            }}
+            onAddModule={() => setShowAddModule(true)}
+            totalSpecs={specs.length}
+          />
 
-        {/* Execute button */}
-        <div className="px-3 py-3 border-t border-slate-700/50 flex-shrink-0">
-          <button
-            onClick={executeSelected}
-            disabled={selectedCount === 0 || isRunning}
-            className="w-full px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all flex items-center justify-center gap-2"
-          >
-            {isRunning
-              ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Running {selectedCount} tests...</>
-              : <>▶ Execute Selected {selectedCount > 0 ? `(${selectedCount})` : ''}</>}
-          </button>
-          {selectedCount > 0 && !isRunning && (
-            <button onClick={() => setSelectedTestIds(new Set())} className="w-full mt-1.5 py-1 text-[10px] text-slate-500 hover:text-indigo-400 transition-colors">Clear selection</button>
-          )}
-        </div>
-      </div>
+          {/* CENTER — TC list */}
+          <TestCaseList
+            specs={filteredSpecs}
+            loading={specsLoading}
+            selectedTcIds={selectedTcIds}
+            activeTcKey={activeTcKey}
+            selectedModule={selectedModule}
+            selectedFeature={selectedFeature}
+            onToggle={toggleTc}
+            onSelectTc={loadTcDetail}
+            onRecordNew={() => navigate('/recorder')}
+          />
 
-      {/* ── Middle: Test list for selected folder / project ─────────────────── */}
-      <div className="w-72 flex-shrink-0 border-r border-slate-200 flex flex-col bg-white">
-        <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
-          <div className="flex items-center gap-1 flex-wrap">
-            {selectedProject && (
-              <>
-                <span className="text-[10px] text-blue-600 font-semibold">🏗 {selectedProject}</span>
-                {selectedFolderId && <span className="text-slate-400 text-[10px]">/</span>}
-              </>
-            )}
-            {selectedFolderId && (
-              <span className="text-xs font-bold text-slate-800 truncate">
-                {folders.find(f => f.id === selectedFolderId)?.name || 'Folder'}
-              </span>
-            )}
-            {!selectedProject && !selectedFolderId && (
-              <span className="text-xs font-bold text-slate-400">Select a folder</span>
-            )}
-          </div>
-          <div className="text-[10px] text-slate-400 mt-0.5">
-            {(selectedProject ? projectTests : folderTests).length} test{(selectedProject ? projectTests : folderTests).length !== 1 ? 's' : ''}
-          </div>
-        </div>
-
-        <div className="flex-1 overflow-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
-          {(selectedProject ? projectTests : folderTests).length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-40 text-slate-700 text-xs gap-2">
-              <span className="text-2xl">📭</span>
-              {selectedProject ? 'No tests in this project' : selectedFolderId ? 'No tests in this folder' : 'Select a folder to view tests'}
-            </div>
-          ) : (
-            <div className="p-2 space-y-1">
-              {(selectedProject ? projectTests : folderTests).map(test => (
-                <div
-                  key={test.id}
-                  onClick={() => { openTest(test.id); }}
-                  className={`group flex items-start gap-2 p-2.5 rounded-xl border cursor-pointer transition-all ${activeTestId === test.id ? 'bg-blue-50 border-blue-400' : 'bg-white border-slate-200 hover:border-blue-300'}`}
-                >
-                  <input type="checkbox" checked={selectedTestIds.has(test.id)}
-                    onChange={() => toggleTest(test.id)} onClick={e => e.stopPropagation()}
-                    className="mt-0.5 w-3.5 h-3.5 rounded accent-blue-500 flex-shrink-0" />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-medium text-slate-700 truncate flex items-center gap-1">
-                      <span className="truncate">{test.name}</span>
-                      {/* Flakiness indicator */}
-                      {(() => {
-                        const f = flakinessMap[test.id] || flakinessMap[test.name];
-                        if (!f || f.runCount === 0) return null;
-                        return (
-                          <span className={`ml-1 text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${f.isFlaky ? 'bg-amber-100 text-amber-600 border border-amber-200' : 'bg-emerald-50 text-emerald-600'}`}>
-                            {f.isFlaky ? `⚠ ${f.stability}%` : `✓ ${f.stability}%`}
-                          </span>
-                        );
-                      })()}
-                    </div>
-                    {test.projectName && !selectedProject && (
-                      <div className="text-[10px] text-blue-500 truncate mt-0.5">🏗 {test.projectName}</div>
-                    )}
-                    <div className="text-[10px] text-slate-400 truncate mt-0.5">{test.url}</div>
-                    <div className="flex items-center gap-2 mt-1.5">
-                      <div className={`flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${
-                        test.lastRunStatus === 'passed' ? 'bg-emerald-50 text-emerald-600' :
-                        test.lastRunStatus === 'failed' ? 'bg-red-50 text-red-500' :
-                        'bg-slate-100 text-slate-500'
-                      }`}>
-                        {test.lastRunStatus === 'passed' ? '✓ Passed' : test.lastRunStatus === 'failed' ? '✗ Failed' : '◦ Not run'}
-                      </div>
-                      {test.lastRunDuration && <span className="text-[9px] text-slate-700">{(test.lastRunDuration/1000).toFixed(1)}s</span>}
-                      {suites.length > 0 && (
-                        <select
-                          onChange={e => { if (e.target.value) addTestToSuite(e.target.value, test.id); e.target.value = ''; }}
-                          className="text-[9px] bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-slate-400 cursor-pointer"
-                          defaultValue=""
-                          title="Add to suite"
-                          onClick={e => e.stopPropagation()}
-                        >
-                          <option value="" disabled>+ Suite</option>
-                          {suites.map(s => (
-                            <option key={s.id} value={s.id}>
-                              {s.name}
-                            </option>
-                          ))}
-                        </select>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          {/* RIGHT — Detail */}
+          <TCDetailPanel
+            spec={activeTcDetail}
+            loading={detailLoading}
+            onRerecord={() => navigate('/recorder')}
+            onDownload={(key) => {
+              fetch(`/api/projects/${selectedProjectId}/framework/download/selected`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ selectedTcIds: [key], projectName }),
+              })
+                .then(r => r.blob())
+                .then(blob => {
+                  const a = document.createElement('a');
+                  a.href = URL.createObjectURL(blob);
+                  a.download = `${key}.zip`;
+                  a.click();
+                })
+                .catch(() => {});
+            }}
+          />
         </div>
       </div>
 
-      {/* ── Right: Test detail + Execution output ────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* Run results banner */}
-        {activeRun && (
-          <div className={`flex-shrink-0 px-4 py-2.5 border-b border-slate-800/60 flex items-center gap-4 ${activeRun.failCount > 0 ? 'bg-red-500/5' : 'bg-emerald-500/5'}`}>
-            <div className={`text-sm font-bold ${activeRun.failCount > 0 ? 'text-red-400' : 'text-emerald-400'}`}>
-              {activeRun.failCount > 0 ? `❌ ${activeRun.failCount} Failed` : '✅ All Passed'}
-            </div>
-            <div className="flex gap-3 text-xs text-slate-500">
-              <span>✓ {activeRun.passCount} passed</span>
-              <span>✗ {activeRun.failCount} failed</span>
-              <span>⏱ {activeRun.completedAt ? ((activeRun.completedAt - activeRun.startedAt) / 1000).toFixed(1) + 's total' : ''}</span>
-            </div>
-            <button onClick={() => setActiveRun(null)} className="ml-auto text-slate-600 hover:text-slate-400 text-sm">✕</button>
-          </div>
-        )}
-
-        {activeTest ? (
-          <div className="flex-1 flex overflow-hidden">
-            {/* Test detail */}
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <div className="px-5 py-3 border-b border-slate-200 flex items-center gap-3 flex-shrink-0 bg-white">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <div className="text-sm font-bold text-slate-800 truncate">{activeTest.name}</div>
-                    {activeTest.projectName && (
-                      <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-blue-600 text-[10px] font-semibold flex-shrink-0">
-                        🏗 {activeTest.projectName}
-                      </span>
-                    )}
-                  </div>
-                  <div className="text-[10px] text-slate-500 mt-0.5 truncate">{activeTest.url}</div>
-                </div>
-                <div className="flex items-center gap-2 flex-shrink-0">
-                  {/* Project assign */}
-                  {editingProject ? (
-                    <div className="flex items-center gap-1">
-                      <input
-                        autoFocus
-                        value={projectInputVal}
-                        onChange={e => setProjectInputVal(e.target.value)}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter') { assignProject(activeTest.id, projectInputVal); setEditingProject(false); }
-                          if (e.key === 'Escape') setEditingProject(false);
-                        }}
-                        placeholder="Project name..."
-                        className="bg-white border border-blue-400 rounded-lg px-2 py-1.5 text-xs text-slate-800 outline-none w-32 placeholder-slate-400"
-                      />
-                      <button
-                        onClick={() => { assignProject(activeTest.id, projectInputVal); setEditingProject(false); }}
-                        className="px-2 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
-                      >✓</button>
-                      <button onClick={() => setEditingProject(false)} className="px-2 py-1.5 rounded-lg bg-slate-100 text-slate-500 text-xs">✕</button>
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => { setProjectInputVal(activeTest.projectName || ''); setEditingProject(true); }}
-                      title={activeTest.projectName ? `Project: ${activeTest.projectName} — click to change` : 'Assign to project'}
-                      className={`flex items-center gap-1 px-2 py-1.5 rounded-lg border text-xs transition-colors ${activeTest.projectName ? 'border-blue-300 bg-blue-50 text-blue-600 hover:bg-blue-100' : 'border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-700'}`}
-                    >
-                      🏗 {activeTest.projectName || 'Set Project'}
-                    </button>
-                  )}
-                  <select
-                    value={activeTest.folderId}
-                    onChange={e => { moveTest(activeTest.id, e.target.value); setActiveTest(prev => prev ? {...prev, folderId: e.target.value} : null); }}
-                    className="bg-white border border-slate-200 rounded-lg px-2 py-1.5 text-xs text-slate-700 outline-none"
-                  >
-                    {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
-                  </select>
-                  <button
-                    onClick={() => { setSelectedTestIds(new Set([activeTest.id])); executeSelected(); }}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white text-xs font-bold transition-all"
-                  >▶ Run</button>
-                  <button onClick={() => deleteTest(activeTest.id)} className="px-2 py-1.5 rounded-lg border border-red-500/20 hover:border-red-500/40 text-red-400 text-xs transition-colors">🗑</button>
-                </div>
-              </div>
-
-              <div className="flex-1 overflow-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
-                {/* NL Steps */}
-                {activeTest.nlSteps && activeTest.nlSteps.length > 0 && (
-                  <div className="mb-4">
-                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-2">Recorded Steps</div>
-                    <div className="space-y-1">
-                      {activeTest.nlSteps.map((step, i) => (
-                        <div key={i} className="flex items-start gap-2 text-xs text-slate-600 bg-slate-50 rounded-lg px-3 py-1.5">
-                          <span className="text-slate-700 flex-shrink-0 font-mono text-[10px]">{String(i + 1).padStart(2, '0')}</span>
-                          <span>{step.replace(/^Step \d+:\s*/, '')}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Script */}
-                {activeTest.script && (
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Playwright Script</div>
-                      <div className="flex gap-2">
-                        <button onClick={() => navigator.clipboard.writeText(activeTest.script || '')}
-                          className="text-[10px] text-slate-500 hover:text-blue-600 px-2 py-1 rounded bg-slate-100 border border-slate-200 transition-colors">📋 Copy</button>
-                        <a href={`/api/test-library/tests/${activeTest.id}/script`}
-                          download className="text-[10px] text-slate-500 hover:text-blue-600 px-2 py-1 rounded bg-slate-100 border border-slate-200 transition-colors">↓ Download</a>
-                      </div>
-                    </div>
-                    <pre className="text-[11px] font-mono bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
-                      {activeTest.script.split('\n').map((line, i) => (
-                        <span key={i} className={
-                          line.trim().startsWith('//') ? 'text-slate-400' :
-                          line.startsWith('import') ? 'text-blue-600' :
-                          line.includes("test(") ? 'text-blue-700 font-semibold' :
-                          line.includes('await') ? 'text-emerald-700' :
-                          'text-slate-700'
-                        }>{line}{'\n'}</span>
-                      ))}
-                    </pre>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* Execution output panel */}
-            {(isRunning || runOutput.length > 0) && (
-              <div className="w-96 flex-shrink-0 border-l border-slate-200 flex flex-col bg-white">
-                <div className="px-3 py-2.5 border-b border-slate-200 flex items-center gap-2 flex-shrink-0">
-                  <div className={`w-2 h-2 rounded-full ${isRunning ? 'bg-yellow-400 animate-pulse' : activeRun?.failCount ? 'bg-red-400' : 'bg-emerald-400'}`} />
-                  <span className="text-xs font-semibold text-slate-700">Execution Output</span>
-                  <button onClick={() => { setRunOutput([]); setVisualAnalysis(null); }} className="ml-auto text-slate-400 hover:text-slate-600 text-xs">Clear</button>
-                </div>
-                <div ref={outputRef} className="flex-1 overflow-auto p-3 font-mono text-[10px] space-y-0.5 bg-slate-50" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
-                  {runOutput.map((line, i) => (
-                    <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${line.isError ? 'text-red-500' : line.line.startsWith('\n▶') ? 'text-blue-600 font-bold mt-2' : line.line.includes('✅') ? 'text-emerald-600 font-bold' : line.line.includes('❌') ? 'text-red-500 font-bold' : 'text-slate-600'}`}>
-                      {line.line}
-                    </div>
-                  ))}
-
-                  {/* Visual Analysis card */}
-                  {visualAnalysis && (
-                    <div className="mt-3 rounded-xl border border-blue-500/30 bg-blue-950/30 overflow-hidden">
-                      <div className="flex items-center gap-2 px-3 py-2 border-b border-blue-500/20 bg-blue-900/20">
-                        <span className="text-blue-400 text-[11px]">🔍</span>
-                        <span className="text-blue-300 font-semibold text-[10px] tracking-wide">CLAUDE VISION — FAILURE ANALYSIS</span>
-                        {!visualAnalysis.done && (
-                          <div className="ml-auto flex gap-1">
-                            {[0,100,200].map(d => (
-                              <div key={d} className="w-1 h-1 rounded-full bg-blue-400 animate-bounce" style={{animationDelay:`${d}ms`}} />
-                            ))}
-                          </div>
-                        )}
-                        {visualAnalysis.done && <span className="ml-auto text-blue-500 text-[9px]">✓ done</span>}
-                      </div>
-                      <div className="px-3 py-2 text-blue-200/80 font-sans text-[10px] leading-relaxed whitespace-pre-wrap">
-                        {visualAnalysis.text || <span className="text-blue-500/60 italic">Analysing screenshot…</span>}
-                      </div>
-                    </div>
-                  )}
-
-                  {isRunning && !visualAnalysis && (
-                    <div className="flex items-center gap-1.5 text-slate-700 mt-1">
-                      {[0, 150, 300].map(d => <div key={d} className="w-1 h-1 bg-yellow-500 rounded-full animate-bounce" style={{animationDelay:`${d}ms`}} />)}
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        ) : (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-500">
-            <div className="text-4xl opacity-20">🗂</div>
-            <div className="text-sm font-medium text-slate-400">Select a test to preview</div>
-            <div className="text-xs text-slate-500 max-w-xs text-center">
-              Use the folder tree on the left to browse and select tests, then click Execute to run them.
-            </div>
-            <button onClick={() => navigate('/recorder')}
-              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all flex items-center gap-2">
-              + Record New Test
-            </button>
-          </div>
-        )}
-      </div>
-
-      </div>
-
-      {/* ── Run History modal ────────────────────────────────────────────────── */}
-      {showRunHistory && (
-        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-          <div className="w-[560px] max-h-[70vh] bg-white border border-slate-200 rounded-2xl shadow-2xl flex flex-col overflow-hidden">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200 flex-shrink-0">
-              <div className="text-sm font-bold text-slate-800">🕘 Run History</div>
-              <button onClick={() => setShowRunHistory(false)} className="text-slate-400 hover:text-slate-600">✕</button>
-            </div>
-            <div className="flex-1 overflow-auto p-4 space-y-2">
-              {runHistory.length === 0 ? (
-                <div className="text-xs text-slate-400 text-center py-8">No runs yet</div>
-              ) : runHistory.map(run => (
-                <div key={run.id} className="flex items-center gap-3 bg-slate-50 rounded-xl p-3 border border-slate-200">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${run.failCount > 0 ? 'bg-red-400' : 'bg-emerald-400'}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-xs font-semibold text-slate-700 truncate">{run.name}</div>
-                    <div className="text-[10px] text-slate-400 mt-0.5">
-                      {run.passCount} passed · {run.failCount} failed · {new Date(run.startedAt).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className={`text-xs font-bold px-2 py-0.5 rounded-full ${run.failCount > 0 ? 'bg-red-50 text-red-500' : 'bg-emerald-50 text-emerald-600'}`}>
-                    {run.status}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+      {/* Add Module modal */}
+      {showAddModule && (
+        <AddModuleModal
+          projectId={selectedProjectId}
+          onCreated={() => { refreshTree(); fetchSpecs(); }}
+          onClose={() => setShowAddModule(false)}
+        />
       )}
     </div>
-    </div>
   );
+}
+
+// Small inline hook for single-TC download (avoids prop drilling)
+function useDownloadSingle(projectId: string) {
+  return {
+    downloadSelected: async (tcIds: string[], projectName: string) => {
+      const res = await fetch(`/api/projects/${projectId}/framework/download/selected`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedTcIds: tcIds, projectName }),
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${tcIds[0]}.zip`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    },
+  };
 }
