@@ -11,6 +11,8 @@
     "build": "cross-env NODE_ENV=production vite build && cross-env NODE_ENV=production esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --splitting --outdir=dist",
     "start": "cross-env NODE_ENV=production node dist/index.js",
     "check": "tsc",
+    "test:merger": "vitest run server/lib/merger/__tests__/merger.test.ts",
+    "test:unit": "vitest run",
     "db:push": "drizzle-kit push",
     "postinstall": "node -e \"if(process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD!=='1')require('child_process').execSync('npx playwright install chromium',{stdio:'inherit'})\" || true"
   },
@@ -21,6 +23,7 @@
     "@jridgewell/trace-mapping": "^0.3.25",
     "@monaco-editor/react": "^4.7.0",
     "@neondatabase/serverless": "^0.10.4",
+    "@playwright/test": "1.56.1",
     "@radix-ui/react-accordion": "^1.2.4",
     "@radix-ui/react-alert-dialog": "^1.1.7",
     "@radix-ui/react-aspect-ratio": "^1.1.3",
@@ -90,7 +93,6 @@
     "pdfkit": "^0.17.2",
     "pg": "^8.20.0",
     "pixelmatch": "^7.1.0",
-    "@playwright/test": "1.56.1",
     "playwright": "1.56.1",
     "pngjs": "^7.0.0",
     "react": "^18.3.1",
@@ -106,12 +108,12 @@
     "tailwind-merge": "^2.6.0",
     "tailwindcss-animate": "^1.0.7",
     "tw-animate-css": "^1.2.5",
+    "typescript": "5.6.3",
     "vaul": "^1.1.2",
     "wouter": "^3.3.5",
     "ws": "^8.18.0",
     "xlsx": "^0.18.5",
     "zod": "^3.25.76",
-    "typescript": "5.6.3",
     "zod-validation-error": "^3.5.4"
   },
   "devDependencies": {
@@ -138,7 +140,8 @@
     "pptxgenjs": "^4.0.1",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
-    "vite": "^5.4.20"
+    "vite": "^5.4.20",
+    "vitest": "^4.1.5"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
