@@ -2,10 +2,11 @@ import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { db } from './db';
+import { db, pool } from './db';
 import { registerRoutes } from "./routes";
 import { serveStatic, log } from "./static";
 import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady } from "./playwright-setup";
+import { hashPassword } from './auth-middleware';
 
 const app = express();
 
@@ -83,6 +84,23 @@ app.use((req, res, next) => {
     log('[DB] Migrations applied successfully');
   } catch (err: any) {
     log(`[DB] Migration warning: ${err.message}`);
+  }
+
+  // Seed default tenant + admin user via raw SQL (bypasses ORM silent failures)
+  try {
+    await pool.query(`
+      INSERT INTO tenants (id, name, slug)
+      VALUES ('default-tenant', 'NAT 2.0 Default', 'default')
+      ON CONFLICT (id) DO NOTHING
+    `);
+    await pool.query(`
+      INSERT INTO users (id, tenant_id, username, password, must_change_password)
+      VALUES ('admin-user-1', 'default-tenant', 'chandramouli@nousinfo.com', $1, true)
+      ON CONFLICT (id) DO NOTHING
+    `, [hashPassword('Temp@1234')]);
+    log('[DB] Admin user seed complete');
+  } catch (err: any) {
+    log(`[DB] Seed error: ${err.message}`);
   }
 
   const server = await registerRoutes(app);
