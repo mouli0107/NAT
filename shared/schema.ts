@@ -1737,11 +1737,14 @@ export const frameworkAssets = pgTable("framework_assets", {
   unitName:    varchar("unit_name", { length: 255 }),
   unitHash:    varchar("unit_hash", { length: 64 }),
   layer:       varchar("layer", { length: 50 }),
-  createdBy:   varchar("created_by").references(() => users.id),
-  updatedBy:   varchar("updated_by").references(() => users.id),
+  // NOTE: createdBy/updatedBy store human-readable recorder labels (e.g. "recorder",
+  // "e2e-test"), NOT user IDs — no FK constraint so free-form values are accepted.
+  createdBy:   varchar("created_by"),
+  updatedBy:   varchar("updated_by"),
   createdAt:   timestamp("created_at").defaultNow(),
   updatedAt:   timestamp("updated_at").defaultNow(),
-  sourceTcId:  varchar("source_tc_id").references(() => testCases.id),
+  // sourceTcId is advisory only — no FK so generated TC IDs ("TC-001") are accepted
+  sourceTcId:  varchar("source_tc_id"),
 }, (table) => ({
   // Unique constraint required for upsertAsset() ON CONFLICT DO UPDATE
   projectAssetKey: unique("framework_assets_project_type_key_uq").on(
@@ -1775,15 +1778,17 @@ export const assetConflicts = pgTable("asset_conflicts", {
   conflictType:    varchar("conflict_type", { length: 50 }),
   baseContent:     text("base_content"),
   incomingContent: text("incoming_content"),
-  baseAuthor:      varchar("base_author").references(() => users.id),
-  incomingAuthor:  varchar("incoming_author").references(() => users.id),
-  baseTcId:        varchar("base_tc_id").references(() => testCases.id),
-  incomingTcId:    varchar("incoming_tc_id").references(() => testCases.id),
+  // NOTE: author/tcId fields store recorder labels or TC sequence strings,
+  // NOT FK-constrained IDs, to allow free-form values from the merger engine.
+  baseAuthor:      varchar("base_author"),
+  incomingAuthor:  varchar("incoming_author"),
+  baseTcId:        varchar("base_tc_id"),
+  incomingTcId:    varchar("incoming_tc_id"),
   aiSuggestion:    text("ai_suggestion"),
   status:          varchar("status", { length: 20 }).default("open"),  // 'open' | 'resolved' | 'dismissed'
   createdAt:       timestamp("created_at").defaultNow(),
   resolvedAt:      timestamp("resolved_at"),
-  resolvedBy:      varchar("resolved_by").references(() => users.id),
+  resolvedBy:      varchar("resolved_by"),
 });
 
 /**

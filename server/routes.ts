@@ -1302,11 +1302,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
             unit_name VARCHAR(255),
             unit_hash VARCHAR(64),
             layer VARCHAR(50),
-            created_by VARCHAR REFERENCES users(id),
-            updated_by VARCHAR REFERENCES users(id),
+            created_by VARCHAR,
+            updated_by VARCHAR,
             created_at TIMESTAMP DEFAULT NOW(),
             updated_at TIMESTAMP DEFAULT NOW(),
-            source_tc_id VARCHAR REFERENCES test_cases(id)
+            source_tc_id VARCHAR
           )`],
           ['asset_versions', `CREATE TABLE IF NOT EXISTS asset_versions (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1327,15 +1327,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
             conflict_type VARCHAR(50),
             base_content TEXT,
             incoming_content TEXT,
-            base_author VARCHAR REFERENCES users(id),
-            incoming_author VARCHAR REFERENCES users(id),
-            base_tc_id VARCHAR REFERENCES test_cases(id),
-            incoming_tc_id VARCHAR REFERENCES test_cases(id),
+            base_author VARCHAR,
+            incoming_author VARCHAR,
+            base_tc_id VARCHAR,
+            incoming_tc_id VARCHAR,
             ai_suggestion TEXT,
             status VARCHAR(20) DEFAULT 'open',
             created_at TIMESTAMP DEFAULT NOW(),
             resolved_at TIMESTAMP,
-            resolved_by VARCHAR REFERENCES users(id)
+            resolved_by VARCHAR
           )`],
           ['deduplication_log', `CREATE TABLE IF NOT EXISTS deduplication_log (
             id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -1367,6 +1367,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
             console.error(`[SchemaMigration] Error creating ${table}:`, e.message);
           }
         }
+
+        // ── Drop FK constraints that block free-form values ───────────────────
+        // created_by/updated_by store recorder labels ("recorder", "e2e-test"),
+        // NOT user IDs, so the FK to users.id must be removed.
+        const dropFKs = [
+          `ALTER TABLE framework_assets DROP CONSTRAINT IF EXISTS framework_assets_created_by_fkey`,
+          `ALTER TABLE framework_assets DROP CONSTRAINT IF EXISTS framework_assets_updated_by_fkey`,
+          `ALTER TABLE framework_assets DROP CONSTRAINT IF EXISTS framework_assets_source_tc_id_fkey`,
+          `ALTER TABLE asset_conflicts  DROP CONSTRAINT IF EXISTS asset_conflicts_base_author_fkey`,
+          `ALTER TABLE asset_conflicts  DROP CONSTRAINT IF EXISTS asset_conflicts_incoming_author_fkey`,
+          `ALTER TABLE asset_conflicts  DROP CONSTRAINT IF EXISTS asset_conflicts_base_tc_id_fkey`,
+          `ALTER TABLE asset_conflicts  DROP CONSTRAINT IF EXISTS asset_conflicts_incoming_tc_id_fkey`,
+          `ALTER TABLE asset_conflicts  DROP CONSTRAINT IF EXISTS asset_conflicts_resolved_by_fkey`,
+        ];
+        for (const ddl of dropFKs) {
+          try { await client.query(ddl); } catch { /* ignore — constraint may not exist */ }
+        }
+        console.log('[SchemaMigration] FK cleanup done');
 
         // ── Post-table indexes and constraints ────────────────────────────────
         const indexes: [string, string][] = [
