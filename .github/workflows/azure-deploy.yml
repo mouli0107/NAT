@@ -6,24 +6,26 @@ on:
   workflow_dispatch:
 
 env:
-  ACR_NAME: nat20registry
-  IMAGE_NAME: nat20registry.azurecr.io/nat20-astra
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/nat20-astra
   AZURE_WEBAPP_NAME: nat20-astra
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Login to Azure Container Registry
+      - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
         with:
-          registry: nat20registry.azurecr.io
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
