@@ -30,6 +30,7 @@ import { randomBytes } from 'crypto';
 import {
   handleAgentRecordingEvent,
   registerRecordingDelegateCallbacks,
+  agentRecordedSessions,
 } from './recorder-ws';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -391,6 +392,22 @@ export function setupAgentWebSocket(server: Server): WebSocketServer {
             pendingJobs.delete(agent.currentJobId);
             job.sse.sendEvent('execution_error', { message: `Remote agent ${agent.agentId} disconnected mid-job` });
             job.reject(new Error('Agent disconnected'));
+          }
+        }
+
+        // Fail any active recording session this agent was handling.
+        // Without this, the session stays stuck in 'recording' state forever
+        // and the UI never transitions out — the recorder appears frozen.
+        for (const [sid, agentId] of sessionAgentMap.entries()) {
+          if (agentId === agent.agentId) {
+            console.log(`[AgentWS] Agent ${agent.agentId} disconnected mid-recording — terminating session ${sid}`);
+            sessionAgentMap.delete(sid);
+            agentRecordedSessions.delete(sid);
+            handleAgentRecordingEvent(sid, {
+              type:      'recording_stopped',
+              sessionId: sid,
+              error:     'Remote Agent disconnected unexpectedly',
+            });
           }
         }
 
