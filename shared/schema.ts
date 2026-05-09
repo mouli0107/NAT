@@ -1,5 +1,6 @@
 import { sql } from "drizzle-orm";
 import { pgTable, text, varchar, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
+// NOTE: text().array() is used for text[] columns (deduplication_log.removed_keys)
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -1681,3 +1682,130 @@ export type FrameworkFunction = typeof frameworkFunctions.$inferSelect;
 export type InsertFrameworkFunction = typeof frameworkFunctions.$inferInsert;
 export type FrameworkFile = typeof frameworkFiles.$inferSelect;
 export type InsertFrameworkFile = typeof frameworkFiles.$inferInsert;
+
+// ─── Sprint 1: Test Library Hierarchy ────────────────────────────────────────
+
+/**
+ * Project membership — who has access to a project and in what role.
+ * Roles: 'owner' | 'admin' | 'member' | 'viewer'
+ */
+export const projectMembers = pgTable("project_members", {
+  id:        varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId: varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  userId:    varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  role:      varchar("role", { length: 20 }).default("member"),
+  joinedAt:  timestamp("joined_at").defaultNow(),
+});
+
+/**
+ * Module — second level of the hierarchy beneath a project.
+ * e.g. "Login", "Checkout", "Admin Panel"
+ */
+export const modules = pgTable("modules", {
+  id:          varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId:   varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  name:        varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  createdBy:   varchar("created_by").references(() => users.id),
+  createdAt:   timestamp("created_at").defaultNow(),
+});
+
+/**
+ * Feature — third level of the hierarchy beneath a module.
+ * e.g. "Happy path", "Error handling", "Edge cases"
+ */
+export const features = pgTable("features", {
+  id:        varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  moduleId:  varchar("module_id").notNull().references(() => modules.id, { onDelete: "cascade" }),
+  name:      varchar("name", { length: 255 }).notNull(),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+/**
+ * Framework asset store — single source of truth for all generated framework files.
+ * Replaces ad-hoc disk writes with a versioned, conflict-aware DB store.
+ */
+export const frameworkAssets = pgTable("framework_assets", {
+  id:          varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId:   varchar("project_id").notNull().references(() => projects.id, { onDelete: "cascade" }),
+  assetType:   varchar("asset_type", { length: 50 }).notNull(),  // 'pom' | 'bdd_feature' | 'bdd_steps' | 'config' | 'test' | 'generic_action'
+  assetKey:    varchar("asset_key", { length: 500 }).notNull(),  // unique within project+type (usually file path)
+  filePath:    varchar("file_path", { length: 500 }).notNull(),
+  content:     text("content").notNull(),
+  contentHash: varchar("content_hash", { length: 64 }),
+  unitName:    varchar("unit_name", { length: 255 }),
+  unitHash:    varchar("unit_hash", { length: 64 }),
+  layer:       varchar("layer", { length: 50 }),
+  createdBy:   varchar("created_by").references(() => users.id),
+  updatedBy:   varchar("updated_by").references(() => users.id),
+  createdAt:   timestamp("created_at").defaultNow(),
+  updatedAt:   timestamp("updated_at").defaultNow(),
+  sourceTcId:  varchar("source_tc_id").references(() => testCases.id),
+});
+
+/**
+ * Asset versions — full content history for every framework_asset.
+ */
+export const assetVersions = pgTable("asset_versions", {
+  id:          varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assetId:     varchar("asset_id").notNull().references(() => frameworkAssets.id, { onDelete: "cascade" }),
+  versionNum:  integer("version_num").notNull(),
+  content:     text("content").notNull(),
+  contentHash: varchar("content_hash", { length: 64 }),
+  changedBy:   varchar("changed_by").references(() => users.id),
+  changedAt:   timestamp("changed_at").defaultNow(),
+  changeType:  varchar("change_type", { length: 20 }),  // 'created' | 'updated' | 'reverted'
+  changeNote:  text("change_note"),
+});
+
+/**
+ * Asset conflicts — merge conflicts detected when two recordings modify the same file.
+ */
+export const assetConflicts = pgTable("asset_conflicts", {
+  id:              varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId:       varchar("project_id").notNull().references(() => projects.id),
+  assetType:       varchar("asset_type", { length: 50 }).notNull(),
+  assetKey:        varchar("asset_key", { length: 500 }).notNull(),
+  conflictType:    varchar("conflict_type", { length: 50 }),
+  baseContent:     text("base_content"),
+  incomingContent: text("incoming_content"),
+  baseAuthor:      varchar("base_author").references(() => users.id),
+  incomingAuthor:  varchar("incoming_author").references(() => users.id),
+  baseTcId:        varchar("base_tc_id").references(() => testCases.id),
+  incomingTcId:    varchar("incoming_tc_id").references(() => testCases.id),
+  aiSuggestion:    text("ai_suggestion"),
+  status:          varchar("status", { length: 20 }).default("open"),  // 'open' | 'resolved' | 'dismissed'
+  createdAt:       timestamp("created_at").defaultNow(),
+  resolvedAt:      timestamp("resolved_at"),
+  resolvedBy:      varchar("resolved_by").references(() => users.id),
+});
+
+/**
+ * Deduplication log — tracks when duplicate locators/actions were merged.
+ */
+export const deduplicationLog = pgTable("deduplication_log", {
+  id:                 varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  projectId:          varchar("project_id").notNull().references(() => projects.id),
+  dedupType:          varchar("dedup_type", { length: 50 }),
+  canonicalKey:       varchar("canonical_key", { length: 500 }),
+  removedKeys:        text("removed_keys").array(),
+  referencesUpdated:  integer("references_updated").default(0),
+  performedBy:        varchar("performed_by", { length: 20 }).default("auto"),
+  performedAt:        timestamp("performed_at").defaultNow(),
+});
+
+// ── Sprint 1 type exports ────────────────────────────────────────────────────
+export type ProjectMember    = typeof projectMembers.$inferSelect;
+export type InsertProjectMember = typeof projectMembers.$inferInsert;
+export type Module           = typeof modules.$inferSelect;
+export type InsertModule     = typeof modules.$inferInsert;
+export type Feature          = typeof features.$inferSelect;
+export type InsertFeature    = typeof features.$inferInsert;
+export type FrameworkAsset   = typeof frameworkAssets.$inferSelect;
+export type InsertFrameworkAsset = typeof frameworkAssets.$inferInsert;
+export type AssetVersion     = typeof assetVersions.$inferSelect;
+export type InsertAssetVersion = typeof assetVersions.$inferInsert;
+export type AssetConflict    = typeof assetConflicts.$inferSelect;
+export type InsertAssetConflict = typeof assetConflicts.$inferInsert;
+export type DeduplicationLog = typeof deduplicationLog.$inferSelect;
