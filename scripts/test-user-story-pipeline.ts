@@ -14,6 +14,7 @@
  */
 
 import http from "http";
+import https from "https";
 
 const BASE_URL = process.env.TEST_BASE_URL || "http://localhost:5000";
 
@@ -63,10 +64,13 @@ async function callSSE(url: string, body: object): Promise<void> {
   return new Promise((resolve, reject) => {
     const bodyStr = JSON.stringify(body);
     const urlObj = new URL(url);
+    const isHttps = urlObj.protocol === "https:";
+    const transport = isHttps ? https : http;
+    const defaultPort = isHttps ? 443 : 5000;
 
     const options: http.RequestOptions = {
       hostname: urlObj.hostname,
-      port: urlObj.port || 5000,
+      port: urlObj.port || defaultPort,
       path: urlObj.pathname,
       method: "POST",
       headers: {
@@ -76,7 +80,7 @@ async function callSSE(url: string, body: object): Promise<void> {
       },
     };
 
-    const req = http.request(options, (res) => {
+    const req = transport.request(options, (res) => {
       let buffer = "";
       res.setEncoding("utf8");
 
@@ -186,7 +190,9 @@ async function runTest() {
     "script_generation",
   ];
 
-  const observed = stagesObserved.filter(s => EXPECTED_ORDER.includes(s));
+  // Deduplicate consecutive repeats (e.g. "generation" fires once per category)
+  const deduped = stagesObserved.filter(s => EXPECTED_ORDER.includes(s));
+  const observed = deduped.filter((s, i) => i === 0 || s !== deduped[i - 1]);
   const passOrder = observed.every((s, i) => {
     const expectedIdx = EXPECTED_ORDER.indexOf(s);
     const prevStage = observed[i - 1];
