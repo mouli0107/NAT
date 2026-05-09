@@ -1,12 +1,10 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
-import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import { db, pool } from './db';
+import { pool } from './db';
 import { registerRoutes } from "./routes";
 import { serveStatic, log } from "./static";
 import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady } from "./playwright-setup";
-import { hashPassword } from './auth-middleware';
 
 const app = express();
 
@@ -80,6 +78,8 @@ app.use((req, res, next) => {
 (async () => {
   // Auto-migrate database schema on every startup (creates tables if missing)
   try {
+    const { migrate } = await import('drizzle-orm/node-postgres/migrator');
+    const { db } = await import('./db');
     await migrate(db, { migrationsFolder: './migrations' });
     log('[DB] Migrations applied successfully');
   } catch (err: any) {
@@ -88,6 +88,7 @@ app.use((req, res, next) => {
 
   // Seed default tenant + admin user via raw SQL (bypasses ORM silent failures)
   try {
+    const { hashPassword } = await import('./auth-middleware');
     await pool.query(`
       INSERT INTO tenants (id, name, slug)
       VALUES ('default-tenant', 'NAT 2.0 Default', 'default')
