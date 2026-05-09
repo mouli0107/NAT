@@ -106,7 +106,7 @@ app.use((req, res, next) => {
         await pool.query(`
           INSERT INTO users (id, tenant_id, username, password, must_change_password)
           VALUES ('admin-user-1', 'default-tenant', 'chandramouli@nousinfo.com', $1, true)
-          ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, must_change_password = true
+          ON CONFLICT (id) DO NOTHING
         `, [ADMIN_PW_HASH]);
         log('[DB] Admin user seed complete');
       })(),
