@@ -2140,44 +2140,52 @@ function BrowserBar({
     <div className="flex-shrink-0 border-b-2 border-slate-700 bg-slate-900 shadow-lg">
 
       {/* URL bar row */}
-      <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.3) transparent' }}>
+      {/* TOOLBAR ROW — gap-1.5 saves ~20px vs gap-2; overflow-x-auto scrolls when content genuinely can't fit */}
+      <div className="flex items-center gap-1.5 px-3 py-2 min-w-0 overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.25) transparent' }}>
 
-        {/* Browser nav dots */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <div className="w-3 h-3 rounded-full bg-red-400/80" />
-          <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
-          <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
-        </div>
+        {/* ── URL INPUT GROUP: nav dots + project + url + × ──────────────────────
+            flex-1 so it grows to fill space; max-w-[320px] caps it so the
+            action buttons always get the remainder of the row.                  */}
+        <div className="flex flex-1 items-center gap-1.5 min-w-[120px] max-w-[320px]">
 
-        {/* Project Name */}
-        <div className="flex items-center gap-1 flex-shrink-0">
-          <span className="text-[10px] text-indigo-300 flex-shrink-0 font-medium">🏗</span>
-          <input
-            value={projectName}
-            onChange={e => setProjectName(e.target.value)}
-            placeholder="Project *"
-            title="Project Name (required)"
-            className={`w-28 bg-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-indigo-300 outline-none border transition-colors focus:bg-white/20 ${projectName.trim() ? 'border-white/20 focus:border-white/40' : 'border-red-400/60 focus:border-red-400 placeholder-red-300'}`}
-          />
-        </div>
+          {/* Browser nav dots */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="w-3 h-3 rounded-full bg-red-400/80" />
+            <div className="w-3 h-3 rounded-full bg-yellow-400/80" />
+            <div className="w-3 h-3 rounded-full bg-emerald-400/80" />
+          </div>
 
-        {/* URL input */}
-        <div className="flex-1 flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 focus-within:border-white/40 focus-within:bg-white/15 transition-colors min-w-[160px]">
-          <span className="text-indigo-300 text-xs flex-shrink-0">🔒</span>
-          <input
-            value={url}
-            onChange={e => setUrl(e.target.value)}
-            onKeyDown={e => e.key === "Enter" && openUrl()}
-            placeholder="Enter URL to record (e.g. https://amerisure.com)"
-            className="flex-1 bg-transparent text-xs text-white placeholder-indigo-300 outline-none min-w-0"
-          />
-          {url !== "https://" && url.length > 8 && (
-            <button
-              onClick={() => setUrl("https://")}
-              className="text-indigo-300 hover:text-white text-xs flex-shrink-0"
-            >✕</button>
-          )}
-        </div>
+          {/* Project Name */}
+          <div className="flex items-center gap-1 flex-shrink-0">
+            <span className="text-[10px] text-indigo-300 flex-shrink-0 font-medium">🏗</span>
+            <input
+              value={projectName}
+              onChange={e => setProjectName(e.target.value)}
+              placeholder="Project *"
+              title="Project Name (required)"
+              className={`w-28 bg-white/10 rounded-lg px-2 py-1.5 text-xs text-white placeholder-indigo-300 outline-none border transition-colors focus:bg-white/20 ${projectName.trim() ? 'border-white/20 focus:border-white/40' : 'border-red-400/60 focus:border-red-400 placeholder-red-300'}`}
+            />
+          </div>
+
+          {/* URL input — flex-1 within the group; min-w-0 lets it shrink gracefully */}
+          <div className="flex-1 flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 focus-within:border-white/40 focus-within:bg-white/15 transition-colors min-w-0">
+            <span className="text-indigo-300 text-xs flex-shrink-0">🔒</span>
+            <input
+              value={url}
+              onChange={e => setUrl(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && openUrl()}
+              placeholder="Enter URL to record (e.g. https://amerisure.com)"
+              className="flex-1 bg-transparent text-xs text-white placeholder-indigo-300 outline-none min-w-0"
+            />
+            {url !== "https://" && url.length > 8 && (
+              <button
+                onClick={() => setUrl("https://")}
+                className="text-indigo-300 hover:text-white text-xs flex-shrink-0"
+              >✕</button>
+            )}
+          </div>
+
+        </div>{/* end URL INPUT GROUP */}
 
         {/* Recording action buttons — hidden when recording is done */}
         {!(isDone && nlStepsCount > 0) && <>
@@ -2186,7 +2194,7 @@ function BrowserBar({
             onClick={openUrl}
             disabled={!url || url === "https://" || !projectName.trim()}
             title={!projectName.trim() ? 'Enter a Project Name first' : ''}
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 disabled:bg-white/5 disabled:text-white/30 border border-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5"
+            className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-white/15 hover:bg-white/25 disabled:bg-white/5 disabled:text-white/30 border border-white/20 text-white text-xs font-semibold transition-all flex items-center gap-1.5"
           >
             <span>↗</span> Open
           </button>
@@ -2200,7 +2208,7 @@ function BrowserBar({
             }}
             disabled={!url || url === "https://" || !projectName.trim()}
             title={!projectName.trim() ? 'Enter a Project Name first' : 'Open in a full-screen recording window'}
-            className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-violet-500/40 hover:bg-violet-500/60 disabled:bg-white/5 disabled:text-white/30 border border-violet-400/30 text-white text-xs font-semibold transition-all flex items-center gap-1.5"
+            className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-violet-500/40 hover:bg-violet-500/60 disabled:bg-white/5 disabled:text-white/30 border border-violet-400/30 text-white text-xs font-semibold transition-all flex items-center gap-1.5"
           >
             <span>⧉</span> Record in Window
           </button>
@@ -2214,7 +2222,7 @@ function BrowserBar({
             }}
             disabled={(!url || url === "https://" || !projectName.trim()) && !isPlaywrightRecording}
             title={!projectName.trim() ? 'Enter a Project Name first' : 'Launch Playwright browser for recording'}
-            className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-white text-xs font-semibold transition-all flex items-center gap-1.5 border
+            className={`flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg text-white text-xs font-semibold transition-all flex items-center gap-1.5 border
               ${isPlaywrightRecording
                 ? 'bg-red-500/50 border-red-400/40 hover:bg-red-500/70 animate-pulse'
                 : 'bg-emerald-500/40 hover:bg-emerald-500/60 border-emerald-400/30 disabled:bg-white/5 disabled:text-white/30'}`}
@@ -2256,14 +2264,14 @@ function BrowserBar({
           <>
             <button
               onClick={() => setShowConfig(v => !v)}
-              className="flex-shrink-0 px-2 py-1.5 rounded-lg border border-white/20 hover:border-white/40 text-white/70 hover:text-white text-xs transition-colors"
+              className="flex-shrink-0 whitespace-nowrap px-2 py-1.5 rounded-lg border border-white/20 hover:border-white/40 text-white/70 hover:text-white text-xs transition-colors"
               title="Configure session"
             >⚙</button>
             <button
               onClick={onCreateSession}
               disabled={isCreatingSession || !projectName.trim()}
               title={!projectName.trim() ? 'Enter a Project Name first' : ''}
-              className="flex-shrink-0 px-3 py-1.5 rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
+              className="flex-shrink-0 whitespace-nowrap px-3 py-1.5 rounded-lg bg-white text-indigo-700 hover:bg-indigo-50 text-xs font-bold transition-all disabled:opacity-40 flex items-center gap-1.5 shadow-sm"
             >
               {isCreatingSession
                 ? <><div className="w-2.5 h-2.5 border border-indigo-300 border-t-indigo-700 rounded-full animate-spin" />Starting...</>
@@ -2271,16 +2279,19 @@ function BrowserBar({
             </button>
           </>
         ) : (
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Session code */}
-            <div className="flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-lg px-2.5 py-1.5">
-              <div className={`w-1.5 h-1.5 rounded-full ${extensionConnected ? "bg-emerald-400 animate-pulse" : "bg-white/30"}`} />
-              <span className="font-mono text-xs font-bold text-white tracking-wider">{sessionId}</span>
-              <button onClick={() => navigator.clipboard.writeText(sessionId || "")} className="text-white/50 hover:text-white text-[10px]">📋</button>
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            {/* Session code — max-w-[90px] truncates the ID text rather than pushing buttons off screen */}
+            <div
+              title={sessionId || ''}
+              className="flex items-center gap-1 bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 flex-shrink-0 max-w-[90px] overflow-hidden"
+            >
+              <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${extensionConnected ? "bg-emerald-400 animate-pulse" : "bg-white/30"}`} />
+              <span className="font-mono text-xs font-bold text-white tracking-wide overflow-hidden text-ellipsis whitespace-nowrap">{sessionId}</span>
+              <button onClick={() => navigator.clipboard.writeText(sessionId || "")} className="text-white/50 hover:text-white text-[10px] flex-shrink-0">📋</button>
             </div>
 
             {/* Status badge */}
-            <span className={`text-[10px] font-bold px-2 py-1 rounded-md border ${
+            <span className={`flex-shrink-0 whitespace-nowrap text-[10px] font-bold px-2 py-1 rounded-md border ${
               isRecording
                 ? "bg-red-500/20 text-red-200 border-red-400/30"
                 : isDone
@@ -2292,17 +2303,17 @@ function BrowserBar({
 
             {(isRecording || isPlaywrightRecording) && (
               <button onClick={onStop}
-                className="px-2.5 py-1.5 rounded-lg bg-red-500/30 hover:bg-red-500/50 border border-red-400/30 text-red-200 text-xs font-semibold transition-all flex items-center gap-1">
+                className="flex-shrink-0 whitespace-nowrap px-2.5 py-1.5 rounded-lg bg-red-500/30 hover:bg-red-500/50 border border-red-400/30 text-red-200 text-xs font-semibold transition-all flex items-center gap-1">
                 <div className="w-2 h-2 rounded-sm bg-red-400" /> Stop
               </button>
             )}
 
-            {/* Assert Mode toggle — visible whenever any recording mode is active */}
+            {/* Assert Mode toggle — the ">" partial button users were seeing is this element */}
             {(iframeUrl || isPlaywrightRecording || isRecording) && (
               <button
                 onClick={onToggleAssert}
                 title={assertMode ? 'Exit Assert Mode' : 'Enter Assert Mode — click elements to assert'}
-                className={`px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                className={`flex-shrink-0 whitespace-nowrap px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
                   assertMode
                     ? 'bg-amber-400/25 border-amber-400/40 text-amber-200'
                     : 'bg-white/10 border-white/20 text-white/80 hover:border-amber-400/40 hover:text-amber-200'
@@ -2315,7 +2326,7 @@ function BrowserBar({
             )}
 
             {/* Event count */}
-            <span className="text-[10px] text-indigo-300">{eventsCount} events</span>
+            <span className="flex-shrink-0 whitespace-nowrap text-[10px] text-indigo-300">{eventsCount} events</span>
           </div>
         )}
       </div>
