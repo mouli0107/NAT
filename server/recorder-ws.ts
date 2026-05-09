@@ -592,7 +592,39 @@ export function registerRecorderRoutes(app: Express) {
 
   // ─── Playwright-based Recorder ─────────────────────────────────────────────
   // Stores live Playwright browser per session so we can stop it later
-  const pwBrowsers = new Map<string, { browser: Browser; context: BrowserContext; page: PwPage }>();
+  const pwBrowsers = new Map<string, { browser: Browser; context: BrowserContext; page: PwPage; screenshotTimer?: ReturnType<typeof setInterval> }>();
+
+  /** Start streaming JPEG screenshots of the server-side Playwright browser via SSE.
+   *  Required for cloud deployments (Azure) where the browser runs in Xvfb and
+   *  the user cannot see or interact with it directly.  */
+  function startScreenshotStream(sid: string): void {
+    const timer = setInterval(async () => {
+      const pw = pwBrowsers.get(sid);
+      const session = activeSessions.get(sid);
+      if (!pw || !session || session.status === 'stopped') {
+        clearInterval(timer);
+        return;
+      }
+      try {
+        const buf = await pw.page.screenshot({ type: 'jpeg', quality: 45, timeout: 2000 });
+        broadcastToUI(session, 'pw_screenshot', { data: buf.toString('base64') });
+      } catch {
+        // page is navigating or closed — skip frame
+      }
+    }, 600); // ~1.6 FPS — enough for interactive feel without hammering SSE
+
+    const pw = pwBrowsers.get(sid);
+    if (pw) pwBrowsers.set(sid, { ...pw, screenshotTimer: timer });
+  }
+
+  /** Stop the screenshot stream for a session. */
+  function stopScreenshotStream(sid: string): void {
+    const pw = pwBrowsers.get(sid);
+    if (pw?.screenshotTimer) {
+      clearInterval(pw.screenshotTimer);
+      pwBrowsers.set(sid, { ...pw, screenshotTimer: undefined });
+    }
+  }
 
   // The recorder init script — injected into every page via addInitScript.
   // Uses window.__devxqe_send() which is exposed by Playwright's exposeFunction.
@@ -1866,8 +1898,18 @@ export function registerRecorderRoutes(app: Express) {
       pwBrowsers.set(sid, { browser, context, page });
       session.status = 'recording';
 
-      // Navigate to the target URL
-      await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 30000 });
+      // Navigate to the target URL — use 'commit' (fires as soon as the URL is
+      // committed, before full DOM load) and a generous 60 s timeout.
+      // Non-fatal: a slow/unreachable page should not abort recorder startup.
+      try {
+        await page.goto(targetUrl, { waitUntil: 'commit', timeout: 60000 });
+      } catch (navErr: any) {
+        console.warn(`[Recorder] Initial navigation to ${targetUrl} timed out or failed: ${navErr.message} — recording still active`);
+      }
+
+      // Stream screenshots to the UI so users can see and interact with the
+      // server-side browser (required for cloud/Xvfb deployments).
+      startScreenshotStream(sid);
 
       res.json({ success: true, message: 'Playwright browser launched. Record your workflow, then stop via DELETE /api/recorder/playwright-stop/:sessionId' });
     } catch (err: any) {
@@ -1882,6 +1924,7 @@ export function registerRecorderRoutes(app: Express) {
     const pw = pwBrowsers.get(sid);
     if (!pw) return res.status(404).json({ error: 'No active Playwright browser for this session' });
 
+    stopScreenshotStream(sid);
     try {
       await pw.browser.close();
     } catch {}
@@ -1894,6 +1937,66 @@ export function registerRecorderRoutes(app: Express) {
     }
 
     res.json({ success: true, message: 'Playwright browser closed and session stopped.' });
+  });
+
+  // POST /api/recorder/pw-click — forward a mouse click to the Playwright browser
+  // Body: { sessionId, x, y, button? }
+  app.post('/api/recorder/pw-click', async (req: Request, res: Response) => {
+    const { sessionId, x, y, button = 'left' } = req.body as { sessionId: string; x: number; y: number; button?: 'left' | 'right' | 'middle' };
+    const sid = sessionId.toUpperCase();
+    const pw = pwBrowsers.get(sid);
+    if (!pw) return res.status(404).json({ error: 'No active browser' });
+    try {
+      await pw.page.mouse.click(x, y, { button });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/recorder/pw-type — forward keyboard input to the Playwright browser
+  // Body: { sessionId, text }
+  app.post('/api/recorder/pw-type', async (req: Request, res: Response) => {
+    const { sessionId, text } = req.body as { sessionId: string; text: string };
+    const sid = sessionId.toUpperCase();
+    const pw = pwBrowsers.get(sid);
+    if (!pw) return res.status(404).json({ error: 'No active browser' });
+    try {
+      await pw.page.keyboard.type(text);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/recorder/pw-key — forward a special key press to the Playwright browser
+  // Body: { sessionId, key }  e.g. key = "Enter", "Backspace", "Tab"
+  app.post('/api/recorder/pw-key', async (req: Request, res: Response) => {
+    const { sessionId, key } = req.body as { sessionId: string; key: string };
+    const sid = sessionId.toUpperCase();
+    const pw = pwBrowsers.get(sid);
+    if (!pw) return res.status(404).json({ error: 'No active browser' });
+    try {
+      await pw.page.keyboard.press(key);
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // POST /api/recorder/pw-navigate — navigate the Playwright browser to a new URL
+  // Body: { sessionId, url }
+  app.post('/api/recorder/pw-navigate', async (req: Request, res: Response) => {
+    const { sessionId, url } = req.body as { sessionId: string; url: string };
+    const sid = sessionId.toUpperCase();
+    const pw = pwBrowsers.get(sid);
+    if (!pw) return res.status(404).json({ error: 'No active browser' });
+    try {
+      await pw.page.goto(url, { waitUntil: 'commit', timeout: 30000 });
+      res.json({ success: true });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
   });
 
   // POST /api/recorder/assert-mode — toggle assert mode in the live Playwright browser

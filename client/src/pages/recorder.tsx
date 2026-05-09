@@ -2471,6 +2471,9 @@ export default function RecorderPage() {
   const [events, setEvents]             = useState<RecordingEvent[]>([]);
   const [nlSteps, setNlSteps]           = useState<string[]>([]);
   const [latestScreenshot, setLatestScreenshot] = useState<string | null>(null);
+  // Live screenshot stream from the server-side Playwright browser (cloud/Xvfb mode)
+  const [pwLiveFrame, setPwLiveFrame]   = useState<string | null>(null);
+  const pwFrameRef = useRef<HTMLImageElement | null>(null);
   const [agents, setAgents]             = useState<AgentInfo[]>(AGENTS);
   const [aiSuggestion, setAiSuggestion] = useState<string | null>(null);
   const [iframeUrl, setIframeUrl]         = useState<string | null>(null);
@@ -2912,9 +2915,20 @@ export default function RecorderPage() {
       if (data.dataUrl) setLatestScreenshot(data.dataUrl);
     });
 
+    // Live frames from server-side Playwright browser (Xvfb / cloud mode)
+    sse.addEventListener("pw_screenshot", (e) => {
+      const data = JSON.parse((e as MessageEvent).data);
+      if (data.data) setPwLiveFrame(`data:image/jpeg;base64,${data.data}`);
+    });
+
+    sse.addEventListener("recording_stopped", () => {
+      setPwLiveFrame(null);
+    });
+
     sse.addEventListener("recording_completed", () => {
       setSessionStatus("completed");
       setExtensionConnected(false);
+      setPwLiveFrame(null);
       setAgents(prev => prev.map(a =>
         a.id === "recorder" ? { ...a, status: "done" } :
         a.id === "analyzer" ? { ...a, status: "active" } : a
@@ -5269,44 +5283,97 @@ export default function RecorderPage() {
               </div>
             ) : isPlaywrightRecording ? (
               /* ── Playwright Recording Panel ── */
-              <div className="relative w-full h-full flex items-center justify-center">
-                {/* Assert mode active banner */}
+              <div className="relative w-full h-full flex flex-col bg-slate-900">
+                {/* Assert mode banner */}
                 {assertMode && !pendingAssert && (
-                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2 bg-amber-500/20 backdrop-blur-sm border border-amber-500/40 rounded-full px-3 py-1.5 pointer-events-none">
+                  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-30 flex items-center gap-2 bg-amber-500/20 backdrop-blur-sm border border-amber-500/40 rounded-full px-3 py-1.5 pointer-events-none">
                     <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse" />
-                    <span className="text-[10px] text-amber-300 font-bold">ASSERT MODE — hover & click any element in the Playwright browser</span>
+                    <span className="text-[10px] text-amber-300 font-bold">ASSERT MODE — click any element in the live browser below</span>
                   </div>
                 )}
 
-                {/* Assertion panel for Playwright mode */}
+                {/* Assertion panel */}
                 {pendingAssert && (
-                  <AssertionPanel
-                    elementInfo={pendingAssert}
-                    onConfirm={confirmAssertion}
-                    onCancel={() => setPendingAssert(null)}
-                  />
+                  <div className="absolute inset-0 z-30 flex items-center justify-center bg-black/60">
+                    <AssertionPanel
+                      elementInfo={pendingAssert}
+                      onConfirm={confirmAssertion}
+                      onCancel={() => setPendingAssert(null)}
+                    />
+                  </div>
                 )}
 
-                {/* Playwright status card */}
-                {!pendingAssert && (
-                  <div className="flex flex-col items-center gap-4 text-center max-w-xs relative z-10">
-                    <div className="w-16 h-16 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-3xl">
-                      🎭
+                {pwLiveFrame ? (
+                  /* Live interactive screenshot from server Playwright browser */
+                  <>
+                    {/* Status bar */}
+                    <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-800 border-b border-slate-700 shrink-0">
+                      <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse" />
+                      <span className="text-[11px] text-emerald-400 font-semibold">LIVE — Playwright browser</span>
+                      <span className="text-[10px] text-slate-500 ml-auto">Click on the image to interact</span>
                     </div>
-                    <div>
-                      <p className="text-sm font-semibold text-emerald-600">Playwright browser is open</p>
-                      <p className="text-xs text-gray-500 mt-1">Interact with the browser window — actions are captured here in real-time</p>
+                    {/* Interactive screenshot */}
+                    <div className="flex-1 overflow-hidden relative cursor-crosshair"
+                      onClick={(ev) => {
+                        if (!sessionId) return;
+                        const img = pwFrameRef.current;
+                        if (!img) return;
+                        const rect = img.getBoundingClientRect();
+                        // Scale click coordinates from displayed image size → natural image size
+                        const scaleX = img.naturalWidth / rect.width;
+                        const scaleY = img.naturalHeight / rect.height;
+                        const x = Math.round((ev.clientX - rect.left) * scaleX);
+                        const y = Math.round((ev.clientY - rect.top) * scaleY);
+                        fetch('/api/recorder/pw-click', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ sessionId, x, y }),
+                        }).catch(() => {});
+                      }}
+                      onKeyDown={(ev) => {
+                        if (!sessionId) return;
+                        const special = ['Enter','Tab','Backspace','Delete','Escape','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'];
+                        if (special.includes(ev.key)) {
+                          ev.preventDefault();
+                          fetch('/api/recorder/pw-key', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sessionId, key: ev.key }),
+                          }).catch(() => {});
+                        } else if (ev.key.length === 1 && !ev.ctrlKey && !ev.metaKey) {
+                          fetch('/api/recorder/pw-type', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ sessionId, text: ev.key }),
+                          }).catch(() => {});
+                        }
+                      }}
+                      tabIndex={0}
+                    >
+                      <img
+                        ref={pwFrameRef}
+                        src={pwLiveFrame}
+                        alt="Live Playwright browser"
+                        className="w-full h-full object-contain select-none"
+                        draggable={false}
+                      />
                     </div>
-                    <div className="flex gap-1.5 items-center text-xs text-gray-400">
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
-                      <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
-                    </div>
-                    {events.filter(e => e.type !== 'screenshot').length > 0 && (
-                      <div className="text-xs text-slate-600 bg-slate-900/60 border border-slate-800 rounded-lg px-3 py-2">
-                        {events.filter(e => e.type !== 'screenshot').length} action{events.filter(e => e.type !== 'screenshot').length !== 1 ? 's' : ''} recorded
+                  </>
+                ) : (
+                  /* Waiting for first frame */
+                  <div className="flex-1 flex items-center justify-center">
+                    <div className="flex flex-col items-center gap-4 text-center max-w-xs">
+                      <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-3xl">🎭</div>
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-400">Playwright browser starting…</p>
+                        <p className="text-xs text-slate-500 mt-1">Live view will appear here in a moment</p>
                       </div>
-                    )}
+                      <div className="flex gap-1.5">
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "0ms" }} />
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "150ms" }} />
+                        <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-bounce" style={{ animationDelay: "300ms" }} />
+                      </div>
+                    </div>
                   </div>
                 )}
               </div>
