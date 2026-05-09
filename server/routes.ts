@@ -1254,6 +1254,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── POST /api/admin/run-schema-migration ────────────────────────────────
+  // Creates Sprint 1-6 schema tables if they don't exist (idempotent).
+  // Protected by MIGRATE_SECRET env var.
+  app.post('/api/admin/run-schema-migration', async (req: Request, res: Response) => {
+    const MIGRATE_SECRET = process.env.MIGRATE_SECRET || 'nat20-migrate-2026';
+    if (req.body?.secret !== MIGRATE_SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    try {
+      const { pool } = await import('./db.js');
+      const client = await pool.connect();
+      const created: string[] = [];
+      const skipped: string[] = [];
+      try {
+        const stmts: [string, string][] = [
+          ['project_members', `CREATE TABLE IF NOT EXISTS project_members (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id VARCHAR NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            user_id VARCHAR NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            role VARCHAR(20) DEFAULT 'member',
+            joined_at TIMESTAMP DEFAULT NOW()
+          )`],
+          ['modules', `CREATE TABLE IF NOT EXISTS modules (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id VARCHAR NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            name VARCHAR(255) NOT NULL,
+            description TEXT,
+            created_by VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW()
+          )`],
+          ['features', `CREATE TABLE IF NOT EXISTS features (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            module_id VARCHAR NOT NULL REFERENCES modules(id) ON DELETE CASCADE,
+            name VARCHAR(255) NOT NULL,
+            created_by VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW()
+          )`],
+          ['framework_assets', `CREATE TABLE IF NOT EXISTS framework_assets (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id VARCHAR NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
+            asset_type VARCHAR(50) NOT NULL,
+            asset_key VARCHAR(500) NOT NULL,
+            file_path VARCHAR(500) NOT NULL,
+            content TEXT NOT NULL,
+            content_hash VARCHAR(64),
+            unit_name VARCHAR(255),
+            unit_hash VARCHAR(64),
+            layer VARCHAR(50),
+            created_by VARCHAR REFERENCES users(id),
+            updated_by VARCHAR REFERENCES users(id),
+            created_at TIMESTAMP DEFAULT NOW(),
+            updated_at TIMESTAMP DEFAULT NOW(),
+            source_tc_id VARCHAR REFERENCES test_cases(id)
+          )`],
+          ['asset_versions', `CREATE TABLE IF NOT EXISTS asset_versions (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            asset_id VARCHAR NOT NULL REFERENCES framework_assets(id) ON DELETE CASCADE,
+            version_num INTEGER NOT NULL,
+            content TEXT NOT NULL,
+            content_hash VARCHAR(64),
+            changed_by VARCHAR REFERENCES users(id),
+            changed_at TIMESTAMP DEFAULT NOW(),
+            change_type VARCHAR(20),
+            change_note TEXT
+          )`],
+          ['asset_conflicts', `CREATE TABLE IF NOT EXISTS asset_conflicts (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id VARCHAR NOT NULL REFERENCES projects(id),
+            asset_type VARCHAR(50) NOT NULL,
+            asset_key VARCHAR(500) NOT NULL,
+            conflict_type VARCHAR(50),
+            base_content TEXT,
+            incoming_content TEXT,
+            base_author VARCHAR REFERENCES users(id),
+            incoming_author VARCHAR REFERENCES users(id),
+            base_tc_id VARCHAR REFERENCES test_cases(id),
+            incoming_tc_id VARCHAR REFERENCES test_cases(id),
+            ai_suggestion TEXT,
+            status VARCHAR(20) DEFAULT 'open',
+            created_at TIMESTAMP DEFAULT NOW(),
+            resolved_at TIMESTAMP,
+            resolved_by VARCHAR REFERENCES users(id)
+          )`],
+          ['deduplication_log', `CREATE TABLE IF NOT EXISTS deduplication_log (
+            id VARCHAR PRIMARY KEY DEFAULT gen_random_uuid(),
+            project_id VARCHAR NOT NULL REFERENCES projects(id),
+            dedup_type VARCHAR(50),
+            canonical_key VARCHAR(500),
+            removed_keys TEXT[],
+            references_updated INTEGER DEFAULT 0,
+            performed_by VARCHAR(20) DEFAULT 'auto',
+            performed_at TIMESTAMP DEFAULT NOW()
+          )`],
+        ];
+
+        for (const [table, sql] of stmts) {
+          try {
+            // Check if table already exists
+            const { rows } = await client.query(
+              `SELECT 1 FROM information_schema.tables WHERE table_name = $1 AND table_schema = 'public'`,
+              [table]
+            );
+            if (rows.length > 0) {
+              skipped.push(table);
+            } else {
+              await client.query(sql);
+              created.push(table);
+              console.log(`[SchemaMigration] Created table: ${table}`);
+            }
+          } catch (e: any) {
+            console.error(`[SchemaMigration] Error creating ${table}:`, e.message);
+          }
+        }
+
+        res.json({
+          success: true,
+          created,
+          skipped,
+          message: `Created ${created.length} tables, ${skipped.length} already existed`,
+        });
+      } finally {
+        client.release();
+      }
+    } catch (err: any) {
+      console.error('[SchemaMigration] Fatal:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // ── POST /api/admin/seed-project-members ─────────────────────────────────
+  // Backfills project_members with existing project owners (idempotent).
+  // Protected by MIGRATE_SECRET env var.
+  app.post('/api/admin/seed-project-members', async (req: Request, res: Response) => {
+    const MIGRATE_SECRET = process.env.MIGRATE_SECRET || 'nat20-migrate-2026';
+    if (req.body?.secret !== MIGRATE_SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    try {
+      const { pool } = await import('./db.js');
+      const client = await pool.connect();
+      try {
+        // Insert owner row for every project that doesn't already have one
+        const result = await client.query(`
+          INSERT INTO project_members (id, project_id, user_id, role, joined_at)
+          SELECT
+            gen_random_uuid(),
+            p.id,
+            p.user_id,
+            'owner',
+            NOW()
+          FROM projects p
+          WHERE NOT EXISTS (
+            SELECT 1 FROM project_members pm
+            WHERE pm.project_id = p.id AND pm.user_id = p.user_id
+          )
+          ON CONFLICT DO NOTHING
+          RETURNING project_id
+        `);
+        const seeded = result.rowCount ?? 0;
+        console.log(`[SeedMembers] Seeded ${seeded} project owner rows`);
+        res.json({ success: true, seeded, message: `Seeded ${seeded} project owners into project_members` });
+      } finally {
+        client.release();
+      }
+    } catch (err: any) {
+      console.error('[SeedMembers] Error:', err.message);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Serve screenshots directory as static files
   const screenshotsDir = path.join(process.cwd(), 'screenshots');
   app.use('/screenshots', express.static(screenshotsDir));

@@ -5,6 +5,7 @@
 // requireProjectMember(req, res, next)
 //   - Verifies the authenticated user is a member (or owner) of the project.
 //   - In demo/dev mode (isDemo=true) all requests are allowed through as owner.
+//   - Handles both :projectId and :id route param names robustly.
 //   - On success: attaches (req as any).projectId and (req as any).projectRole.
 //   - On failure: 403 or 404.
 // ─────────────────────────────────────────────────────────────────────────────
@@ -21,9 +22,19 @@ export async function requireProjectMember(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const projectId = req.params['projectId'];
+    // Handle both :projectId and :id route param names robustly
+    const projectId =
+      req.params['projectId'] ||
+      req.params['id'] ||
+      (req.body as any)?.projectId ||
+      (req.query['projectId'] as string | undefined);
+
     if (!projectId) {
-      res.status(400).json({ error: 'projectId required' });
+      res.status(400).json({
+        error: 'projectId required',
+        hint: 'Route must include :projectId or :id param',
+        params: req.params,
+      });
       return;
     }
 
@@ -56,25 +67,34 @@ export async function requireProjectMember(
       return;
     }
 
-    // Check explicit membership
-    const [member] = await db
-      .select()
-      .from(projectMembers)
-      .where(
-        and(
-          eq(projectMembers.projectId, projectId),
-          eq(projectMembers.userId, auth.userId),
-        ),
-      );
+    // Check explicit membership (table may not exist yet during migration)
+    try {
+      const [member] = await db
+        .select()
+        .from(projectMembers)
+        .where(
+          and(
+            eq(projectMembers.projectId, projectId),
+            eq(projectMembers.userId, auth.userId),
+          ),
+        );
 
-    if (!member) {
-      res.status(403).json({ error: 'Access denied: not a member of this project' });
-      return;
+      if (!member) {
+        res.status(403).json({ error: 'Access denied: not a member of this project' });
+        return;
+      }
+
+      (req as any).projectId  = projectId;
+      (req as any).projectRole = member.role ?? 'member';
+      next();
+    } catch (dbErr: any) {
+      // If project_members table doesn't exist yet, fall back to owner check only
+      if (dbErr.message?.includes('does not exist')) {
+        res.status(403).json({ error: 'Access denied: not a member of this project' });
+      } else {
+        throw dbErr;
+      }
     }
-
-    (req as any).projectId  = projectId;
-    (req as any).projectRole = member.role ?? 'member';
-    next();
   } catch (err: any) {
     res.status(500).json({ error: `project-access: ${err.message}` });
   }
