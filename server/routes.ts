@@ -56,7 +56,7 @@ import {
   detectLanguage,
   detectTool,
 } from './framework-parser';
-import { frameworkConfigs, frameworkFunctions, frameworkFiles, autoTestRuns, autoTestCases } from '@shared/schema';
+import { frameworkConfigs, frameworkFunctions, frameworkFiles, autoTestRuns, autoTestCases, functionalTestRunCases, functionalTestSessions } from '@shared/schema';
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -209,7 +209,8 @@ async function testIntegrationConnection(platform: string, config: Record<string
         if (!instanceUrl || !apiToken) {
           return { success: false, error: 'Instance URL and API token are required' };
         }
-        const response = await fetch(`${instanceUrl}/rest/api/3/myself`, {
+        // Use /project endpoint — /myself returns 401 for Jira Cloud service accounts
+        const response = await fetch(`${instanceUrl}/rest/api/3/project?maxResults=1`, {
           headers: {
             'Authorization': `Basic ${Buffer.from(`${email}:${apiToken}`).toString('base64')}`,
             'Accept': 'application/json',
@@ -1419,12 +1420,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         edge_case: testCases.filter((tc: any) => tc.category === 'edge_case').length,
       };
 
-      // Save test cases to database and complete the run
-      if (testRunId && testCasesToSave.length > 0) {
+      // Save test cases to database and complete the run.
+      // completeFunctionalTestRun() is called whenever testCases were generated,
+      // regardless of whether testCasesToSave is populated — fixes analytics showing 0.
+      if (testRunId) {
         try {
-          console.log(`[Intelligent Test] Saving ${testCasesToSave.length} test cases to database...`);
-          await storage.addTestCasesToRun(testRunId, testCasesToSave);
-          
+          if (testCasesToSave.length > 0) {
+            console.log(`[Intelligent Test] Saving ${testCasesToSave.length} test cases to database...`);
+            await storage.addTestCasesToRun(testRunId, testCasesToSave);
+          }
+          // Always update run counts so analytics can read them from the run record too
           await storage.completeFunctionalTestRun(testRunId, {
             total: testCases.length,
             workflow: categoryCounts.workflow,
@@ -1433,7 +1438,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             edge: categoryCounts.edge_case,
             textValidation: categoryCounts.text_validation,
           });
-          console.log(`[Intelligent Test] Test run ${testRunId} completed and saved with ${testCasesToSave.length} test cases`);
+          console.log(`[Intelligent Test] Test run ${testRunId} completed — ${testCases.length} cases, ${testCasesToSave.length} saved to DB`);
         } catch (saveError) {
           console.error('[Intelligent Test] Failed to save test cases to database:', saveError);
         }
@@ -1453,27 +1458,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[Intelligent Test] Sending summary and completing stream');
       res.write(`data: ${JSON.stringify({ type: "summary", summary })}\n\n`);
 
-      // Save functional test session if projectId provided (legacy support)
-      if (projectId && testCases.length > 0) {
-        try {
-          console.log(`[Intelligent Test] Saving test session for project: ${projectId}`);
-          await storage.saveFunctionalTestSession({
-            projectId,
-            url,
-            testFocus: focus,
-            domain: effectiveDomain,
-            testCasesGenerated: testCases.length,
-            testCases,
-            scenarios: [],
-            crawlStatus: 'completed',
-            pagesVisited: pages.length,
-            workflowsDiscovered: 0,
-          });
-          console.log('[Intelligent Test] Test session saved successfully');
-        } catch (saveError) {
-          console.error('[Intelligent Test] Failed to save test session:', saveError);
-        }
-      }
+      // NOTE: saveFunctionalTestSession() removed — analytics now reads from
+      // functionalTestRuns.totalTestCases (set by completeFunctionalTestRun).
+      // Legacy sessions in functionalTestSessions still count in analytics.
       
       res.write(`data: ${JSON.stringify({ type: "complete" })}\n\n`);
       
@@ -2095,13 +2082,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get all sessions
       const sessions = await storage.getAllTestSessions();
       
-      // Calculate totals from functional test runs
-      let totalTestCases = 0;
+      // Two sources of truth for test case counts:
+      // 1. functionalTestSessions.testCasesGenerated — used by all historical runs (old path)
+      // 2. functionalTestRuns.totalTestCases — used by new runs (completeFunctionalTestRun sets this)
+      // New runs no longer call saveFunctionalTestSession, so there is no double-counting.
+
+      // Source 1: legacy functional test sessions
+      const [legacySessionSum] = await db
+        .select({ total: sql<number>`coalesce(sum(test_cases_generated), 0)::int` })
+        .from(functionalTestSessions);
+      const legacyTotal = legacySessionSum?.total || 0;
+
+      // Source 2: new-style run records (completeFunctionalTestRun populates these)
+      let totalTestCases = legacyTotal;
       let totalWorkflowTests = 0;
       let totalFunctionalTests = 0;
       let totalNegativeTests = 0;
       let totalEdgeCaseTests = 0;
-      
+
       for (const run of testRuns) {
         totalTestCases += run.totalTestCases || 0;
         totalWorkflowTests += run.workflowCases || 0;
@@ -3791,18 +3789,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ==================== JIRA INTEGRATION ====================
 
-  function getJiraCredentials(): { baseUrl: string; email: string; token: string; auth: string } | null {
-    const baseUrl = process.env.JIRA_BASE_URL;
-    const email = process.env.JIRA_EMAIL;
-    const token = process.env.JIRA_API_TOKEN;
-    if (!baseUrl || !email || !token) return null;
-    const auth = Buffer.from(`${email}:${token}`).toString('base64');
-    return { baseUrl: baseUrl.replace(/\/$/, ''), email, token, auth };
+  async function getJiraCredentials(): Promise<{ baseUrl: string; email: string; token: string; auth: string } | null> {
+    // Try env vars first — support both JIRA_DOMAIN and legacy JIRA_BASE_URL
+    const envDomain = process.env.JIRA_DOMAIN || process.env.JIRA_BASE_URL;
+    const envEmail = process.env.JIRA_EMAIL;
+    const envToken = process.env.JIRA_API_TOKEN;
+
+    if (envDomain && envEmail && envToken) {
+      const baseUrl = envDomain.startsWith('http')
+        ? envDomain.replace(/\/$/, '')
+        : `https://${envDomain}`;
+      const auth = Buffer.from(`${envEmail}:${envToken}`).toString('base64');
+      return { baseUrl, email: envEmail, token: envToken, auth };
+    }
+
+    // Fall back to DB-stored integration config
+    const dbConfig = await storage.getActiveJiraConfiguration();
+    if (dbConfig) {
+      const baseUrl = `https://${dbConfig.domain}`;
+      const auth = Buffer.from(`${dbConfig.email}:${dbConfig.apiToken}`).toString('base64');
+      return { baseUrl, email: dbConfig.email, token: dbConfig.apiToken, auth };
+    }
+
+    return null;
   }
 
   app.get("/api/jira/projects/:projectKey/boards", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -3832,7 +3846,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/jira/boards/:boardId/sprints", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -3865,7 +3879,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/jira/issues/:issueKey/comments", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -3901,7 +3915,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/jira/sprints/:sprintId/user-stories", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -3954,9 +3968,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // GET /api/jira/projects/:projectKey/epics — returns all Epics for a project
+  app.get("/api/jira/projects/:projectKey/epics", async (req: Request, res: Response) => {
+    try {
+      const creds = await getJiraCredentials();
+      if (!creds) { res.status(400).json({ success: false, error: "Jira credentials not configured" }); return; }
+      const { projectKey } = req.params;
+      const jql = `project=${projectKey} AND issuetype = Epic ORDER BY created DESC`;
+      const r = await fetch(
+        `${creds.baseUrl}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=200&fields=summary,status,priority,assignee,customfield_10011`,
+        { headers: { 'Authorization': `Basic ${creds.auth}`, 'Accept': 'application/json' } }
+      );
+      if (!r.ok) { res.status(r.status).json({ success: false, error: `Jira error: ${r.statusText}` }); return; }
+      const data = await r.json();
+      const epics = (data.issues || []).map((issue: any) => ({
+        id: issue.key,
+        name: issue.fields?.customfield_10011 || issue.fields?.summary || issue.key,
+        summary: issue.fields?.summary || '',
+        state: issue.fields?.status?.name || '',
+        priority: issue.fields?.priority?.name || '',
+        assignee: issue.fields?.assignee?.displayName || '',
+      }));
+      res.json({ success: true, epics });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // GET /api/jira/epics/:epicKey/stories — returns Stories/Tasks under a specific Epic
+  app.get("/api/jira/epics/:epicKey/stories", async (req: Request, res: Response) => {
+    try {
+      const creds = await getJiraCredentials();
+      if (!creds) { res.status(400).json({ success: false, error: "Jira credentials not configured" }); return; }
+      const { epicKey } = req.params;
+      // Try modern parent= first, then legacy "Epic Link"
+      let allIssues: any[] = [];
+      const fieldsParam = 'summary,description,status,priority,assignee,issuetype,customfield_10035,customfield_10037,customfield_10038,customfield_10047,customfield_10016';
+      for (const jql of [
+        `parent = ${epicKey} AND issuetype not in ("Sub-task","Subtask") ORDER BY created DESC`,
+        `"Epic Link" = ${epicKey} AND issuetype not in ("Sub-task","Subtask") ORDER BY created DESC`,
+      ]) {
+        const r = await fetch(
+          `${creds.baseUrl}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=200&fields=${fieldsParam}`,
+          { headers: { 'Authorization': `Basic ${creds.auth}`, 'Accept': 'application/json' } }
+        );
+        if (r.ok) {
+          const data = await r.json();
+          allIssues = data.issues || [];
+          if (allIssues.length > 0) break;
+        }
+      }
+      const stories = allIssues.map((issue: any) => {
+        const fields = issue.fields || {};
+        let description = '';
+        if (fields.description) {
+          description = typeof fields.description === 'string' ? fields.description : extractAtlassianDocText(fields.description);
+        }
+        let acceptanceCriteria = '';
+        const customAC = fields.customfield_10035 || fields.customfield_10037 || fields.customfield_10038 || '';
+        if (customAC) {
+          acceptanceCriteria = typeof customAC === 'string' ? customAC : (customAC.content ? extractAtlassianDocText(customAC) : '');
+        }
+        return {
+          id: issue.key,
+          title: fields.summary || '',
+          description,
+          state: fields.status?.name || '',
+          acceptanceCriteria,
+          priority: fields.priority?.name || '',
+          assignee: fields.assignee?.displayName || '',
+          issueType: fields.issuetype?.name || '',
+          storyPoints: fields.customfield_10047 || fields.customfield_10016 || null,
+        };
+      });
+      res.json({ success: true, userStories: stories });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   app.get("/api/jira/projects/:projectKey/user-stories", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -3983,11 +4076,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
 
-      if (allIssues.length === 0) {
-        const jql = `project=${projectKey} ORDER BY created DESC`;
-        const searchRes = await fetch(`${creds.baseUrl}/rest/api/3/search?jql=${encodeURIComponent(jql)}&maxResults=100&fields=summary,description,status,priority,assignee,issuetype,customfield_10035,customfield_10037,customfield_10038,customfield_10028`, {
-          headers: { 'Authorization': `Basic ${creds.auth}`, 'Accept': 'application/json' },
-        });
+      // Always run the JQL fallback — covers JWM projects (no agile board) and ensures Tasks are included
+      // Uses the current Jira Cloud search endpoint (/search/jql replaced the deprecated /search)
+      {
+        const jql = `project=${projectKey} AND issuetype not in ("Sub-task","Subtask") ORDER BY created DESC`;
+        const searchRes = await fetch(
+          `${creds.baseUrl}/rest/api/3/search/jql?jql=${encodeURIComponent(jql)}&maxResults=200&fields=summary,description,status,priority,assignee,issuetype,customfield_10035,customfield_10037,customfield_10038,customfield_10028,customfield_10047,customfield_10016`,
+          { headers: { 'Authorization': `Basic ${creds.auth}`, 'Accept': 'application/json' } }
+        );
         if (searchRes.ok) {
           const searchData = await searchRes.json();
           allIssues = searchData.issues || [];
@@ -4022,6 +4118,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           priority: fields.priority?.name || '',
           assignee: fields.assignee?.displayName || '',
           issueType: fields.issuetype?.name || '',
+          storyPoints: fields.customfield_10047 || fields.customfield_10016 || fields.customfield_10028 || null,
         };
       });
       res.json({ success: true, userStories: stories });
@@ -4056,7 +4153,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/jira/push-test-cases", async (req: Request, res: Response) => {
     try {
-      const creds = getJiraCredentials();
+      const creds = await getJiraCredentials();
       if (!creds) {
         res.status(400).json({ success: false, error: "Jira credentials not configured" });
         return;
@@ -6264,6 +6361,107 @@ test.describe('Automated Test Suite', () => {
       const ok = deleteProfile(req.params.id);
       if (!ok) { res.status(404).json({ success: false, error: "Profile not found" }); return; }
       res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ── Custodian Bundle Profiles (Sprint 1 — Multi-table registry) ─────────────
+
+  // GET  /api/synthetic-data/bundle-profiles
+  app.get("/api/synthetic-data/bundle-profiles", async (_req: Request, res: Response) => {
+    try {
+      const { listBundleProfiles } = await import("./custodian-bundle-profiles.js");
+      res.json({ success: true, profiles: listBundleProfiles() });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // GET  /api/synthetic-data/bundle-profiles/:id
+  app.get("/api/synthetic-data/bundle-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { getBundleProfile } = await import("./custodian-bundle-profiles.js");
+      const profile = getBundleProfile(req.params.id);
+      if (!profile) { res.status(404).json({ success: false, error: "Bundle profile not found" }); return; }
+      res.json({ success: true, profile });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/bundle-profiles
+  app.post("/api/synthetic-data/bundle-profiles", async (req: Request, res: Response) => {
+    try {
+      const { createBundleProfile } = await import("./custodian-bundle-profiles.js");
+      const { custodianName, description, tables, businessRules } = req.body;
+      if (!custodianName) { res.status(400).json({ success: false, error: "custodianName is required" }); return; }
+      const profile = createBundleProfile({ custodianName, description, tables, businessRules });
+      res.json({ success: true, profile });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // PUT  /api/synthetic-data/bundle-profiles/:id
+  app.put("/api/synthetic-data/bundle-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { updateBundleProfile } = await import("./custodian-bundle-profiles.js");
+      const updated = updateBundleProfile(req.params.id, req.body);
+      if (!updated) { res.status(404).json({ success: false, error: "Bundle profile not found" }); return; }
+      res.json({ success: true, profile: updated });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // DELETE /api/synthetic-data/bundle-profiles/:id
+  app.delete("/api/synthetic-data/bundle-profiles/:id", async (req: Request, res: Response) => {
+    try {
+      const { deleteBundleProfile } = await import("./custodian-bundle-profiles.js");
+      const ok = deleteBundleProfile(req.params.id);
+      if (!ok) { res.status(404).json({ success: false, error: "Bundle profile not found" }); return; }
+      res.json({ success: true });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // PATCH /api/synthetic-data/bundle-profiles/:id/tables  — upsert one table
+  app.patch("/api/synthetic-data/bundle-profiles/:id/tables", async (req: Request, res: Response) => {
+    try {
+      const { upsertTableInBundle } = await import("./custodian-bundle-profiles.js");
+      const updated = upsertTableInBundle(req.params.id, req.body.table);
+      if (!updated) { res.status(404).json({ success: false, error: "Bundle profile not found" }); return; }
+      res.json({ success: true, profile: updated });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // DELETE /api/synthetic-data/bundle-profiles/:id/tables/:tableId
+  app.delete("/api/synthetic-data/bundle-profiles/:id/tables/:tableId", async (req: Request, res: Response) => {
+    try {
+      const { removeTableFromBundle } = await import("./custodian-bundle-profiles.js");
+      const updated = removeTableFromBundle(req.params.id, req.params.tableId);
+      if (!updated) { res.status(404).json({ success: false, error: "Bundle profile not found" }); return; }
+      res.json({ success: true, profile: updated });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/bundle-profiles/:id/generate — Sprint 2 referential integrity
+  app.post("/api/synthetic-data/bundle-profiles/:id/generate", async (req: Request, res: Response) => {
+    try {
+      const { generateBundle } = await import("./bundle-generator.js");
+      const rowCount = Math.min(Math.max(parseInt(req.body.rowCount ?? "100", 10) || 100, 1), 5000);
+      const result = generateBundle(req.params.id, rowCount);
+      if (!result) {
+        res.status(404).json({ success: false, error: "Bundle profile not found" });
+        return;
+      }
+      res.json({ success: true, result });
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }
@@ -9534,6 +9732,81 @@ Each element includes a fallback locator strategy (label, placeholder, text).
     }
   });
 
+  // POST /api/framework-config/upload-document
+  // Accepts a DOCX or PDF file, extracts text, creates a new Framework Config with that text as description.
+  // multipart/form-data fields: file (required), name (required), framework?, language?
+  app.post("/api/framework-config/upload-document",
+    uploadMemory.single("file"),
+    async (req: Request, res: Response) => {
+      try {
+        const file = (req as any).file;
+        if (!file) { res.status(400).json({ error: "No file uploaded" }); return; }
+
+        const configName = (req.body.name || file.originalname.replace(/\.[^.]+$/, '')).trim();
+        const framework = (req.body.framework || 'application-context').trim();
+        const language  = (req.body.language  || 'generic').trim();
+
+        // --- Extract text from DOCX or PDF ---
+        let extractedText = '';
+        const ext = file.originalname.toLowerCase().split('.').pop();
+
+        if (ext === 'docx') {
+          // DOCX is a ZIP — extract word/document.xml
+          const JSZip = await import('jszip');
+          const zip = await JSZip.default.loadAsync(file.buffer);
+          const xmlEntry = zip.file('word/document.xml');
+          if (!xmlEntry) { res.status(422).json({ error: "word/document.xml not found in DOCX" }); return; }
+          const xml = await xmlEntry.async('string');
+          extractedText = xml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+        } else if (ext === 'pdf') {
+          // PDF: return raw buffer text (basic extraction)
+          extractedText = file.buffer.toString('latin1')
+            .replace(/[^\x20-\x7E\n\r\t]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .substring(0, 50000);
+        } else if (ext === 'txt' || ext === 'md') {
+          extractedText = file.buffer.toString('utf8');
+        } else {
+          res.status(400).json({ error: `Unsupported file type: .${ext}. Upload DOCX, PDF, TXT, or MD.` });
+          return;
+        }
+
+        if (!extractedText || extractedText.length < 50) {
+          res.status(422).json({ error: "Could not extract meaningful text from the document." });
+          return;
+        }
+
+        // Cap at 50 000 chars (prompt safety)
+        const description = extractedText.substring(0, 50000);
+
+        // Create the framework config entry
+        const [inserted] = await db.insert(frameworkConfigs).values({
+          id: crypto.randomUUID(),
+          name: configName,
+          framework,
+          language,
+          description,
+          isGlobal: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning();
+
+        res.json({
+          success: true,
+          id: inserted.id,
+          name: inserted.name,
+          framework: inserted.framework,
+          language: inserted.language,
+          charCount: description.length,
+          message: `Document "${file.originalname}" parsed and saved as "${configName}" (${description.length.toLocaleString()} chars).`,
+        });
+      } catch (error: any) {
+        res.status(500).json({ error: error.message });
+      }
+    }
+  );
+
   // POST /api/framework-config/:id/redetect — re-run detection + function extraction on existing files
   app.post("/api/framework-config/:id/redetect", async (req: Request, res: Response) => {
     try {
@@ -10280,70 +10553,86 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   // ── Desktop Downloads ─────────────────────────────────────────────────────────
   const REPO_ROOT = process.cwd();
 
+  /**
+   * Recursively add a directory to a JSZip folder, skipping SKIP_DIRS.
+   * All file content is read as Buffer so binary files (images, etc.) are preserved.
+   */
+  const SKIP_DIRS = new Set(['node_modules', 'dist', '.git']);
+  function addDirToZip(zipFolder: any, dirPath: string): void {
+    const entries = fs.readdirSync(dirPath);
+    for (const entry of entries) {
+      if (SKIP_DIRS.has(entry)) continue;
+      const fullPath = path.join(dirPath, entry);
+      const stat = fs.statSync(fullPath);
+      if (stat.isDirectory()) {
+        addDirToZip(zipFolder.folder(entry), fullPath);
+      } else {
+        zipFolder.file(entry, fs.readFileSync(fullPath));
+      }
+    }
+  }
+
   /** GET /api/downloads/chrome-extension — serve chrome-extension/ as a .zip */
-  app.get('/api/downloads/chrome-extension', (_req, res) => {
+  app.get('/api/downloads/chrome-extension', async (_req, res) => {
     const extDir = path.join(REPO_ROOT, 'chrome-extension');
     if (!fs.existsSync(extDir)) {
       return res.status(404).json({ error: 'chrome-extension directory not found' });
     }
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="nat20-chrome-extension.zip"');
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
-    archive.pipe(res);
-    archive.directory(extDir, 'nat20-chrome-extension');
-    archive.finalize();
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      addDirToZip(zip.folder('nat20-chrome-extension')!, extDir);
+      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="nat20-chrome-extension.zip"');
+      res.setHeader('Content-Length', String(buffer.length));
+      res.send(buffer);
+    } catch (err: any) {
+      console.error('[Downloads] chrome-extension ZIP error:', err);
+      if (!res.headersSent) res.status(500).json({ error: err.message });
+    }
   });
 
   /** GET /api/downloads/remote-agent — serve remote-agent/ (excluding node_modules) as a .zip */
-  app.get('/api/downloads/remote-agent', (_req, res) => {
+  app.get('/api/downloads/remote-agent', async (_req, res) => {
     const agentDir = path.join(REPO_ROOT, 'remote-agent');
     if (!fs.existsSync(agentDir)) {
       return res.status(404).json({ error: 'remote-agent directory not found' });
     }
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
-    archive.pipe(res);
-    // Add all files except node_modules and dist
-    const entries = fs.readdirSync(agentDir);
-    for (const entry of entries) {
-      if (entry === 'node_modules' || entry === 'dist') continue;
-      const fullPath = path.join(agentDir, entry);
-      const stat = fs.statSync(fullPath);
-      if (stat.isDirectory()) {
-        archive.directory(fullPath, `nat20-remote-agent/${entry}`);
-      } else {
-        archive.file(fullPath, { name: `nat20-remote-agent/${entry}` });
-      }
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      addDirToZip(zip.folder('nat20-remote-agent')!, agentDir);
+      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
+      res.setHeader('Content-Length', String(buffer.length));
+      res.send(buffer);
+    } catch (err: any) {
+      console.error('[Downloads] remote-agent ZIP error:', err);
+      if (!res.headersSent) res.status(500).json({ error: err.message });
     }
-    archive.finalize();
   });
 
   /** GET /api/downloads/workspace-agent — serve workspace-agent/ (excluding node_modules) as a .zip */
-  app.get('/api/downloads/workspace-agent', (_req, res) => {
+  app.get('/api/downloads/workspace-agent', async (_req, res) => {
     const agentDir = path.join(REPO_ROOT, 'workspace-agent');
     if (!fs.existsSync(agentDir)) {
       return res.status(404).json({ error: 'workspace-agent directory not found' });
     }
-    res.setHeader('Content-Type', 'application/zip');
-    res.setHeader('Content-Disposition', 'attachment; filename="nat20-workspace-agent.zip"');
-    const archive = archiver('zip', { zlib: { level: 9 } });
-    archive.on('error', (err: Error) => { console.error('[Downloads] Archive error:', err); res.end(); });
-    archive.pipe(res);
-    const entries = fs.readdirSync(agentDir);
-    for (const entry of entries) {
-      if (entry === 'node_modules' || entry === 'dist') continue;
-      const fullPath = path.join(agentDir, entry);
-      const stat = fs.statSync(fullPath);
-      if (stat.isDirectory()) {
-        archive.directory(fullPath, `nat20-workspace-agent/${entry}`);
-      } else {
-        archive.file(fullPath, { name: `nat20-workspace-agent/${entry}` });
-      }
+    try {
+      const JSZip = (await import('jszip')).default;
+      const zip = new JSZip();
+      addDirToZip(zip.folder('nat20-workspace-agent')!, agentDir);
+      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
+      res.setHeader('Content-Type', 'application/zip');
+      res.setHeader('Content-Disposition', 'attachment; filename="nat20-workspace-agent.zip"');
+      res.setHeader('Content-Length', String(buffer.length));
+      res.send(buffer);
+    } catch (err: any) {
+      console.error('[Downloads] workspace-agent ZIP error:', err);
+      if (!res.headersSent) res.status(500).json({ error: err.message });
     }
-    archive.finalize();
   });
 
   return httpServer;

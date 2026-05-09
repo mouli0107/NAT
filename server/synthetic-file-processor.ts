@@ -189,8 +189,8 @@ function genDateMMDDYY(yearsAgoMin = 0, yearsAgoMax = 20): string {
   return `${mm}${dd}${yy}`;
 }
 
-function genAmount(max = 999999): string {
-  return (Math.random() * max).toFixed(5);
+function genAmount(max = 999999, decimalPlaces = 2): string {
+  return (Math.random() * max).toFixed(decimalPlaces);
 }
 
 function genAddress(): string {
@@ -845,7 +845,8 @@ function generatePositiveValue(col: FieldSchema, poolTracker?: PoolCoverageTrack
     case "date_mmddyy":
       // Close-date fields are "000000" (no close date) for ~70% of active accounts
       if (col.displayName && col.displayName.includes("close") && Math.random() < 0.70) return "000000";
-      return genDateMMDDYY(0, 20);
+      // Fix: constrain year to last 6 years (2020–2026) so dates are always recent
+      return genDateMMDDYY(0, 6);
     case "state_code":    return pick(US_STATES);
     case "country_code":  return pick(["US","CA","GB","AU","DE","FR","IT","JP","MX","BR"]);
     case "amount": {
@@ -858,9 +859,19 @@ function generatePositiveValue(col: FieldSchema, poolTracker?: PoolCoverageTrack
         const dec2Val = rnd(0, Math.pow(10, dec2Part.length) - 1).toString().padStart(dec2Part.length, "0");
         return `${intVal}.${dec1Val},${dec2Val}`;
       }
-      return genAmount(100000).padEnd(col.maxObservedLength, "0");
+      // Fix: parse decimal precision and integer range from sqlType (e.g. DECIMAL(18,2) → 2 decimal places)
+      const precMatch = col.sqlType?.match(/DECIMAL\s*\(\s*\d+\s*,\s*(\d+)\s*\)/i);
+      const decimalPlaces = precMatch ? parseInt(precMatch[1], 10) : 2;
+      // Derive a sensible integer max: 4–6 significant digits, scaled by maxObservedLength
+      const intMax = Math.min(Math.pow(10, Math.max(col.maxObservedLength - decimalPlaces - 1, 2)), 99999);
+      return genAmount(intMax, decimalPlaces);
     }
-    case "integer":       return rnd(0, 9999).toString();
+    case "integer": {
+      // Fix: respect maxObservedLength so a 2-digit field never generates 82729
+      const maxDigits = Math.max(col.maxObservedLength || 1, 1);
+      const maxInt = Math.pow(10, maxDigits) - 1;
+      return rnd(1, Math.min(maxInt, 999999)).toString();
+    }
     case "name":          return genNameInverted();
     case "address":       return genAddress();
     case "city":          return pick(FALLBACK_CITIES);
@@ -1053,7 +1064,11 @@ function applyCoherence(value: string, col: FieldSchema, coherence: RecordCohere
   // preventing clearing/sub-clearing codes from being overwritten.
   if (col.detectedType === "code_pool" && col.lineIndex === schema.linesPerRecord - 1 && col.pool) {
     const shortEntries = col.pool.filter(p => p.length >= 2 && p.length <= 3);
-    if (shortEntries.length >= col.pool.length * 0.5) {
+    // Only treat as product-prefix when at least one short entry contains a digit
+    // (e.g. N1, L6, CW2). Pure-alpha pools like BUY/SELL, Y/N, DVP, USD must be
+    // left to the normal pool sampler — they are NOT product-prefix codes.
+    const poolLooksLikeProductPrefix = shortEntries.some(p => /\d/.test(p));
+    if (poolLooksLikeProductPrefix && shortEntries.length >= col.pool.length * 0.5) {
       const p2 = coherence.productCode.slice(0, 2);
       const matched = shortEntries.find(p => p.startsWith(p2));
       if (matched) return matched;

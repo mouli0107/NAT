@@ -5,6 +5,7 @@ import { DashboardHeader } from "@/components/dashboard/header";
 import { useBranding } from "@/contexts/BrandingContext";
 import { SampleFileUploadMode } from "@/components/synthetic-data/SampleFileUploadMode";
 import { GenerationHistoryView } from "@/components/synthetic-data/GenerationHistoryView";
+import { CustodianProfileBuilder, BundleProfileList } from "@/components/synthetic-data/CustodianProfileBuilder";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -39,7 +40,8 @@ import {
   X,
   Brain,
   Wand2,
-  History
+  History,
+  Layers
 } from "lucide-react";
 
 const DOMAIN_DEFINITIONS: DomainDefinition[] = [
@@ -554,7 +556,9 @@ export default function SyntheticDataPage() {
   const { toast } = useToast();
   const { brand } = useBranding();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeMode, setActiveMode] = useState<"template" | "upload" | "history">("template");
+  const [activeMode, setActiveMode] = useState<"template" | "upload" | "history" | "bundle">("template");
+  const [bundleView, setBundleView] = useState<"list" | "create">("list");
+  const [editingBundleId, setEditingBundleId] = useState<string | null>(null);
 
   // Get default domain from settings (localStorage)
   const defaultDomain = localStorage.getItem("defaultDomain") || "insurance";
@@ -855,6 +859,18 @@ export default function SyntheticDataPage() {
                 <History className="w-4 h-4" />
                 History
               </button>
+              <button
+                onClick={() => { setActiveMode("bundle"); setBundleView("list"); setEditingBundleId(null); }}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "bundle"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-bundle"
+              >
+                <Layers className="w-4 h-4" />
+                Custodian Bundle
+              </button>
             </div>
           </div>
 
@@ -871,6 +887,51 @@ export default function SyntheticDataPage() {
         {activeMode === "history" && (
           <div className="px-6 pb-6">
             <GenerationHistoryView onNavigateToUpload={() => setActiveMode("upload")} />
+          </div>
+        )}
+
+        {/* ── Custodian Bundle Mode ── */}
+        {activeMode === "bundle" && (
+          <div className="px-6 pb-6 max-w-[1600px] mx-auto">
+            {bundleView === "list" ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-lg font-semibold text-foreground">Custodian Bundle Profiles</h2>
+                    <p className="text-sm text-muted-foreground">
+                      Multi-table schema registries with referential integrity for custodian data generation
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() => { setEditingBundleId(null); setBundleView("create"); }}
+                    className="flex items-center gap-2"
+                  >
+                    <Plus className="w-4 h-4" />
+                    New Bundle Profile
+                  </Button>
+                </div>
+                <BundleProfileList
+                  onEdit={(id) => { setEditingBundleId(id); setBundleView("create"); }}
+                />
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setBundleView("list"); setEditingBundleId(null); }}
+                    className="flex items-center gap-1 text-muted-foreground hover:text-foreground"
+                  >
+                    ← Back to Profiles
+                  </Button>
+                </div>
+                <CustodianProfileBuilder
+                  editProfileId={editingBundleId ?? undefined}
+                  onSaved={() => { setBundleView("list"); setEditingBundleId(null); }}
+                />
+              </div>
+            )}
           </div>
         )}
 

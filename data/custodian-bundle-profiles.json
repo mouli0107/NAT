@@ -1,0 +1,825 @@
+[
+  {
+    "id": "cbp_1778237822376",
+    "custodianName": "Fidelity",
+    "description": "Fidelity custodian file bundle — upload_position + account_transaction",
+    "tables": [
+      {
+        "tableId": "tbl_pos_1778237822372",
+        "tableName": "upload_position",
+        "description": "Daily position snapshot per account/security",
+        "schema": {
+          "format": "csv",
+          "delimiter": "|",
+          "linesPerRecord": 1,
+          "sampleRecordCount": 10,
+          "columns": [
+            {
+              "id": "L0_P0",
+              "displayName": "account_id",
+              "lineIndex": 0,
+              "position": 0,
+              "sqlType": "VARCHAR(15)",
+              "detectedType": "account_id",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 15
+            },
+            {
+              "id": "L0_P1",
+              "displayName": "security_id",
+              "lineIndex": 0,
+              "position": 1,
+              "sqlType": "VARCHAR(20)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "AAPL",
+                "MSFT",
+                "GOOGL",
+                "AMZN",
+                "TSLA",
+                "SPY",
+                "QQQ",
+                "BND",
+                "GLD",
+                "VTI"
+              ],
+              "maxObservedLength": 20
+            },
+            {
+              "id": "L0_P2",
+              "displayName": "entry_code",
+              "lineIndex": 0,
+              "position": 2,
+              "sqlType": "VARCHAR(5)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "DVP",
+                "FP",
+                "RVP",
+                "REC",
+                "DEL"
+              ],
+              "maxObservedLength": 5
+            },
+            {
+              "id": "L0_P3",
+              "displayName": "entry_date",
+              "lineIndex": 0,
+              "position": 3,
+              "sqlType": "DATE",
+              "detectedType": "date_mmddyy",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P4",
+              "displayName": "units",
+              "lineIndex": 0,
+              "position": 4,
+              "sqlType": "DECIMAL(18,6)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            },
+            {
+              "id": "L0_P5",
+              "displayName": "market_value",
+              "lineIndex": 0,
+              "position": 5,
+              "sqlType": "DECIMAL(18,2)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            },
+            {
+              "id": "L0_P6",
+              "displayName": "file_number",
+              "lineIndex": 0,
+              "position": 6,
+              "sqlType": "INTEGER",
+              "detectedType": "integer",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P7",
+              "displayName": "position_id",
+              "lineIndex": 0,
+              "position": 7,
+              "sqlType": "VARCHAR(20)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "POS001",
+                "POS002",
+                "POS003",
+                "POS004",
+                "POS005",
+                "POS006",
+                "POS007",
+                "POS008"
+              ],
+              "maxObservedLength": 20
+            },
+            {
+              "id": "L0_P8",
+              "displayName": "owner_id",
+              "lineIndex": 0,
+              "position": 8,
+              "sqlType": "VARCHAR(15)",
+              "detectedType": "account_id",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 15
+            },
+            {
+              "id": "L0_P9",
+              "displayName": "owner_type",
+              "lineIndex": 0,
+              "position": 9,
+              "sqlType": "VARCHAR(5)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "IND",
+                "JT",
+                "IRA",
+                "ROTH",
+                "TRUST"
+              ],
+              "maxObservedLength": 5
+            },
+            {
+              "id": "L0_P10",
+              "displayName": "cash_tag",
+              "lineIndex": 0,
+              "position": 10,
+              "sqlType": "VARCHAR(1)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "Y",
+                "N"
+              ],
+              "maxObservedLength": 1
+            },
+            {
+              "id": "L0_P11",
+              "displayName": "trust_tag",
+              "lineIndex": 0,
+              "position": 11,
+              "sqlType": "VARCHAR(1)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "Y",
+                "N"
+              ],
+              "maxObservedLength": 1
+            },
+            {
+              "id": "L0_P12",
+              "displayName": "settlement_currency",
+              "lineIndex": 0,
+              "position": 12,
+              "sqlType": "VARCHAR(3)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "USD",
+                "EUR",
+                "GBP",
+                "CAD",
+                "AUD"
+              ],
+              "maxObservedLength": 3
+            },
+            {
+              "id": "L0_P13",
+              "displayName": "hold_id",
+              "lineIndex": 0,
+              "position": 13,
+              "sqlType": "VARCHAR(10)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "HLD001",
+                "HLD002",
+                "HLD003",
+                ""
+              ],
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P14",
+              "displayName": "provider_id",
+              "lineIndex": 0,
+              "position": 14,
+              "sqlType": "VARCHAR(10)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "FID",
+                "DTCC",
+                "JPM",
+                "BAML"
+              ],
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P15",
+              "displayName": "restriction_flag",
+              "lineIndex": 0,
+              "position": 15,
+              "sqlType": "VARCHAR(1)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "Y",
+                "N",
+                "P"
+              ],
+              "maxObservedLength": 1
+            },
+            {
+              "id": "L0_P16",
+              "displayName": "pending_units",
+              "lineIndex": 0,
+              "position": 16,
+              "sqlType": "DECIMAL(18,6)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            }
+          ]
+        },
+        "foreignKeys": [],
+        "fieldMappings": [
+          {
+            "umpField": "account_id",
+            "custodianField": "ACCT_NBR"
+          },
+          {
+            "umpField": "security_id",
+            "custodianField": "SEC_ID"
+          },
+          {
+            "umpField": "entry_code",
+            "custodianField": "ENTRY_CD"
+          },
+          {
+            "umpField": "entry_date",
+            "custodianField": "ENTRY_DT"
+          },
+          {
+            "umpField": "units",
+            "custodianField": "UNIT_QTY"
+          },
+          {
+            "umpField": "market_value",
+            "custodianField": "MKT_VAL"
+          },
+          {
+            "umpField": "file_number",
+            "custodianField": "FILE_NBR"
+          },
+          {
+            "umpField": "position_id",
+            "custodianField": "POS_ID"
+          },
+          {
+            "umpField": "owner_id",
+            "custodianField": "OWN_ID"
+          },
+          {
+            "umpField": "owner_type",
+            "custodianField": "OWN_TYPE"
+          },
+          {
+            "umpField": "cash_tag",
+            "custodianField": "CASH_TAG"
+          },
+          {
+            "umpField": "trust_tag",
+            "custodianField": "TRUST_TAG"
+          },
+          {
+            "umpField": "settlement_currency",
+            "custodianField": "SETL_CCY"
+          },
+          {
+            "umpField": "hold_id",
+            "custodianField": "HOLD_ID"
+          },
+          {
+            "umpField": "provider_id",
+            "custodianField": "PROV_ID"
+          },
+          {
+            "umpField": "restriction_flag",
+            "custodianField": "RESTR_FLG"
+          },
+          {
+            "umpField": "pending_units",
+            "custodianField": "PEND_UNITS"
+          }
+        ],
+        "sortOrder": 0
+      },
+      {
+        "tableId": "tbl_txn_1778237822373",
+        "tableName": "account_transaction",
+        "description": "Transaction activity — BUY/SELL events per account",
+        "schema": {
+          "format": "csv",
+          "delimiter": "|",
+          "linesPerRecord": 1,
+          "sampleRecordCount": 10,
+          "columns": [
+            {
+              "id": "L0_P0",
+              "displayName": "transaction_id",
+              "lineIndex": 0,
+              "position": 0,
+              "sqlType": "VARCHAR(20)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "TRN0001",
+                "TRN0002",
+                "TRN0003",
+                "TRN0004",
+                "TRN0005",
+                "TRN0006",
+                "TRN0007",
+                "TRN0008",
+                "TRN0009",
+                "TRN0010",
+                "TRN0011",
+                "TRN0012",
+                "TRN0013",
+                "TRN0014",
+                "TRN0015",
+                "TRN0016",
+                "TRN0017",
+                "TRN0018",
+                "TRN0019",
+                "TRN0020",
+                "TRN0021",
+                "TRN0022",
+                "TRN0023",
+                "TRN0024",
+                "TRN0025"
+              ],
+              "maxObservedLength": 20
+            },
+            {
+              "id": "L0_P1",
+              "displayName": "account_id",
+              "lineIndex": 0,
+              "position": 1,
+              "sqlType": "VARCHAR(15)",
+              "detectedType": "account_id",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 15
+            },
+            {
+              "id": "L0_P2",
+              "displayName": "transaction_date",
+              "lineIndex": 0,
+              "position": 2,
+              "sqlType": "DATE",
+              "detectedType": "date_mmddyy",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P3",
+              "displayName": "transaction_type",
+              "lineIndex": 0,
+              "position": 3,
+              "sqlType": "VARCHAR(10)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "BUY",
+                "SELL"
+              ],
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P4",
+              "displayName": "security_id",
+              "lineIndex": 0,
+              "position": 4,
+              "sqlType": "VARCHAR(20)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "AAPL",
+                "MSFT",
+                "GOOGL",
+                "AMZN",
+                "TSLA",
+                "SPY",
+                "QQQ",
+                "BND",
+                "GLD",
+                "VTI"
+              ],
+              "maxObservedLength": 20
+            },
+            {
+              "id": "L0_P5",
+              "displayName": "transaction_amount",
+              "lineIndex": 0,
+              "position": 5,
+              "sqlType": "DECIMAL(18,2)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            },
+            {
+              "id": "L0_P6",
+              "displayName": "units",
+              "lineIndex": 0,
+              "position": 6,
+              "sqlType": "DECIMAL(18,6)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            },
+            {
+              "id": "L0_P7",
+              "displayName": "commission_amount",
+              "lineIndex": 0,
+              "position": 7,
+              "sqlType": "DECIMAL(18,2)",
+              "detectedType": "amount",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 18
+            },
+            {
+              "id": "L0_P8",
+              "displayName": "file_number",
+              "lineIndex": 0,
+              "position": 8,
+              "sqlType": "INTEGER",
+              "detectedType": "integer",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P9",
+              "displayName": "memo",
+              "lineIndex": 0,
+              "position": 9,
+              "sqlType": "VARCHAR(100)",
+              "detectedType": "text",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 100
+            },
+            {
+              "id": "L0_P10",
+              "displayName": "delete_flag",
+              "lineIndex": 0,
+              "position": 10,
+              "sqlType": "VARCHAR(1)",
+              "detectedType": "literal",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": true,
+              "literalValue": "N",
+              "maxObservedLength": 1
+            },
+            {
+              "id": "L0_P11",
+              "displayName": "updated_by",
+              "lineIndex": 0,
+              "position": 11,
+              "sqlType": "VARCHAR(20)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "SYS",
+                "BATCH",
+                "USER1",
+                "FID_FEED"
+              ],
+              "maxObservedLength": 20
+            },
+            {
+              "id": "L0_P12",
+              "displayName": "transaction_code",
+              "lineIndex": 0,
+              "position": 12,
+              "sqlType": "VARCHAR(10)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "TRD",
+                "DIV",
+                "INT",
+                "FEE",
+                "ADJ"
+              ],
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P13",
+              "displayName": "line_number",
+              "lineIndex": 0,
+              "position": 13,
+              "sqlType": "INTEGER",
+              "detectedType": "integer",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P14",
+              "displayName": "last_update_date",
+              "lineIndex": 0,
+              "position": 14,
+              "sqlType": "DATE",
+              "detectedType": "timestamp",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P15",
+              "displayName": "transaction_flags",
+              "lineIndex": 0,
+              "position": 15,
+              "sqlType": "VARCHAR(10)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "REG",
+                "AUTO",
+                "MAN",
+                "CORR"
+              ],
+              "maxObservedLength": 10
+            },
+            {
+              "id": "L0_P16",
+              "displayName": "import_transaction_flag",
+              "lineIndex": 0,
+              "position": 16,
+              "sqlType": "VARCHAR(1)",
+              "detectedType": "code_pool",
+              "isPII": false,
+              "sampleValue": "",
+              "populatedCount": 10,
+              "totalSampleCount": 10,
+              "isLiteral": false,
+              "pool": [
+                "Y",
+                "N"
+              ],
+              "maxObservedLength": 1
+            }
+          ]
+        },
+        "foreignKeys": [
+          {
+            "localColumn": "account_id",
+            "refTableId": "tbl_pos_1778237822372",
+            "refColumn": "account_id"
+          }
+        ],
+        "fieldMappings": [
+          {
+            "umpField": "transaction_id",
+            "custodianField": "TRN_ID"
+          },
+          {
+            "umpField": "account_id",
+            "custodianField": "ACCT_NBR"
+          },
+          {
+            "umpField": "transaction_date",
+            "custodianField": "TRN_DT"
+          },
+          {
+            "umpField": "transaction_type",
+            "custodianField": "TRN_TYPE"
+          },
+          {
+            "umpField": "security_id",
+            "custodianField": "SEC_ID"
+          },
+          {
+            "umpField": "transaction_amount",
+            "custodianField": "TRN_AMT"
+          },
+          {
+            "umpField": "units",
+            "custodianField": "UNIT_QTY"
+          },
+          {
+            "umpField": "commission_amount",
+            "custodianField": "COMM_AMT"
+          },
+          {
+            "umpField": "file_number",
+            "custodianField": "FILE_NBR"
+          },
+          {
+            "umpField": "memo",
+            "custodianField": "MEMO"
+          },
+          {
+            "umpField": "delete_flag",
+            "custodianField": "DEL_FLG"
+          },
+          {
+            "umpField": "updated_by",
+            "custodianField": "UPDT_BY"
+          },
+          {
+            "umpField": "transaction_code",
+            "custodianField": "TRAN_CD"
+          },
+          {
+            "umpField": "line_number",
+            "custodianField": "LINE_NUM"
+          },
+          {
+            "umpField": "last_update_date",
+            "custodianField": "LST_UPDT_DT"
+          },
+          {
+            "umpField": "transaction_flags",
+            "custodianField": "TRN_FLAGS"
+          },
+          {
+            "umpField": "import_transaction_flag",
+            "custodianField": "IMP_TRN_FLG"
+          }
+        ],
+        "sortOrder": 1
+      }
+    ],
+    "businessRules": [
+      {
+        "ruleId": "rule_recalc_1778237822375",
+        "type": "position_recalc",
+        "description": "Back-fill position units/market_value from transaction aggregates",
+        "positionTableId": "tbl_pos_1778237822372",
+        "transactionTableId": "tbl_txn_1778237822373",
+        "positionKeyCol": "account_id",
+        "transKeyCol": "account_id",
+        "calculations": [
+          {
+            "positionCol": "units",
+            "transCol": "units",
+            "typeCol": "transaction_type",
+            "buyValue": "BUY",
+            "sellValue": "SELL"
+          },
+          {
+            "positionCol": "market_value",
+            "transCol": "transaction_amount",
+            "typeCol": "transaction_type",
+            "buyValue": "BUY",
+            "sellValue": "SELL"
+          }
+        ]
+      }
+    ],
+    "createdAt": "2026-05-08T10:57:02.375Z",
+    "updatedAt": "2026-05-08T10:57:02.375Z"
+  }
+]
