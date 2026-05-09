@@ -98,10 +98,10 @@ function ProjectNode({
   return (
     <div>
       <div
-        className="group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors hover:bg-blue-50 text-blue-700 font-semibold"
+        className="group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors hover:bg-white/5 text-slate-300 font-semibold"
         onClick={() => onToggleProject(projectName)}
       >
-        <span className="text-blue-400 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+        <span className="text-slate-500 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
           {projectTests.length > 0 ? '▶' : ' '}
         </span>
         <input type="checkbox"
@@ -109,15 +109,15 @@ function ProjectNode({
           ref={(el: HTMLInputElement | null) => { if (el) el.indeterminate = someSel && !allSel; }}
           onChange={e => { e.stopPropagation(); projectTests.forEach(t => onToggleTest(t.id)); }}
           onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-blue-500 flex-shrink-0 cursor-pointer"
+          className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0 cursor-pointer"
         />
         <span className="flex-shrink-0">🏗</span>
         <span className="flex-1 truncate">{projectName}</span>
-        <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-semibold">{projectTests.length}</span>
+        <span className="text-[10px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-medium">{projectTests.length}</span>
       </div>
 
       {isExpanded && (
-        <div className="ml-4 border-l border-blue-200 pl-2">
+        <div className="ml-4 border-l border-slate-700 pl-2">
           {relevantRootFolders.map(folder => (
             <FolderNode
               key={`${projectName}-${folder.id}`}
@@ -179,11 +179,11 @@ function FolderNode({
   return (
     <div>
       <div
-        className={`group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors relative ${isSelected ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-slate-700'}`}
+        className={`group flex items-center gap-1 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors relative ${isSelected ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400' : 'hover:bg-white/5 text-slate-300'}`}
         onClick={() => { onSelectFolder(folder.id); onToggleExpand(folder.id); }}
       >
         {/* Expand arrow */}
-        <span className="text-blue-400 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+        <span className="text-slate-500 w-3 text-center flex-shrink-0 transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
           {(children.length > 0 || folderTests.length > 0) ? '▶' : ' '}
         </span>
 
@@ -191,7 +191,7 @@ function FolderNode({
         <input type="checkbox" checked={allSelected} ref={el => { if (el) el.indeterminate = someSelected && !allSelected; }}
           onChange={e => { e.stopPropagation(); folderTests.forEach(t => onToggleTest(t.id)); }}
           onClick={e => e.stopPropagation()}
-          className="w-3 h-3 rounded accent-blue-500 flex-shrink-0 cursor-pointer"
+          className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0 cursor-pointer"
         />
 
         <span className="flex-shrink-0">{icon}</span>
@@ -200,7 +200,7 @@ function FolderNode({
           <input
             value={renameVal}
             autoFocus
-            className="flex-1 bg-white border border-blue-400 rounded px-1 py-0 text-xs text-slate-800 outline-none min-w-0"
+            className="flex-1 bg-slate-800 border border-indigo-400 rounded px-1 py-0 text-xs text-slate-100 outline-none min-w-0"
             onChange={e => setRenameVal(e.target.value)}
             onBlur={() => { onRenameFolder(folder.id, renameVal); setRenaming(false); }}
             onKeyDown={e => { if (e.key === 'Enter') { onRenameFolder(folder.id, renameVal); setRenaming(false); } if (e.key === 'Escape') setRenaming(false); }}
@@ -210,25 +210,25 @@ function FolderNode({
           <span className="flex-1 truncate font-medium">{folder.name}</span>
         )}
 
-        <span className="text-[9px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-semibold">{folderTests.length}</span>
+        <span className="text-[10px] bg-white/10 text-slate-400 px-1.5 py-0.5 rounded-full flex-shrink-0 ml-1 font-medium">{folderTests.length}</span>
 
         {/* Context menu trigger */}
         <button
           onClick={e => { e.stopPropagation(); setShowCtx(v => !v); }}
-          className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-slate-400 hover:text-blue-600 px-0.5 transition-opacity"
+          className="opacity-0 group-hover:opacity-100 flex-shrink-0 text-slate-500 hover:text-indigo-400 px-0.5 transition-opacity"
         >⋯</button>
 
         {showCtx && (
-          <div className="absolute right-2 top-7 z-50 bg-white border border-slate-200 rounded-lg shadow-xl text-xs w-36 overflow-hidden" onClick={e => e.stopPropagation()}>
-            <button className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700" onClick={() => { setRenaming(true); setShowCtx(false); }}>✏️ Rename</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-blue-50 text-slate-700" onClick={() => { onNewFolder(folder.id); setShowCtx(false); }}>📁 New Subfolder</button>
-            <button className="w-full text-left px-3 py-2 hover:bg-red-50 text-red-500" onClick={() => { onDeleteFolder(folder.id); setShowCtx(false); }}>🗑 Delete Folder</button>
+          <div className="absolute right-2 top-7 z-50 bg-slate-800 border border-slate-700 rounded-lg shadow-xl text-xs w-36 overflow-hidden" onClick={e => e.stopPropagation()}>
+            <button className="w-full text-left px-3 py-2 hover:bg-white/5 text-slate-300" onClick={() => { setRenaming(true); setShowCtx(false); }}>✏️ Rename</button>
+            <button className="w-full text-left px-3 py-2 hover:bg-white/5 text-slate-300" onClick={() => { onNewFolder(folder.id); setShowCtx(false); }}>📁 New Subfolder</button>
+            <button className="w-full text-left px-3 py-2 hover:bg-red-500/10 text-red-400" onClick={() => { onDeleteFolder(folder.id); setShowCtx(false); }}>🗑 Delete Folder</button>
           </div>
         )}
       </div>
 
       {isExpanded && (
-        <div className="ml-4 border-l border-blue-200 pl-2">
+        <div className="ml-4 border-l border-slate-700 pl-2">
           {children.map(child => (
             <FolderNode key={child.id} folder={child} allFolders={allFolders} tests={tests}
               selectedFolderId={selectedFolderId} selectedTestIds={selectedTestIds}
@@ -252,15 +252,15 @@ function TestRow({ test, selected, onToggle }: { test: RecordedTest; selected: b
 
   return (
     <div
-      className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-[11px] transition-colors ${selected ? 'bg-blue-50 text-blue-700' : 'hover:bg-slate-50 text-slate-600'}`}
+      className={`flex items-center gap-2 px-2 py-1 rounded-lg cursor-pointer text-[11px] transition-colors ${selected ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400' : 'hover:bg-white/5 text-slate-400'}`}
       onClick={() => onToggle(test.id)}
     >
       <input type="checkbox" checked={selected} onChange={() => onToggle(test.id)}
         onClick={e => e.stopPropagation()}
-        className="w-3 h-3 rounded accent-blue-500 flex-shrink-0" />
+        className="w-3 h-3 rounded accent-indigo-500 flex-shrink-0" />
       <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${statusDot}`} />
       <span className="flex-1 truncate">{test.name}</span>
-      {test.lastRunDuration && <span className="text-[9px] text-slate-700">{(test.lastRunDuration / 1000).toFixed(1)}s</span>}
+      {test.lastRunDuration && <span className="text-[9px] text-slate-500">{(test.lastRunDuration / 1000).toFixed(1)}s</span>}
     </div>
   );
 }
@@ -550,12 +550,12 @@ export default function TestLibraryPage() {
         </Link>
         <div className="flex items-center gap-2">
           <Link href="/coverage">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs transition-colors border border-slate-200">
+            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 hover:border-slate-400 bg-white hover:bg-slate-50 text-slate-600 text-sm font-semibold transition-all">
               📊 Coverage
             </button>
           </Link>
           <Link href="/recorder">
-            <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gradient-to-r from-rose-600/80 to-red-600/80 hover:from-rose-600 hover:to-red-600 text-white text-xs font-semibold transition-all">
+            <button className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all">
               <span className="text-[10px]">⏺</span> New Recording
             </button>
           </Link>
@@ -565,68 +565,67 @@ export default function TestLibraryPage() {
       <div className="flex flex-1 overflow-hidden">
 
       {/* ── Left: Folder Tree ────────────────────────────────────────────────── */}
-      <div className="w-72 flex-shrink-0 border-r border-slate-200 flex flex-col bg-slate-50">
+      <div className="w-72 flex-shrink-0 border-r border-slate-700/50 flex flex-col bg-slate-900">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
+        <div className="px-4 py-3 border-b border-slate-700/50 flex-shrink-0">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center text-xs">🗂</div>
-              <span className="text-sm font-bold text-blue-700">Test Library</span>
+              <div className="w-6 h-6 rounded-md bg-indigo-500/20 flex items-center justify-center text-xs">🗂</div>
+              <span className="text-sm font-bold text-slate-200">Test Library</span>
             </div>
             <div className="flex items-center gap-1">
               <button onClick={() => setShowNewFolder(true)} title="New Folder"
-                className="w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs flex items-center justify-center transition-colors">+</button>
+                className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">+</button>
               <button onClick={loadRunHistory} title="Run History"
-                className="w-6 h-6 rounded-md bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-600 text-xs flex items-center justify-center transition-colors">🕘</button>
+                className="w-6 h-6 rounded-md bg-white/5 hover:bg-white/10 border border-slate-700 text-slate-400 text-xs flex items-center justify-center transition-colors">🕘</button>
             </div>
           </div>
 
-          {/* Stats bar */}
-          <div className="grid grid-cols-3 gap-1">
-            {[
-              { label: 'Total', val: stats.totalTests, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Passed', val: stats.passed, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: 'Failed', val: stats.failed, color: 'text-red-500', bg: 'bg-red-50' },
-            ].map(s => (
-              <div key={s.label} className={`${s.bg} rounded-lg px-2 py-1.5 text-center border border-slate-200`}>
-                <div className={`text-sm font-bold ${s.color}`}>{s.val}</div>
-                <div className="text-[9px] text-slate-500">{s.label}</div>
-              </div>
-            ))}
+          {/* Stats bar — inline badge chips */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="inline-flex items-center gap-1 bg-slate-700/50 border border-slate-600 text-slate-300 text-[10px] font-medium px-2 py-0.5 rounded-full">
+              {stats.totalTests} total
+            </span>
+            <span className="inline-flex items-center gap-1 bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-[10px] font-medium px-2 py-0.5 rounded-full">
+              {stats.passed} passed
+            </span>
+            <span className="inline-flex items-center gap-1 bg-red-500/15 border border-red-500/30 text-red-400 text-[10px] font-medium px-2 py-0.5 rounded-full">
+              {stats.failed} failed
+            </span>
           </div>
         </div>
 
         {/* New folder form */}
         {showNewFolder && (
-          <div className="px-3 py-2 border-b border-slate-200 bg-blue-50 flex-shrink-0">
-            <div className="text-[10px] text-blue-600 mb-1.5 font-semibold">NEW FOLDER</div>
+          <div className="px-3 py-2 border-b border-slate-700/50 bg-slate-800/50 flex-shrink-0">
+            <div className="text-[10px] text-slate-500 mb-1.5 font-semibold uppercase tracking-widest">NEW FOLDER</div>
             <input
               autoFocus
               value={newFolderName}
               onChange={e => setNewFolderName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') createFolder(); if (e.key === 'Escape') setShowNewFolder(false); }}
               placeholder="Folder name..."
-              className="w-full bg-white border border-blue-300 rounded-lg px-2 py-1.5 text-xs text-slate-800 placeholder-slate-400 outline-none focus:border-blue-500 mb-1.5"
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-200 placeholder-slate-500 outline-none focus:border-indigo-500 mb-1.5"
             />
             <select value={newFolderParent} onChange={e => setNewFolderParent(e.target.value)}
-              className="w-full bg-white border border-blue-300 rounded-lg px-2 py-1.5 text-xs text-slate-700 outline-none mb-2">
+              className="w-full bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-xs text-slate-300 outline-none mb-2">
               <option value="">Root</option>
               {folders.map(f => <option key={f.id} value={f.id}>{f.name}</option>)}
             </select>
             <div className="flex gap-1.5">
-              <button onClick={() => setShowNewFolder(false)} className="flex-1 py-1 rounded bg-white border border-slate-200 text-xs text-slate-600">Cancel</button>
-              <button onClick={createFolder} className="flex-1 py-1 rounded bg-blue-600 hover:bg-blue-700 text-xs text-white font-semibold">Create</button>
+              <button onClick={() => setShowNewFolder(false)} className="flex-1 py-1 rounded bg-slate-700 border border-slate-600 text-xs text-slate-300">Cancel</button>
+              <button onClick={createFolder} className="flex-1 py-1 rounded bg-indigo-500 hover:bg-indigo-400 text-xs text-white font-semibold transition-all">Create</button>
             </div>
           </div>
         )}
 
         {/* Tree */}
-        <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}>
+        <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
 
           {/* ── Projects section ── */}
           {projectNames.length > 0 && (
             <div className="mb-1">
-              <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-blue-600 uppercase tracking-wider">
+              <div className="flex items-center gap-1 px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-slate-500">
                 <span>🏗</span> Projects
               </div>
               {projectNames.map(proj => (
@@ -652,18 +651,18 @@ export default function TestLibraryPage() {
         </div>
 
         {/* Execute button */}
-        <div className="px-3 py-3 border-t border-slate-200 flex-shrink-0">
+        <div className="px-3 py-3 border-t border-slate-700/50 flex-shrink-0">
           <button
             onClick={executeSelected}
             disabled={selectedCount === 0 || isRunning}
-            className="w-full py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold transition-all flex items-center justify-center gap-2"
+            className="w-full px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-semibold transition-all flex items-center justify-center gap-2"
           >
             {isRunning
               ? <><div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Running {selectedCount} tests...</>
               : <>▶ Execute Selected {selectedCount > 0 ? `(${selectedCount})` : ''}</>}
           </button>
           {selectedCount > 0 && !isRunning && (
-            <button onClick={() => setSelectedTestIds(new Set())} className="w-full mt-1.5 py-1 text-[10px] text-slate-500 hover:text-blue-600 transition-colors">Clear selection</button>
+            <button onClick={() => setSelectedTestIds(new Set())} className="w-full mt-1.5 py-1 text-[10px] text-slate-500 hover:text-indigo-400 transition-colors">Clear selection</button>
           )}
         </div>
       </div>
@@ -692,7 +691,7 @@ export default function TestLibraryPage() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}>
+        <div className="flex-1 overflow-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
           {(selectedProject ? projectTests : folderTests).length === 0 ? (
             <div className="flex flex-col items-center justify-center h-40 text-slate-700 text-xs gap-2">
               <span className="text-2xl">📭</span>
@@ -840,7 +839,7 @@ export default function TestLibraryPage() {
                 </div>
               </div>
 
-              <div className="flex-1 overflow-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: '#1e293b transparent' }}>
+              <div className="flex-1 overflow-auto p-4" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
                 {/* NL Steps */}
                 {activeTest.nlSteps && activeTest.nlSteps.length > 0 && (
                   <div className="mb-4">
@@ -868,7 +867,7 @@ export default function TestLibraryPage() {
                           download className="text-[10px] text-slate-500 hover:text-blue-600 px-2 py-1 rounded bg-slate-100 border border-slate-200 transition-colors">↓ Download</a>
                       </div>
                     </div>
-                    <pre className="text-[11px] font-mono bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
+                    <pre className="text-[11px] font-mono bg-slate-50 border border-slate-200 rounded-xl p-4 overflow-auto max-h-96 leading-relaxed whitespace-pre-wrap" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
                       {activeTest.script.split('\n').map((line, i) => (
                         <span key={i} className={
                           line.trim().startsWith('//') ? 'text-slate-400' :
@@ -892,7 +891,7 @@ export default function TestLibraryPage() {
                   <span className="text-xs font-semibold text-slate-700">Execution Output</span>
                   <button onClick={() => { setRunOutput([]); setVisualAnalysis(null); }} className="ml-auto text-slate-400 hover:text-slate-600 text-xs">Clear</button>
                 </div>
-                <div ref={outputRef} className="flex-1 overflow-auto p-3 font-mono text-[10px] space-y-0.5 bg-slate-50" style={{ scrollbarWidth: 'thin', scrollbarColor: '#cbd5e1 transparent' }}>
+                <div ref={outputRef} className="flex-1 overflow-auto p-3 font-mono text-[10px] space-y-0.5 bg-slate-50" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.2) transparent' }}>
                   {runOutput.map((line, i) => (
                     <div key={i} className={`leading-relaxed whitespace-pre-wrap break-all ${line.isError ? 'text-red-500' : line.line.startsWith('\n▶') ? 'text-blue-600 font-bold mt-2' : line.line.includes('✅') ? 'text-emerald-600 font-bold' : line.line.includes('❌') ? 'text-red-500 font-bold' : 'text-slate-600'}`}>
                       {line.line}
@@ -931,14 +930,14 @@ export default function TestLibraryPage() {
           </div>
         ) : (
           /* Empty state */
-          <div className="flex-1 flex flex-col items-center justify-center gap-4 text-slate-700">
-            <div className="text-5xl">🗂</div>
-            <div className="text-sm font-semibold text-slate-500">Select a test to preview</div>
-            <div className="text-xs text-slate-700 max-w-xs text-center">
+          <div className="flex flex-col items-center justify-center h-full gap-3 text-slate-500">
+            <div className="text-4xl opacity-20">🗂</div>
+            <div className="text-sm font-medium text-slate-400">Select a test to preview</div>
+            <div className="text-xs text-slate-500 max-w-xs text-center">
               Use the folder tree on the left to browse and select tests, then click Execute to run them.
             </div>
             <button onClick={() => navigate('/recorder')}
-              className="mt-2 px-4 py-2 rounded-xl bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 text-white text-xs font-bold transition-all">
+              className="px-4 py-2 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-all flex items-center gap-2">
               + Record New Test
             </button>
           </div>
