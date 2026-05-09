@@ -86,9 +86,10 @@ app.use((req, res, next) => {
     log(`[DB] Migration warning: ${err.message}`);
   }
 
-  // Seed default tenant + admin user via raw SQL (bypasses ORM silent failures)
+  // Seed default tenant + admin user via raw SQL
+  // Password hash = Temp@1234 (scrypt, verified locally)
+  const ADMIN_PW_HASH = '9a1ad61d6bd1bb41b55ec5b738aed154:cf31ece263f0ffc54dcfddb05b4959cce71be689685d82405797602c23be59172476cd2aae27babe058e9ac8973bb4932d5d1206cbcfbba8350f4d0028b141db';
   try {
-    const { hashPassword } = await import('./auth-middleware');
     await pool.query(`
       INSERT INTO tenants (id, name, slug)
       VALUES ('default-tenant', 'NAT 2.0 Default', 'default')
@@ -98,7 +99,7 @@ app.use((req, res, next) => {
       INSERT INTO users (id, tenant_id, username, password, must_change_password)
       VALUES ('admin-user-1', 'default-tenant', 'chandramouli@nousinfo.com', $1, true)
       ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, must_change_password = true
-    `, [hashPassword('Temp@1234')]);
+    `, [ADMIN_PW_HASH]);
     log('[DB] Admin user seed complete');
   } catch (err: any) {
     log(`[DB] Seed error: ${err.message}`);
