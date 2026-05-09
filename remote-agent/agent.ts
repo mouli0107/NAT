@@ -75,14 +75,49 @@ let cancelRequested = false;
 // ─── Recording State ──────────────────────────────────────────────────────────
 let recordingBrowser:    import('playwright').Browser        | null = null;
 let recordingContext:    import('playwright').BrowserContext | null = null;
+let recordingPage:       import('playwright').Page           | null = null;
 let recordingSessionId:  string | null = null;
 let recordingStopTimer:  NodeJS.Timeout | null = null;
+
+// ─── Event Buffer ─────────────────────────────────────────────────────────────
+// Recording events captured while the WebSocket is reconnecting are buffered
+// here and flushed as soon as the connection is re-established.
+interface BufferedEvent { msg: object; ts: number }
+const _pendingRecordingEvents: BufferedEvent[] = [];
+const MAX_BUFFER = 200; // drop oldest beyond this limit
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function send(msg: object): void {
   if (ws && ws.readyState === WebSocket.OPEN) {
-    ws.send(JSON.stringify(msg));
+    try {
+      ws.send(JSON.stringify(msg));
+    } catch (err: any) {
+      log(`[send] WebSocket.send failed: ${err.message}`);
+    }
+    return;
+  }
+
+  // WS not ready — buffer recording events so they aren't silently dropped
+  const m = msg as Record<string, unknown>;
+  if (m.type === 'recording_event' || m.type === 'pw_screenshot') {
+    if (_pendingRecordingEvents.length >= MAX_BUFFER) {
+      _pendingRecordingEvents.shift(); // drop oldest
+    }
+    _pendingRecordingEvents.push({ msg, ts: Date.now() });
+    // Only log every 10th to avoid flooding the console
+    if (_pendingRecordingEvents.length % 10 === 1) {
+      log(`[send] WS not OPEN — buffering recording event (buffer=${_pendingRecordingEvents.length})`);
+    }
+  }
+}
+
+function flushPendingEvents(): void {
+  if (_pendingRecordingEvents.length === 0) return;
+  log(`[send] Flushing ${_pendingRecordingEvents.length} buffered recording event(s)`);
+  while (_pendingRecordingEvents.length > 0) {
+    const { msg } = _pendingRecordingEvents.shift()!;
+    send(msg);
   }
 }
 
@@ -145,13 +180,17 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
   });
 
   const page: Page = await recordingContext.newPage();
+  recordingPage = page; // expose for assert mode commands
   const popupUrls  = new Set<string>();
 
   // ── Expose __devxqe_send on the CONTEXT so it works on ALL pages/popups ──
   await recordingContext.exposeFunction('__devxqe_send', (eventData: Record<string, unknown>) => {
     if (recordingSessionId !== sessionId) return; // stale callback after stop
 
-    // Forward the raw event to the server
+    const evType = String(eventData.type || '');
+    log(`[event] ${evType} url=${eventData.url || ''}`);
+
+    // Forward the raw event to the server (buffered if WS is not ready)
     send({ type: 'recording_event', sessionId, ...eventData });
 
     // Capture a screenshot after significant interactions (non-blocking)
@@ -216,6 +255,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
     log(`Recording browser closed for session ${sessionId}`);
     recordingBrowser   = null;
     recordingContext   = null;
+    recordingPage      = null;
     recordingSessionId = null;
     send({ type: 'recording_stopped', sessionId });
   });
@@ -246,6 +286,7 @@ async function stopRecording(sessionId: string): Promise<void> {
   }
   log(`Stopping recording session ${sessionId}`);
   recordingSessionId = null;
+  recordingPage      = null;
   if (recordingContext) { try { await recordingContext.close(); } catch {} recordingContext = null; }
   if (recordingBrowser) { try { await recordingBrowser.close(); } catch {} recordingBrowser = null; }
   send({ type: 'recording_stopped', sessionId });
@@ -496,6 +537,9 @@ function connect(): void {
     // Keep-alive ping
     if (pingTimer) clearInterval(pingTimer);
     pingTimer = setInterval(() => send({ type: 'ping' }), PING_INTERVAL_MS);
+
+    // Flush any recording events that accumulated while WS was reconnecting
+    flushPendingEvents();
   });
 
   ws.on('message', (raw: Buffer) => {
@@ -554,6 +598,34 @@ function connect(): void {
         const sid = String(msg.sessionId || '');
         log(`Received stop_recording for session ${sid}`);
         stopRecording(sid).catch(err => log(`stopRecording error: ${err.message}`));
+        break;
+      }
+
+      // ── Assert mode commands ─────────────────────────────────────────────────
+      // Server forwards assert_mode_on / assert_mode_off when the user clicks
+      // "Add Assert" in the NAT UI. The init script exposes window.__dxqe_setAssertMode.
+
+      case 'assert_mode_on': {
+        const sid = String(msg.sessionId || '');
+        log(`Received assert_mode_on for session ${sid}`);
+        if (recordingPage && !recordingPage.isClosed()) {
+          recordingPage.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(true)')
+            .catch(err => log(`assert_mode_on evaluate failed: ${err.message}`));
+        } else {
+          log('assert_mode_on: no active recording page');
+        }
+        break;
+      }
+
+      case 'assert_mode_off': {
+        const sid = String(msg.sessionId || '');
+        log(`Received assert_mode_off for session ${sid}`);
+        if (recordingPage && !recordingPage.isClosed()) {
+          recordingPage.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(false)')
+            .catch(err => log(`assert_mode_off evaluate failed: ${err.message}`));
+        } else {
+          log('assert_mode_off: no active recording page');
+        }
         break;
       }
 

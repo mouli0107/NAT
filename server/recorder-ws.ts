@@ -122,9 +122,11 @@ async function isSessionInDB(sessionId: string): Promise<boolean> {
 
 type AgentRecordingDispatcher = (sessionId: string, targetUrl: string, initScript: string) => Promise<void>;
 type AgentRecordingStopper    = (sessionId: string) => void;
+type AgentAssertModeForwarder = (sessionId: string, mode: 'on' | 'off') => boolean;
 
-let _agentDispatcher: AgentRecordingDispatcher | null = null;
-let _agentStopper:    AgentRecordingStopper    | null = null;
+let _agentDispatcher:  AgentRecordingDispatcher | null = null;
+let _agentStopper:     AgentRecordingStopper    | null = null;
+let _agentAssertMode:  AgentAssertModeForwarder | null = null;
 
 /** Set of session IDs currently being recorded by a remote agent (not server Playwright). */
 export const agentRecordedSessions = new Set<string>();
@@ -139,6 +141,14 @@ export function registerRecordingDelegateCallbacks(
 ): void {
   _agentDispatcher = dispatcher;
   _agentStopper    = stopper;
+}
+
+/**
+ * Called once by agent-ws.ts to register the assert-mode forwarding function.
+ * Avoids circular imports: recorder-ws → agent-ws would create a cycle.
+ */
+export function registerAssertModeCallback(fn: AgentAssertModeForwarder): void {
+  _agentAssertMode = fn;
 }
 
 /**
@@ -754,6 +764,11 @@ export function registerRecorderRoutes(app: Express) {
   // Uses window.__devxqe_send() which is exposed by Playwright's exposeFunction.
   const PW_RECORDER_INIT = `
 (function () {
+  // ── Diagnostic: confirm init script was injected ────────────────────────────
+  console.log('[NAT-Recorder] PW_RECORDER_INIT injected on', window.location.href);
+
+  // ── Guard 1: skip iframes — only run in the top-level window ───────────────
+  if (window !== window.top) return;
 
   // ── Element Inspector Utilities ────────────────────────────────────────────
 
@@ -2176,6 +2191,14 @@ export function registerRecorderRoutes(app: Express) {
     const sid = (sessionId as string).toUpperCase();
     const pw = pwBrowsers.get(sid);
     if (!pw) {
+      // Check if this is an agent-delegated session — forward the command there
+      if (agentRecordedSessions.has(sid) && _agentAssertMode) {
+        const forwarded = _agentAssertMode(sid, mode);
+        if (forwarded) {
+          console.log(`[Assert] Forwarded assert_mode=${mode} to remote agent for session ${sid}`);
+          return res.json({ success: true, mode, via: 'agent' });
+        }
+      }
       // Browser not registered in this server instance (e.g. server restarted).
       // Return 200 so the client banner stays visible — user just needs to
       // Stop Playwright and re-open to re-register the session.
@@ -3599,6 +3622,15 @@ export function setupRecorderWebSocket(server: Server) {
 
         case 'recording_event': {
           if (!linkedSession) return;
+
+          // Session source isolation: if this session is being recorded by a
+          // remote agent, reject any events that arrive via the Chrome extension
+          // WebSocket — the agent is the authoritative event source.
+          if (agentRecordedSessions.has(linkedSession.id)) {
+            console.warn(`[RecorderWS] Dropping extension event for agent-delegated session ${linkedSession.id}`);
+            return;
+          }
+
           const event = msg.event as RecordingEvent;
           if (!event) return;
 

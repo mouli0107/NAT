@@ -4792,6 +4792,30 @@ export default function RecorderPage() {
               </div>
             )}
 
+            {/* ── NEW RECORDING button — shown after recording completes (before framework/scripts open) ── */}
+            {isDone && !showFramework && !showScripts && (
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-3">
+                <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/30">
+                  <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                  <span className="text-[11px] text-emerald-400 font-semibold">Recording complete — {nlSteps.length} step{nlSteps.length !== 1 ? 's' : ''} captured</span>
+                </div>
+                <button
+                  onClick={() => {
+                    setSessionStatus('idle');
+                    setNlSteps([]);
+                    setEvents([]);
+                    setIframeUrl(null);
+                    setSessionId(null);
+                    setAgents(AGENTS);
+                    iframeStepRef.current = 0;
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl border border-slate-600 hover:border-slate-400 bg-slate-800/80 hover:bg-slate-700/80 text-slate-200 text-xs font-semibold transition-all shadow-lg backdrop-blur-sm"
+                >
+                  🔄 New Recording
+                </button>
+              </div>
+            )}
+
             {/* ── LEGACY SCRIPTS VIEW (raw .spec.ts) ── */}
             {showScripts && !showFramework && (
               <div className="absolute inset-0 z-30 flex flex-col bg-slate-900">

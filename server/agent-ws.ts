@@ -30,6 +30,7 @@ import { randomBytes } from 'crypto';
 import {
   handleAgentRecordingEvent,
   registerRecordingDelegateCallbacks,
+  registerAssertModeCallback,
   agentRecordedSessions,
 } from './recorder-ws';
 
@@ -215,6 +216,24 @@ function _stopRecordingOnAgent(sessionId: string): void {
 }
 
 /**
+ * Forward an assert-mode toggle to whichever agent is handling the session.
+ * Returns true if the command was sent, false if no agent was found.
+ * Called by recorder-ws.ts via the registered callback.
+ */
+function _sendAssertModeToAgent(sessionId: string, mode: 'on' | 'off'): boolean {
+  const sid     = sessionId.toUpperCase();
+  const agentId = sessionAgentMap.get(sid);
+  if (!agentId) return false;
+  const agent = agents.get(agentId);
+  if (!agent) return false;
+
+  const type = mode === 'on' ? 'assert_mode_on' : 'assert_mode_off';
+  agent.ws.send(JSON.stringify({ type, sessionId: sid }));
+  console.log(`[AgentWS] Sent ${type} for session ${sid} to agent ${agentId}`);
+  return true;
+}
+
+/**
  * Returns true if at least one agent is connected (idle or busy).
  * Used by the UI to show the agent connection status indicator.
  */
@@ -339,6 +358,7 @@ export function setupAgentWebSocket(server: Server): WebSocketServer {
   // Wire up recording delegation callbacks so recorder-ws can delegate
   // to this agent without creating a circular import.
   registerRecordingDelegateCallbacks(_dispatchRecordingToAgent, _stopRecordingOnAgent);
+  registerAssertModeCallback(_sendAssertModeToAgent);
 
   const wss = new WebSocketServer({ noServer: true });
 
