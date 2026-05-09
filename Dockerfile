@@ -17,6 +17,10 @@ FROM node:20-slim AS builder
 
 WORKDIR /app
 
+# Upgrade npm to v11 to match the version that generated package-lock.json locally.
+# node:20-slim ships with npm 10.x which can misinterpret npm-11-generated lock files.
+RUN npm install -g npm@11
+
 COPY package*.json ./
 # Full install: devDeps included so @playwright/test is present.
 # The postinstall hook runs "npx playwright install chromium" and downloads
@@ -67,7 +71,8 @@ ENV PLAYWRIGHT_BROWSERS_PATH=/ms-playwright
 # --ignore-scripts prevents the postinstall from trying "npx playwright install chromium"
 # again (it would fail since @playwright/test is excluded by --omit=dev).
 COPY package*.json ./
-RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
+# Use same npm version as builder to guarantee lock-file compatibility.
+RUN npm install -g npm@11 && npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy built frontend + server from builder
 COPY --from=builder /app/dist ./dist
