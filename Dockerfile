@@ -28,6 +28,9 @@ COPY . .
 ENV NODE_ENV=production
 RUN npm run build
 
+# Generate drizzle migration SQL files from the schema (no DB connection needed)
+RUN DATABASE_URL=postgresql://placeholder:placeholder@localhost/placeholder npx drizzle-kit generate
+
 # ── Stage 2: Production runner ─────────────────────────────────────────────────
 FROM node:20-slim AS runner
 
@@ -69,6 +72,9 @@ RUN npm ci --omit=dev --ignore-scripts && npm cache clean --force
 
 # Copy built frontend + server from builder
 COPY --from=builder /app/dist ./dist
+
+# Copy generated migration SQL files so the app can auto-migrate on startup
+COPY --from=builder /app/migrations ./migrations
 
 # Copy the Chromium that was already downloaded during builder's npm ci.
 # This avoids any re-download or playwright binary dependency in the runner.

@@ -1,6 +1,8 @@
 import 'dotenv/config';
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { db } from './db';
 import { registerRoutes } from "./routes";
 import { serveStatic, log } from "./static";
 import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady } from "./playwright-setup";
@@ -75,6 +77,14 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Auto-migrate database schema on every startup (creates tables if missing)
+  try {
+    await migrate(db, { migrationsFolder: './migrations' });
+    log('[DB] Migrations applied successfully');
+  } catch (err: any) {
+    log(`[DB] Migration warning: ${err.message}`);
+  }
+
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
