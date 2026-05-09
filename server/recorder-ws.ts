@@ -1698,15 +1698,24 @@ export function registerRecorderRoutes(app: Express) {
     }
 
     try {
+      // Ensure a virtual X display is running on Linux containers (Azure, Docker)
+      const { ensureXvfb, getBrowserExecutablePath } = await import('./playwright-setup');
+      ensureXvfb();
+
       // Dynamic import so the module is only loaded when needed
       const { chromium } = await import('playwright');
+      const display = process.env.DISPLAY || ':99';
       const browser = await chromium.launch({
         headless: false,
         slowMo: 0,
+        executablePath: getBrowserExecutablePath() ?? undefined,
+        env: { ...process.env, DISPLAY: display },
         args: [
           '--start-maximized',
           '--disable-blink-features=AutomationControlled', // hides navigator.webdriver
           '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
           '--disable-infobars',
         ],
       });

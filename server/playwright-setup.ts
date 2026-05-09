@@ -1,4 +1,4 @@
-import { execSync, exec } from 'child_process';
+import { execSync, exec, execFileSync } from 'child_process';
 import { existsSync } from 'fs';
 import { glob } from 'glob';
 
@@ -129,6 +129,50 @@ export function isPlaywrightReady(): boolean {
  */
 export function isPlaywrightInstalling(): boolean {
   return installationInProgress;
+}
+
+/**
+ * Start a virtual X display (Xvfb) so that headed Playwright browsers
+ * work inside headless Linux containers (Azure App Service, Docker, CI).
+ *
+ * - Only runs on Linux when no DISPLAY is already set.
+ * - Sets process.env.DISPLAY = ':99' so child processes inherit it.
+ * - Safe to call multiple times; subsequent calls are no-ops.
+ * - Silently skips if Xvfb is not installed (graceful degradation).
+ */
+let xvfbStarted = false;
+export function ensureXvfb(): void {
+  if (xvfbStarted) return;
+  if (process.platform !== 'linux') return;   // macOS / Windows have real displays
+  if (process.env.DISPLAY) return;             // already have a display
+
+  try {
+    // Verify Xvfb binary is present
+    execFileSync('which', ['Xvfb'], { stdio: 'pipe' });
+  } catch {
+    console.warn('[Xvfb] Xvfb not found — headed Playwright may fail without a display');
+    return;
+  }
+
+  try {
+    // Kill any stale lock from a previous run
+    try { execSync('pkill -f "Xvfb :99"', { stdio: 'pipe' }); } catch { /* none running */ }
+
+    exec('Xvfb :99 -screen 0 1920x1080x24 -ac +extension GLX +render -noreset', (err) => {
+      if (err && !err.message.includes('already')) {
+        console.warn('[Xvfb] Process exited:', err.message);
+      }
+    });
+
+    // Give Xvfb ~300 ms to create its socket
+    execSync('sleep 0.3', { stdio: 'pipe' });
+
+    process.env.DISPLAY = ':99';
+    xvfbStarted = true;
+    console.log('[Xvfb] Virtual display :99 started (1920x1080x24)');
+  } catch (err: any) {
+    console.warn('[Xvfb] Could not start virtual display:', err.message);
+  }
 }
 
 /**

@@ -4,7 +4,7 @@ import session from "express-session";
 import { pool } from './db';
 import { registerRoutes } from "./routes";
 import { serveStatic, log } from "./static";
-import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady } from "./playwright-setup";
+import { detectBrowser, startPlaywrightInstallation, isPlaywrightReady, ensureXvfb } from "./playwright-setup";
 
 const app = express();
 
@@ -130,6 +130,8 @@ app.use((req, res, next) => {
   // this serves both the API and the client.
   // It is the only port that is not firewalled.
   const port = parseInt(process.env.PORT || '5000', 10);
+  // Start virtual display on Linux containers before any browser is launched
+  ensureXvfb();
   // Detect system browser before server starts (fast — no download)
   detectBrowser();
 

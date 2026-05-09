@@ -33,7 +33,7 @@ FROM node:20-slim AS runner
 
 WORKDIR /app
 
-# Chromium system dependencies (required by Playwright's bundled Chromium binary)
+# Chromium system dependencies + Xvfb for headed browser support in server containers
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libnss3 \
@@ -55,6 +55,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libexpat1 \
     wget \
     ca-certificates \
+    xvfb \
+    x11-utils \
     && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
