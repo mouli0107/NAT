@@ -2140,7 +2140,7 @@ function BrowserBar({
     <div className="flex-shrink-0 border-b-2 border-slate-700 bg-slate-900 shadow-lg">
 
       {/* URL bar row */}
-      <div className="flex items-center gap-2 px-3 py-2">
+      <div className="flex items-center gap-2 px-3 py-2 overflow-x-auto" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.3) transparent' }}>
 
         {/* Browser nav dots */}
         <div className="flex items-center gap-1 flex-shrink-0">
@@ -2162,7 +2162,7 @@ function BrowserBar({
         </div>
 
         {/* URL input */}
-        <div className="flex-1 flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 focus-within:border-white/40 focus-within:bg-white/15 transition-colors">
+        <div className="flex-1 flex items-center gap-1.5 bg-white/10 border border-white/20 rounded-lg px-3 py-1.5 focus-within:border-white/40 focus-within:bg-white/15 transition-colors min-w-[160px]">
           <span className="text-indigo-300 text-xs flex-shrink-0">🔒</span>
           <input
             value={url}
