@@ -150,8 +150,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
       setImmediate(async () => {
         try {
           const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
-          const jpeg = buf.toString('base64');
-          send({ type: 'pw_screenshot', sessionId, jpeg });
+          send({ type: 'pw_screenshot', sessionId, data: buf.toString('base64') });
         } catch { /* page may be navigating */ }
       });
     }
@@ -176,7 +175,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
     setImmediate(async () => {
       try {
         const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
-        send({ type: 'pw_screenshot', sessionId, jpeg: buf.toString('base64') });
+        send({ type: 'pw_screenshot', sessionId, data: buf.toString('base64') });
       } catch {}
     });
   });
@@ -221,7 +220,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
   // Capture an initial screenshot so the UI shows the starting page
   try {
     const buf  = await page.screenshot({ type: 'jpeg', quality: 55, fullPage: false });
-    send({ type: 'pw_screenshot', sessionId, jpeg: buf.toString('base64') });
+    send({ type: 'pw_screenshot', sessionId, data: buf.toString('base64') });
   } catch {}
 
   log(`Recording browser ready — session ${sessionId} is now capturing events`);
