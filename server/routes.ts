@@ -1368,11 +1368,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
 
+        // ── Post-table indexes and constraints ────────────────────────────────
+        const indexes: [string, string][] = [
+          [
+            'framework_assets_project_type_key_uq',
+            `CREATE UNIQUE INDEX IF NOT EXISTS framework_assets_project_type_key_uq
+             ON framework_assets (project_id, asset_type, asset_key)`,
+          ],
+          [
+            'asset_versions_asset_ver_uq',
+            `CREATE UNIQUE INDEX IF NOT EXISTS asset_versions_asset_ver_uq
+             ON asset_versions (asset_id, version_num)`,
+          ],
+        ];
+        const indexResults: string[] = [];
+        for (const [idxName, idxSql] of indexes) {
+          try {
+            await client.query(idxSql);
+            indexResults.push(idxName);
+            console.log(`[SchemaMigration] Ensured index: ${idxName}`);
+          } catch (e: any) {
+            console.warn(`[SchemaMigration] Index ${idxName} skipped:`, e.message);
+          }
+        }
+
         res.json({
           success: true,
           created,
           skipped,
-          message: `Created ${created.length} tables, ${skipped.length} already existed`,
+          indexes: indexResults,
+          message: `Created ${created.length} tables, ${skipped.length} already existed, ${indexResults.length} indexes ensured`,
         });
       } finally {
         client.release();

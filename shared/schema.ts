@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, jsonb, boolean } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, jsonb, boolean, unique } from "drizzle-orm/pg-core";
 // NOTE: text().array() is used for text[] columns (deduplication_log.removed_keys)
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -1742,7 +1742,12 @@ export const frameworkAssets = pgTable("framework_assets", {
   createdAt:   timestamp("created_at").defaultNow(),
   updatedAt:   timestamp("updated_at").defaultNow(),
   sourceTcId:  varchar("source_tc_id").references(() => testCases.id),
-});
+}, (table) => ({
+  // Unique constraint required for upsertAsset() ON CONFLICT DO UPDATE
+  projectAssetKey: unique("framework_assets_project_type_key_uq").on(
+    table.projectId, table.assetType, table.assetKey
+  ),
+}));
 
 /**
  * Asset versions — full content history for every framework_asset.
