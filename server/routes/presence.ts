@@ -2,10 +2,10 @@
 // NAT 2.0 — Sprint 6: Real-time Presence SSE
 // server/routes/presence.ts
 //
-//  GET  /api/projects/:id/presence-stream   SSE connection for this user
-//  POST /api/projects/:id/presence          Update own activity
-//  GET  /api/projects/:id/planning-tcs      List planned TCs for board
-//  PATCH /api/projects/:id/planning-tcs/:tcId Update TC status/assignee
+//  GET  /api/projects/:projectId/presence-stream      SSE connection for this user
+//  POST /api/projects/:projectId/presence             Update own activity
+//  GET  /api/projects/:projectId/planning-tcs         List planned TCs for board
+//  PATCH /api/projects/:projectId/planning-tcs/:tcId  Update TC status/assignee
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Express, Request, Response } from 'express';
@@ -70,10 +70,10 @@ export function broadcastToProject(
 
 export function registerPresenceRoutes(app: Express): void {
 
-  // ── GET /api/projects/:id/presence-stream (SSE) ───────────────────────────
+  // ── GET /api/projects/:projectId/presence-stream (SSE) ──────────────────
 
   app.get(
-    '/api/projects/:id/presence-stream',
+    '/api/projects/:projectId/presence-stream',
     requireProjectMember,
     async (req: Request, res: Response) => {
       const projectId = (req as any).projectId as string;
@@ -126,11 +126,11 @@ export function registerPresenceRoutes(app: Express): void {
     },
   );
 
-  // ── POST /api/projects/:id/presence ──────────────────────────────────────
+  // ── POST /api/projects/:projectId/presence ───────────────────────────────
   // Update own activity; broadcast to others
 
   app.post(
-    '/api/projects/:id/presence',
+    '/api/projects/:projectId/presence',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -167,11 +167,11 @@ export function registerPresenceRoutes(app: Express): void {
     },
   );
 
-  // ── GET /api/projects/:id/planning-tcs ───────────────────────────────────
+  // ── GET /api/projects/:projectId/planning-tcs ────────────────────────────
   // Returns planned + recorded TCs for the planning board
 
   app.get(
-    '/api/projects/:id/planning-tcs',
+    '/api/projects/:projectId/planning-tcs',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -224,11 +224,11 @@ export function registerPresenceRoutes(app: Express): void {
     },
   );
 
-  // ── PATCH /api/projects/:id/planning-tcs/:tcId ───────────────────────────
+  // ── PATCH /api/projects/:projectId/planning-tcs/:tcId ───────────────────
   // Update TC status or assignee on the planning board
 
   app.patch(
-    '/api/projects/:id/planning-tcs/:tcId',
+    '/api/projects/:projectId/planning-tcs/:tcId',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -272,11 +272,11 @@ export function registerPresenceRoutes(app: Express): void {
     },
   );
 
-  // ── GET /api/projects/:id/online ─────────────────────────────────────────
+  // ── GET /api/projects/:projectId/online ──────────────────────────────────
   // HTTP (non-SSE) snapshot of who is online — useful for initial page load
 
   app.get(
-    '/api/projects/:id/online',
+    '/api/projects/:projectId/online',
     requireProjectMember,
     (_req: Request, res: Response) => {
       const projectId = (_req as any).projectId as string;

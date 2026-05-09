@@ -2,10 +2,10 @@
 // NAT 2.0 — Sprint 6: Project Membership Routes
 // server/routes/project-members.ts
 //
-//  GET    /api/projects/:id/members              List members
-//  POST   /api/projects/:id/members              Invite member
-//  PATCH  /api/projects/:id/members/:userId      Change role
-//  DELETE /api/projects/:id/members/:userId      Remove member
+//  GET    /api/projects/:projectId/members              List members
+//  POST   /api/projects/:projectId/members              Invite member
+//  PATCH  /api/projects/:projectId/members/:userId      Change role
+//  DELETE /api/projects/:projectId/members/:userId      Remove member
 // ─────────────────────────────────────────────────────────────────────────────
 
 import type { Express, Request, Response } from 'express';
@@ -34,10 +34,10 @@ function timeAgo(d: Date | null): string {
 
 export function registerProjectMemberRoutes(app: Express): void {
 
-  // ── GET /api/projects/:id/members ─────────────────────────────────────────
+  // ── GET /api/projects/:projectId/members ─────────────────────────────────
 
   app.get(
-    '/api/projects/:id/members',
+    '/api/projects/:projectId/members',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -94,10 +94,10 @@ export function registerProjectMemberRoutes(app: Express): void {
     },
   );
 
-  // ── POST /api/projects/:id/members ────────────────────────────────────────
+  // ── POST /api/projects/:projectId/members ────────────────────────────────
 
   app.post(
-    '/api/projects/:id/members',
+    '/api/projects/:projectId/members',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -160,10 +160,10 @@ export function registerProjectMemberRoutes(app: Express): void {
     },
   );
 
-  // ── PATCH /api/projects/:id/members/:userId ───────────────────────────────
+  // ── PATCH /api/projects/:projectId/members/:userId ───────────────────────
 
   app.patch(
-    '/api/projects/:id/members/:userId',
+    '/api/projects/:projectId/members/:userId',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -211,10 +211,10 @@ export function registerProjectMemberRoutes(app: Express): void {
     },
   );
 
-  // ── DELETE /api/projects/:id/members/:userId ──────────────────────────────
+  // ── DELETE /api/projects/:projectId/members/:userId ──────────────────────
 
   app.delete(
-    '/api/projects/:id/members/:userId',
+    '/api/projects/:projectId/members/:userId',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -260,12 +260,12 @@ export function registerProjectMemberRoutes(app: Express): void {
     },
   );
 
-  // ── POST /api/projects/:id/import-plan ────────────────────────────────────
+  // ── POST /api/projects/:projectId/import-plan ────────────────────────────
   // Excel / CSV import for planning board
   // Accepts multipart/form-data with a 'file' field (.xlsx or .csv)
 
   app.post(
-    '/api/projects/:id/import-plan',
+    '/api/projects/:projectId/import-plan',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -386,10 +386,10 @@ export function startLockCleanup(): void {
 
 export function registerTcLockRoutes(app: Express): void {
 
-  // ── POST /api/test-cases/:id/lock ────────────────────────────────────────
+  // ── POST /api/projects/:projectId/test-cases/:id/lock ───────────────────
 
   app.post(
-    '/api/test-cases/:id/lock',
+    '/api/projects/:projectId/test-cases/:id/lock',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
@@ -422,10 +422,10 @@ export function registerTcLockRoutes(app: Express): void {
     },
   );
 
-  // ── DELETE /api/test-cases/:id/lock ──────────────────────────────────────
+  // ── DELETE /api/projects/:projectId/test-cases/:id/lock ─────────────────
 
   app.delete(
-    '/api/test-cases/:id/lock',
+    '/api/projects/:projectId/test-cases/:id/lock',
     requireProjectMember,
     async (req: Request, res: Response) => {
       try {
