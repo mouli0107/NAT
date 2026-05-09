@@ -295,10 +295,10 @@ btnRecord.addEventListener('click', async () => {
 
 openNat20.addEventListener('click', () => {
   sendToBackground('GET_STATUS').then(status => {
-    const url = status?.httpBaseUrl || 'http://localhost:5000';
+    const url = status?.httpBaseUrl || 'https://nat20-astra.azurewebsites.net';
     chrome.tabs.create({ url });
   }).catch(() => {
-    chrome.tabs.create({ url: 'http://localhost:5000' });
+    chrome.tabs.create({ url: 'https://nat20-astra.azurewebsites.net' });
   });
 });
 

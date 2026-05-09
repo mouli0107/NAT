@@ -27,6 +27,7 @@ import type { Browser, BrowserContext, Page as PwPage } from 'playwright';
 import { UNIVERSAL_HELPERS_CONTENT } from './universal-helpers-content';
 import { KENDO_HELPERS_CONTENT } from './kendo-helpers-content';
 import { isAzureEnvironment } from './utils/environment';
+import { pool } from './db';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -74,15 +75,46 @@ function generateSessionCode(): string {
   return `${letters}-${digits}`;
 }
 
-// Cleanup expired sessions every 30 minutes
-setInterval(() => {
+// Cleanup expired sessions every 30 minutes (memory + DB)
+setInterval(async () => {
   const now = Date.now();
   for (const [id, session] of sessions.entries()) {
     if (now - session.createdAt > SESSION_TTL_MS) {
       sessions.delete(id);
     }
   }
+  // Also prune expired rows from DB
+  try {
+    await pool.query(`DELETE FROM recorder_sessions WHERE expires_at < NOW()`);
+  } catch { /* non-fatal */ }
 }, 30 * 60 * 1000);
+
+/** Persist a session code to the database so cross-instance lookups work. */
+async function persistSessionToDB(sessionId: string, userId?: string, tenantId?: string): Promise<void> {
+  try {
+    await pool.query(
+      `INSERT INTO recorder_sessions (id, user_id, tenant_id, expires_at)
+       VALUES ($1, $2, $3, NOW() + INTERVAL '2 hours')
+       ON CONFLICT (id) DO NOTHING`,
+      [sessionId, userId ?? null, tenantId ?? null]
+    );
+  } catch (err: any) {
+    console.warn(`[RecorderWS] Failed to persist session ${sessionId} to DB:`, err.message);
+  }
+}
+
+/** Check DB for a session code — used when it is not found in the in-memory Map. */
+async function isSessionInDB(sessionId: string): Promise<boolean> {
+  try {
+    const result = await pool.query(
+      `SELECT 1 FROM recorder_sessions WHERE id = $1 AND expires_at > NOW()`,
+      [sessionId]
+    );
+    return (result.rowCount ?? 0) > 0;
+  } catch {
+    return false;
+  }
+}
 
 // ─── Remote Agent Recording Delegation ───────────────────────────────────────
 // agent-ws.ts registers these callbacks on startup to avoid circular imports.
@@ -588,6 +620,10 @@ export function registerRecorderRoutes(app: Express) {
       }
     };
     sessions.set(sessionId, session);
+    // Persist to DB for cross-instance lookup (Azure scale-out resilience)
+    const userId = (req as any).session?.userId;
+    const tenantId = (req as any).session?.tenantId;
+    persistSessionToDB(sessionId, userId, tenantId).catch(() => {});
     res.json({ sessionId, metadata: session.metadata, message: 'Session created with project context.' });
   });
 
@@ -3515,7 +3551,7 @@ export function setupRecorderWebSocket(server: Server) {
     let linkedSession: RecordingSession | null = null;
     let clientType: 'chrome_extension' | 'unknown' = 'unknown';
 
-    ws.on('message', (raw: Buffer) => {
+    ws.on('message', async (raw: Buffer) => {
       let msg: Record<string, unknown>;
       try {
         msg = JSON.parse(raw.toString());
@@ -3534,7 +3570,18 @@ export function setupRecorderWebSocket(server: Server) {
           const session = sessions.get(sid);
 
           if (!session) {
-            ws.send(JSON.stringify({ type: 'session_invalid', message: `Session "${sid}" not found. Generate a new code in NAT 2.0.` }));
+            // Not in memory — check DB to give a better error message
+            const inDB = await isSessionInDB(sid);
+            if (inDB) {
+              // Code is valid but was created on a different server instance (Azure scale-out).
+              // The SSE connection (NAT 2.0 UI) is on another instance so events can't flow.
+              ws.send(JSON.stringify({
+                type: 'session_invalid',
+                message: `Session "${sid}" was created on a different server instance. Reload the NAT 2.0 recorder page and generate a new code.`,
+              }));
+            } else {
+              ws.send(JSON.stringify({ type: 'session_invalid', message: `Session "${sid}" not found. Generate a new code in NAT 2.0.` }));
+            }
             return;
           }
 

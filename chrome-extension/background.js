@@ -4,7 +4,7 @@
  * Bridges content.js events → server → NAT 2.0 UI.
  */
 
-const DEFAULT_SERVER_URL = 'ws://localhost:5000';
+const DEFAULT_SERVER_URL = 'wss://nat20-astra.azurewebsites.net';
 const RECONNECT_DELAY_MS = 3000;
 const MAX_RECONNECT_ATTEMPTS = 10;
 

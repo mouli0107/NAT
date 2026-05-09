@@ -20,7 +20,17 @@ import * as os from 'os';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
-const SERVER_URL = process.env.SERVER_URL || 'ws://localhost:5000/ws/execution-agent';
+const AZURE_DEFAULT_URL = 'wss://nat20-astra.azurewebsites.net/ws/execution-agent';
+const SERVER_URL = process.env.SERVER_URL || AZURE_DEFAULT_URL;
+
+if (!process.env.SERVER_URL) {
+  console.warn('[RemoteAgent] SERVER_URL not set. Using default Azure endpoint:');
+  console.warn(`[RemoteAgent]   ${AZURE_DEFAULT_URL}`);
+  console.warn('[RemoteAgent] To connect to a different server:');
+  console.warn('[RemoteAgent]   SERVER_URL=wss://your-server/ws/execution-agent npx tsx agent.ts');
+}
+console.log(`[RemoteAgent] Target server: ${SERVER_URL}`);
+
 const AGENT_ID = process.env.AGENT_ID || ('agent-' + randomBytes(4).toString('hex'));
 const RECONNECT_DELAY_MS = 5000;
 const MAX_RECONNECT = 20;

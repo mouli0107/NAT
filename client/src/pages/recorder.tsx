@@ -3984,6 +3984,21 @@ export default function RecorderPage() {
                 {sessionStatus === "waiting" && (
                   <div className="w-full max-w-xs bg-slate-50 border-2 border-slate-300 rounded-xl p-4 space-y-2">
                     <p className="text-xs font-semibold text-slate-500 text-center mb-3">Chrome Extension Setup</p>
+                    {/* Step 0 — Remote Agent (Azure only) */}
+                    {isAzureEnv && (
+                      <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
+                        <div className="flex items-start gap-2 text-xs text-amber-700">
+                          <div className="w-4 h-4 rounded-full border-2 border-amber-400 flex items-center justify-center text-[9px] text-amber-500 flex-shrink-0 mt-0.5">0</div>
+                          <div>
+                            <p className="font-semibold">Start Remote Agent on your machine</p>
+                            <code className="block mt-1 text-[9px] bg-amber-100 px-1 py-0.5 rounded font-mono break-all">
+                              npx tsx remote-agent/agent.ts
+                            </code>
+                            <p className="mt-1 text-[9px] text-amber-600">(connects to Azure by default)</p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     {[
                       "Open Chrome Extension popup",
                       `Enter code: ${sessionId || "..."}`,
