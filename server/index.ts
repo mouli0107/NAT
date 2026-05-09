@@ -126,6 +126,50 @@ app.use((req, res, next) => {
     throw err;
   });
 
+  // ── ONE-TIME DATA MIGRATION ENDPOINT ────────────────────────────────────────
+  // Registered here (after all API routes, before the SPA catch-all) to guarantee
+  // the POST route is matched before app.use("*") in serveStatic swallows it.
+  // Protected by a hardcoded secret. Remove after migration is complete.
+  app.post('/api/admin/migrate-data', async (req: Request, res: Response) => {
+    const SECRET = 'nat20-migrate-2026';
+    if (req.body?.secret !== SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+    const { table, rows } = req.body as { table: string; rows: Record<string, unknown>[] };
+    if (!table || !Array.isArray(rows)) return res.status(400).json({ error: 'table and rows[] required' });
+    if (rows.length === 0) return res.json({ inserted: 0, table });
+
+    try {
+      const client = await pool.connect();
+      try {
+        await client.query("SET session_replication_role = 'replica'");
+        const cols = Object.keys(rows[0]);
+        const BATCH = 200;
+        let total = 0;
+        for (let i = 0; i < rows.length; i += BATCH) {
+          const batch = rows.slice(i, i + BATCH);
+          const values: unknown[] = [];
+          const ph = batch.map((row, bi) => {
+            const base = bi * cols.length;
+            cols.forEach(c => values.push(row[c] === undefined ? null : row[c]));
+            return `(${cols.map((_, j) => `$${base + j + 1}`).join(', ')})`;
+          });
+          await client.query(
+            `INSERT INTO "${table}" (${cols.map(c => `"${c}"`).join(', ')}) VALUES ${ph.join(', ')} ON CONFLICT DO NOTHING`,
+            values
+          );
+          total += batch.length;
+        }
+        await client.query("SET session_replication_role = 'DEFAULT'");
+        log(`[Migrate] ${table}: ${total} rows`);
+        return res.json({ inserted: total, table });
+      } finally { client.release(); }
+    } catch (err: any) {
+      log(`[Migrate] ERROR ${table}: ${err.message}`);
+      return res.status(500).json({ error: err.message, table });
+    }
+  });
+
   // importantly only setup vite in development and after
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
