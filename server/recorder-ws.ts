@@ -600,7 +600,7 @@ export function registerRecorderRoutes(app: Express) {
   function startScreenshotStream(sid: string): void {
     const timer = setInterval(async () => {
       const pw = pwBrowsers.get(sid);
-      const session = activeSessions.get(sid);
+      const session = sessions.get(sid);
       if (!pw || !session || session.status === 'stopped') {
         clearInterval(timer);
         return;

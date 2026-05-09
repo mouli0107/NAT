@@ -77,11 +77,17 @@ app.use((req, res, next) => {
 
 (async () => {
   // Auto-migrate database schema on every startup (creates tables if missing)
+  // 20-second timeout prevents a flaky DB connection from hanging startup forever.
   try {
-    const { migrate } = await import('drizzle-orm/node-postgres/migrator');
-    const { db } = await import('./db');
-    await migrate(db, { migrationsFolder: './migrations' });
-    log('[DB] Migrations applied successfully');
+    await Promise.race([
+      (async () => {
+        const { migrate } = await import('drizzle-orm/node-postgres/migrator');
+        const { db } = await import('./db');
+        await migrate(db, { migrationsFolder: './migrations' });
+        log('[DB] Migrations applied successfully');
+      })(),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('timeout')), 20000)),
+    ]);
   } catch (err: any) {
     log(`[DB] Migration warning: ${err.message}`);
   }
@@ -90,17 +96,22 @@ app.use((req, res, next) => {
   // Password hash = Temp@1234 (scrypt, verified locally)
   const ADMIN_PW_HASH = '9a1ad61d6bd1bb41b55ec5b738aed154:cf31ece263f0ffc54dcfddb05b4959cce71be689685d82405797602c23be59172476cd2aae27babe058e9ac8973bb4932d5d1206cbcfbba8350f4d0028b141db';
   try {
-    await pool.query(`
-      INSERT INTO tenants (id, name, slug)
-      VALUES ('default-tenant', 'NAT 2.0 Default', 'default')
-      ON CONFLICT (id) DO NOTHING
-    `);
-    await pool.query(`
-      INSERT INTO users (id, tenant_id, username, password, must_change_password)
-      VALUES ('admin-user-1', 'default-tenant', 'chandramouli@nousinfo.com', $1, true)
-      ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, must_change_password = true
-    `, [ADMIN_PW_HASH]);
-    log('[DB] Admin user seed complete');
+    await Promise.race([
+      (async () => {
+        await pool.query(`
+          INSERT INTO tenants (id, name, slug)
+          VALUES ('default-tenant', 'NAT 2.0 Default', 'default')
+          ON CONFLICT (id) DO NOTHING
+        `);
+        await pool.query(`
+          INSERT INTO users (id, tenant_id, username, password, must_change_password)
+          VALUES ('admin-user-1', 'default-tenant', 'chandramouli@nousinfo.com', $1, true)
+          ON CONFLICT (id) DO UPDATE SET password = EXCLUDED.password, must_change_password = true
+        `, [ADMIN_PW_HASH]);
+        log('[DB] Admin user seed complete');
+      })(),
+      new Promise<void>((_, reject) => setTimeout(() => reject(new Error('seed timeout')), 15000)),
+    ]);
   } catch (err: any) {
     log(`[DB] Seed error: ${err.message}`);
   }
