@@ -247,8 +247,8 @@ function generateFunctionalTests(
     if (!reg.isDuplicate(happyKey)) {
       results.push({
         testCaseId: reg.nextId("TC_FUNC"),
-        title: criterion,
-        description: `As a ${ctx.userRole}, verify the system correctly satisfies: "${criterion}"`,
+        title: `[${ctx.featureName}] ${criterion}`,
+        description: `As a ${ctx.userRole}, verify the system correctly satisfies: "${criterion}" — within the context of the "${ctx.featureName}" user story.`,
         objective: `Confirm the system fulfils: ${criterion}`,
         preconditions: [
           `User is logged in as: ${ctx.userRole}`,
@@ -456,8 +456,8 @@ function generateNegativeTests(
     if (!reg.isDuplicate(key)) {
       results.push({
         testCaseId: reg.nextId("TC_NEG"),
-        title: `System rejects when not met: ${criterion}`,
-        description: `Verify the system prevents saving/submitting when the criterion "${criterion}" is violated`,
+        title: `[${ctx.featureName}] System rejects when not met: ${criterion}`,
+        description: `Verify the system prevents saving/submitting when the criterion "${criterion}" is violated — within the "${ctx.featureName}" user story context.`,
         objective: `Ensure system enforces: ${criterion}`,
         preconditions: [
           `User is logged in as: ${ctx.userRole}`,

@@ -2088,13 +2088,17 @@ export default function SprintAgentV2() {
                           )}
                         </div>
 
-                        {/* Context Documents upload */}
+                        {/* Attach Documents */}
                         <div className="space-y-2">
                           <label className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
                             <FilePlus2 className="h-3.5 w-3.5" />
-                            Context Documents
-                            <span className="text-xs font-normal text-muted-foreground/60">(optional — BRD, FRD, existing test cases, SRS)</span>
+                            Attach Documents
+                            <span className="text-xs font-normal text-muted-foreground/60">(optional — BRD, SRS, design specs, API docs)</span>
                           </label>
+                          <p className="text-[10px] text-muted-foreground/70 leading-relaxed">
+                            Attached documents provide broader context to both the rule-based generator and QA Refiner.
+                            The user story remains the primary source — documents only enrich, not replace it.
+                          </p>
 
                           {/* Drop zone / file picker */}
                           <label
@@ -2120,11 +2124,11 @@ export default function SprintAgentV2() {
                             )}
                             <span className="text-xs text-muted-foreground text-center">
                               {isUploading
-                                ? "Extracting text…"
+                                ? "Extracting text… Ready shortly"
                                 : "Click to upload or drag files here"}
                             </span>
                             <span className="text-[10px] text-muted-foreground/60">
-                              PDF, DOCX, XLSX, TXT, MD, .feature · up to 5 files · 10 MB each
+                              PDF, Word, Text, Markdown · up to 5 files · 10 MB each
                             </span>
                           </label>
 

@@ -316,6 +316,16 @@ export async function runAgenticPipeline(
   const allTestCases: SprintTestCase[] = [];
   let globalCaseId = 1;
 
+  // Count acceptance criteria lines for Stage 1 log
+  const acLineCount = acceptanceCriteria
+    .split(/\n|;/)
+    .map(s => s.replace(/^[-•*\d.)\s]+/, "").trim())
+    .filter(s => s.length > 4).length;
+  const docCount = uploadedDocuments?.length ?? 0;
+  console.log(
+    `[TC-Generator] Stage 1: Input assembled — title: "${userStoryTitle}", ` +
+    `criteria: ${acLineCount}, documents: ${docCount}`
+  );
   console.log(`[Agentic Pipeline] Starting for: ${userStoryTitle}`);
 
   // Load framework catalog (non-blocking — if DB fails, generation continues without catalog)
@@ -502,6 +512,7 @@ export async function runAgenticPipeline(
     }
 
     // ── Step 2: Rule-based generation (uses enriched context if available) ──
+    console.log("[TC-Generator] Stage 2: Rule-based generation starting...");
     const { generateWithCoverageSummary } = await import("./claude-test-generator.js");
     const { cases: allRuleBasedCases, summary: coverageSummary } = generateWithCoverageSummary(
       {
@@ -512,6 +523,8 @@ export async function runAgenticPipeline(
       },
       enrichedContext
     );
+
+    console.log(`[TC-Generator] Stage 2: Rule-based generation — ${allRuleBasedCases.length} TCs generated`);
 
     onEvent({
       type: "agent_status",
@@ -651,10 +664,45 @@ export async function runAgenticPipeline(
     const anthropicKey = process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY;
 
     if (anthropicKey && anthropicKey.trim() !== '') {
+      console.log(`[TC-Generator] Stage 3: QA Refiner starting — sending ${allTestCases.length} TCs to Claude`);
       onEvent({
         type: "agent_status", agent: "QA Refiner",
-        status: { agent: "QA Refiner", status: "working", message: "Rewriting test cases with domain-specific steps...", details: `Refining ${allTestCases.length} tests in batches of 10` }
+        status: { agent: "QA Refiner", status: "working", message: "Rewriting test cases with domain-specific steps...", details: `Refining ${allTestCases.length} tests in batches of 5` }
       });
+
+      // ── Build document context section (capped at ~8000 tokens ≈ 32000 chars) ──
+      const CHARS_PER_DOC_CAP = 3000;
+      const TOTAL_DOC_CAP = 32000;
+      let docContextSection = "";
+      if (uploadedDocuments && uploadedDocuments.length > 0) {
+        let totalChars = 0;
+        const docParts: string[] = [];
+        for (const doc of uploadedDocuments) {
+          if (totalChars >= TOTAL_DOC_CAP) {
+            docParts.push(`[Additional documents omitted — total context cap reached]`);
+            break;
+          }
+          const remaining = TOTAL_DOC_CAP - totalChars;
+          const cap = Math.min(CHARS_PER_DOC_CAP, remaining);
+          const content = doc.content.slice(0, cap);
+          const truncated = doc.content.length > cap;
+          docParts.push(
+            `--- Document: ${doc.fileName} (${doc.fileType}) ---\n` +
+            content +
+            (truncated ? "\n[Document truncated for length]" : "")
+          );
+          totalChars += content.length;
+        }
+        docContextSection = `
+
+REFERENCE DOCUMENTS (for broader context only — do NOT generate tests outside the user story scope):
+Use these documents to:
+- Validate test cases align with documented business rules
+- Catch missing scenarios mentioned in the BRD/SRS but absent from the acceptance criteria
+- Ensure terminology matches the official specification language
+
+${docParts.join("\n\n")}`;
+      }
 
       const BATCH_SIZE = 5;
       const refined: SprintTestCase[] = [];
@@ -687,27 +735,16 @@ export async function runAgenticPipeline(
           console.log(`  Test Data: ${JSON.stringify(tc.testData)}`);
         }
 
-        const refinementPrompt = `You are a senior QA engineer. Rewrite these GENERIC test cases into SPECIFIC, DOMAIN-AWARE test cases for this user story.
+        const refinerSystemPrompt = `You are a senior QA engineer refining AI-generated test cases for a specific user story. Your job is to transform generic, template-driven test cases into precise, domain-aware test cases that reflect the exact terminology, UI elements, field names, and business rules described in the user story.`;
 
-## USER STORY:
+        const refinementPrompt = `USER STORY CONTEXT:
 Title: ${userStoryTitle}
 Description: ${userStoryDescription}
 
-## ACCEPTANCE CRITERIA:
+ACCEPTANCE CRITERIA:
 ${acceptanceCriteria}
 
-## RULES:
-1. Keep the SAME testCaseId, category, and priority for each test
-2. Rewrite the title to be specific to the user story (use exact field names, button names, page names from the story)
-3. Rewrite objective to reference a specific acceptance criterion
-4. Rewrite ALL 6 test steps with CONCRETE actions and SPECIFIC expected behaviors
-   - BAD: "Navigate to the relevant module/page" → GOOD: "Navigate to the Loan Agreement Dashboard and click 'New Agreement'"
-   - BAD: "System responds as expected" → GOOD: "Agreement status changes to 'Sent' and recipient receives email within 30 seconds"
-5. Add realistic test data with actual field names and values from the story
-6. Set traceability to the EXACT acceptance criterion line this test validates
-7. Do NOT add or remove test cases — refine exactly ${batch.length} tests
-
-## GENERIC TEST CASES TO REFINE:
+RULE-BASED TEST CASES TO REFINE (${batch.length} tests):
 ${JSON.stringify(batch.map(tc => ({
   testCaseId: tc.testCaseId,
   title: tc.title,
@@ -716,27 +753,44 @@ ${JSON.stringify(batch.map(tc => ({
   objective: tc.objective,
   testSteps: tc.testSteps,
   preconditions: tc.preconditions,
-})), null, 2)}
+  expectedResult: tc.expectedResult,
+  postconditions: tc.postconditions,
+  testData: tc.testData,
+})), null, 2)}${docContextSection}
+
+YOUR REFINEMENT RULES:
+1. Keep the SAME testCaseId, category, and priority for each test
+2. Use the title and description to correctly NAME and SCOPE each test case — test titles must reference this specific user story's features, not generic templates
+3. Rewrite objective to reference the EXACT acceptance criterion this test validates
+4. Rewrite ALL test steps with CONCRETE actions and SPECIFIC expected behaviors using exact field names, button labels, and page names from the story:
+   - BAD: "Navigate to the relevant module/page" → GOOD: "Navigate to the Loan Agreement Dashboard and click 'New Agreement'"
+   - BAD: "System responds as expected" → GOOD: "Agreement status changes to 'Sent' and recipient receives email within 30 seconds"
+5. Improve natural language clarity — every step must be unambiguous and executable by a QA engineer with no extra context
+6. Add missing edge cases that are SUGGESTED BY THE DESCRIPTION but not captured by the acceptance criteria alone
+7. Remove test cases that are clearly out of scope for THIS user story (replace with a more relevant in-scope test if needed)
+8. Ensure every test case traces back to at least one acceptance criterion via the traceability field
+9. Add realistic test data using actual field names and values from the story context
+10. You are refining ${batch.length} test cases — output exactly ${batch.length} test cases
 
 Return ONLY a valid JSON array of ${batch.length} refined test cases with this EXACT structure:
 [{
   "testCaseId": "same as input",
-  "title": "specific rewritten title",
-  "description": "specific description",
-  "objective": "specific objective referencing AC",
-  "traceability": "exact AC line this covers",
+  "title": "specific title referencing exact story features",
+  "description": "specific description of what this test validates",
+  "objective": "specific objective referencing the exact AC line this covers",
+  "traceability": "exact acceptance criterion line this test validates",
   "preconditions": ["specific precondition 1", "specific precondition 2"],
   "testSteps": [
-    {"step_number": 1, "action": "specific action", "expected_behavior": "specific outcome"},
-    {"step_number": 2, "action": "specific action", "expected_behavior": "specific outcome"},
-    {"step_number": 3, "action": "specific action", "expected_behavior": "specific outcome"},
-    {"step_number": 4, "action": "specific action", "expected_behavior": "specific outcome"},
-    {"step_number": 5, "action": "specific action", "expected_behavior": "specific outcome"},
-    {"step_number": 6, "action": "specific action", "expected_behavior": "specific outcome"}
+    {"step_number": 1, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
+    {"step_number": 2, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
+    {"step_number": 3, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
+    {"step_number": 4, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
+    {"step_number": 5, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
+    {"step_number": 6, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"}
   ],
-  "expectedResult": "specific expected result",
+  "expectedResult": "specific expected result with measurable outcomes",
   "postconditions": ["specific postcondition"],
-  "testData": {"fieldName": "realistic value"},
+  "testData": {"fieldName": "realistic value matching story context"},
   "category": "same as input",
   "priority": "same as input"
 }]`;
@@ -748,6 +802,7 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
               model: refinerModel,
               max_tokens: 12000,
               temperature: 0.4,
+              system: refinerSystemPrompt,
               messages: [{ role: "user", content: refinementPrompt }],
             }),
             2, 3000, `QA Refiner batch ${batchNum}`
@@ -903,6 +958,7 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
       }
 
       refinedTests = refined;
+      console.log(`[TC-Generator] Stage 3: QA Refiner complete — ${refinedTests.length} TCs after refinement`);
 
       onEvent({
         type: "agent_status", agent: "QA Refiner",
@@ -911,6 +967,7 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
     } else {
       // No API key — pass through
       console.log("[QA Refiner] No Anthropic key — skipping AI refinement");
+      console.log(`[TC-Generator] Stage 3: QA Refiner skipped (no API key) — ${refinedTests.length} rule-based TCs passed through`);
     }
 
     // ── Normalize test case IDs: UUID → short IDs (FUN-1, NEG-1, etc.) ──
@@ -924,6 +981,8 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
       categoryCounters[prefix] = (categoryCounters[prefix] || 0) + 1;
       tc.testCaseId = `${prefix}-${categoryCounters[prefix]}`;
     }
+
+    console.log(`[TC-Generator] Stage 4: Output & storage — emitting ${refinedTests.length} final test cases`);
 
     onEvent({
       type: "refined_test_cases",
