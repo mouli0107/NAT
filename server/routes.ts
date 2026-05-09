@@ -1181,6 +1181,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ── ONE-TIME DATA MIGRATION ENDPOINT ─────────────────────────────────────────
+  // POST /api/admin/migrate-data
+  // Accepts one table worth of rows at a time and upserts them into the DB.
+  // Protected by MIGRATE_SECRET env var. Remove this endpoint after migration.
+  //
+  // Body: { secret: string, table: string, rows: Record<string,any>[] }
+  // Response: { inserted: number, table: string }
+  app.post('/api/admin/migrate-data', async (req: Request, res: Response) => {
+    const MIGRATE_SECRET = process.env.MIGRATE_SECRET || 'nat20-migrate-2026';
+    if (req.body?.secret !== MIGRATE_SECRET) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { table, rows } = req.body as { table: string; rows: Record<string, unknown>[] };
+
+    if (!table || !Array.isArray(rows)) {
+      return res.status(400).json({ error: 'table and rows[] required' });
+    }
+    if (rows.length === 0) {
+      return res.json({ inserted: 0, table });
+    }
+
+    try {
+      const { pool } = await import('./db');
+      const client = await pool.connect();
+      try {
+        // Suspend FK enforcement so insert order does not matter
+        await client.query("SET session_replication_role = 'replica'");
+
+        const cols = Object.keys(rows[0]);
+        const BATCH = 200;
+        let total = 0;
+
+        for (let i = 0; i < rows.length; i += BATCH) {
+          const batch = rows.slice(i, i + BATCH);
+          const values: unknown[] = [];
+          const placeholders = batch.map((row, bi) => {
+            const base = bi * cols.length;
+            cols.forEach(c => values.push(row[c] === undefined ? null : row[c]));
+            return `(${cols.map((_, j) => `$${base + j + 1}`).join(', ')})`;
+          });
+
+          await client.query(
+            `INSERT INTO "${table}" (${cols.map(c => `"${c}"`).join(', ')})
+             VALUES ${placeholders.join(', ')}
+             ON CONFLICT DO NOTHING`,
+            values
+          );
+          total += batch.length;
+        }
+
+        await client.query("SET session_replication_role = 'DEFAULT'");
+        console.log(`[Migrate] ${table}: ${total} rows inserted`);
+        res.json({ inserted: total, table });
+      } finally {
+        client.release();
+      }
+    } catch (err: any) {
+      console.error(`[Migrate] ${table}:`, err.message);
+      res.status(500).json({ error: err.message, table });
+    }
+  });
+
   // Serve screenshots directory as static files
   const screenshotsDir = path.join(process.cwd(), 'screenshots');
   app.use('/screenshots', express.static(screenshotsDir));
