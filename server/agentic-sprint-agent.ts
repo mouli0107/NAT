@@ -88,6 +88,14 @@ export interface AgentStatus {
   message: string;
   details?: string;
   progress?: number;
+  // Batch-level progress fields (QA Refiner only)
+  batchNum?: number;
+  totalBatches?: number;
+  completedBatches?: number;
+  elapsedSeconds?: number;
+  estimatedRemainingSeconds?: number;
+  refinedCount?: number;
+  totalCount?: number;
 }
 
 export interface AgenticPipelineEvent {
@@ -322,6 +330,7 @@ export async function runAgenticPipeline(
     .map(s => s.replace(/^[-•*\d.)\s]+/, "").trim())
     .filter(s => s.length > 4).length;
   const docCount = uploadedDocuments?.length ?? 0;
+  const pipelineStartMs = Date.now();
   console.log(
     `[TC-Generator] Stage 1: Input assembled — title: "${userStoryTitle}", ` +
     `criteria: ${acLineCount}, documents: ${docCount}`
@@ -512,6 +521,7 @@ export async function runAgenticPipeline(
     }
 
     // ── Step 2: Rule-based generation (uses enriched context if available) ──
+    const stage2StartMs = Date.now();
     console.log("[TC-Generator] Stage 2: Rule-based generation starting...");
     const { generateWithCoverageSummary } = await import("./claude-test-generator.js");
     const { cases: allRuleBasedCases, summary: coverageSummary } = generateWithCoverageSummary(
@@ -524,7 +534,7 @@ export async function runAgenticPipeline(
       enrichedContext
     );
 
-    console.log(`[TC-Generator] Stage 2: Rule-based generation — ${allRuleBasedCases.length} TCs generated`);
+    console.log(`[TC-Generator] Stage 2: Rule-based generation — ${allRuleBasedCases.length} TCs in ${Date.now() - stage2StartMs}ms`);
 
     onEvent({
       type: "agent_status",
@@ -704,40 +714,89 @@ Use these documents to:
 ${docParts.join("\n\n")}`;
       }
 
-      const BATCH_SIZE = 5;
-      const refined: SprintTestCase[] = [];
+      // ── JSON helpers (shared across all parallel batches) ────────────────────
+      const cleanLLMJson = (raw: string): string =>
+        raw
+          .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, ' ')
+          .replace(/\n/g, '\\n')
+          .replace(/\r/g, '')
+          .replace(/\\n\\n/g, '\\n')
+          .replace(/,\s*}/g, '}')
+          .replace(/,\s*\]/g, ']')
+          .replace(/([^\\])\\(?!["\\/bfnrtu])/g, '$1\\\\')
+          .replace(/"\s*\n\s*"/g, '", "');
 
-      for (let batchStart = 0; batchStart < allTestCases.length; batchStart += BATCH_SIZE) {
-        const batch = allTestCases.slice(batchStart, batchStart + BATCH_SIZE);
-        const batchNum = Math.floor(batchStart / BATCH_SIZE) + 1;
-        const totalBatches = Math.ceil(allTestCases.length / BATCH_SIZE);
-
-        onEvent({
-          type: "agent_status", agent: "QA Refiner",
-          status: {
-            agent: "QA Refiner", status: "working",
-            message: `Refining batch ${batchNum}/${totalBatches} (${batch.length} tests)...`,
-            details: `Categories: ${[...new Set(batch.map(t => t.category))].join(", ")}`,
-            progress: Math.round((batchStart / allTestCases.length) * 100)
-          }
-        });
-
-        // ── LOG RULE-BASED TEST CASES (BEFORE) ──
-        console.log(`\n[QA Refiner] ╔══════════════════════════════════════════════╗`);
-        console.log(`[QA Refiner] ║  BATCH ${batchNum} — RULE-BASED (BEFORE REFINEMENT)   ║`);
-        console.log(`[QA Refiner] ╚══════════════════════════════════════════════╝`);
-        for (const tc of batch) {
-          console.log(`\n  [${tc.testCaseId}] ${tc.category} | ${tc.priority}`);
-          console.log(`  Title: ${tc.title}`);
-          console.log(`  Objective: ${tc.objective}`);
-          console.log(`  Steps:`);
-          (tc.testSteps || []).forEach((s: any) => console.log(`    ${s.step_number}. ${s.action} → ${s.expected_behavior}`));
-          console.log(`  Test Data: ${JSON.stringify(tc.testData)}`);
+      const tryParseJSON = (raw: string): any[] | null => {
+        try { return JSON.parse(raw); } catch {}
+        let cleaned = raw;
+        if (cleaned.includes('```json')) cleaned = cleaned.split('```json')[1]?.split('```')[0]?.trim() || cleaned;
+        else if (cleaned.includes('```')) cleaned = cleaned.split('```')[1]?.split('```')[0]?.trim() || cleaned;
+        try { return JSON.parse(cleaned); } catch {}
+        cleaned = cleanLLMJson(cleaned);
+        try { return JSON.parse(cleaned); } catch {}
+        const arrayMatch = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
+        if (arrayMatch) {
+          try { return JSON.parse(arrayMatch[0]); } catch {}
+          try { return JSON.parse(cleanLLMJson(arrayMatch[0])); } catch {}
         }
+        const objectMatches = raw.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
+        if (objectMatches && objectMatches.length > 0) {
+          const objects: any[] = [];
+          for (const objStr of objectMatches) {
+            try {
+              const obj = JSON.parse(objStr.replace(/[\x00-\x1F\x7F]/g, ' '));
+              if (obj.testCaseId && (obj.title || obj.testSteps)) objects.push(obj);
+            } catch {}
+          }
+          if (objects.length > 0) return objects;
+        }
+        return null;
+      };
 
-        const refinerSystemPrompt = `You are a senior QA engineer refining AI-generated test cases for a specific user story. Your job is to transform generic, template-driven test cases into precise, domain-aware test cases that reflect the exact terminology, UI elements, field names, and business rules described in the user story.`;
+      const BATCH_SIZE = 8;   // ↑ from 5 → fewer round trips (8–9 batches instead of 14)
+      const CONCURRENCY = 3;  // max simultaneous Claude API calls
 
-        const refinementPrompt = `USER STORY CONTEXT:
+      // ── Build batch list upfront ──────────────────────────────────────────────
+      const batches: SprintTestCase[][] = [];
+      for (let i = 0; i < allTestCases.length; i += BATCH_SIZE) {
+        batches.push(allTestCases.slice(i, i + BATCH_SIZE));
+      }
+      const totalBatches = batches.length;
+
+      // Pre-allocate result slots — order preserved regardless of parallel completion
+      const refinedSlots: SprintTestCase[][] = new Array(totalBatches);
+      const batchElapsedMs: number[] = [];
+      let completedBatches = 0;
+      const refineStartMs = Date.now();
+
+      console.log(`[TC-Generator] Stage 3: QA Refiner — ${totalBatches} batches × up to ${BATCH_SIZE} TCs, CONCURRENCY=${CONCURRENCY}`);
+
+      const refinerSystemPrompt = `You are a senior QA engineer refining AI-generated test cases for a specific user story. Your job is to transform generic, template-driven test cases into precise, domain-aware test cases that reflect the exact terminology, UI elements, field names, and business rules described in the user story.`;
+
+      // ── Parallel chunk processing ─────────────────────────────────────────────
+      for (let ci = 0; ci < batches.length; ci += CONCURRENCY) {
+        const chunk = batches.slice(ci, ci + CONCURRENCY);
+
+        await Promise.all(chunk.map(async (batch, offset) => {
+          const slotIdx = ci + offset;
+          const batchNum = slotIdx + 1;
+          const batchT0 = Date.now();
+
+          onEvent({
+            type: "agent_status", agent: "QA Refiner",
+            status: {
+              agent: "QA Refiner", status: "working",
+              message: `Refining batch ${batchNum}/${totalBatches} (${batch.length} tests)...`,
+              details: `Categories: ${[...new Set(batch.map(t => t.category))].join(", ")}`,
+              progress: Math.round((completedBatches / totalBatches) * 100),
+              batchNum, totalBatches, completedBatches,
+              totalCount: allTestCases.length,
+            }
+          });
+
+          console.log(`[QA Refiner] ▶ Batch ${batchNum}/${totalBatches} starting (${batch.length} TCs)`);
+
+          const refinementPrompt = `USER STORY CONTEXT:
 Title: ${userStoryTitle}
 Description: ${userStoryDescription}
 
@@ -795,170 +854,100 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
   "priority": "same as input"
 }]`;
 
-        try {
-          const refinerModel = process.env.QA_REFINER_MODEL || "claude-haiku-4-5-20251001";
-          const response = await withRetry(
-            () => anthropic.messages.create({
-              model: refinerModel,
-              max_tokens: 12000,
-              temperature: 0.4,
-              system: refinerSystemPrompt,
-              messages: [{ role: "user", content: refinementPrompt }],
-            }),
-            2, 3000, `QA Refiner batch ${batchNum}`
+          try {
+            const refinerModel = process.env.QA_REFINER_MODEL || "claude-haiku-4-5-20251001";
+            const response = await withRetry(
+              () => anthropic.messages.create({
+                model: refinerModel,
+                max_tokens: 16000,
+                temperature: 0.4,
+                system: refinerSystemPrompt,
+                messages: [{ role: "user", content: refinementPrompt }],
+              }),
+              2, 3000, `QA Refiner batch ${batchNum}`
+            );
+
+            const text = response.content[0]?.type === "text" ? response.content[0].text : "";
+            let parsed: any[] = [];
+
+            console.log(`[QA Refiner] Batch ${batchNum} raw response (first 300 chars): ${text.substring(0, 300)}`);
+
+            parsed = tryParseJSON(text) || [];
+            if (parsed.length === 0) {
+              console.warn(`[QA Refiner] Batch ${batchNum} all parse attempts failed, response length: ${text.length}`);
+              refinedSlots[slotIdx] = batch; // keep originals
+            } else {
+              console.log(`[QA Refiner] Batch ${batchNum} parsed ${parsed.length} TCs`);
+              const batchRefined: SprintTestCase[] = [];
+              for (let i = 0; i < batch.length; i++) {
+                const original = batch[i];
+                const refinedTC = parsed[i] || parsed.find((p: any) => p.testCaseId === original.testCaseId);
+                if (refinedTC) {
+                  batchRefined.push({
+                    ...original,
+                    title: refinedTC.title || original.title,
+                    description: refinedTC.description || original.description,
+                    objective: refinedTC.objective || original.objective,
+                    traceability: refinedTC.traceability || original.traceability,
+                    preconditions: refinedTC.preconditions || original.preconditions,
+                    testSteps: (refinedTC.testSteps?.length >= 4) ? refinedTC.testSteps : original.testSteps,
+                    expectedResult: refinedTC.expectedResult || original.expectedResult,
+                    postconditions: refinedTC.postconditions || original.postconditions,
+                    testData: refinedTC.testData || original.testData,
+                  });
+                } else {
+                  batchRefined.push(original);
+                }
+              }
+              refinedSlots[slotIdx] = batchRefined;
+            }
+          } catch (err: any) {
+            console.warn(`[QA Refiner] Batch ${batchNum} API error: ${err.message}, keeping originals`);
+            refinedSlots[slotIdx] = batch;
+          }
+
+          // ── Update timing and emit progress ──────────────────────────────────
+          const batchElapsed = Date.now() - batchT0;
+          batchElapsedMs.push(batchElapsed);
+          completedBatches++;
+          const elapsedSeconds = Math.round((Date.now() - refineStartMs) / 1000);
+          const avgMs = batchElapsedMs.reduce((a, b) => a + b, 0) / batchElapsedMs.length;
+          const estimatedRemainingSeconds = Math.round(
+            (avgMs * Math.max(0, totalBatches - completedBatches)) / (1000 * CONCURRENCY)
+          );
+          const refinedCount = refinedSlots.reduce((acc, slot) => acc + (slot?.length ?? 0), 0);
+
+          console.log(
+            `[QA Refiner] ✓ Batch ${batchNum} done in ${Math.round(batchElapsed / 1000)}s — ` +
+            `${completedBatches}/${totalBatches} complete, ETA ~${estimatedRemainingSeconds}s`
           );
 
-          const text = response.content[0]?.type === "text" ? response.content[0].text : "";
-          let parsed: any[] = [];
-
-          console.log(`[QA Refiner] Batch ${batchNum} raw response (first 500 chars): ${text.substring(0, 500)}`);
-
-          // Extract JSON
-          let jsonStr = text.trim();
-          if (jsonStr.includes("```json")) jsonStr = jsonStr.split("```json")[1].split("```")[0].trim();
-          else if (jsonStr.includes("```")) jsonStr = jsonStr.split("```")[1].split("```")[0].trim();
-
-          // Aggressive JSON cleaning function
-          function cleanLLMJson(raw: string): string {
-            return raw
-              .replace(/[\x00-\x09\x0B\x0C\x0E-\x1F\x7F]/g, ' ')  // control chars (keep \n \r)
-              .replace(/\n/g, '\\n')  // escape real newlines inside strings
-              .replace(/\r/g, '')
-              .replace(/\\n\\n/g, '\\n')  // collapse double escaped newlines
-              .replace(/,\s*}/g, '}')  // trailing commas in objects
-              .replace(/,\s*\]/g, ']')  // trailing commas in arrays
-              .replace(/([^\\])\\(?!["\\/bfnrtu])/g, '$1\\\\')  // escape lone backslashes
-              .replace(/"\s*\n\s*"/g, '", "');  // fix split strings
-          }
-
-          // Try parsing with progressive cleanup
-          function tryParseJSON(raw: string): any[] | null {
-            // Attempt 1: direct parse
-            try { return JSON.parse(raw); } catch {}
-
-            // Attempt 2: extract from markdown code block
-            let cleaned = raw;
-            if (cleaned.includes('```json')) cleaned = cleaned.split('```json')[1]?.split('```')[0]?.trim() || cleaned;
-            else if (cleaned.includes('```')) cleaned = cleaned.split('```')[1]?.split('```')[0]?.trim() || cleaned;
-            try { return JSON.parse(cleaned); } catch {}
-
-            // Attempt 3: clean control characters
-            cleaned = cleanLLMJson(cleaned);
-            try { return JSON.parse(cleaned); } catch {}
-
-            // Attempt 4: find array and clean
-            const arrayMatch = cleaned.match(/\[\s*\{[\s\S]*\}\s*\]/);
-            if (arrayMatch) {
-              try { return JSON.parse(arrayMatch[0]); } catch {}
-              // Attempt 5: re-clean the array match
-              try { return JSON.parse(cleanLLMJson(arrayMatch[0])); } catch {}
+          onEvent({
+            type: "agent_status", agent: "QA Refiner",
+            status: {
+              agent: "QA Refiner", status: "working",
+              message: `Batch ${batchNum}/${totalBatches} complete`,
+              details: `${elapsedSeconds}s elapsed · ~${estimatedRemainingSeconds}s remaining`,
+              progress: Math.round((completedBatches / totalBatches) * 100),
+              batchNum,
+              totalBatches,
+              completedBatches,
+              elapsedSeconds,
+              estimatedRemainingSeconds,
+              refinedCount,
+              totalCount: allTestCases.length,
             }
-
-            // Attempt 6: parse individual objects
-            const objectMatches = raw.match(/\{[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g);
-            if (objectMatches && objectMatches.length > 0) {
-              const objects: any[] = [];
-              for (const objStr of objectMatches) {
-                try {
-                  const obj = JSON.parse(objStr.replace(/[\x00-\x1F\x7F]/g, ' '));
-                  if (obj.testCaseId && (obj.title || obj.testSteps)) objects.push(obj);
-                } catch {}
-              }
-              if (objects.length > 0) return objects;
-            }
-
-            return null;
-          }
-
-          parsed = tryParseJSON(text) || [];
-          if (parsed.length === 0) {
-            console.log(`[QA Refiner] Batch ${batchNum} all parse attempts failed, response length: ${text.length}`);
-            // Log the character around the error position for debugging
-            const errorPosMatch = text.substring(30700, 30750);
-            console.log(`[QA Refiner] Chars around position 30723: ...${errorPosMatch}...`);
-          } else {
-            console.log(`[QA Refiner] Batch ${batchNum} parsed ${parsed.length} test cases successfully`);
-
-            // ── LOG REFINED TEST CASES (AFTER) ──
-            console.log(`\n[QA Refiner] ╔══════════════════════════════════════════════╗`);
-            console.log(`[QA Refiner] ║  BATCH ${batchNum} — REFINED BY CLAUDE (AFTER)        ║`);
-            console.log(`[QA Refiner] ╚══════════════════════════════════════════════╝`);
-            for (const tc of parsed) {
-              console.log(`\n  [${tc.testCaseId}] ${tc.category} | ${tc.priority}`);
-              console.log(`  Title: ${tc.title}`);
-              console.log(`  Objective: ${tc.objective}`);
-              console.log(`  Traceability: ${tc.traceability || 'none'}`);
-              console.log(`  Steps:`);
-              (tc.testSteps || []).forEach((s: any) => console.log(`    ${s.step_number}. ${s.action} → ${s.expected_behavior}`));
-              console.log(`  Test Data: ${JSON.stringify(tc.testData)}`);
-            }
-          }
-
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            // Map refined data back to SprintTestCase format, preserving IDs
-            for (let i = 0; i < batch.length; i++) {
-              const original = batch[i];
-              const refinedTC = parsed[i] || parsed.find((p: any) => p.testCaseId === original.testCaseId);
-              if (refinedTC) {
-                // ── LOG BEFORE/AFTER for comparison ──
-                console.log(`\n[QA Refiner] ═══ ${original.testCaseId} BEFORE → AFTER ═══`);
-                if (original.title !== (refinedTC.title || original.title)) {
-                  console.log(`  TITLE BEFORE: ${original.title}`);
-                  console.log(`  TITLE AFTER:  ${refinedTC.title}`);
-                }
-                if (original.objective !== (refinedTC.objective || original.objective)) {
-                  console.log(`  OBJECTIVE BEFORE: ${original.objective}`);
-                  console.log(`  OBJECTIVE AFTER:  ${refinedTC.objective}`);
-                }
-                if (refinedTC.traceability && refinedTC.traceability !== original.traceability) {
-                  console.log(`  TRACEABILITY: ${refinedTC.traceability}`);
-                }
-                const origStep1 = original.testSteps?.[0]?.action || '';
-                const newStep1 = refinedTC.testSteps?.[0]?.action || '';
-                if (origStep1 !== newStep1) {
-                  console.log(`  STEP1 BEFORE: ${origStep1}`);
-                  console.log(`  STEP1 AFTER:  ${newStep1}`);
-                }
-                const origStep3 = original.testSteps?.[2]?.action || '';
-                const newStep3 = refinedTC.testSteps?.[2]?.action || '';
-                if (origStep3 !== newStep3) {
-                  console.log(`  STEP3 BEFORE: ${origStep3}`);
-                  console.log(`  STEP3 AFTER:  ${newStep3}`);
-                }
-                if (refinedTC.testData && JSON.stringify(refinedTC.testData) !== JSON.stringify(original.testData)) {
-                  console.log(`  TEST DATA: ${JSON.stringify(refinedTC.testData)}`);
-                }
-
-                refined.push({
-                  ...original,
-                  title: refinedTC.title || original.title,
-                  description: refinedTC.description || original.description,
-                  objective: refinedTC.objective || original.objective,
-                  traceability: refinedTC.traceability || original.traceability,
-                  preconditions: refinedTC.preconditions || original.preconditions,
-                  testSteps: (refinedTC.testSteps?.length >= 4) ? refinedTC.testSteps : original.testSteps,
-                  expectedResult: refinedTC.expectedResult || original.expectedResult,
-                  postconditions: refinedTC.postconditions || original.postconditions,
-                  testData: refinedTC.testData || original.testData,
-                });
-              } else {
-                refined.push(original); // fallback to original if refinement failed for this TC
-              }
-            }
-            console.log(`[QA Refiner] Batch ${batchNum} refined: ${parsed.length} test cases`);
-          } else {
-            // If parsing failed, keep originals
-            refined.push(...batch);
-            console.warn(`[QA Refiner] Batch ${batchNum} parse failed, keeping originals`);
-          }
-        } catch (err: any) {
-          console.warn(`[QA Refiner] Batch ${batchNum} API error: ${err.message}, keeping originals`);
-          refined.push(...batch);
-        }
+          });
+        }));
       }
 
+      const refined = refinedSlots.flatMap(slot => slot ?? []);
       refinedTests = refined;
-      console.log(`[TC-Generator] Stage 3: QA Refiner complete — ${refinedTests.length} TCs after refinement`);
+      const stage3ElapsedSec = Math.round((Date.now() - refineStartMs) / 1000);
+      console.log(
+        `[TC-Generator] Stage 3: QA Refiner complete — ${refinedTests.length} TCs in ${stage3ElapsedSec}s ` +
+        `(${totalBatches} batches × CONCURRENCY=${CONCURRENCY})`
+      );
 
       onEvent({
         type: "agent_status", agent: "QA Refiner",
@@ -982,7 +971,11 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
       tc.testCaseId = `${prefix}-${categoryCounters[prefix]}`;
     }
 
-    console.log(`[TC-Generator] Stage 4: Output & storage — emitting ${refinedTests.length} final test cases`);
+    const totalPipelineSec = Math.round((Date.now() - pipelineStartMs) / 1000);
+    console.log(
+      `[TC-Generator] Stage 4: Output & storage — emitting ${refinedTests.length} final test cases ` +
+      `(total pipeline: ${totalPipelineSec}s)`
+    );
 
     onEvent({
       type: "refined_test_cases",

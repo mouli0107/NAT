@@ -35,6 +35,14 @@ interface AgentStatus {
   message: string;
   details?: string;
   progress?: number;
+  // Batch progress (QA Refiner)
+  batchNum?: number;
+  totalBatches?: number;
+  completedBatches?: number;
+  elapsedSeconds?: number;
+  estimatedRemainingSeconds?: number;
+  refinedCount?: number;
+  totalCount?: number;
 }
 
 interface AgenticEvent {
@@ -235,6 +243,15 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
   const [elapsedTime, setElapsedTime] = useState(0);
   const [showWorkflow, setShowWorkflow] = useState(true);
   const startTimeRef = useRef<number | null>(null);
+  const completionTimeRef = useRef<number | null>(null);
+  const [refinementProgress, setRefinementProgress] = useState({
+    completedBatches: 0,
+    totalBatches: 0,
+    estimatedRemainingSeconds: 0,
+    elapsedSeconds: 0,
+    refinedCount: 0,
+    totalCount: 0,
+  });
   const [categoryProgress, setCategoryProgress] = useState<CategoryProgress[]>(
     CATEGORIES.map(c => ({ name: c.name, label: c.label, count: 0, status: "pending" }))
   );
@@ -243,10 +260,14 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
   useEffect(() => {
     if (isActive && !startTimeRef.current) {
       startTimeRef.current = Date.now();
+      completionTimeRef.current = null;
     }
     if (!isActive) {
+      if (startTimeRef.current && !completionTimeRef.current) {
+        completionTimeRef.current = Math.floor((Date.now() - startTimeRef.current) / 1000);
+        setElapsedTime(completionTimeRef.current);
+      }
       startTimeRef.current = null;
-      setElapsedTime(0);
       return;
     }
 
@@ -273,6 +294,8 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
       setRefinedData(null);
       setBddAssets(null);
       setCategoryProgress(CATEGORIES.map(c => ({ name: c.name, label: c.label, count: 0, status: "pending" })));
+      setRefinementProgress({ completedBatches: 0, totalBatches: 0, estimatedRemainingSeconds: 0, elapsedSeconds: 0, refinedCount: 0, totalCount: 0 });
+      completionTimeRef.current = null;
       return;
     }
 
@@ -286,10 +309,22 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
     let newRefinedData: { totalTests: number; qualityScore: number } | null = null;
     let newBddAssets: BDDAssetsData | null = null;
     const newCategoryProgress: CategoryProgress[] = CATEGORIES.map(c => ({ name: c.name, label: c.label, count: 0, status: "pending" }));
+    let newRefinementProgress = { completedBatches: 0, totalBatches: 0, estimatedRemainingSeconds: 0, elapsedSeconds: 0, refinedCount: 0, totalCount: 0 };
 
     for (const event of events) {
       if (event.type === "agent_status" && event.status) {
         newAgentStatuses[event.status.agent] = event.status;
+        // Track QA Refiner batch progress
+        if (event.status.agent === "QA Refiner" && event.status.totalBatches) {
+          newRefinementProgress = {
+            completedBatches: event.status.completedBatches ?? newRefinementProgress.completedBatches,
+            totalBatches: event.status.totalBatches,
+            estimatedRemainingSeconds: event.status.estimatedRemainingSeconds ?? newRefinementProgress.estimatedRemainingSeconds,
+            elapsedSeconds: event.status.elapsedSeconds ?? newRefinementProgress.elapsedSeconds,
+            refinedCount: event.status.refinedCount ?? newRefinementProgress.refinedCount,
+            totalCount: event.status.totalCount ?? newRefinementProgress.totalCount,
+          };
+        }
       } else if (event.type === "pipeline_stage") {
         newCurrentStage = event.stage || "";
         newStageMessage = event.message || "";
@@ -335,6 +370,7 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
     setRefinedData(newRefinedData);
     setBddAssets(newBddAssets);
     setCategoryProgress(newCategoryProgress);
+    setRefinementProgress(newRefinementProgress);
 
   }, [events]);
 
@@ -423,23 +459,31 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
 
   // Calculate progress and ETA
   const completedAgents = AGENTS.filter(a => agentStatuses[a.id]?.status === "completed").length;
-  const activeAgentIndex = AGENTS.findIndex(a => 
+  const activeAgentIndex = AGENTS.findIndex(a =>
     agentStatuses[a.id]?.status === "thinking" || agentStatuses[a.id]?.status === "working"
   );
-  
-  // Calculate remaining time based on agents not yet started
-  const remainingAgentsTime = AGENTS.slice(activeAgentIndex >= 0 ? activeAgentIndex + 1 : completedAgents)
-    .reduce((sum, a) => sum + a.duration, 0);
-  // Add time for current agent based on its estimated duration
-  const currentAgentRemainingTime = activeAgentIndex >= 0 
-    ? Math.max(0, AGENTS[activeAgentIndex].duration - 5) // Assume 5s into current agent
-    : 0;
-  const estimatedRemainingTime = Math.max(0, remainingAgentsTime + currentAgentRemainingTime);
-  
+
+  // During refinement: use server-provided rolling-average ETA; otherwise use static agent durations
+  const isInRefinement = currentStage === "refinement" && refinementProgress.totalBatches > 0;
+  const estimatedRemainingTime = isInRefinement
+    ? refinementProgress.estimatedRemainingSeconds
+    : Math.max(0,
+        AGENTS.slice(activeAgentIndex >= 0 ? activeAgentIndex + 1 : completedAgents)
+          .reduce((sum, a) => sum + a.duration, 0) +
+        (activeAgentIndex >= 0 ? Math.max(0, AGENTS[activeAgentIndex].duration - 5) : 0)
+      );
+
   const completedCount = categoryProgress.filter(c => c.status === "completed").length;
   const totalTests = Object.values(categoryCounts).reduce((a, b) => a + b, 0);
-  const overallProgress = isActive 
-    ? Math.min(95, (completedAgents / AGENTS.length) * 100 + (activeAgentIndex >= 0 ? 8 : 0))
+
+  // During refinement: blend pre-refiner agent progress (83%) + batch completion (17%)
+  const PRE_REFINER_AGENTS = 5; // Orchestrator, Analyzer, Enricher, Planner, Generator
+  const overallProgress = isActive
+    ? isInRefinement
+      ? (PRE_REFINER_AGENTS / AGENTS.length) * 100 +
+        (refinementProgress.completedBatches / refinementProgress.totalBatches) *
+        (1 / AGENTS.length) * 100
+      : Math.min(95, (completedAgents / AGENTS.length) * 100 + (activeAgentIndex >= 0 ? 8 : 0))
     : completedAgents === AGENTS.length ? 100 : 0;
 
   const formatTime = (seconds: number) => {
@@ -514,20 +558,27 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
           </div>
 
           {/* Progress Bar */}
-          <div className="mb-6">
+          <div className="mb-4">
             <div className="flex justify-between gap-4 text-sm text-muted-foreground mb-2">
               <span>Pipeline Progress</span>
-              <span className="font-medium">{Math.round(overallProgress)}%</span>
+              <div className="flex items-center gap-3">
+                {!isActive && completionTimeRef.current && (
+                  <span className="text-emerald-400 font-medium">
+                    Completed in {formatTime(completionTimeRef.current)}
+                  </span>
+                )}
+                <span className="font-medium">{Math.round(overallProgress)}%</span>
+              </div>
             </div>
             <div className="relative h-3 bg-muted/30 rounded-full overflow-hidden">
-              <motion.div 
+              <motion.div
                 className="absolute inset-y-0 left-0 bg-gradient-to-r from-blue-500 via-purple-500 to-emerald-500 rounded-full"
                 initial={{ width: 0 }}
                 animate={{ width: `${overallProgress}%` }}
                 transition={{ duration: 0.5, ease: "easeOut" }}
               />
               {isActive && (
-                <motion.div 
+                <motion.div
                   className="absolute inset-y-0 right-0 w-full bg-gradient-to-r from-transparent via-white/20 to-transparent"
                   animate={{ x: ["-100%", "100%"] }}
                   transition={{ repeat: Infinity, duration: 1.5, ease: "linear" }}
@@ -535,6 +586,50 @@ export function AgenticProgress({ isActive, events, categoryCounts }: AgenticPro
               )}
             </div>
           </div>
+
+          {/* QA Refiner batch progress panel — visible during refinement */}
+          {(isInRefinement || (!isActive && refinementProgress.totalBatches > 0)) && (
+            <div className="mb-6 p-3 rounded-lg bg-blue-500/10 border border-blue-500/20">
+              <div className="flex justify-between items-center text-sm mb-2">
+                <span className="text-blue-400 font-medium flex items-center gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5" />
+                  QA Refiner — Batch Progress
+                </span>
+                <span className="text-muted-foreground tabular-nums">
+                  {refinementProgress.completedBatches}/{refinementProgress.totalBatches} batches
+                  {isInRefinement && (
+                    <>
+                      {" · "}
+                      {formatTime(elapsedTime)} elapsed
+                      {refinementProgress.estimatedRemainingSeconds > 0 && (
+                        <span className="text-primary"> · ~{formatTime(refinementProgress.estimatedRemainingSeconds)} remaining</span>
+                      )}
+                    </>
+                  )}
+                  {!isActive && !isInRefinement && (
+                    <span className="text-emerald-400"> · done</span>
+                  )}
+                </span>
+              </div>
+              <div className="h-2 bg-muted/30 rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full"
+                  initial={{ width: 0 }}
+                  animate={{
+                    width: refinementProgress.totalBatches > 0
+                      ? `${(refinementProgress.completedBatches / refinementProgress.totalBatches) * 100}%`
+                      : "0%"
+                  }}
+                  transition={{ duration: 0.4, ease: "easeOut" }}
+                />
+              </div>
+              {refinementProgress.totalCount > 0 && (
+                <p className="text-xs text-muted-foreground mt-1.5">
+                  {refinementProgress.refinedCount} / {refinementProgress.totalCount} test cases refined
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Agent Pipeline - Wide responsive grid */}
           <div className="grid grid-cols-3 md:grid-cols-6 gap-3 md:gap-6 lg:gap-8">
