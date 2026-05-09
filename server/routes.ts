@@ -3,8 +3,15 @@ import express from "express";
 import { createServer, type Server } from "http";
 import * as path from "path";
 import fs from "fs";
+import { execSync } from "child_process";
 import unzipper from "unzipper";
 import archiver from "archiver";
+
+// ── Build-time constants (evaluated once on startup) ─────────────────────────
+const GIT_COMMIT = (() => {
+  try { return execSync('git rev-parse --short HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim(); }
+  catch { return 'unknown'; }
+})();
 import { z } from "zod";
 import { storage } from "./storage";
 import { db } from "./db";
@@ -10780,67 +10787,133 @@ Each element includes a fallback locator strategy (label, placeholder, text).
     }
   }
 
-  /** GET /api/downloads/chrome-extension — serve chrome-extension/ as a .zip */
-  app.get('/api/downloads/chrome-extension', async (_req, res) => {
+  // ── Shared helper: resolve server URL for injected .env files ───────────────
+  function getAgentServerUrl(): string {
+    return (
+      process.env.AZURE_SERVER_URL ||
+      process.env.SERVER_URL ||
+      'wss://nat20-astra.azurewebsites.net/ws/execution-agent'
+    );
+  }
+
+  // ── Shared helper: build VERSION file content ─────────────────────────────
+  function buildVersionContent(pkg: string): string {
+    return [
+      `PACKAGE=${pkg}`,
+      `BUILD_TIME=${new Date().toISOString()}`,
+      `GIT_COMMIT=${GIT_COMMIT}`,
+      `SERVER_URL=${getAgentServerUrl()}`,
+    ].join('\n') + '\n';
+  }
+
+  /** GET /api/downloads/chrome-extension — stream chrome-extension/ as a fresh ZIP */
+  app.get('/api/downloads/chrome-extension', (req, res) => {
     const extDir = path.join(REPO_ROOT, 'chrome-extension');
     if (!fs.existsSync(extDir)) {
       return res.status(404).json({ error: 'chrome-extension directory not found' });
     }
-    try {
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
-      addDirToZip(zip.folder('nat20-chrome-extension')!, extDir);
-      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', 'attachment; filename="nat20-chrome-extension.zip"');
-      res.setHeader('Content-Length', String(buffer.length));
-      res.send(buffer);
-    } catch (err: any) {
-      console.error('[Downloads] chrome-extension ZIP error:', err);
+    console.log('[Download] chrome-extension requested by', req.ip);
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-chrome-extension.zip"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.on('error', (err) => {
+      console.error('[Downloads] chrome-extension archive error:', err);
       if (!res.headersSent) res.status(500).json({ error: err.message });
-    }
+    });
+    archive.pipe(res);
+    archive.directory(extDir, 'nat20-chrome-extension');
+    archive.append(buildVersionContent('nat20-chrome-extension'), { name: 'nat20-chrome-extension/VERSION' });
+    archive.finalize();
   });
 
-  /** GET /api/downloads/remote-agent — serve remote-agent/ (excluding node_modules) as a .zip */
-  app.get('/api/downloads/remote-agent', async (_req, res) => {
+  /** GET /api/downloads/remote-agent — stream remote-agent/ with injected .env + scripts */
+  app.get('/api/downloads/remote-agent', (req, res) => {
     const agentDir = path.join(REPO_ROOT, 'remote-agent');
     if (!fs.existsSync(agentDir)) {
       return res.status(404).json({ error: 'remote-agent directory not found' });
     }
-    try {
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
-      addDirToZip(zip.folder('nat20-remote-agent')!, agentDir);
-      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
-      res.setHeader('Content-Length', String(buffer.length));
-      res.send(buffer);
-    } catch (err: any) {
-      console.error('[Downloads] remote-agent ZIP error:', err);
+    const serverUrl = getAgentServerUrl();
+    console.log('[Download] remote-agent requested by', req.ip, '→ SERVER_URL:', serverUrl);
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.on('error', (err) => {
+      console.error('[Downloads] remote-agent archive error:', err);
       if (!res.headersSent) res.status(500).json({ error: err.message });
-    }
+    });
+    archive.pipe(res);
+
+    // Source files (excludes node_modules, dist, .git via glob pattern)
+    archive.glob('**/*', {
+      cwd: agentDir,
+      ignore: ['node_modules/**', 'dist/**', '.git/**', '*.log'],
+      dot: true,
+    }, { prefix: 'nat20-remote-agent' });
+
+    // Injected: .env with pre-configured server URL
+    const envContent = `# NAT 2.0 Remote Agent — auto-generated configuration\nSERVER_URL=${serverUrl}\n`;
+    archive.append(envContent, { name: 'nat20-remote-agent/.env' });
+
+    // Injected: start.bat (Windows)
+    const startBat = `@echo off\nnpm install\nnpx tsx agent.ts\npause\n`;
+    archive.append(startBat, { name: 'nat20-remote-agent/start.bat' });
+
+    // Injected: start.sh (Mac/Linux)
+    const startSh = `#!/bin/bash\nnpm install\nnpx tsx agent.ts\n`;
+    archive.append(startSh, { name: 'nat20-remote-agent/start.sh' });
+
+    // Injected: VERSION
+    archive.append(buildVersionContent('nat20-remote-agent'), { name: 'nat20-remote-agent/VERSION' });
+
+    archive.finalize();
   });
 
-  /** GET /api/downloads/workspace-agent — serve workspace-agent/ (excluding node_modules) as a .zip */
-  app.get('/api/downloads/workspace-agent', async (_req, res) => {
+  /** GET /api/downloads/workspace-agent — stream workspace-agent/ with injected .env + scripts */
+  app.get('/api/downloads/workspace-agent', (req, res) => {
     const agentDir = path.join(REPO_ROOT, 'workspace-agent');
     if (!fs.existsSync(agentDir)) {
       return res.status(404).json({ error: 'workspace-agent directory not found' });
     }
-    try {
-      const JSZip = (await import('jszip')).default;
-      const zip = new JSZip();
-      addDirToZip(zip.folder('nat20-workspace-agent')!, agentDir);
-      const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE', compressionOptions: { level: 6 } });
-      res.setHeader('Content-Type', 'application/zip');
-      res.setHeader('Content-Disposition', 'attachment; filename="nat20-workspace-agent.zip"');
-      res.setHeader('Content-Length', String(buffer.length));
-      res.send(buffer);
-    } catch (err: any) {
-      console.error('[Downloads] workspace-agent ZIP error:', err);
+    const serverUrl = getAgentServerUrl();
+    console.log('[Download] workspace-agent requested by', req.ip, '→ SERVER_URL:', serverUrl);
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename="nat20-workspace-agent.zip"');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+
+    const archive = archiver('zip', { zlib: { level: 6 } });
+    archive.on('error', (err) => {
+      console.error('[Downloads] workspace-agent archive error:', err);
       if (!res.headersSent) res.status(500).json({ error: err.message });
-    }
+    });
+    archive.pipe(res);
+
+    archive.glob('**/*', {
+      cwd: agentDir,
+      ignore: ['node_modules/**', 'dist/**', '.git/**', '*.log'],
+      dot: true,
+    }, { prefix: 'nat20-workspace-agent' });
+
+    // Injected: .env with pre-configured server URL
+    const wsServerUrl = serverUrl.replace('/ws/execution-agent', '');
+    const envContent = `# NAT 2.0 Workspace Agent — auto-generated configuration\nSERVER_URL=${wsServerUrl}\n`;
+    archive.append(envContent, { name: 'nat20-workspace-agent/.env' });
+
+    // Injected: start.bat (Windows)
+    const startBat = `@echo off\nnpm install\nnpx tsx agent.ts\npause\n`;
+    archive.append(startBat, { name: 'nat20-workspace-agent/start.bat' });
+
+    // Injected: start.sh (Mac/Linux)
+    const startSh = `#!/bin/bash\nnpm install\nnpx tsx agent.ts\n`;
+    archive.append(startSh, { name: 'nat20-workspace-agent/start.sh' });
+
+    // Injected: VERSION
+    archive.append(buildVersionContent('nat20-workspace-agent'), { name: 'nat20-workspace-agent/VERSION' });
+
+    archive.finalize();
   });
 
   return httpServer;

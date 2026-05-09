@@ -668,8 +668,8 @@ export default function SettingsPage() {
                   </div>
                   <div className="text-xs text-muted-foreground space-y-1 pl-14">
                     <p>1. Download and unzip <code className="bg-muted px-1 rounded">nat20-remote-agent.zip</code></p>
-                    <p>2. <code className="bg-muted px-1 rounded">cd nat20-remote-agent &amp;&amp; npm install</code></p>
-                    <p>3. <code className="bg-muted px-1 rounded">SERVER_URL=wss://your-server/ws/execution-agent npx tsx agent.ts</code></p>
+                    <p>2. Double-click <code className="bg-muted px-1 rounded">start.bat</code> (Windows) or run <code className="bg-muted px-1 rounded">bash start.sh</code> (Mac/Linux)</p>
+                    <p>3. <em>Server URL is pre-configured in the ZIP — no manual setup needed</em></p>
                     <p>4. The agent appears as <strong>Connected</strong> in the status panel below once running</p>
                   </div>
                 </div>
