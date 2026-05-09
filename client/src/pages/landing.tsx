@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { Bot, Eye, Settings, Accessibility, Code2, Brain, GitBranch, BarChart3, Shield, Users } from "lucide-react";
+import { Bot, Eye, Settings, Accessibility, Code2, Brain, GitBranch, BarChart3, Shield, Users, Lock, ShieldCheck, AlertTriangle, EyeOff } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useBranding } from "@/contexts/BrandingContext";
@@ -16,10 +16,18 @@ export default function LandingPage() {
   const { toast } = useToast();
   const { brand } = useBranding();
 
+  // Forced password-change state
+  const [mustChange, setMustChange] = useState(false);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [isChanging, setIsChanging] = useState(false);
+
   useEffect(() => {
     const isAuthenticated = localStorage.getItem("isAuthenticated") === "true";
     if (isAuthenticated) {
-      setLocation("/");
+      setLocation("/dashboard");
     }
   }, [setLocation]);
 
@@ -37,11 +45,10 @@ export default function LandingPage() {
       if (res.ok && data.success) {
         localStorage.setItem("isAuthenticated", "true");
         localStorage.setItem("currentUser", JSON.stringify({ id: data.userId, username: data.username, tenantId: data.tenantId }));
-        // Redirect to /login to handle forced password change flow
         if (data.mustChangePassword) {
-          setLocation("/login");
+          setMustChange(true);
         } else {
-          setLocation("/");
+          setLocation("/dashboard");
         }
       } else {
         toast({ variant: "destructive", title: "Login failed", description: data.error || "Invalid credentials" });
@@ -54,6 +61,41 @@ export default function LandingPage() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleChangePassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (newPassword.length < 8) {
+      toast({ title: "Too short", description: "Password must be at least 8 characters", variant: "destructive" });
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast({ title: "Mismatch", description: "Passwords do not match", variant: "destructive" });
+      return;
+    }
+    if (newPassword === password) {
+      toast({ title: "Same password", description: "New password must be different from the temporary one", variant: "destructive" });
+      return;
+    }
+    setIsChanging(true);
+    try {
+      const res = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword: password, newPassword }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        toast({ title: "Password updated", description: "Your new password is set. Welcome!" });
+        setLocation("/dashboard");
+      } else {
+        toast({ title: "Failed", description: data.error || "Could not update password", variant: "destructive" });
+      }
+    } catch {
+      toast({ title: "Network error", description: "Could not reach the server", variant: "destructive" });
+    } finally {
+      setIsChanging(false);
     }
   };
 
@@ -150,55 +192,131 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Login Section */}
+      {/* Login / Change-Password Section */}
       <section id="login-section" className="container mx-auto px-8 py-20 pb-32">
-        <Card
-          className="max-w-md mx-auto p-8 border border-gray-200 shadow-sm bg-white"
-          data-testid="card-login"
-        >
-          <div className="space-y-6">
-            <div className="text-center">
-              <h2 className="text-xl font-bold text-gray-900" data-testid="heading-login">
-                {brand.loginTitle}
-              </h2>
-              <p className="text-sm text-gray-500 mt-2" data-testid="text-demo-mode">
-                Sign in with your account credentials
-              </p>
-            </div>
+        {mustChange ? (
+          <Card className="max-w-md mx-auto p-8 border border-amber-200 shadow-sm bg-white" data-testid="card-change-password">
+            <div className="space-y-6">
+              <div className="text-center">
+                <div className="flex justify-center mb-3">
+                  <div className="p-3 rounded-2xl bg-amber-500/10">
+                    <ShieldCheck className="w-8 h-8 text-amber-500" />
+                  </div>
+                </div>
+                <h2 className="text-xl font-bold text-gray-900">Set Your Password</h2>
+                <p className="text-sm text-gray-500 mt-2">You're using a temporary password. Please set a new one to continue.</p>
+              </div>
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <Input
-                type="text"
-                placeholder="your@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="border-gray-300 text-gray-900 bg-white"
-                autoComplete="username"
-                required
-                data-testid="input-email"
-              />
-              <Input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="border-gray-300 text-gray-900 bg-white"
-                autoComplete="current-password"
-                required
-                data-testid="input-password"
-              />
-              <Button
-                type="submit"
-                className="w-full font-semibold text-white"
-                style={{ background: '#4f46e5' }}
-                disabled={isLoading}
-                data-testid="button-login"
-              >
-                {isLoading ? "Signing in..." : "Sign In"}
-              </Button>
-            </form>
-          </div>
-        </Card>
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-700">
+                  Logged in as <strong>{email}</strong>. You must change your temporary password before continuing.
+                </p>
+              </div>
+
+              <form onSubmit={handleChangePassword} className="space-y-4">
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type={showNewPw ? "text" : "password"}
+                    placeholder="New password (min. 8 characters)"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    className="pl-9 pr-10 border-gray-300"
+                    autoFocus
+                    required
+                    data-testid="input-new-password"
+                  />
+                  <button type="button" onClick={() => setShowNewPw(!showNewPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+                    {showNewPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {newPassword.length > 0 && newPassword.length < 8 && (
+                  <p className="text-xs text-red-500">At least 8 characters required</p>
+                )}
+
+                <div className="relative">
+                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                  <Input
+                    type={showConfirmPw ? "text" : "password"}
+                    placeholder="Confirm new password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    className="pl-9 pr-10 border-gray-300"
+                    required
+                    data-testid="input-confirm-password"
+                  />
+                  <button type="button" onClick={() => setShowConfirmPw(!showConfirmPw)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600" tabIndex={-1}>
+                    {showConfirmPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
+                {confirmPassword.length > 0 && newPassword !== confirmPassword && (
+                  <p className="text-xs text-red-500">Passwords do not match</p>
+                )}
+
+                <Button
+                  type="submit"
+                  className="w-full font-semibold text-white"
+                  style={{ background: '#f59e0b' }}
+                  disabled={isChanging || newPassword.length < 8 || newPassword !== confirmPassword || newPassword === password}
+                  data-testid="button-set-password"
+                >
+                  {isChanging ? "Saving..." : "Set Password & Continue"}
+                </Button>
+              </form>
+            </div>
+          </Card>
+        ) : (
+          <Card
+            className="max-w-md mx-auto p-8 border border-gray-200 shadow-sm bg-white"
+            data-testid="card-login"
+          >
+            <div className="space-y-6">
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-gray-900" data-testid="heading-login">
+                  {brand.loginTitle}
+                </h2>
+                <p className="text-sm text-gray-500 mt-2" data-testid="text-demo-mode">
+                  Sign in with your account credentials
+                </p>
+              </div>
+
+              <form onSubmit={handleLogin} className="space-y-4">
+                <Input
+                  type="text"
+                  placeholder="your@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="border-gray-300 text-gray-900 bg-white"
+                  autoComplete="username"
+                  required
+                  data-testid="input-email"
+                />
+                <Input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="border-gray-300 text-gray-900 bg-white"
+                  autoComplete="current-password"
+                  required
+                  data-testid="input-password"
+                />
+                <Button
+                  type="submit"
+                  className="w-full font-semibold text-white"
+                  style={{ background: '#4f46e5' }}
+                  disabled={isLoading}
+                  data-testid="button-login"
+                >
+                  {isLoading ? "Signing in..." : "Sign In"}
+                </Button>
+              </form>
+            </div>
+          </Card>
+        )}
       </section>
     </div>
   );
