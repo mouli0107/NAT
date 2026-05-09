@@ -128,6 +128,135 @@ export interface FrameworkMergeInput {
   businessFunctions: Record<string, BusinessFunction[]>;
 }
 
+// ── Sprint 3 unit types ───────────────────────────────────────────────────────
+
+export type UtilCategory = 'wait' | 'data' | 'assert' | 'api' | 'general';
+
+export interface UtilUnit {
+  /** Function name, e.g. "waitForToast" */
+  functionName: string;
+  /** Logical category that drives the destination file */
+  category: UtilCategory;
+  /** Full TypeScript source of the function */
+  functionBody: string;
+  /** Source test-case IDs */
+  sourceTcIds: string[];
+}
+
+export interface FixtureUnit {
+  /** Fixture name, e.g. "loginUser" */
+  fixtureName: string;
+  /** Full TypeScript source of the factory function body */
+  factoryBody: string;
+  /** Module/feature scope — used for namespacing on collision */
+  scope: string;
+  /** Source test-case IDs */
+  sourceTcIds: string[];
+}
+
+export interface SpecUnit {
+  /** e.g. "TC-042" — unique key within the project */
+  tcSequence: string;
+  /** Human-readable test name */
+  tcName: string;
+  /** Module folder, e.g. "Login" */
+  moduleName: string;
+  /** Feature sub-folder, e.g. "HappyPath" */
+  featureName: string;
+  /** Full .spec.ts file content */
+  content: string;
+  /** userId who recorded this TC */
+  recordedBy: string;
+  /** Source test-case IDs (usually just [tcSequence]) */
+  sourceTcIds: string[];
+}
+
+// ── Sprint 3 merge result types ───────────────────────────────────────────────
+
+export type UtilMergeAction = 'add' | 'skip' | 'update' | 'alias' | 'conflict';
+
+export interface UtilMergeDecision {
+  action: UtilMergeAction;
+  unitName: string;
+  reason?: string;
+}
+
+export interface UtilMergeResult {
+  projectId: string;
+  decisions: UtilMergeDecision[];
+  assetsUpserted: number;
+  conflictsRaised: number;
+  /** Number of spec files updated to replace inline copies with imports */
+  inlineReplacementsCount: number;
+}
+
+export type FixtureMergeAction = 'add' | 'skip' | 'parameterize' | 'namespace' | 'conflict';
+
+export interface FixtureMergeDecision {
+  action: FixtureMergeAction;
+  fixtureName: string;
+  reason?: string;
+}
+
+export interface FixtureMergeResult {
+  projectId: string;
+  decisions: FixtureMergeDecision[];
+  assetsUpserted: number;
+  conflictsRaised: number;
+}
+
+export type SpecMergeAction = 'add' | 'replace' | 'version';
+
+export interface SpecMergeResult {
+  projectId: string;
+  tcSequence: string;
+  filePath: string;
+  action: SpecMergeAction;
+  conflictsRaised: number;
+  /** tcSequences of specs with >85% content similarity */
+  similarSpecs: string[];
+}
+
+export interface RefactoringChange {
+  filePath: string;
+  changeType: 'import_fix' | 'dead_code_warning' | 'config_regenerated';
+  description: string;
+}
+
+// ── Extended merge input (all 7 layers) ──────────────────────────────────────
+
+export interface FullMergeInput extends FrameworkMergeInput {
+  /** Generic utility functions (wait, data, assert, api, general) */
+  genericUtils: UtilUnit[];
+  /** Playwright fixtures */
+  fixtures: FixtureUnit[];
+  /** The spec file for this recording */
+  spec: SpecUnit;
+}
+
+// ── Full merge result (all 7 layers + post-merge) ─────────────────────────────
+
+export interface FullMergeResult {
+  success: boolean;
+  tcSequence: string;
+  layers: {
+    locators:          LocatorMergeResult[];
+    pageObjects:       PageObjectMergeResult[];
+    actions:           ActionMergeResult[];
+    businessFunctions: BusinessFunctionMergeResult[];
+    genericUtils:      UtilMergeResult;
+    fixtures:          FixtureMergeResult;
+    spec:              SpecMergeResult;
+  };
+  /** IDs of newly raised conflict rows */
+  conflictIds: string[];
+  refactoringChanges: RefactoringChange[];
+  totalAdded:     number;
+  totalSkipped:   number;
+  totalConflicts: number;
+  durationMs:     number;
+}
+
 // ── DB adapter interface ──────────────────────────────────────────────────────
 
 export interface AssetRow {

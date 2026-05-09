@@ -6,7 +6,7 @@
 // Single place for all SQL; layers stay pure TypeScript logic.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, inArray } from 'drizzle-orm';
 import { db } from '../../db.js';
 import {
   frameworkAssets,
@@ -193,6 +193,53 @@ export class MergerDb {
         and(
           eq(assetConflicts.projectId, projectId),
           eq(assetConflicts.status, 'open'),
+        ),
+      );
+  }
+
+  // ── Direct asset update (for spec re-recording / fixture parameterize) ───────
+
+  /**
+   * Update the content + optional metadata of an existing asset by ID.
+   */
+  async updateAsset(
+    id: string,
+    patch: {
+      content:     string;
+      contentHash: string | null;
+      unitHash?:   string | null;
+      updatedBy?:  string | null;
+      changeNote?: string;
+    },
+  ): Promise<void> {
+    await db
+      .update(frameworkAssets)
+      .set({
+        content:     patch.content,
+        contentHash: patch.contentHash,
+        unitHash:    patch.unitHash ?? null,
+        updatedBy:   patch.updatedBy ?? null,
+        updatedAt:   sql`now()`,
+      })
+      .where(eq(frameworkAssets.id, id));
+  }
+
+  /**
+   * Return all assets belonging to a set of assetTypes for a project.
+   * Used by post-merge and ZIP builder for multi-type queries.
+   */
+  async getAssetsByTypes(
+    projectId: string,
+    assetTypes: string[],
+  ): Promise<FrameworkAsset[]> {
+    if (assetTypes.length === 0) return [];
+    return db
+      .select()
+      .from(frameworkAssets)
+      .where(
+        and(
+          eq(frameworkAssets.projectId, projectId),
+          inArray(frameworkAssets.assetType, assetTypes),
         ),
       );
   }
