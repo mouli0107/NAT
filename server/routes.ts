@@ -1078,13 +1078,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/health', async (_req, res) => {
     try {
       const { pool } = await import('./db');
-      const userCount = await pool.query('SELECT COUNT(*) FROM users');
-      const tenantCount = await pool.query('SELECT COUNT(*) FROM tenants');
-      const userRows = await pool.query('SELECT id, username FROM users LIMIT 5');
-      res.json({
-        status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0',
-        db: { users: parseInt(userCount.rows[0].count), tenants: parseInt(tenantCount.rows[0].count), userList: userRows.rows }
-      });
+      await pool.query('SELECT 1');
+      res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0' });
     } catch (err: any) {
       res.json({ status: 'ok', timestamp: new Date().toISOString(), version: '2.0.0', dbError: err.message });
     }
