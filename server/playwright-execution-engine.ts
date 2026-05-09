@@ -78,6 +78,8 @@ export class PlaywrightExecutionEngine {
     this.browser = await chromium.launch({
       headless: this.config.headless,
       slowMo: this.config.slowMo,
+      executablePath: getBrowserExecutablePath() ?? undefined,
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
       channel: this.config.channel as any,
     });
     
