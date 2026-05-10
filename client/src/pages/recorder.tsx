@@ -2965,6 +2965,7 @@ export default function RecorderPage() {
 
     sse.addEventListener("recording_event", (e) => {
       const event: RecordingEvent = JSON.parse((e as MessageEvent).data);
+      console.log(`[DIAG] SSE recording_event: type=${(event as any).type} eventType=${(event as any).eventType} nl=${!!(event as any).naturalLanguage} url=${event.url}`);
       // Skip events from localhost — those come from the NAT 2.0 tab itself, not the target site
       if (event.url && (event.url.startsWith('http://localhost') || event.url.startsWith('http://127.0.0.1'))) return;
 
