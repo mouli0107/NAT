@@ -1,8 +1,8 @@
-import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Repeat, Library, CircleDot, ClipboardList } from "lucide-react";
+import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
-import { useBranding, brandProfiles } from "@/contexts/BrandingContext";
+import { useBranding } from "@/contexts/BrandingContext";
 
 
 interface SidebarProps {
@@ -18,7 +18,7 @@ const ALWAYS_VISIBLE = new Set(['dashboard', 'framework-config', 'integration-ma
 
 export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRunning = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
-  const { brand, setBrand, brandId } = useBranding();
+  const { brand } = useBranding();
 
   // Read allowed modules from localStorage (null = admin = see everything)
   const allowedModules: string[] | null = (() => {
@@ -27,15 +27,6 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
       return Array.isArray(u.allowedModules) ? u.allowedModules : null;
     } catch { return null; }
   })();
-
-  const brandIds = Object.keys(brandProfiles);
-  const currentIdx = brandIds.indexOf(brandId);
-  const nextBrandId = brandIds[(currentIdx + 1) % brandIds.length];
-  const nextBrandLabel = brandProfiles[nextBrandId]?.label ?? "Next";
-
-  const toggleBrand = () => {
-    setBrand(nextBrandId);
-  };
 
   const isActive = (path: string) => location === path;
 
@@ -143,18 +134,6 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
       </nav>
 
       <div className={cn("border-t border-sidebar-border p-4 space-y-2", isCollapsed && "flex flex-col items-center")}>
-        <button
-          onClick={toggleBrand}
-          className={cn(
-            "w-full min-h-10 rounded-lg px-4 flex items-center gap-3 text-sm font-medium transition-all duration-300 whitespace-nowrap overflow-hidden text-ellipsis text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-            isCollapsed && "w-10 h-10 px-0 justify-center"
-          )}
-          data-testid="button-toggle-brand"
-          title={`Switch to ${nextBrandLabel}`}
-        >
-          <Repeat className="w-5 h-5 flex-shrink-0" />
-          {!isCollapsed && <span className="truncate">{nextBrandLabel} Mode</span>}
-        </button>
         {bottomItems.map(({ href, icon: Icon, label, testId }) => (
           <Link key={href} href={href}>
             <button
