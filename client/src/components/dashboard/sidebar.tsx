@@ -14,7 +14,7 @@ interface SidebarProps {
 }
 
 // Modules that are ALWAYS visible regardless of allowedModules (bottom section + dashboard)
-const ALWAYS_VISIBLE = new Set(['dashboard', 'framework-config', 'integration-management', 'settings', 'help']);
+const ALWAYS_VISIBLE = new Set(['dashboard', 'recorder', 'framework-config', 'integration-management', 'settings', 'help']);
 
 export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRunning = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
