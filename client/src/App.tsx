@@ -268,10 +268,11 @@ function AppContent() {
     }
   }, [location, setLocation]);
 
-  // Flex-col container gives every page a fixed 100vh sizing context.
-  // Each page renders its own <DashboardHeader /> — no global header here.
+  // Landing page needs natural document scroll — no height/overflow constraints.
+  // All other pages (dashboard, etc.) keep the fixed 100vh context.
+  const isLanding = location === "/landing";
   return (
-    <div className="h-screen flex flex-col overflow-hidden">
+    <div className={isLanding ? "min-h-screen" : "h-screen flex flex-col overflow-hidden"}>
       <Router />
     </div>
   );
