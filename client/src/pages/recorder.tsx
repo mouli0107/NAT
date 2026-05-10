@@ -513,6 +513,18 @@ function generatePlaywrightScript(events: RecordingEvent[], nlSteps: string[], s
     }
   }
 
+  // ── Build assertion lookup: naturalLanguage string → assertion event ─────────
+  // confirmAssertion() stores structured data (assertType, elementInfo, etc.) in the
+  // event alongside naturalLanguage. We key by NL string so we can find the assertion
+  // event reliably without depending on the nlToEvent index mapping (which can drift
+  // when page_load events are filtered from nlSteps but remain in events[]).
+  const assertionByNl = new Map<string, any>();
+  for (const ev of events) {
+    if ((ev as any).type === 'assertion' && (ev as any).naturalLanguage && (ev as any).assertType) {
+      assertionByNl.set((ev as any).naturalLanguage, ev);
+    }
+  }
+
   // Track Kendo fields already handled by structural handlers to prevent duplicates.
   // When a kendo_select/kendo_date event generates selectKendoDropdown/selectKendoDate,
   // the corresponding blur/input event for the same field must be suppressed.
@@ -536,6 +548,73 @@ function generatePlaywrightScript(events: RecordingEvent[], nlSteps: string[], s
     // Snapshot and reset the radio/checkbox flag — Kendo date handlers read it
     const prevWasRadioCheck = prevWasRadioOrCheckbox;
     prevWasRadioOrCheckbox = false;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // STRUCTURED ASSERTION HANDLER — fires for assertion events added by
+    // confirmAssertion() in assert mode.  Uses elementInfo + assertType to
+    // generate precise Playwright expect() calls with real locators rather
+    // than the NL-text-guessed locators from the fallback handlers below.
+    // ══════════════════════════════════════════════════════════════════════
+    const assertEvt = assertionByNl.get(step);
+    if (assertEvt) {
+      const info: any = assertEvt.elementInfo || {};
+      // Build the most specific locator available from elementInfo
+      const locStr = (() => {
+        const esc1 = (s: string) => String(s || '').replace(/'/g, "\\'");
+        const esc2 = (s: string) => String(s || '').replace(/"/g, '\\"');
+        if (info.attrs?.id)              return `${pg}.locator('#${esc1(info.attrs.id)}')`;
+        if (info.attrs?.['data-testid']) return `${pg}.getByTestId('${esc1(info.attrs['data-testid'])}')`;
+        if (info.ariaLabel)              return `${pg}.getByLabel('${esc1(info.ariaLabel)}', { exact: false })`;
+        if (info.isInput && info.name)   return `${pg}.locator('[name="${esc2(info.name)}"]')`;
+        if (info.isInput && info.placeholder) return `${pg}.getByPlaceholder('${esc1(info.placeholder)}', { exact: false })`;
+        const lbl = esc1((info.label || info.text || '').slice(0, 60));
+        if (lbl) return `${pg}.getByText('${lbl}', { exact: false }).first()`;
+        return `${pg}.locator('${info.tag || 'body'}')`;
+      })();
+      const expFn = assertEvt.assertFailMode === 'soft' ? 'expect.soft' : 'expect';
+      const esc = (s: string) => String(s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+      const aType = String(assertEvt.assertType || '');
+      const aOp   = String(assertEvt.assertOp   || '');
+      const aVal  = esc(assertEvt.assertExpected as string);
+      const aAttr = esc(assertEvt.assertAttrName as string);
+      let assertion = '';
+      switch (aType) {
+        case 'visible':   assertion = `await ${expFn}(${locStr}).toBeVisible();`; break;
+        case 'hidden':    assertion = `await ${expFn}(${locStr}).not.toBeVisible();`; break;
+        case 'enabled':   assertion = `await ${expFn}(${locStr}).toBeEnabled();`; break;
+        case 'disabled':  assertion = `await ${expFn}(${locStr}).toBeDisabled();`; break;
+        case 'checked':   assertion = `await ${expFn}(${locStr}).toBeChecked();`; break;
+        case 'unchecked': assertion = `await ${expFn}(${locStr}).not.toBeChecked();`; break;
+        case 'text': {
+          if (aOp === 'not_equals')  assertion = `await ${expFn}(${locStr}).not.toHaveText('${aVal}');`;
+          else if (aOp === 'equals') assertion = `await ${expFn}(${locStr}).toHaveText('${aVal}');`;
+          else if (aOp === 'starts_with') assertion = `await ${expFn}(${locStr}).toHaveText(new RegExp('^${aVal}'));`;
+          else                       assertion = `await ${expFn}(${locStr}).toContainText('${aVal}');`;
+          break;
+        }
+        case 'value': {
+          if (aOp === 'not_equals')    assertion = `await ${expFn}(${locStr}).not.toHaveValue('${aVal}');`;
+          else if (aOp === 'contains') assertion = `await ${expFn}(${locStr}).toHaveValue(new RegExp('${aVal}', 'i'));`;
+          else                         assertion = `await ${expFn}(${locStr}).toHaveValue('${aVal}');`;
+          break;
+        }
+        case 'attribute': {
+          if (aOp === 'contains') assertion = `await ${expFn}(${locStr}).toHaveAttribute('${aAttr}', new RegExp('${aVal}'));`;
+          else                    assertion = `await ${expFn}(${locStr}).toHaveAttribute('${aAttr}', '${aVal}');`;
+          break;
+        }
+        case 'count': {
+          const cnt = parseInt(aVal) || 0;
+          assertion = `await ${expFn}(${locStr}).toHaveCount(${cnt});`;
+          break;
+        }
+        default: assertion = `await ${expFn}(${locStr}).toBeVisible(); // unknown assertType: ${aType}`;
+      }
+      lines.push(`  // ${step}`);
+      lines.push(`  ${assertion}`);
+      prevWasClick = false;
+      continue;
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // STRUCTURAL KENDO HANDLERS — fire on event metadata, not NL text.
@@ -3746,12 +3825,20 @@ export default function RecorderPage() {
     setEvents(prev => {
       const lastUrl = prev.length > 0 ? (prev[prev.length - 1].url || '') : (iframeUrl || '');
       return [...prev, {
-        sequence: stepNum,
-        timestamp: Date.now(),
-        type: 'assertion',
-        url: lastUrl,
-        pageTitle: '',
+        sequence:      stepNum,
+        timestamp:     Date.now(),
+        type:          'assertion',
+        url:           lastUrl,
+        pageTitle:     '',
         naturalLanguage: nl,
+        // Structured assertion data — used by generatePlaywrightScript to produce
+        // precise locators and correct Playwright expect() calls.
+        assertType:    cfg.assertType,
+        assertOp:      cfg.op,
+        assertExpected: cfg.expected,
+        assertAttrName: cfg.attrName,
+        assertFailMode: cfg.failMode,
+        elementInfo:   cfg.elementInfo,
       }];
     });
     setPendingAssert(null);
