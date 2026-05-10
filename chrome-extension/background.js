@@ -125,6 +125,13 @@ function handleServerMessage(msg) {
       stopRecording();
       broadcastToPopup({ type: 'RECORDING_STOPPED', reason: 'server_request' });
       break;
+    case 'pause_recording':
+      // Server delegated recording to the Playwright Remote Agent.
+      // Stop extension capture — the agent is now the authoritative source.
+      // The user can re-join the session after Playwright recording ends.
+      stopRecording();
+      broadcastToPopup({ type: 'RECORDING_PAUSED', reason: 'playwright_active' });
+      break;
     case 'pong':
       // Keep-alive response
       break;
@@ -241,6 +248,12 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
   }
 
   if (msg.source === 'devxqe-content') {
+    // NAT platform asked the content script to pause — stop recording globally
+    if (msg.type === 'PAUSE_FROM_PAGE') {
+      stopRecording();
+      broadcastToPopup({ type: 'RECORDING_PAUSED', reason: 'playwright_active' });
+      return false;
+    }
     // Use sessionId from the event itself — never trust in-memory state
     // (MV3 service workers go dormant and reset variables)
     const sid = msg.sessionId;

@@ -42,6 +42,10 @@ interface RecordingSession {
   uiClients: Set<Response>;            // SSE clients (NAT 2.0 browser tabs)
   events: RecordingEvent[];            // buffered events
   userId?: string;                     // authenticated user who created the session
+  /** Set to 'playwright-agent' when the session is delegated to a Remote Agent.
+   *  Extension WS events are rejected when this is set — the agent is the
+   *  authoritative source and extension events would be duplicates / noise. */
+  recordingSource?: 'playwright-agent' | 'extension';
   metadata: {
     projectName: string;       // REQUIRED — from New Recording dialog
     moduleName: string;        // REQUIRED — e.g. "Form Settings"
@@ -783,6 +787,13 @@ export function registerRecorderRoutes(app: Express) {
     }
   }
 
+  // Derive the NAT server hostname so PW_RECORDER_INIT can self-guard against
+  // running on the platform's own pages (e.g. if the user navigates the recording
+  // browser to the NAT UI URL).
+  const natServerHost: string = process.env.WEBSITE_SITE_NAME
+    ? `${process.env.WEBSITE_SITE_NAME}.azurewebsites.net`
+    : (process.env.NAT_SERVER_HOST || '');
+
   // The recorder init script — injected into every page via addInitScript.
   // Uses window.__devxqe_send() which is exposed by Playwright's exposeFunction.
   const PW_RECORDER_INIT = `
@@ -792,6 +803,17 @@ export function registerRecorderRoutes(app: Express) {
 
   // ── Guard 1: skip iframes — only run in the top-level window ───────────────
   if (window !== window.top) return;
+
+  // ── Guard 2: skip if running on the NAT server domain itself ──────────────
+  // Prevents the NAT platform's own buttons (e.g. Stop Playwright) from being
+  // recorded if the user navigates the Playwright browser to the server URL.
+  // The agent.ts exposeFunction callback has the same filter, but this guard
+  // stops the event from being constructed in the first place.
+  var __natHost__ = ${JSON.stringify(natServerHost)};
+  if (__natHost__ && window.location.hostname === __natHost__) {
+    console.log('[NAT-Recorder] Skipping init on NAT server domain:', window.location.hostname);
+    return;
+  }
 
   // ── Element Inspector Utilities ────────────────────────────────────────────
 
@@ -1897,6 +1919,15 @@ export function registerRecorderRoutes(app: Express) {
       // Delegate: send start_recording command to the connected local agent.
       // The init script is forwarded so the agent has identical event capture logic.
       agentRecordedSessions.add(sid);
+      // Lock the session to the playwright-agent source so any extension events
+      // that slip through before the agentRecordedSessions check are also rejected.
+      session.recordingSource = 'playwright-agent';
+      // Belt & suspenders: proactively tell the extension to pause capturing.
+      // The agentRecordedSessions guard on the server already drops extension
+      // events, but silencing at the source removes the noise entirely.
+      if (session.extensionWs && session.extensionWs.readyState === WebSocket.OPEN) {
+        try { session.extensionWs.send(JSON.stringify({ type: 'pause_recording' })); } catch {}
+      }
       try {
         // Pass the session owner's userId so the dispatcher routes to THEIR agent
         await _agentDispatcher(sid, targetUrl, PW_RECORDER_INIT, session.userId);
@@ -3650,8 +3681,11 @@ export function setupRecorderWebSocket(server: Server) {
           // Session source isolation: if this session is being recorded by a
           // remote agent, reject any events that arrive via the Chrome extension
           // WebSocket — the agent is the authoritative event source.
-          if (agentRecordedSessions.has(linkedSession.id)) {
-            console.warn(`[RecorderWS] Dropping extension event for agent-delegated session ${linkedSession.id}`);
+          // Two redundant guards for belt-and-suspenders reliability:
+          //   1. agentRecordedSessions Set (set immediately on playwright-start)
+          //   2. session.recordingSource field (also set on playwright-start)
+          if (agentRecordedSessions.has(linkedSession.id) || linkedSession.recordingSource === 'playwright-agent') {
+            console.warn(`[RecorderWS] Dropping extension event for agent-delegated session ${linkedSession.id} (source=${linkedSession.recordingSource ?? 'agentSet'})`);
             return;
           }
 

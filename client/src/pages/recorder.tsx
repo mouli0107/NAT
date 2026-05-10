@@ -3611,6 +3611,13 @@ export default function RecorderPage() {
         hasReceivedStop.current = false; // reset so the next recording_stopped is processed
         setIsPlaywrightRecording(true);
         setSessionStatus('recording'); // show Stop button immediately
+        // Tell the Chrome extension to pause capturing — the Playwright agent
+        // browser is now the authoritative event source.  The server already
+        // sends pause_recording to the extension WS, but this postMessage
+        // reaches the content.js running on THIS very page as belt-and-suspenders.
+        try {
+          window.postMessage({ type: 'NAT_PAUSE_EXTENSION', sessionId: sid }, window.location.origin);
+        } catch {}
         if (data.mode === 'agent') {
           // Agent-delegated mode: no screenshot stream from server,
           // but the agent will send pw_screenshot events via SSE

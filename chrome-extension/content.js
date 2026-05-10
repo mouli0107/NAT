@@ -429,6 +429,24 @@
     }
   });
 
+  // ─── NAT Platform postMessage listener ──────────────────────────────────────
+  // When the NAT 2.0 recorder delegates to the Playwright Remote Agent it
+  // broadcasts NAT_PAUSE_EXTENSION so the content script stops capturing — the
+  // agent browser is now the authoritative event source and we don't want
+  // double-recording from the extension as well.
+  window.addEventListener('message', function (e) {
+    if (e.data && e.data.type === 'NAT_PAUSE_EXTENSION') {
+      if (!isRecording) return; // already stopped
+      isRecording = false;
+      sessionId = null;
+      // Relay to background so it can update chrome.storage.session and
+      // stop injecting START_RECORDING into new tabs.
+      try {
+        chrome.runtime.sendMessage({ source: 'devxqe-content', type: 'PAUSE_FROM_PAGE' });
+      } catch {}
+    }
+  });
+
   // ─── Attach DOM Listeners ────────────────────────────────────────────────────
 
   document.addEventListener('click', handleClick, true);
