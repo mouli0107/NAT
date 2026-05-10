@@ -4348,7 +4348,7 @@ export default function RecorderPage() {
                         className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-amber-900/30 border border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300 text-xs font-semibold transition-colors whitespace-nowrap"
                       >✏️ Rename</button>
                     )}
-                    <button onClick={openSaveModal}
+                    <button onClick={() => setShowSaveFrameworkDialog(true)}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-xs font-semibold transition-colors whitespace-nowrap">
                       🗂 Save to Library
                     </button>
@@ -4971,7 +4971,7 @@ export default function RecorderPage() {
                       ↓ .spec.ts
                     </a>
                     <button
-                      onClick={openSaveModal}
+                      onClick={() => setShowSaveFrameworkDialog(true)}
                       className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-violet-600/20 hover:bg-violet-600/30 border border-violet-500/30 text-violet-300 text-xs font-semibold transition-colors"
                     >
                       🗂 Save to Library
