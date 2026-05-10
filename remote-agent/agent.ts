@@ -648,17 +648,18 @@ function connect(): void {
       case 'assert_mode_on': {
         const sid = String(msg.sessionId || '');
         log(`Received assert_mode_on for session ${sid}`);
-        // Evaluate on ALL open pages in the recording context so assert mode
-        // activates on whichever tab/page the user is currently looking at
-        // (covers popups and pages navigated to after recording started).
+        // Use function-form evaluate — bypasses Content Security Policy restrictions
+        // on target sites that block eval().  Activates on ALL open pages/popups.
         const pagesOn = recordingContext ? recordingContext.pages()
                       : (recordingPage ? [recordingPage] : []);
         let evaluatedOn = 0;
         for (const p of pagesOn) {
           if (!p.isClosed()) {
             evaluatedOn++;
-            p.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(true)')
-              .catch(err => log(`assert_mode_on evaluate failed on page: ${err.message}`));
+            p.evaluate(() => {
+              const w = window as any;
+              if (typeof w.__dxqe_setAssertMode === 'function') w.__dxqe_setAssertMode(true);
+            }).catch(err => log(`assert_mode_on evaluate failed on page: ${err.message}`));
           }
         }
         if (evaluatedOn === 0) log('assert_mode_on: no active recording pages');
@@ -672,8 +673,13 @@ function connect(): void {
                        : (recordingPage ? [recordingPage] : []);
         for (const p of pagesOff) {
           if (!p.isClosed()) {
-            p.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(false)')
-              .catch(() => { /* ignore per-page errors */ });
+            p.evaluate(() => {
+              const w = window as any;
+              // Prefer __dxqe_assertOff (registered by __dxqe_setAssertMode)
+              // Fall back to calling setAssertMode(false) for older agent builds.
+              if (typeof w.__dxqe_assertOff === 'function') w.__dxqe_assertOff();
+              else if (typeof w.__dxqe_setAssertMode === 'function') w.__dxqe_setAssertMode(false);
+            }).catch(() => { /* ignore per-page errors */ });
           }
         }
         break;

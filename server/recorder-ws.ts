@@ -1818,76 +1818,112 @@ export function registerRecorderRoutes(app: Express) {
   window.addEventListener('popstate', function () { setTimeout(_checkNav, 150); });
 
   // ── Assert Mode ──────────────────────────────────────────────────────────────
-  var _assertMode = false;
-
-  // Exposed as a global so pw.page.evaluate() can toggle assert mode directly
-  // without relying on MessageEvent dispatch (which can be unreliable cross-Playwright versions).
-  window.__dxqe_setAssertMode = function(on) {
-    _assertMode = !!on;
-    document.body.style.cursor = on ? 'crosshair' : '';
-    if (!on) { var old = document.getElementById('__dxqe_hl'); if (old) old.remove(); }
-  };
-
+  // _getAssertElInfo builds the elementInfo payload that the server + client
+  // TypeScript interface (AssertElementInfo) expects.
   function _getAssertElInfo(el) {
-    var tag = el.tagName.toLowerCase();
+    var tag  = el.tagName.toLowerCase();
     var text = (el.innerText || el.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 120);
-    var val = el.value || '';
-    var ph = el.getAttribute('placeholder') || '';
-    var al = el.getAttribute('aria-label') || '';
-    var nm = el.getAttribute('name') || '';
-    var tp = el.getAttribute('type') || '';
-    var lbl = al || ph || nm || text.slice(0, 60) || tag;
+    var val  = el.value || '';
+    var ph   = el.getAttribute('placeholder') || '';
+    var al   = el.getAttribute('aria-label')  || '';
+    var nm   = el.getAttribute('name')        || '';
+    var tp   = el.getAttribute('type')        || '';
+    // Best human label: aria-label → associated <label> → visible text → placeholder → name → tag
+    var lbl  = al;
+    if (!lbl && el.id) { var lb = document.querySelector('label[for="' + el.id + '"]'); if (lb) lbl = (lb.textContent || '').trim(); }
+    if (!lbl) { var lb2 = el.closest && el.closest('label'); if (lb2) lbl = (lb2.textContent || '').replace(text, '').trim(); }
+    if (!lbl) lbl = text.slice(0, 60);
+    if (!lbl) lbl = ph;
+    if (!lbl) lbl = nm;
+    if (!lbl) lbl = tp ? tp + ' ' + tag : tag;
     var isInp = ['input','textarea','select'].includes(tag);
-    var isCb = tp === 'checkbox' || tp === 'radio';
+    var isCb  = tp === 'checkbox' || tp === 'radio';
     var attrs = {};
-    ['href','src','alt','title','data-testid','id'].forEach(function(a) { var v = el.getAttribute(a); if (v) attrs[a] = v; });
-    return { tag: tag, text: text, value: val, placeholder: ph, ariaLabel: al, name: nm, type: tp, label: lbl, isInput: isInp, isCheckbox: isCb, isChecked: el.checked || false, attrs: attrs };
+    ['href','src','alt','title','data-testid','id','role'].forEach(function(a) { var v = el.getAttribute(a); if (v) attrs[a] = v; });
+    return { tag: tag, text: text, value: val, placeholder: ph, ariaLabel: al,
+             name: nm, type: tp, label: lbl, isInput: isInp, isCheckbox: isCb,
+             isChecked: el.checked || false, attrs: attrs };
   }
 
-  function _setAssertHighlight(el) {
-    var old = document.getElementById('__dxqe_hl');
-    if (old) old.remove();
-    if (!el) return;
-    var r = el.getBoundingClientRect();
-    var d = document.createElement('div');
-    d.id = '__dxqe_hl';
-    d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;border:2px solid #f59e0b;border-radius:3px;background:rgba(245,158,11,0.10);box-shadow:0 0 0 3000px rgba(0,0,0,0.25);';
-    d.style.top = (r.top - 2) + 'px';
-    d.style.left = (r.left - 2) + 'px';
-    d.style.width = (r.width + 4) + 'px';
-    d.style.height = (r.height + 4) + 'px';
-    document.body.appendChild(d);
-  }
+  // window.__dxqe_setAssertMode(true/false) is called by the Remote Agent via
+  // page.evaluate() when the user clicks "Add Assert" in the NAT Azure UI.
+  //
+  // Uses DYNAMIC listener registration (same pattern as the server's local-mode
+  // ASSERT_JS) — far more reliable than a flag-gated approach, and works on
+  // sites with strict Content Security Policy.
+  window.__dxqe_setAssertMode = function(on) {
+    // Always clean up any previous assert listeners first
+    if (typeof window.__dxqe_assertOff === 'function') {
+      window.__dxqe_assertOff();
+    }
+    if (!on) return; // turn-off path handled by __dxqe_assertOff above
 
-  // Listen for assert mode toggle dispatched via pw.page.evaluate(...)
-  window.addEventListener('message', function(e) {
-    if (!e.data || e.data.target !== '__devxqe_assert') return;
-    if (e.data.mode === 'on') {
-      _assertMode = true;
-      document.body.style.cursor = 'crosshair';
-    } else {
-      _assertMode = false;
-      document.body.style.cursor = '';
+    // Highlight overlay — thin purple border, no full-page shadow so it
+    // does not obscure other elements and make the page appear broken.
+    function _setHL(el) {
+      var old = document.getElementById('__dxqe_hl');
+      if (old) old.remove();
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return;
+      var d = document.createElement('div');
+      d.id = '__dxqe_hl';
+      d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;' +
+        'border:2px solid #6366f1;background:rgba(99,102,241,0.08);' +
+        'border-radius:4px;box-shadow:0 0 0 1px rgba(99,102,241,0.3);' +
+        'transition:all 0.08s ease;';
+      d.style.top    = r.top    + 'px';
+      d.style.left   = r.left   + 'px';
+      d.style.width  = r.width  + 'px';
+      d.style.height = r.height + 'px';
+      document.documentElement.appendChild(d);
+    }
+
+    function _onOver(e) {
+      var el = e.target;
+      if (!el || el.id === '__dxqe_hl') return;
+      _setHL(el);
+    }
+
+    function _onOut(e) {
       var old = document.getElementById('__dxqe_hl');
       if (old) old.remove();
     }
+
+    function _onClick(e) {
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      var el = e.target;
+      if (!el || el.id === '__dxqe_hl') return;
+      window.__dxqe_assertOff(); // exit assert mode, remove listeners + overlay
+      var info = _getAssertElInfo(el);
+      if (typeof window.__devxqe_send === 'function') {
+        window.__devxqe_send({ type: 'assert_element', url: window.location.href,
+          pageTitle: document.title, elementInfo: info });
+      }
+    }
+
+    document.body.style.cursor = 'crosshair';
+    document.addEventListener('mouseover', _onOver,  true);
+    document.addEventListener('mouseout',  _onOut,   true);
+    document.addEventListener('click',     _onClick, true);
+
+    // Cleanup function — removes listeners and resets cursor/overlay
+    window.__dxqe_assertOff = function() {
+      document.body.style.cursor = '';
+      var hl = document.getElementById('__dxqe_hl');
+      if (hl) hl.remove();
+      document.removeEventListener('mouseover', _onOver,  true);
+      document.removeEventListener('mouseout',  _onOut,   true);
+      document.removeEventListener('click',     _onClick, true);
+      delete window.__dxqe_assertOff;
+    };
+  };
+
+  // Also respond to postMessage (backward-compat: proxy/iframe mode sends this)
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.target !== '__devxqe_assert') return;
+    window.__dxqe_setAssertMode(e.data.mode === 'on');
   });
-
-  document.addEventListener('mouseover', function(e) {
-    if (!_assertMode) return;
-    var el = e.target;
-    if (!el || el.id === '__dxqe_hl') return;
-    _setAssertHighlight(el);
-  }, true);
-
-  document.addEventListener('click', function(e) {
-    if (!_assertMode) return;
-    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-    var el = e.target;
-    if (!el || el.id === '__dxqe_hl') return;
-    var info = _getAssertElInfo(el);
-    window.__devxqe_send({ type: 'assert_element', url: window.location.href, pageTitle: document.title, elementInfo: info });
-  }, true);
 
 })();
 `;
