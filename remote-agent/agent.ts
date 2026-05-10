@@ -183,9 +183,36 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
   recordingPage = page; // expose for assert mode commands
   const popupUrls  = new Set<string>();
 
+  // Pre-compute the NAT server hostname so we can filter out events that
+  // originate from the NAT platform itself (e.g. user accidentally navigates
+  // the recording browser to the Azure/localhost server URL).
+  let _serverHostname = '';
+  try {
+    _serverHostname = new URL(SERVER_URL.replace(/^wss?:\/\//, 'https://')).hostname;
+  } catch { /* ignore */ }
+
   // ── Expose __devxqe_send on the CONTEXT so it works on ALL pages/popups ──
   await recordingContext.exposeFunction('__devxqe_send', (eventData: Record<string, unknown>) => {
     if (recordingSessionId !== sessionId) return; // stale callback after stop
+
+    // ── Filter: skip events from the NAT server domain itself ─────────────
+    // Prevents the NAT platform's own UI buttons (e.g. "Stop Playwright")
+    // from being recorded when the user accidentally navigates the Playwright
+    // browser to the server URL.  Also blocks localhost events.
+    const eventUrl = String(eventData.url || '');
+    if (eventUrl) {
+      try {
+        const host = new URL(eventUrl).hostname;
+        if (
+          host === _serverHostname ||
+          host === 'localhost'      ||
+          host === '127.0.0.1'
+        ) {
+          log(`[filter] Skipping NAT server event: ${eventUrl}`);
+          return;
+        }
+      } catch { /* malformed URL — let it through */ }
+    }
 
     const evType = String(eventData.type || '');
     log(`[event] ${evType} url=${eventData.url || ''}`);
@@ -610,23 +637,33 @@ function connect(): void {
       case 'assert_mode_on': {
         const sid = String(msg.sessionId || '');
         log(`Received assert_mode_on for session ${sid}`);
-        if (recordingPage && !recordingPage.isClosed()) {
-          recordingPage.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(true)')
-            .catch(err => log(`assert_mode_on evaluate failed: ${err.message}`));
-        } else {
-          log('assert_mode_on: no active recording page');
+        // Evaluate on ALL open pages in the recording context so assert mode
+        // activates on whichever tab/page the user is currently looking at
+        // (covers popups and pages navigated to after recording started).
+        const pagesOn = recordingContext ? recordingContext.pages()
+                      : (recordingPage ? [recordingPage] : []);
+        let evaluatedOn = 0;
+        for (const p of pagesOn) {
+          if (!p.isClosed()) {
+            evaluatedOn++;
+            p.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(true)')
+              .catch(err => log(`assert_mode_on evaluate failed on page: ${err.message}`));
+          }
         }
+        if (evaluatedOn === 0) log('assert_mode_on: no active recording pages');
         break;
       }
 
       case 'assert_mode_off': {
         const sid = String(msg.sessionId || '');
         log(`Received assert_mode_off for session ${sid}`);
-        if (recordingPage && !recordingPage.isClosed()) {
-          recordingPage.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(false)')
-            .catch(err => log(`assert_mode_off evaluate failed: ${err.message}`));
-        } else {
-          log('assert_mode_off: no active recording page');
+        const pagesOff = recordingContext ? recordingContext.pages()
+                       : (recordingPage ? [recordingPage] : []);
+        for (const p of pagesOff) {
+          if (!p.isClosed()) {
+            p.evaluate('window.__dxqe_setAssertMode && window.__dxqe_setAssertMode(false)')
+              .catch(() => { /* ignore per-page errors */ });
+          }
         }
         break;
       }

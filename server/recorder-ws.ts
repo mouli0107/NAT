@@ -215,7 +215,7 @@ export function handleAgentRecordingEvent(
   if (nl) (ev as any).naturalLanguage = nl;
 
   session.events.push(ev);
-  broadcastToUI(session, 'recording_event', ev);
+  broadcastRecordingEvent(session, ev);
 }
 
 // ─── Natural Language Converter ──────────────────────────────────────────────
@@ -324,9 +324,10 @@ function toNaturalLanguage(event: RecordingEvent, stepNum: number): string | nul
 
 // ─── SSE Helper ───────────────────────────────────────────────────────────────
 
-function sendSSE(res: Response, event: string, data: unknown) {
+function sendSSE(res: Response, event: string, data: unknown, id?: number) {
   try {
-    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+    const idField = id !== undefined ? `id: ${id}\n` : '';
+    res.write(`${idField}event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   } catch {
     // Client disconnected
   }
@@ -335,6 +336,15 @@ function sendSSE(res: Response, event: string, data: unknown) {
 function broadcastToUI(session: RecordingSession, event: string, data: unknown) {
   for (const client of session.uiClients) {
     sendSSE(client, event, data);
+  }
+}
+
+/** Broadcast a recording_event with its sequence as the SSE id field.
+ *  The browser's EventSource sends Last-Event-ID on reconnect so the server
+ *  can skip events already delivered, preventing duplicate NL steps. */
+function broadcastRecordingEvent(session: RecordingSession, ev: RecordingEvent) {
+  for (const client of session.uiClients) {
+    sendSSE(client, 'recording_event', ev, ev.sequence);
   }
 }
 
@@ -699,9 +709,14 @@ export function registerRecorderRoutes(app: Express) {
       eventCount: session.events.length
     });
 
-    // Replay buffered events (for page refresh)
+    // Replay buffered events (for page refresh / SSE reconnect).
+    // Honour Last-Event-ID so we only send events the client hasn't seen yet —
+    // prevents duplicate NL steps when EventSource auto-reconnects.
+    const lastEventId = parseInt(req.headers['last-event-id'] as string || '') || 0;
     for (const evt of session.events) {
-      sendSSE(res, 'recording_event', evt);
+      if (evt.sequence > lastEventId) {
+        sendSSE(res, 'recording_event', evt, evt.sequence);
+      }
     }
 
     // Keep-alive ping every 20s
@@ -1975,7 +1990,7 @@ export function registerRecorderRoutes(app: Express) {
         if (nl) (ev as any).naturalLanguage = nl;
 
         session.events.push(ev);
-        broadcastToUI(session, 'recording_event', ev);
+        broadcastRecordingEvent(session, ev);
       });
 
       // Inject recorder into every page/frame that loads
@@ -2001,7 +2016,7 @@ export function registerRecorderRoutes(app: Express) {
           naturalLanguage: `Step ${seq}: Navigate to ${navUrl}`,
         };
         session.events.push(ev);
-        broadcastToUI(session, 'recording_event', ev);
+        broadcastRecordingEvent(session, ev);
       });
 
       // ── Popup / new window detection ───────────────────────────────────────
@@ -2023,7 +2038,7 @@ export function registerRecorderRoutes(app: Express) {
             naturalLanguage: `Step ${seq}: Popup window opened → ${popupUrl}`,
           };
           session.events.push(ev);
-          broadcastToUI(session, 'recording_event', ev);
+          broadcastRecordingEvent(session, ev);
 
           // Track popup navigations
           popupPage.on('framenavigated', (frame) => {
@@ -2040,7 +2055,7 @@ export function registerRecorderRoutes(app: Express) {
               naturalLanguage: `Step ${s}: Popup navigated to ${navUrl}`,
             };
             session.events.push(navEv);
-            broadcastToUI(session, 'recording_event', navEv);
+            broadcastRecordingEvent(session, navEv);
           });
 
           // Detect when popup closes
@@ -2052,7 +2067,7 @@ export function registerRecorderRoutes(app: Express) {
               naturalLanguage: `Step ${s}: Popup window closed`,
             };
             session.events.push(closeEv);
-            broadcastToUI(session, 'recording_event', closeEv);
+            broadcastRecordingEvent(session, closeEv);
           });
         } catch (err) {
           // Non-fatal — popup recording enhancement, main page still works
@@ -3653,8 +3668,9 @@ export function setupRecorderWebSocket(server: Server) {
           const stepNum = linkedSession.events.length;
           const naturalLanguage = toNaturalLanguage(event, stepNum);
 
-          // Forward to all NAT 2.0 UI clients in real-time
-          broadcastToUI(linkedSession, 'recording_event', { ...event, naturalLanguage, stepNum });
+          // Forward to all NAT 2.0 UI clients in real-time (with SSE id for dedup on reconnect)
+          const evWithNl = { ...event, naturalLanguage, stepNum, sequence: stepNum } as RecordingEvent;
+          broadcastRecordingEvent(linkedSession, evWithNl);
           break;
         }
 
