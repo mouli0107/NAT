@@ -65,6 +65,8 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
     { href: "/help", icon: HelpCircle, label: "Help & Guidance", testId: "nav-help" },
   ];
 
+  const astraAccent = brand.accentColor || "#6366f1";
+
   return (
     <aside className={cn("bg-sidebar border-r border-sidebar-border flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-72")}>
       <div className="p-4 border-b border-sidebar-border">
@@ -134,6 +136,16 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
       </nav>
 
       <div className={cn("border-t border-sidebar-border p-4 space-y-2", isCollapsed && "flex flex-col items-center")}>
+        {/* ASTRA Mode badge — static, no switcher */}
+        <div className={cn("flex items-center gap-2 px-2 pb-1", isCollapsed && "justify-center px-0")}>
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full px-2.5 py-0.5 text-[11px] font-semibold tracking-wide"
+            style={{ background: `${astraAccent}22`, color: astraAccent, border: `1px solid ${astraAccent}44` }}
+          >
+            <Sparkles className="w-3 h-3" />
+            {!isCollapsed && "ASTRA Mode"}
+          </span>
+        </div>
         {bottomItems.map(({ href, icon: Icon, label, testId }) => (
           <Link key={href} href={href}>
             <button
