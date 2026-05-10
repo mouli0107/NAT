@@ -11056,7 +11056,11 @@ Each element includes a fallback locator strategy (label, placeholder, text).
       return res.status(404).json({ error: 'remote-agent directory not found' });
     }
     const serverUrl = getAgentServerUrl();
-    console.log('[Download] remote-agent requested by', req.ip, '→ SERVER_URL:', serverUrl);
+    // Resolve the downloading user's identity so the agent is pre-bound to them
+    const dlUser      = (req as any).user || DEMO_USER;
+    const dlUserId    = String(dlUser.id    || '');
+    const dlUserEmail = String(dlUser.email || '');
+    console.log('[Download] remote-agent requested by', req.ip, `userId=${dlUserId}`, '→ SERVER_URL:', serverUrl);
     res.setHeader('Content-Type', 'application/zip');
     res.setHeader('Content-Disposition', 'attachment; filename="nat20-remote-agent.zip"');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
@@ -11075,8 +11079,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
       dot: true,
     }, { prefix: 'nat20-remote-agent' });
 
-    // Injected: .env with pre-configured server URL
-    const envContent = `# NAT 2.0 Remote Agent — auto-generated configuration\nSERVER_URL=${serverUrl}\n`;
+    // Injected: .env pre-configured with server URL AND the user's identity.
+    // NAT_USER_ID / NAT_USER_EMAIL are sent in agent_register so the server
+    // can route recordings exclusively to THIS user's agent instance.
+    const envContent = `# NAT 2.0 Remote Agent — auto-generated configuration\nSERVER_URL=${serverUrl}\nNAT_USER_ID=${dlUserId}\nNAT_USER_EMAIL=${dlUserEmail}\n`;
     archive.append(envContent, { name: 'nat20-remote-agent/.env' });
 
     // Injected: start.bat (Windows)

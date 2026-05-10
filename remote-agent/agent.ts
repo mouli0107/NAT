@@ -31,7 +31,16 @@ if (!process.env.SERVER_URL) {
 }
 console.log(`[RemoteAgent] Target server: ${SERVER_URL}`);
 
-const AGENT_ID = process.env.AGENT_ID || ('agent-' + randomBytes(4).toString('hex'));
+const AGENT_ID      = process.env.AGENT_ID      || ('agent-' + randomBytes(4).toString('hex'));
+const NAT_USER_ID   = process.env.NAT_USER_ID   || '';
+const NAT_USER_EMAIL= process.env.NAT_USER_EMAIL || '';
+
+if (NAT_USER_ID) {
+  console.log(`[RemoteAgent] User identity: ${NAT_USER_EMAIL || NAT_USER_ID} (${NAT_USER_ID})`);
+} else {
+  console.warn('[RemoteAgent] NAT_USER_ID not set — agent will not be user-bound.');
+  console.warn('[RemoteAgent] Re-download the agent from NAT Settings to get a pre-configured .env with your identity.');
+}
 const RECONNECT_DELAY_MS = 5000;
 const MAX_RECONNECT = 20;
 const PING_INTERVAL_MS = 30000;
@@ -558,8 +567,10 @@ function connect(): void {
 
     send({
       type: 'agent_register',
-      agentId: AGENT_ID,
-      hostname: os.hostname(),
+      agentId:   AGENT_ID,
+      userId:    NAT_USER_ID    || undefined,
+      userEmail: NAT_USER_EMAIL || undefined,
+      hostname:  os.hostname(),
       capabilities: ['chromium'],
     });
 

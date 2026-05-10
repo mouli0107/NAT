@@ -80,6 +80,9 @@ interface ConnectedAgent {
   ws: WebSocket;
   status: 'idle' | 'busy';
   currentJobId: string | null;
+  /** User who downloaded and started this agent — set from NAT_USER_ID env in the agent. */
+  userId?: string;
+  userEmail?: string;
 }
 
 // ─── Agent Registry ───────────────────────────────────────────────────────────
@@ -180,10 +183,22 @@ async function _dispatchRecordingToAgent(
   sessionId: string,
   targetUrl: string,
   initScript: string,
+  userId?: string,
 ): Promise<void> {
-  const agent = Array.from(agents.values()).find(a => a.status === 'idle');
+  // Prefer the agent registered by THIS user; fall back to any idle agent only if
+  // no user-bound agent is available (single-user / legacy setups without NAT_USER_ID).
+  const all = Array.from(agents.values());
+  const userAgent  = userId ? all.find(a => a.status === 'idle' && a.userId === userId) : null;
+  const agent = userAgent ?? all.find(a => a.status === 'idle');
   if (!agent) {
-    throw new Error('No idle Remote Agent connected — please ensure the agent is running on your local machine.');
+    const hint = userId
+      ? `No idle Remote Agent found for user ${userId}. Please ensure YOUR agent is running on your machine.`
+      : 'No idle Remote Agent connected — please ensure the agent is running on your local machine.';
+    throw new Error(hint);
+  }
+  if (!userAgent && userId) {
+    // Found an agent but it belongs to a different user — warn in server logs
+    console.warn(`[AgentWS] WARNING: routing session ${sessionId} for user ${userId} to agent ${agent.agentId} (userId=${agent.userId ?? 'unbound'}) — no user-specific agent found`);
   }
 
   sessionAgentMap.set(sessionId.toUpperCase(), agent.agentId);
@@ -381,7 +396,9 @@ export function setupAgentWebSocket(server: Server): WebSocketServer {
           return;
         }
 
-        const agentId = (msg.agentId as string) || ('agent-' + randomBytes(4).toString('hex'));
+        const agentId   = (msg.agentId   as string) || ('agent-' + randomBytes(4).toString('hex'));
+        const userId    = (msg.userId    as string) || undefined;
+        const userEmail = (msg.userEmail as string) || undefined;
         agent = {
           agentId,
           hostname: (msg.hostname as string) || 'unknown',
@@ -389,11 +406,13 @@ export function setupAgentWebSocket(server: Server): WebSocketServer {
           ws,
           status: 'idle',
           currentJobId: null,
+          userId,
+          userEmail,
         };
         agents.set(agentId, agent);
 
         ws.send(JSON.stringify({ type: 'registered', agentId }));
-        console.log(`[AgentWS] Agent registered: ${agentId} @ ${agent.hostname} caps=[${agent.capabilities.join(',')}]`);
+        console.log(`[AgentWS] Agent registered: ${agentId} @ ${agent.hostname} userId=${userId ?? 'unbound'} caps=[${agent.capabilities.join(',')}]`);
         return;
       }
 

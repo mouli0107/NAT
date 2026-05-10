@@ -41,6 +41,7 @@ interface RecordingSession {
   extensionWs: WebSocket | null;       // connected extension client
   uiClients: Set<Response>;            // SSE clients (NAT 2.0 browser tabs)
   events: RecordingEvent[];            // buffered events
+  userId?: string;                     // authenticated user who created the session
   metadata: {
     projectName: string;       // REQUIRED — from New Recording dialog
     moduleName: string;        // REQUIRED — e.g. "Form Settings"
@@ -120,7 +121,7 @@ async function isSessionInDB(sessionId: string): Promise<boolean> {
 // agent-ws.ts registers these callbacks on startup to avoid circular imports.
 // recorder-ws → agent delegation is done entirely through these callbacks.
 
-type AgentRecordingDispatcher = (sessionId: string, targetUrl: string, initScript: string) => Promise<void>;
+type AgentRecordingDispatcher = (sessionId: string, targetUrl: string, initScript: string, userId?: string) => Promise<void>;
 type AgentRecordingStopper    = (sessionId: string) => void;
 type AgentAssertModeForwarder = (sessionId: string, mode: 'on' | 'off') => boolean;
 
@@ -644,10 +645,12 @@ export function registerRecorderRoutes(app: Express) {
         frameworkConfigId: meta.frameworkConfigId || '',
       }
     };
+    // Capture the authenticated user so agent dispatch can route to THEIR agent
+    const userId = (req as any).session?.userId || ((req as any).user?.id) || undefined;
+    const tenantId = (req as any).session?.tenantId;
+    if (userId) session.userId = userId;
     sessions.set(sessionId, session);
     // Persist to DB for cross-instance lookup (Azure scale-out resilience)
-    const userId = (req as any).session?.userId;
-    const tenantId = (req as any).session?.tenantId;
     persistSessionToDB(sessionId, userId, tenantId).catch(() => {});
     res.json({ sessionId, metadata: session.metadata, message: 'Session created with project context.' });
   });
@@ -1895,7 +1898,8 @@ export function registerRecorderRoutes(app: Express) {
       // The init script is forwarded so the agent has identical event capture logic.
       agentRecordedSessions.add(sid);
       try {
-        await _agentDispatcher(sid, targetUrl, PW_RECORDER_INIT);
+        // Pass the session owner's userId so the dispatcher routes to THEIR agent
+        await _agentDispatcher(sid, targetUrl, PW_RECORDER_INIT, session.userId);
         session.status = 'recording';
         return res.json({
           success: true,
