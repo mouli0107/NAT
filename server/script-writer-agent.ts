@@ -1249,68 +1249,59 @@ NEVER use: data.form.email  or  data.urls.anything  or  data.selectors.anything
 
 Generate a TypeScript test file following these STRICT rules:
 
-IMPORTS — always use @-alias paths:
-1. import { test } from '@playwright/test'
-2. import { navigateTo } from '@actions/generic/browser.actions'
-3. import { prepareSite } from '../helpers/universal'
-4. import { ${exportedFunctions.length > 0 ? exportedFunctions.join(', ') : '/* functions */'} } from '@actions/business/${domain}.actions'
-5. import { verifyUrl, verifyVisible, verifyText } from '@actions/generic/assert.actions'
-6. import { getTestData } from '@fixtures/excel-reader'
+IMPORTS — only import what is actually called in the test body:
+1. import { test, expect } from '@playwright/test'
+2. import { navigateTo } from '@actions/generic/browser.actions'      ← always needed
+3. import { <only the business functions actually called> } from '@actions/business/${domain}.actions'
+4. import { <only the assert functions actually called> } from '@actions/generic/assert.actions'
+5. import { getTestData } from '@fixtures/excel-reader'
+NEVER import prepareSite — it is not a recorded step and must not appear in generated tests.
+NEVER import functions you do not call. Unused imports are compile errors.
 
-TEST STRUCTURE — PLATFORM RULES (apply to every customer site):
-7.  ONE test.describe block named after the business feature being tested
-8.  ATOMIC TESTS — MANDATORY: create a SEPARATE test() block for EACH distinct business scenario.
-    NEVER chain unrelated scenarios into one test() block — a failure in scenario 1 must NOT
-    prevent scenarios 2 and 3 from running.
+TEST STRUCTURE — PLATFORM RULES:
+7.  ONE test.describe block named after the TC / business feature
+8.  ONE test() BLOCK PER TC — MANDATORY:
+    All recorded steps run inside ONE single test() whose name is the TC name.
+    Every step becomes a numbered test.step() call inside that single test.
+    NEVER split a recorded journey into multiple test() blocks.
+    A recording is ONE user journey — it runs as ONE sequential test.
 
-    Detect scenario boundaries using these signals:
-      Signal A — Navigation to a completely different URL path (e.g. /products → /contact)
-      Signal B — Clear topic shift in the business actions (product info → form submission)
-      Signal C — Business action returns a page from a different domain (popup/new tab)
+    WRONG — splitting steps into separate tests:
+      test('Step 1', async ({ page }) => { await test.step(...) })
+      test('Step 2', async ({ page }) => { await test.step(...) })
+      test('Step 3', async ({ page }) => { await test.step(...) })
 
-    Required test() blocks (create ALL of these, each independent):
-      test('Page loads and displays key content', ...)    ← smoke: always visible content
-      test('Navigating to [feature] succeeds', ...)       ← navigation + URL verification
-      test('[Feature] displays expected sections', ...)   ← content/accordion/tab test
-      (add more if the recording spans multiple distinct flows)
-
-    WRONG — single monolithic test:
-      test('full flow', async ({ page }) => {
-        await navigateToFIDOAuth(page);       ← scenario A
-        await navigateToCommunity(page);      ← scenario B (unrelated — should be separate)
-        await submitContactForm(page);        ← scenario C (unrelated — should be separate)
+    CORRECT — one test, all steps sequential inside it:
+      test('${testName}', async ({ page }) => {
+        await test.step('1 · Navigate to homepage',  () => navigateTo(page, data.baseUrl));
+        await test.step('2 · Accept cookies',        () => acceptCookies(page, data));
+        await test.step('3 · Verify page content',   () => verifyPageContent(page, data));
+        // ... every recorded step in order
       });
-    CORRECT — separate atomic tests:
-      test('FIDO authenticators page loads', async ({ page }) => { ... });
-      test('Community portal opens in new tab', async ({ page }) => { ... });
-      test('Contact form can be submitted', async ({ page }) => { ... });
+
 9.  Test function signature MUST be: async ({ page }) => { ... }
     NEVER add 'context' unless the test actually calls context.xxx — unused params are compile errors.
 10. Add test.use({ storageState: '.auth/user.json' }) if the flow requires authentication
-11. Rule 13 — ALWAYS declare data ONCE before all tests, then start every test with these two lines:
-      // At top of describe block (before any test):
-      const data = getTestData('TC_ID_HERE');   ← replace TC_ID_HERE with the actual TC ID
-      // Inside every test():
-      await navigateTo(page, data.baseUrl);
-      await prepareSite(page);
-    prepareSite() is the universal site-readiness gate for every customer site.
-12. Call ONLY the business action functions listed in the contract above — NEVER inline raw Playwright calls
-    Pass data to every business action: myAction(page, data)
+11. Declare data ONCE at the top of the describe block, before any test():
+      const data = getTestData('${testName.replace(/[^a-zA-Z0-9]/g, '').slice(0, 10) || 'TC001'}');
+    Inside the single test(), start with navigation only — NO prepareSite call:
+      await test.step('1 · Navigate to ${startUrl}', () => navigateTo(page, data.baseUrl));
+12. Call ONLY the business action functions listed in the MANDATORY CONTRACT above.
+    NEVER inline raw Playwright calls. Pass data to every business action: myAction(page, data)
 13. End with specific assertions proving the business outcome:
     - Verify the resulting URL (proves navigation completed)
     - Verify a unique success element or message (proves the action worked)
 14. Use data.keyName for all values — NO hardcoded strings (data comes from getTestData())
-15. Rule 12 — NEVER put XPath strings, CSS selectors, or data-testid values in test files
+15. NEVER put XPath strings, CSS selectors, or data-testid values in test files.
     All selectors live in locators/ files. Tests call business actions only.
 
 STEP LOGGING — MANDATORY:
-16. Wrap EVERY action call in test.step() so each step appears in the HTML and Allure reports:
-    await test.step('Step N · <human description>', () => someAction(page, ...));
-    Example:
-      await test.step('1 · Navigate to homepage',    () => navigateTo(page, data.baseUrl));
-      await test.step('2 · Accept cookies / prepare site', () => prepareSite(page));
-      await test.step('3 · Navigate to Products',    () => navigateToProducts(page));
-      await test.step('4 · Verify page content',     () => verifyOnespan(page));
+16. Wrap EVERY action call in test.step() so each step appears in HTML and Allure reports:
+    await test.step('N · <human description>', () => someAction(page, data));
+    Number steps sequentially starting from 1:
+      await test.step('1 · Navigate to homepage',  () => navigateTo(page, data.baseUrl));
+      await test.step('2 · Navigate to Products',  () => navigateToProducts(page, data));
+      await test.step('3 · Verify page content',   () => verifyContent(page, data));
 
 SCREENSHOT + FAILURE LOGGING — MANDATORY:
 17. Add this afterEach block INSIDE the test.describe, BEFORE the test() call:
@@ -1324,10 +1315,12 @@ SCREENSHOT + FAILURE LOGGING — MANDATORY:
     });
 
 CRITICAL RULES:
-- NEVER call page.waitForLoadState() directly — use prepareSite(page) instead
+- NEVER call prepareSite() — it is not a recorded step, do not include it
+- NEVER call page.waitForLoadState() directly — use a business action instead
 - ALWAYS use async ({ page }) as the test function parameter — NEVER add 'context' unless actually used
 - ONLY call functions in the MANDATORY CONTRACT list above
 - ALWAYS wrap every call in test.step() — no bare awaits on action functions
+- ONE test() block only — all steps sequential inside it
 
 Call the generate_test_file tool. Put raw TypeScript (no markdown fences) in 'code'.
 Populate 'testCaseName', 'businessScenario', 'businessActionsUsed', and 'assertionsUsed'.`;

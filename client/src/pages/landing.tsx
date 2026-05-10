@@ -177,9 +177,11 @@ export default function LandingPage() {
           0%, 100% { transform: translateY(0px); }
           50%       { transform: translateY(-12px); }
         }
-        ::-webkit-scrollbar       { width: 6px; }
+        html                      { overflow-y: scroll; }
+        ::-webkit-scrollbar       { width: 8px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         ::selection               { background: rgba(99,102,241,0.2); color: #111827; }
       `}</style>
 
