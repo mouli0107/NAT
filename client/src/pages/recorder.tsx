@@ -2984,8 +2984,17 @@ export default function RecorderPage() {
       // Add natural language step — with deduplication and cleanup
       if (event.naturalLanguage) {
         setNlSteps(prev => {
-          // ── Filter 1: Skip "Page loaded" steps entirely — not useful to the user
-          if (/^Step \d+: Page loaded/i.test(event.naturalLanguage!)) return prev;
+          // ── Filter 1: "Page loaded" steps — keep ONLY the very first one (initial URL
+          // navigation) and relabel it as "Navigate to <url>".  Subsequent page_load
+          // events are background redirects / tracking sub-navigations — skip them.
+          if (/^Step \d+: Page loaded/i.test(event.naturalLanguage!)) {
+            if (prev.length === 0) {
+              // First step = user's intended starting URL — show it as a Navigate step
+              const navUrl = event.url || event.naturalLanguage!.replace(/^Step \d+: Page loaded — /, '').replace(/^"|"$/g, '');
+              return [`Step 1: Navigate to ${navUrl}`];
+            }
+            return prev; // skip all subsequent page_load events
+          }
 
           // ── Filter 2: Skip duplicate input after dropdown select for the same field
           // When user picks from a dropdown, both "Select X from dropdown" AND
