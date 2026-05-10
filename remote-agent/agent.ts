@@ -202,6 +202,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
 
   // ── Expose __devxqe_send on the CONTEXT so it works on ALL pages/popups ──
   await recordingContext.exposeFunction('__devxqe_send', (eventData: Record<string, unknown>) => {
+    log(`[AGENT-DIAG] *** EVENT RECEIVED *** type=${eventData?.type} url=${eventData?.url} at ${new Date().toISOString()}`);
     if (recordingSessionId !== sessionId) return; // stale callback after stop
 
     // ── Filter: skip events from the NAT server domain itself ─────────────
@@ -303,6 +304,25 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
     await page.goto(targetUrl, { waitUntil: 'commit', timeout: 60000 });
   } catch (navErr: any) {
     log(`Initial navigation warning for ${targetUrl}: ${navErr.message} — recording still active`);
+  }
+
+  // ── DIAGNOSTIC: confirm exposeFunction is reachable from the page ──────────
+  // This is a one-time check after navigation. Remove after root cause confirmed.
+  try {
+    const diagResult = await page.evaluate(() => {
+      const w = window as any;
+      return {
+        hasDevxqeSend:   typeof w.__devxqe_send,
+        hasNatSend:      typeof w.__nat_send,
+        hasRecorderSend: typeof w.__recorder_send,
+        underscoreProps: Object.keys(w).filter((k: string) => k.startsWith('__')).join(', '),
+        href:            window.location.href,
+      };
+    });
+    log(`[AGENT-DIAG] Window functions after goto: ${JSON.stringify(diagResult)}`);
+    log(`[AGENT-DIAG] __devxqe_send available: ${diagResult.hasDevxqeSend}`);
+  } catch (diagErr: any) {
+    log(`[AGENT-DIAG] evaluate failed: ${diagErr.message}`);
   }
 
   // Capture an initial screenshot so the UI shows the starting page

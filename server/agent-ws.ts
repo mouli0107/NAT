@@ -340,6 +340,7 @@ function handleAgentMessage(agent: ConnectedAgent, msg: Record<string, unknown>)
     case 'recording_event': {
       // Agent captured a user interaction — route to the recording session
       const sid = String(msg.sessionId || '').toUpperCase();
+      console.log(`[AgentWS-DIAG] recording_event received — sid=${sid} eventType=${msg.eventType} type=${msg.type}`);
       if (sid) {
         handleAgentRecordingEvent(sid, msg as Record<string, unknown>);
       }
