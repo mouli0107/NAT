@@ -202,6 +202,7 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
 
   // ── Expose __devxqe_send on the CONTEXT so it works on ALL pages/popups ──
   await recordingContext.exposeFunction('__devxqe_send', (eventData: Record<string, unknown>) => {
+    log(`[DIAG] __devxqe_send called: type=${eventData?.type} url=${eventData?.url}`);
     if (recordingSessionId !== sessionId) return; // stale callback after stop
 
     // ── Filter: skip events from the NAT server domain itself ─────────────

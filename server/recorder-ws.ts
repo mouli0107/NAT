@@ -175,6 +175,10 @@ export function handleAgentRecordingEvent(
 ): void {
   const sid     = sessionId.toUpperCase();
   const session = sessions.get(sid);
+  const outerTypeDiag = String(eventData.type || '');
+  if (outerTypeDiag !== 'pw_screenshot') {
+    console.log(`[DIAG] handleAgentRecordingEvent: sid=${sid} found=${!!session} status=${session?.status} type=${outerTypeDiag} eventType=${eventData.eventType} uiClients=${session?.uiClients?.size ?? 0}`);
+  }
   if (!session) return;
 
   // Agent always sends type:'recording_event' (routing field) and
