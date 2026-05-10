@@ -1,8 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import pgLogoSvg from "@/assets/pg-logo.svg";
-import devxLogoSvg from "@/assets/devx-logo.svg";
+import { createContext, useContext, useState, ReactNode } from "react";
 import astraLogoPng from "@/assets/astra-logo.png";
-import amerisureLogoSvg from "@/assets/amerisure-logo.svg";
 
 export interface BrandProfile {
   id: string;
@@ -22,6 +19,8 @@ export interface BrandProfile {
   pdfTitle: string;
 }
 
+// Only ASTRA brand profile — multi-brand support removed.
+// Keep the export shape so consumers using brandProfiles[id] don't break.
 export const brandProfiles: Record<string, BrandProfile> = {
   astra: {
     id: "astra",
@@ -39,69 +38,6 @@ export const brandProfiles: Record<string, BrandProfile> = {
     accentColor: "#1B2D8C",
     pdfTitle: "ASTRA Agentic Testing Platform",
   },
-  gold: {
-    id: "gold",
-    label: "NAT 2.0 (Gold)",
-    platformName: "NAT 2.0",
-    platformShortName: "NAT 2.0",
-    subtitle: "Agentic Testing",
-    commandCenter: "NAT 2.0 Command Center",
-    tagline: "NOUS Autonomous Testing Platform",
-    loginTitle: "Log In to NAT 2.0",
-    heroTitle: "NAT 2.0",
-    heroSubtitle: "Agentic Testing Platform",
-    logoType: "icon",
-    accentColor: "#4f46e5",
-    pdfTitle: "NAT 2.0 Autonomous Testing Platform",
-  },
-  envestnet: {
-    id: "envestnet",
-    label: "Envestnet",
-    platformName: "Envestnet QE AI",
-    platformShortName: "Envestnet QE",
-    subtitle: "Quality Engineering",
-    commandCenter: "Envestnet QE AI Command Center",
-    tagline: "Envestnet Autonomous Testing Platform",
-    loginTitle: "Log In to Envestnet QE AI",
-    heroTitle: "Envestnet",
-    heroSubtitle: "QE AI Testing Platform",
-    logoType: "icon",
-    accentColor: "#0074bd",
-    pdfTitle: "Envestnet QE AI Testing Platform",
-  },
-  amerisure: {
-    id: "amerisure",
-    label: "Amerisure",
-    platformName: "Amerisure QE AI",
-    platformShortName: "Amerisure QE",
-    subtitle: "Quality Engineering",
-    commandCenter: "Amerisure QE AI Command Center",
-    tagline: "Amerisure Autonomous Testing Platform",
-    loginTitle: "Log In to Amerisure QE AI",
-    heroTitle: "Amerisure",
-    heroSubtitle: "QE AI Testing Platform",
-    logoType: "image",
-    logoSrc: amerisureLogoSvg,
-    logoBackground: "#003087",
-    accentColor: "#003087",
-    pdfTitle: "Amerisure QE AI Testing Platform",
-  },
-  pg: {
-    id: "pg",
-    label: "P&G",
-    platformName: "P&G QE AI",
-    platformShortName: "P&G QE",
-    subtitle: "Quality Engineering",
-    commandCenter: "P&G QE AI Command Center",
-    tagline: "Procter & Gamble Autonomous Testing Platform",
-    loginTitle: "Log In to P&G QE AI",
-    heroTitle: "P&G",
-    heroSubtitle: "QE AI Testing Platform",
-    logoType: "image",
-    logoSrc: pgLogoSvg,
-    accentColor: "#003DA5",
-    pdfTitle: "P&G QE AI Testing Platform",
-  },
 };
 
 interface BrandingContextType {
@@ -113,26 +49,17 @@ interface BrandingContextType {
 const BrandingContext = createContext<BrandingContextType | undefined>(undefined);
 
 export function BrandingProvider({ children }: { children: ReactNode }) {
-  const [brandId, setBrandId] = useState<string>(() => {
-    const stored = localStorage.getItem("selectedBrand");
-    // Migrate legacy "365retail" key to "envestnet"
-    if (stored === "365retail") return "envestnet";
-    // Migrate old default "gold" / "devx" to "astra"
-    if (!stored || stored === "gold" || stored === "devx") return "astra";
-    return stored;
+  // Brand is permanently locked to ASTRA — no user-switchable modes.
+  // Clear any stale localStorage value so old "envestnet" / "gold" etc. don't persist.
+  const [brandId] = useState<string>(() => {
+    localStorage.setItem("selectedBrand", "astra");
+    return "astra";
   });
 
-  const brand = brandProfiles[brandId] || brandProfiles.astra;
+  const brand = brandProfiles.astra;
 
-  useEffect(() => {
-    localStorage.setItem("selectedBrand", brandId);
-  }, [brandId]);
-
-  const setBrand = (id: string) => {
-    if (brandProfiles[id]) {
-      setBrandId(id);
-    }
-  };
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const setBrand = (_id: string) => { /* no-op — brand is locked to ASTRA */ };
 
   return (
     <BrandingContext.Provider value={{ brand, setBrand, brandId }}>
