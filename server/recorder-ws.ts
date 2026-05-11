@@ -26,8 +26,9 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Browser, BrowserContext, Page as PwPage } from 'playwright';
 import { UNIVERSAL_HELPERS_CONTENT } from './universal-helpers-content';
 import { KENDO_HELPERS_CONTENT } from './kendo-helpers-content';
-// recorder-nl.ts is the canonical home of toNaturalLanguage — no import needed here
-// (it is re-exported below).
+// recorder-nl.ts is the canonical home of toNaturalLanguage.
+// Must be IMPORTED here for local use (re-export alone does not bind it in scope).
+import { toNaturalLanguage } from './recorder-nl.js';
 import { isAzureEnvironment } from './utils/environment';
 import { pool } from './db';
 
