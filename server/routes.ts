@@ -10736,9 +10736,9 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   // Recording-specific agent availability check + Azure environment flag.
   // Used by the recorder UI to show the agent connection banner.
   app.get('/api/recorder/agent-status', (_req, res) => {
-    const { isAzureEnvironment } = require('./utils/environment');
+    const isAzure = !!(process.env.NAT_ENV === 'azure' || process.env.WEBSITE_SITE_NAME);
     res.json({
-      isAzure:        isAzureEnvironment(),
+      isAzure,
       agentConnected: hasAgentConnected(),
       ...getAgentStatus(),
     });
