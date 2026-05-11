@@ -2752,7 +2752,7 @@ export default function RecorderPage() {
   interface AuditRow {
     elementName: string;
     file:        string;
-    xpath:       string;
+    xpath:       string;   // kept as field name for backward compat — holds ANY selector
     classification: AuditClass;
     reason:      string;
     suggestedFix: string | null;
@@ -2770,40 +2770,83 @@ export default function RecorderPage() {
     return false;
   }
 
-  /** Classify a single XPath expression */
+  /** Classify ANY Playwright selector (CSS, text=, role=, xpath=, data-testid, etc.) */
+  function _classifySelector(selector: string): { cls: AuditClass; reason: string; fix: string | null } {
+    const s = selector.trim();
+
+    // ── XPath — delegate to XPath classifier ──────────────────────────────────
+    if (s.startsWith('xpath=') || s.startsWith('//') || s.startsWith('/html') || s.startsWith('/body')) {
+      const xp = s.startsWith('xpath=') ? s.slice(6) : s;
+      return _classifyXPath(xp);
+    }
+
+    // ── Playwright role / getByRole ───────────────────────────────────────────
+    if (s.startsWith('role=')) return { cls: 'STABLE', reason: 'ARIA role selector — semantically stable and accessibility-aligned', fix: null };
+
+    // ── data-testid / data-cy / data-test / data-automation ──────────────────
+    if (/\[data-testid\s*=|getByTestId/i.test(s)) return { cls: 'STABLE', reason: 'data-testid — dedicated test attribute, intentionally stable', fix: null };
+    if (/\[data-cy\s*=|\[data-test\s*=|\[data-automation/i.test(s)) return { cls: 'STABLE', reason: 'Dedicated automation attribute — intentionally stable', fix: null };
+
+    // ── aria-label ────────────────────────────────────────────────────────────
+    if (/\[aria-label\s*=|aria-label=/i.test(s)) return { cls: 'STABLE', reason: 'aria-label — tied to accessibility spec, typically stable', fix: null };
+
+    // ── id= selector ──────────────────────────────────────────────────────────
+    const idCssMatch = s.match(/^#([\w-]+)$/) || s.match(/\[id\s*=\s*["']?([\w-]+)["']?\]/);
+    if (idCssMatch) {
+      const idVal = idCssMatch[1];
+      return _isGeneratedId(idVal)
+        ? { cls: 'FRAGILE', reason: `ID "${idVal}" appears auto-generated — changes across builds`, fix: '[data-testid="..."] or [aria-label="..."]' }
+        : { cls: 'STABLE', reason: `ID "${idVal}" is a hand-authored stable identifier`, fix: null };
+    }
+
+    // ── text= / label= ───────────────────────────────────────────────────────
+    if (s.startsWith('text=') || s.startsWith('label=')) return { cls: 'ACCEPTABLE', reason: 'Text selector — stable unless visible label text changes', fix: null };
+
+    // ── placeholder= ─────────────────────────────────────────────────────────
+    if (s.startsWith('placeholder=') || /\[placeholder\s*=/i.test(s)) return { cls: 'ACCEPTABLE', reason: 'Placeholder — stable if UI copy is not frequently changed', fix: null };
+
+    // ── name attribute ────────────────────────────────────────────────────────
+    if (/\[name\s*=/i.test(s)) return { cls: 'ACCEPTABLE', reason: 'name attribute on form controls — generally stable', fix: null };
+
+    // ── class-only CSS (fragile) ──────────────────────────────────────────────
+    if (/^\.[a-z_-][\w-]*/i.test(s) && !/\[/.test(s)) return { cls: 'FRAGILE', reason: 'Class-only CSS — styling changes break this selector', fix: '[data-testid="..."] or aria-label' };
+
+    // ── nth-child / nth-of-type (positional) ─────────────────────────────────
+    if (/:nth-child|:nth-of-type|:eq\(/i.test(s)) return { cls: 'FORBIDDEN', reason: 'Positional index — breaks on any DOM reorder', fix: '[data-testid="..."] or text-based selector' };
+
+    // ── Generic CSS with attribute ────────────────────────────────────────────
+    if (/\[/.test(s)) return { cls: 'ACCEPTABLE', reason: 'Attribute CSS selector — reasonably stable', fix: null };
+
+    return { cls: 'FRAGILE', reason: 'Could not determine stable anchor — review manually', fix: '[data-testid="..."] or [aria-label="..."]' };
+  }
+
+  /** Classify a single XPath expression (called by _classifySelector for xpath= prefixed) */
   function _classifyXPath(xpath: string): { cls: AuditClass; reason: string; fix: string | null } {
     const x = xpath.trim();
 
     // ── FORBIDDEN ──────────────────────────────────────────────────────────────
-    // Absolute path from root
     if (/^\/html\b/i.test(x) || /^\/body\b/i.test(x)) {
       return { cls: 'FORBIDDEN', reason: 'Absolute path from /html or /body root — breaks on any page structure change', fix: '//element[@data-testid="..."] or //element[@id="..."]' };
     }
-    // All-positional: contains [N] with no attribute selector at all
     if (/\[\d+\]/.test(x) && !/@[a-z]/i.test(x) && !/text\(\)/.test(x)) {
       return { cls: 'FORBIDDEN', reason: 'Pure index-based path — no attribute anchors, breaks on UI reorder', fix: '//button[@data-testid="submit"] or //button[normalize-space(text())="Submit"]' };
     }
-    // Mixed positional with no stable attr (e.g. //div[3]/button[2])
     if (/\/[a-z]+\[\d+\]\/[a-z]+\[\d+\]/i.test(x) && !/@(id|data-testid|name|aria-label|placeholder)/i.test(x)) {
       return { cls: 'FORBIDDEN', reason: 'Chained positional indexes with no stable attribute — extremely brittle', fix: '//button[@data-testid="..."] or //button[normalize-space(text())="..."]' };
     }
 
     // ── FRAGILE ────────────────────────────────────────────────────────────────
-    // Auto-generated @id
     const idMatch = x.match(/@id\s*=\s*["']([^"']+)["']/i);
     if (idMatch && _isGeneratedId(idMatch[1])) {
       return { cls: 'FRAGILE', reason: `ID "${idMatch[1]}" appears auto-generated and will change across builds/envs`, fix: `//element[@name="fieldName"] or //element[@placeholder="..."] or //element[@aria-label="..."]` };
     }
-    // Positional index mixed with attribute (acceptable-ish but still fragile)
     if (/\[\d+\]/.test(x) && /@[a-z]/i.test(x)) {
       return { cls: 'FRAGILE', reason: 'Uses positional index combined with attribute — index portion breaks on reorder', fix: x.replace(/\[\d+\]/g, '') + ' (remove index portion)' };
     }
-    // Very long chain (> 5 steps deep from anchor)
     const slashCount = (x.match(/\//g) || []).length;
     if (slashCount > 6) {
       return { cls: 'FRAGILE', reason: `Deep structural path (${slashCount} levels) — any intermediate element change breaks it`, fix: 'Anchor to a closer stable parent: //*[@id="section"]//button[text()="..."]' };
     }
-    // class-only selectors
     if (/^\/\/[a-z]+\[@class\s*=/i.test(x) && !/@(id|data-testid|name|aria-label|placeholder)/i.test(x)) {
       return { cls: 'FRAGILE', reason: 'Class-only selector — CSS classes change frequently with styling updates', fix: '//element[@data-testid="..."] or //element[@name="..."] or semantic text XPath' };
     }
@@ -2820,8 +2863,6 @@ export default function RecorderPage() {
     if (/@placeholder\s*=/i.test(x)) return { cls: 'ACCEPTABLE', reason: 'placeholder — stable if UI copy is not frequently changed', fix: null };
     if (/normalize-space\(text\(\)\)|contains\(text\(\)/i.test(x)) return { cls: 'ACCEPTABLE', reason: 'Semantic text locator — stable unless visible label text changes', fix: null };
     if (/@type\s*=.*@(name|placeholder|value)/i.test(x)) return { cls: 'ACCEPTABLE', reason: 'Attribute combination — reasonably stable', fix: null };
-
-    // Default: acceptable (has some attribute anchor)
     if (/@[a-z]/i.test(x)) return { cls: 'ACCEPTABLE', reason: 'Has attribute selector — acceptable but consider a more unique anchor', fix: null };
 
     return { cls: 'FRAGILE', reason: 'Could not determine stable anchor — review manually', fix: '//element[@data-testid="..."] or //element[@id="..."]' };
@@ -2833,20 +2874,18 @@ export default function RecorderPage() {
     const locatorFiles = frameworkFiles.filter(f => f.type === 'pom' && f.path.startsWith('locators/'));
 
     for (const file of locatorFiles) {
-      // Match: varName: (page: Page) => page.locator('xpath=EXPR')  — any quote style
-      // Handles escaped inner quotes (e.g. \'Solutions\' inside a single-quoted string)
-      // and raw inner single quotes inside double-quoted or backtick strings.
-      //   Group 2 → captured from single-quoted  'xpath=...'
-      //   Group 3 → captured from double-quoted  "xpath=..."
-      //   Group 4 → captured from backtick       `xpath=...`
-      const pattern = /(\w+)\s*:\s*\(page\s*:\s*Page\)\s*=>\s*page\.locator\(\s*(?:'xpath=((?:[^'\\]|\\.)*)'|"xpath=((?:[^"\\]|\\.)*)"|`xpath=([^`]*)`)\s*\)/g;
+      // Match both object-literal (`:`) and class-property (`=`) styles, any quote type:
+      //   homeLink: (page: Page) => page.locator('[data-testid="home"]')
+      //   homeLink = (page: Page) => page.locator('text=Home')
+      //   homeLink: (page: Page) => page.locator("xpath=//button")
+      const pattern = /(\w+)\s*[=:]\s*\(page\s*:\s*Page\)\s*=>\s*page\.locator\(\s*(?:'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"|`([^`]*)`)\s*\)/g;
       let m: RegExpExecArray | null;
       while ((m = pattern.exec(file.content)) !== null) {
         const name = m[1];
-        // Whichever quote style matched — unescape backslash-escaped chars for display
-        const rawXpath = (m[2] ?? m[3] ?? m[4] ?? '').replace(/\\(['"`\\])/g, '$1');
-        const { cls, reason, fix } = _classifyXPath(rawXpath);
-        rows.push({ elementName: name, file: file.path.split('/').pop() || file.path, xpath: rawXpath, classification: cls, reason, suggestedFix: fix });
+        const rawSelector = (m[2] ?? m[3] ?? m[4] ?? '').replace(/\\(['"`\\])/g, '$1');
+        if (!rawSelector) continue;
+        const { cls, reason, fix } = _classifySelector(rawSelector);
+        rows.push({ elementName: name, file: file.path.split('/').pop() || file.path, xpath: rawSelector, classification: cls, reason, suggestedFix: fix });
       }
     }
     setAuditRows(rows);
@@ -4289,7 +4328,7 @@ export default function RecorderPage() {
                             ? 'bg-amber-600/30 border-amber-500/50 text-amber-300'
                             : 'bg-slate-800 hover:bg-amber-900/30 border-slate-700 hover:border-amber-500/50 text-slate-300 hover:text-amber-300'
                         }`}
-                        title="Audit all XPath locators for stability"
+                        title="Audit all locators for stability (CSS, text, role, XPath)"
                       >🔍 Locator Audit</button>
                     )}
                     {/* ZIP download */}
@@ -4502,7 +4541,7 @@ export default function RecorderPage() {
                         {auditRows.length === 0 ? (
                           <div className="flex flex-col items-center justify-center py-16 text-slate-600">
                             <span className="text-3xl mb-2">✅</span>
-                            <p className="text-sm">No XPath locators found in locator files.</p>
+                            <p className="text-sm">No locators found in locator files.</p>
                             <p className="text-xs mt-1">Generate framework files first, then run the audit.</p>
                           </div>
                         ) : (
