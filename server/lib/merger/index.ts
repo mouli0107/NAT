@@ -121,8 +121,8 @@ export class FrameworkMerger {
 
       // ── Layers 5-6 in parallel ───────────────────────────────────────────────
       const [utilResult, fixtureResult] = await Promise.all([
-        mergeGenericUtils(projectId, tcId, input.genericUtils),
-        mergeFixtures(projectId, tcId, input.fixtures),
+        mergeGenericUtils(projectId, tcId, input.genericUtils ?? []),
+        mergeFixtures(projectId, tcId, input.fixtures ?? []),
       ]);
 
       // ── Layer 7 sequential (spec references output of all above) ────────────
@@ -199,7 +199,7 @@ export class FrameworkMerger {
     locators: FrameworkMergeInput['locators'],
   ): Promise<LocatorMergeResult[]> {
     return Promise.all(
-      Object.entries(locators).map(([pageKey, units]) =>
+      Object.entries(locators ?? {}).map(([pageKey, units]) =>
         mergeLocators(projectId, tcId, pageKey, units),
       ),
     );
@@ -210,7 +210,7 @@ export class FrameworkMerger {
     pageObjects: FrameworkMergeInput['pageObjects'],
   ): Promise<PageObjectMergeResult[]> {
     return Promise.all(
-      Object.entries(pageObjects).map(([pageKey, methods]) =>
+      Object.entries(pageObjects ?? {}).map(([pageKey, methods]) =>
         mergePageObjects(projectId, tcId, pageKey, methods),
       ),
     );
@@ -221,7 +221,7 @@ export class FrameworkMerger {
     actions: FrameworkMergeInput['actions'],
   ): Promise<ActionMergeResult[]> {
     return Promise.all(
-      Object.entries(actions).map(([domainKey, steps]) =>
+      Object.entries(actions ?? {}).map(([domainKey, steps]) =>
         mergeActions(projectId, tcId, domainKey, steps),
       ),
     );
@@ -232,7 +232,7 @@ export class FrameworkMerger {
     businessFunctions: FrameworkMergeInput['businessFunctions'],
   ): Promise<BusinessFunctionMergeResult[]> {
     return Promise.all(
-      Object.entries(businessFunctions).map(([domainKey, fns]) =>
+      Object.entries(businessFunctions ?? {}).map(([domainKey, fns]) =>
         mergeBusinessFunctions(projectId, tcId, domainKey, fns),
       ),
     );
