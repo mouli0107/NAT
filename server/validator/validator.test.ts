@@ -12,7 +12,7 @@ const _testRequire = createRequire(import.meta.url);
 const XLSX = _testRequire('xlsx') as typeof import('xlsx');
 import { validateGeneratedProject } from './index';
 import { generateWithValidation, GenerationValidationError, RecordingSession } from './runner';
-import { getLocatorModuleId, getLocatorClassName, buildActionManifest, buildVerifyFunction, fixDoubleNavigation, writeTempProjectDir, buildRetryPreamble } from '../script-writer-agent.js';
+import { getLocatorModuleId, getLocatorClassName, buildActionManifest, buildVerifyFunction, fixDoubleNavigation, writeTempProjectDir, buildRetryPreamble, extractPageMethodsFromCode } from '../script-writer-agent.js';
 import { toNaturalLanguage } from '../recorder-nl.js';
 
 // ─── Test helpers ─────────────────────────────────────────────────────────────
@@ -923,6 +923,119 @@ await test('TEST 12: retryContext injected on second attempt', async () => {
     secondCallContext!.includes('REQUIRED_FILE_MISSING') || secondCallContext!.includes('BLOCKER') || secondCallContext!.includes('helpers'),
     `retryContext should mention the error, got: "${secondCallContext}"`
   );
+});
+
+// ─── F3: Self-consistency cross-check (extractPageMethodsFromCode) ───────────
+
+// Minimal page class source templates used across F3 tests
+function makePageCode(methods: string[]): string {
+  const bodies = methods
+    .map(m => `  async ${m}(): Promise<void> { /* impl */ }`)
+    .join('\n');
+  return `import { Page } from '@playwright/test';
+export class ExamplePage {
+  constructor(private readonly page: Page) {}
+${bodies}
+}
+`;
+}
+
+// TEST F3a — divergence detected: self-reported name differs from AST name
+await test('F3: extractPageMethodsFromCode detects divergence (self-report has wrong name)', () => {
+  // Claude claims it wrote 'clickNewsLink' but actually wrote 'clickNewsLinkButton'
+  const pageCode     = makePageCode(['clickNewsLinkButton', 'navigateTo', 'verifyHeading']);
+  const selfReported = ['clickNewsLink', 'navigateTo', 'verifyHeading'];
+
+  const astMethods = extractPageMethodsFromCode(pageCode);
+
+  const onlyInSelfReport = selfReported.filter(m => !astMethods.has(m));
+  const onlyInAst        = [...astMethods].filter(m => !selfReported.includes(m));
+
+  assert(
+    onlyInSelfReport.length > 0,
+    `Expected 'clickNewsLink' to be missing from AST, but onlyInSelfReport=[${onlyInSelfReport}]`
+  );
+  assert(
+    onlyInSelfReport.includes('clickNewsLink'),
+    `Expected onlyInSelfReport to contain 'clickNewsLink', got: [${onlyInSelfReport}]`
+  );
+  assert(
+    onlyInAst.includes('clickNewsLinkButton'),
+    `Expected onlyInAst to contain 'clickNewsLinkButton', got: [${onlyInAst}]`
+  );
+});
+
+// TEST F3b — contract correction: AST methods are ground truth, not self-reported
+await test('F3: extractPageMethodsFromCode returns AST truth (contract correction)', () => {
+  // Code has 3 methods; self-report is wrong
+  const pageCode     = makePageCode(['navigateTo', 'clickEventsLink', 'verifyTitle']);
+  const selfReported = ['navigateTo', 'clickEventsNavLink', 'verifyTitle']; // 'clickEventsNavLink' is wrong
+
+  const groundTruthMethods = [...extractPageMethodsFromCode(pageCode)];
+
+  assert(
+    groundTruthMethods.includes('clickEventsLink'),
+    `AST ground truth must include 'clickEventsLink', got: [${groundTruthMethods}]`
+  );
+  assert(
+    !groundTruthMethods.includes('clickEventsNavLink'),
+    `AST ground truth must NOT include 'clickEventsNavLink' (self-reported lie), got: [${groundTruthMethods}]`
+  );
+  // The self-reported list should differ from the AST ground truth
+  const selfSet = new Set(selfReported);
+  const onlyInSelf = selfReported.filter(m => !groundTruthMethods.includes(m));
+  assert(
+    onlyInSelf.length > 0,
+    `Expected self-reported list to diverge from AST — self=[${selfReported}] ast=[${groundTruthMethods}]`
+  );
+  // Verify gate-04 / business-actions prompt would use the correct name if seeded from AST
+  assert(
+    !selfSet.has(groundTruthMethods.find(m => m === 'clickEventsLink')!),
+    'The AST-correct name should not appear in the wrong self-reported list'
+  );
+});
+
+// TEST F3c — no-op when self-report matches AST exactly
+await test('F3: extractPageMethodsFromCode no-op when self-report matches AST', () => {
+  const methods      = ['navigateTo', 'clickSubmit', 'fillEmail', 'verifyConfirmation'];
+  const pageCode     = makePageCode(methods);
+  const selfReported = [...methods]; // exact match
+
+  const astMethods = extractPageMethodsFromCode(pageCode);
+
+  const onlyInSelfReport = selfReported.filter(m => !astMethods.has(m));
+  const onlyInAst        = [...astMethods].filter(m => !selfReported.includes(m));
+
+  assert(
+    onlyInSelfReport.length === 0 && onlyInAst.length === 0,
+    `Expected zero divergence when self-report matches AST, got ` +
+    `onlyInSelfReport=[${onlyInSelfReport}] onlyInAst=[${onlyInAst}]`
+  );
+
+  // Ground-truth list should contain exactly the declared methods (order-independent)
+  const groundTruth = [...astMethods].sort();
+  const expected    = [...methods].sort();
+  assert(
+    JSON.stringify(groundTruth) === JSON.stringify(expected),
+    `Expected [${expected}], got AST=[${groundTruth}]`
+  );
+});
+
+// TEST F3d — private methods are excluded from ground truth (should not appear in contract)
+await test('F3: extractPageMethodsFromCode excludes private methods', () => {
+  const code = `import { Page } from '@playwright/test';
+export class ExamplePage {
+  constructor(private readonly page: Page) {}
+  async publicMethod(): Promise<void> {}
+  private async privateHelper(): Promise<void> {}
+  async anotherPublic(): Promise<void> {}
+}
+`;
+  const astMethods = extractPageMethodsFromCode(code);
+
+  assert(astMethods.has('publicMethod'),    'publicMethod should be in AST methods');
+  assert(astMethods.has('anotherPublic'),   'anotherPublic should be in AST methods');
+  assert(!astMethods.has('privateHelper'), 'privateHelper must NOT be in AST methods');
 });
 
 // ─── Summary ──────────────────────────────────────────────────────────────────

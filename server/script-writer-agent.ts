@@ -2676,6 +2676,17 @@ function extractClassName(source: string): string | null {
   return null;
 }
 
+/**
+ * F3 — Extract all public method names from a page class via TypeScript AST.
+ *
+ * Exported so validator.test.ts (and gate-04) can use the same function.
+ * This is the ground-truth cross-check used after Claude returns a POM file:
+ * what Claude actually wrote (AST) vs. what Claude said it wrote (pomInput.methods).
+ */
+export function extractPageMethodsFromCode(source: string): Set<string> {
+  return extractClassMethods(source);
+}
+
 /** Extract all public method names from a class declaration */
 function extractClassMethods(source: string): Set<string> {
   const methods = new Set<string>();
@@ -2893,6 +2904,26 @@ export async function* generateFramework(
       if (pomThinking) {
         yield { type: 'thinking', label: `${pg}Page — locator reasoning`, content: pomThinking };
       }
+      // ── F3: Self-consistency cross-check ────────────────────────────────────
+      // Claude's structured-output field pomInput.methods is self-reported — it may
+      // list names that differ from what Claude actually wrote in the page class body.
+      // Parse the emitted code via AST to get the ground-truth method list; use it for
+      // the contract embedded in the business-actions prompt (not pomInput.methods).
+      const astMethods       = extractPageMethodsFromCode(pomInput.code);
+      const selfReported     = pomInput.methods ?? [];
+      const onlyInSelfReport = selfReported.filter(m => !astMethods.has(m));
+      const onlyInAst        = [...astMethods].filter(m => !selfReported.includes(m));
+      if (onlyInSelfReport.length > 0 || onlyInAst.length > 0) {
+        yield {
+          type: 'status',
+          message:
+            `⚠️ [F3] ${pg}Page self-report divergence — ` +
+            `claimed=[${selfReported.join(', ')}] actual=[${[...astMethods].join(', ')}] ` +
+            `— using AST as ground truth for contract`,
+        };
+      }
+      const groundTruthMethods = [...astMethods];
+
       if (pomInput.locatorsCode?.trim()) {
         aiGeneratedFiles.push({
           path: `locators/${getLocatorModuleId(`${pg}Page`)}.ts`,
@@ -2905,7 +2936,8 @@ export async function* generateFramework(
         path: `pages/${pg}Page.ts`,
         content: pomInput.code.trim(),
         type: 'pom',
-        metadata: { className: pomInput.className, locators: pomInput.locators, methods: pomInput.methods, snapshotUsed: !!ariaSnapshot }
+        // F3: store AST-extracted ground truth, not self-reported pomInput.methods
+        metadata: { className: pomInput.className, locators: pomInput.locators, methods: groundTruthMethods, snapshotUsed: !!ariaSnapshot }
       });
     } catch (err: any) {
       yield { type: 'error', message: `Page Object generation failed for ${pg}: ${err.message}` };
