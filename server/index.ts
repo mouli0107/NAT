@@ -58,7 +58,11 @@ app.use((req, res, next) => {
 
   res.on("finish", () => {
     const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
+    // Suppress noisy polling endpoints — agent-status is polled every 30s and
+    // a 304 (Not Modified) just means the client cache is still fresh; not useful in logs.
+    const isPollingNoise =
+      path === '/api/recorder/agent-status' && res.statusCode === 304;
+    if (path.startsWith("/api") && !isPollingNoise) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
