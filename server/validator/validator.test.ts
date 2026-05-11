@@ -172,60 +172,67 @@ await test('Gate 01: skips cleanly when node_modules is absent', async () => {
 });
 
 // TEST D2a — getLocatorModuleId: file path and import path are always consistent
-await test('D2: getLocatorModuleId — file path matches import path for multiple page base names', () => {
-  const sampleNames = [
-    'NousinfosystemsHome',
-    'OnespanContactUs',
-    'AppDashboard',
-    'MyWebsiteLogin',
-    'ExampleProductDetail',
+// Updated for D2 fix: function now takes full pageClassName (with 'Page' suffix).
+// Canonical form: getLocatorModuleId('NousinfosystemsHomePage') = 'NousinfosystemsHomePage.locators'
+await test('D2: getLocatorModuleId — file path matches import path for multiple page class names', () => {
+  // pageClassNames = pageName + 'Page' (what the generator passes after the D2 fix)
+  const sampleClassNames = [
+    'NousinfosystemsHomePage',
+    'OnespanContactUsPage',
+    'AppDashboardPage',
+    'MyWebsiteLoginPage',
+    'ExampleProductDetailPage',
   ];
-  for (const name of sampleNames) {
-    const moduleId  = getLocatorModuleId(name);
-    const className = getLocatorClassName(name);
+  for (const className of sampleClassNames) {
+    const moduleId    = getLocatorModuleId(className);
+    const locatorsObj = getLocatorClassName(className);
 
     // The filename written by the emitter
     const filePath = `locators/${moduleId}.ts`;
-    // The import path written by the prompt (resolved by tsconfig @locators alias)
+    // The import path in the page class (resolved by tsconfig @locators alias)
     const importPath = `@locators/${moduleId}`;
 
-    // The import path stripped of alias must resolve to the same file stem as the emitted file
+    // The import path stripped of alias must resolve to the same file stem
     const importStem = importPath.replace('@locators/', '');
     const fileStem   = filePath.replace('locators/', '').replace('.ts', '');
 
     assert(
       importStem === fileStem,
-      `D2 mismatch for "${name}": import stem "${importStem}" ≠ file stem "${fileStem}"`
+      `D2 mismatch for "${className}": import stem "${importStem}" ≠ file stem "${fileStem}"`
     );
+    // New convention: pageClassName + 'Locators' (no extra 'Page' appended)
     assert(
-      className === `${name}PageLocators`,
-      `Expected className "${name}PageLocators", got "${className}"`
+      locatorsObj === `${className}Locators`,
+      `Expected locatorsObj "${className}Locators", got "${locatorsObj}"`
     );
+    // New convention: pageClassName + '.locators' (no extra 'Page' appended)
     assert(
-      moduleId === `${name}Page.locators`,
-      `Expected moduleId "${name}Page.locators", got "${moduleId}"`
+      moduleId === `${className}.locators`,
+      `Expected moduleId "${className}.locators", got "${moduleId}"`
     );
   }
 });
 
 // TEST D2b — getLocatorModuleId: import path in a generated page class matches the locator file
+// Updated for D2 fix: both emitters now pass the full class name (pageName + 'Page').
 await test('D2: page class import path resolves to the locator file on disk', () => {
-  // Simulate what the emitter does (D2 fix: use getLocatorModuleId for both)
-  const pageBaseName = 'NousinfosystemsHome';
-  const moduleId     = getLocatorModuleId(pageBaseName);
-  const className    = getLocatorClassName(pageBaseName);
+  // Simulate what the emitter does after D2 fix:
+  //   locator file: locators/${getLocatorModuleId(`${pageName}Page`)}.ts
+  //   page import:  @locators/${getLocatorModuleId(`${pageName}Page`)}
+  const pageName     = 'NousinfosystemsHome';          // from deriveNames
+  const pageClassName = `${pageName}Page`;             // full class name
+  const moduleId     = getLocatorModuleId(pageClassName);
+  const locatorsObj  = getLocatorClassName(pageClassName);
 
   // File path the emitter would write
-  const emittedFilePath = `locators/${moduleId}.ts`;  // e.g. locators/NousinfosystemsHomePage.locators.ts
+  const emittedFilePath = `locators/${moduleId}.ts`;   // locators/NousinfosystemsHomePage.locators.ts
 
   // Import the page class would emit
-  const importStatement = `import { ${className} } from '@locators/${moduleId}';`;
-  // Extract the module specifier from the import
+  const importStatement = `import { ${locatorsObj} } from '@locators/${moduleId}';`;
   const moduleSpecMatch = importStatement.match(/from '(@locators\/[^']+)'/);
   assert(!!moduleSpecMatch, 'Could not extract module specifier from import statement');
 
-  const moduleSpec = moduleSpecMatch![1]; // e.g. @locators/NousinfosystemsHomePage.locators
-  // Resolve alias: @locators/X → locators/X.ts
+  const moduleSpec  = moduleSpecMatch![1];             // @locators/NousinfosystemsHomePage.locators
   const resolvedPath = moduleSpec.replace('@locators/', 'locators/') + '.ts';
 
   assert(

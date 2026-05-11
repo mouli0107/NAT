@@ -19,6 +19,10 @@ import * as path from 'path';
 import * as os from 'os';
 import * as ts from 'typescript';
 import * as XLSX from 'xlsx';
+// D2: canonical locator-naming helpers — single source of truth for module IDs
+import { getLocatorModuleId, getLocatorClassName } from './util/locator-naming.js';
+// Re-export so downstream consumers (validator.test.ts, etc.) keep the same import path
+export { getLocatorModuleId, getLocatorClassName } from './util/locator-naming.js';
 
 const clientOpts: { apiKey: string; baseURL?: string } = {
   apiKey: (process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY || ''),
@@ -1055,30 +1059,6 @@ npx tsc --noEmit
 
 // ─── Locator Naming Helpers ────────────────────────────────────────────────────
 
-/**
- * D2 — Single source of truth for the locator module identifier.
- *
- * Given the page base name (e.g. "NousinfosystemsHome"), returns the canonical
- * TypeScript module stem used both as:
- *   • the filename:     `locators/${getLocatorModuleId(name)}.ts`
- *   • the import path:  `@locators/${getLocatorModuleId(name)}`
- *
- * Both the locator-file emitter and the page-object prompt MUST call this helper.
- * Never concatenate '.locators' directly — always go through this function.
- */
-export function getLocatorModuleId(pageBaseName: string): string {
-  return `${pageBaseName}Page.locators`;
-}
-
-/**
- * D2 companion — returns the exported const name for the locators object.
- * Kept alongside getLocatorModuleId so both naming concerns live in one place.
- *   e.g. "NousinfosystemsHome" → "NousinfosystemsHomePageLocators"
- */
-export function getLocatorClassName(pageBaseName: string): string {
-  return `${pageBaseName}PageLocators`;
-}
-
 // ─── D3: Action Symbol Manifest ───────────────────────────────────────────────
 
 /**
@@ -1176,7 +1156,7 @@ ${snapshotSection}${iframeNote}
 Generate TWO TypeScript files following these strict rules:
 
 ### FILE 1 — Object Repository (locatorsCode)
-File: locators/${getLocatorModuleId(pageName)}.ts
+File: locators/${getLocatorModuleId(`${pageName}Page`)}.ts
 - Import: import { Page, Locator } from '@playwright/test';
 - Export a single const object named \`${pageName}PageLocators\`
 - Each property is a FACTORY FUNCTION: \`(page: Page): Locator => ...\`
@@ -1261,25 +1241,25 @@ File: pages/${pageName}Page.ts
 CRITICAL CLASS PATTERN — copy this structure exactly:
 \`\`\`typescript
 import { Page } from '@playwright/test';
-import { ${getLocatorClassName(pageName)} } from '@locators/${getLocatorModuleId(pageName)}';
+import { ${getLocatorClassName(`${pageName}Page`)} } from '@locators/${getLocatorModuleId(`${pageName}Page`)}';
 
 export class ${pageName}Page {
   constructor(private readonly page: Page) {}  // ← NO this.L assignment; just store page
 
   async clickSomeButton(): Promise<void> {
-    const loc = ${getLocatorClassName(pageName)}.someButton(this.page);  // ← call factory fn with this.page
+    const loc = ${getLocatorClassName(`${pageName}Page`)}.someButton(this.page);  // ← call factory fn with this.page
     await loc.waitFor({ state: 'visible' });
     await loc.click();
   }
 
   async fillSomeInput(value: string): Promise<void> {
-    const loc = ${getLocatorClassName(pageName)}.someInput(this.page);   // ← new factory call each time
+    const loc = ${getLocatorClassName(`${pageName}Page`)}.someInput(this.page);   // ← new factory call each time
     await loc.waitFor({ state: 'visible' });
     await loc.fill(value);
   }
 
   async selectDropdown(value: string): Promise<void> {
-    const loc = ${getLocatorClassName(pageName)}.someDropdown(this.page);
+    const loc = ${getLocatorClassName(`${pageName}Page`)}.someDropdown(this.page);
     await loc.waitFor({ state: 'visible' });
     await loc.selectOption(value);
   }
@@ -1714,6 +1694,14 @@ function deriveNames(startUrl: string, nlSteps: string[], testName: string): { p
       } else {
         // Single segment: /products → brand + Products
         pathName = toPascal(last) || 'App';
+      }
+      // D2 fix: strip trailing 'Page' from pathName to prevent double-Page class names.
+      // URL path segment "page" → PascalCase "Page" → strip → 'Home' (treated as root-like).
+      // URL path segment "my-page" → PascalCase "MyPage" → strip → "My" → class "MyPage" ✓
+      // Without this: pageName = 'NousinfosystemsPage' → class = 'NousinfosystemsPagePage' → double-Page
+      // confusion causes the LLM to ignore the canonical import hint and generate a mismatched path.
+      if (pathName.endsWith('Page')) {
+        pathName = pathName.slice(0, -4) || 'Home';
       }
       pageName = brandPrefix + pathName;
     }
@@ -2886,7 +2874,7 @@ export async function* generateFramework(
       yield { type: 'status', message: `⚠️  ${pg} not reachable — inferring locators from steps` };
     }
 
-    yield { type: 'status', message: `🧠 Generating locators/${getLocatorModuleId(pg)}.ts + pages/${pg}Page.ts...` };
+    yield { type: 'status', message: `🧠 Generating locators/${getLocatorModuleId(`${pg}Page`)}.ts + pages/${pg}Page.ts...` };
     try {
       const pomResponse = await anthropic.messages.create({
         model: SCRIPT_MODEL,
@@ -2907,10 +2895,10 @@ export async function* generateFramework(
       }
       if (pomInput.locatorsCode?.trim()) {
         aiGeneratedFiles.push({
-          path: `locators/${getLocatorModuleId(pg)}.ts`,
+          path: `locators/${getLocatorModuleId(`${pg}Page`)}.ts`,
           content: pomInput.locatorsCode.trim(),
           type: 'pom',
-          metadata: { className: getLocatorClassName(pg), locators: pomInput.locators, snapshotUsed: !!ariaSnapshot }
+          metadata: { className: getLocatorClassName(`${pg}Page`), locators: pomInput.locators, snapshotUsed: !!ariaSnapshot }
         });
       }
       aiGeneratedFiles.push({

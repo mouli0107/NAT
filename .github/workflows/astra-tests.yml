@@ -59,6 +59,17 @@ jobs:
       - name: Run validator + generator unit tests
         run: npx tsx server/validator/validator.test.ts
 
+      # ── Suite 2b: Locator-naming helper unit tests (D2 regression net) ────
+      # 6 tests covering getLocatorModuleId / getLocatorClassName:
+      #   Test 1 — round-trip consistency (failed on main before D2 fix)
+      #   Test 2 — getLocatorClassName names
+      #   Test 3 — empty input rejection
+      #   Test 4 — whitespace input rejection
+      #   Test 5 — lint guard: no literal .locators outside the helper
+      #   Test 6 — canonical fixture import ↔ emitter path agree
+      - name: Run locator-naming unit tests (D2 gate)
+        run: npx tsx server/util/locator-naming.test.ts
+
       # ── Suite 3: generate-and-typecheck (C1 gate) ──────────────────────────
       # Assembles the canonical nousinfosystems.com project from committed static
       # templates + the pre-generated fixture snapshot, then runs tsc --noEmit.
