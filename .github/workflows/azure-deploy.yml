@@ -42,6 +42,12 @@ jobs:
           app-name: ${{ env.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           images: ${{ env.IMAGE_NAME }}:${{ github.sha }}
+          # Supply registry credentials so Azure can pull from the private ghcr.io package.
+          # GITHUB_TOKEN is valid for the duration of this workflow run — long enough for
+          # Azure App Service to pull the image and start the new container.
+          registry-url: https://ghcr.io
+          registry-username: ${{ github.actor }}
+          registry-password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Deployment complete
         run: |
