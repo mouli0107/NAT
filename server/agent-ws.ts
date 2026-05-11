@@ -50,6 +50,8 @@ export interface AgentJobPayload {
   headless: boolean;
   screenshotOnEveryStep: boolean;
   slowMo?: number;
+  /** Route this job exclusively to the agent registered by this user. */
+  userId?: string;
 }
 
 export interface SseCallback {
@@ -115,16 +117,43 @@ export function getAgentStatus(): { total: number; idle: number; busy: number; a
 }
 
 /**
+ * Returns connection status scoped to a specific user.
+ * Used by /api/recorder/agent-status so the UI can show "Your Agent" vs any agent.
+ */
+export function getAgentStatusForUser(userId: string): {
+  yourAgentConnected: boolean;
+  yourAgentIdle: boolean;
+  yourAgent: { agentId: string; hostname: string; status: string } | null;
+} {
+  const all = Array.from(agents.values());
+  const yours = all.filter(a => a.userId === userId);
+  const idleOne = yours.find(a => a.status === 'idle');
+  return {
+    yourAgentConnected: yours.length > 0,
+    yourAgentIdle: !!idleOne,
+    yourAgent: idleOne
+      ? { agentId: idleOne.agentId, hostname: idleOne.hostname, status: idleOne.status }
+      : null,
+  };
+}
+
+/**
  * Dispatch a job to an available remote agent.
  * Returns a promise that resolves when the job completes.
  * Throws if no agent is available.
  */
 export function dispatchJobToAgent(payload: AgentJobPayload, sse: SseCallback): Promise<JobSummary> {
-  // Find first idle agent
-  const targetAgent: ConnectedAgent | null = Array.from(agents.values()).find(a => a.status === 'idle') || null;
+  const all = Array.from(agents.values());
+  // Prefer the agent registered by this user; fall back to any idle agent only when
+  // no userId is provided (legacy / non-auth setups).
+  const userAgent   = payload.userId ? all.find(a => a.status === 'idle' && a.userId === payload.userId) : null;
+  const targetAgent = userAgent ?? (payload.userId ? null : all.find(a => a.status === 'idle')) ?? null;
 
   if (!targetAgent) {
-    return Promise.reject(new Error('No idle remote execution agent available'));
+    const hint = payload.userId
+      ? `No idle Remote Agent found for your account. Please ensure YOUR agent is running on your machine. (AGENT_BUSY or NO_AGENT)`
+      : 'No idle remote execution agent available';
+    return Promise.reject(new Error(hint));
   }
 
   const jobId = generateJobId();
@@ -185,20 +214,40 @@ async function _dispatchRecordingToAgent(
   initScript: string,
   userId?: string,
 ): Promise<void> {
-  // Prefer the agent registered by THIS user; fall back to any idle agent only if
-  // no user-bound agent is available (single-user / legacy setups without NAT_USER_ID).
   const all = Array.from(agents.values());
-  const userAgent  = userId ? all.find(a => a.status === 'idle' && a.userId === userId) : null;
-  const agent = userAgent ?? all.find(a => a.status === 'idle');
-  if (!agent) {
-    const hint = userId
-      ? `No idle Remote Agent found for user ${userId}. Please ensure YOUR agent is running on your machine.`
-      : 'No idle Remote Agent connected — please ensure the agent is running on your local machine.';
-    throw new Error(hint);
+
+  if (userId) {
+    // ── User-bound routing (enforced) ──────────────────────────────────────────
+    // When a userId is known, we ONLY dispatch to that user's agent.
+    // Cross-user fallback is intentionally removed: User B's browser must never
+    // open on User A's machine, even if User A has an idle agent.
+    const userIdleAgent = all.find(a => a.status === 'idle' && a.userId === userId);
+    if (userIdleAgent) {
+      // Happy path — found the user's own idle agent
+      sessionAgentMap.set(sessionId.toUpperCase(), userIdleAgent.agentId);
+      userIdleAgent.ws.send(JSON.stringify({ type: 'start_recording', sessionId: sessionId.toUpperCase(), targetUrl, initScript }));
+      console.log(`[AgentWS] Delegated recording session ${sessionId} to agent ${userIdleAgent.agentId} (${userIdleAgent.hostname}) userId=${userId}`);
+      return;
+    }
+    // No idle agent for this user — distinguish "busy" from "not connected"
+    const userHasAnyAgent = all.some(a => a.userId === userId);
+    if (userHasAnyAgent) {
+      throw Object.assign(
+        new Error(`Your Remote Agent is busy. Please wait for it to finish.`),
+        { code: 'AGENT_BUSY' }
+      );
+    }
+    throw Object.assign(
+      new Error(`Your Remote Agent is not connected. Please download and start it from Settings.`),
+      { code: 'NO_AGENT', requiresAgent: true }
+    );
   }
-  if (!userAgent && userId) {
-    // Found an agent but it belongs to a different user — warn in server logs
-    console.warn(`[AgentWS] WARNING: routing session ${sessionId} for user ${userId} to agent ${agent.agentId} (userId=${agent.userId ?? 'unbound'}) — no user-specific agent found`);
+
+  // ── Legacy / no-auth routing ───────────────────────────────────────────────
+  // userId not available (pre-auth or local-only deployments): pick any idle agent.
+  const agent = all.find(a => a.status === 'idle');
+  if (!agent) {
+    throw new Error('No idle Remote Agent connected — please ensure the agent is running on your local machine.');
   }
 
   sessionAgentMap.set(sessionId.toUpperCase(), agent.agentId);

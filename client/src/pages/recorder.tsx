@@ -2590,9 +2590,12 @@ export default function RecorderPage() {
   const [videoUrl, setVideoUrl]           = useState<string | null>(null);
 
   // ─── Agent / environment status ──────────────────────────────────────────────
-  const [isAzureEnv,       setIsAzureEnv]       = useState(false);
-  const [agentConnected,   setAgentConnected]    = useState(false);
-  const [agentStatusLoaded, setAgentStatusLoaded] = useState(false);
+  const [isAzureEnv,         setIsAzureEnv]         = useState(false);
+  const [agentConnected,     setAgentConnected]      = useState(false);
+  const [yourAgentConnected, setYourAgentConnected]  = useState(false);
+  const [yourAgentIdle,      setYourAgentIdle]       = useState(false);
+  const [yourAgentHostname,  setYourAgentHostname]   = useState<string | null>(null);
+  const [agentStatusLoaded,  setAgentStatusLoaded]   = useState(false);
 
   useEffect(() => {
     const checkAgentStatus = () => {
@@ -2601,6 +2604,9 @@ export default function RecorderPage() {
         .then(d => {
           setIsAzureEnv(!!d.isAzure);
           setAgentConnected(!!d.agentConnected);
+          setYourAgentConnected(!!d.yourAgentConnected);
+          setYourAgentIdle(!!d.yourAgentIdle);
+          setYourAgentHostname(d.yourAgent?.hostname ?? null);
           setAgentStatusLoaded(true);
         })
         .catch(() => setAgentStatusLoaded(true));
@@ -3709,17 +3715,26 @@ export default function RecorderPage() {
     }
 
     // Start Playwright recorder
-    // On Azure: requires Remote Agent running locally. Show clear error if absent.
-    if (isAzureEnv && !agentConnected) {
-      alert(
-        '⚠️  Recording on Azure requires the NAT Remote Agent running on your local machine.\n\n' +
-        'Steps:\n' +
-        '  1. Open a terminal on your local machine\n' +
-        '  2. cd remote-agent\n' +
-        '  3. SERVER_URL=wss://nat20-astra.azurewebsites.net/ws/execution-agent npx tsx agent.ts\n\n' +
-        'The green "Agent Connected" indicator in the recorder will appear once it\'s ready.'
-      );
-      return;
+    // On Azure: requires THIS user's Remote Agent. Another user's agent must not be used.
+    if (isAzureEnv) {
+      if (!yourAgentConnected) {
+        alert(
+          '⚠️  Your Remote Agent is not connected.\n\n' +
+          'Your agent is pre-configured with your account credentials.\n\n' +
+          'Steps:\n' +
+          '  1. Go to Settings → Download Remote Agent\n' +
+          '  2. Extract the zip and run:  npx tsx agent.ts\n\n' +
+          'The "Your Agent Ready" indicator will appear once it\'s connected.'
+        );
+        return;
+      }
+      if (!yourAgentIdle) {
+        alert(
+          '⚠️  Your Remote Agent is currently busy.\n\n' +
+          'Please wait for the current recording to finish, then try again.'
+        );
+        return;
+      }
     }
 
     recordingWindowUrl.current = targetUrl;
@@ -5509,15 +5524,25 @@ export default function RecorderPage() {
                   </div>
                 )}
 
-                {/* Agent connection status banner (Azure-only) */}
+                {/* Agent connection status banner (Azure-only) — shows YOUR agent specifically */}
                 {agentStatusLoaded && isAzureEnv && (
                   <div className={`absolute top-3 right-3 z-20 flex items-center gap-2 backdrop-blur-sm border rounded-full px-3 py-1.5 text-[10px] font-semibold pointer-events-none ${
-                    agentConnected
+                    yourAgentIdle
                       ? 'bg-emerald-500/15 border-emerald-500/40 text-emerald-300'
+                      : yourAgentConnected
+                      ? 'bg-amber-500/15 border-amber-500/40 text-amber-300'
                       : 'bg-rose-500/15 border-rose-500/40 text-rose-300'
                   }`}>
-                    <div className={`w-1.5 h-1.5 rounded-full ${agentConnected ? 'bg-emerald-400 animate-pulse' : 'bg-rose-400'}`} />
-                    {agentConnected ? 'Agent Connected — Ready to Record Locally' : 'Agent Required — start remote-agent/agent.ts locally'}
+                    <div className={`w-1.5 h-1.5 rounded-full ${
+                      yourAgentIdle    ? 'bg-emerald-400 animate-pulse' :
+                      yourAgentConnected ? 'bg-amber-400' :
+                      'bg-rose-400'
+                    }`} />
+                    {yourAgentIdle
+                      ? `Your Agent Ready${yourAgentHostname ? ` — ${yourAgentHostname}` : ''}`
+                      : yourAgentConnected
+                      ? 'Your Agent Busy'
+                      : 'Your Agent Not Connected — Download from Settings'}
                   </div>
                 )}
 

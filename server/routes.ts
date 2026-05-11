@@ -50,7 +50,7 @@ import { generateAutomationScripts } from "./script-generator";
 import { captureHarFromUrl, importSwaggerSpec } from "./api-discovery";
 import { registerAutoTestRoutes } from "./autotest-routes";
 import { registerRecorderRoutes, setupRecorderWebSocket, registerPlaywrightRoutes, registerTestManagementRoutes } from "./recorder-ws";
-import { setupAgentWebSocket, dispatchJobToAgent, hasAvailableAgent, getAgentStatus, hasAgentConnected, type AgentJobPayload, type SseCallback } from "./agent-ws";
+import { setupAgentWebSocket, dispatchJobToAgent, hasAvailableAgent, getAgentStatus, getAgentStatusForUser, hasAgentConnected, type AgentJobPayload, type SseCallback } from "./agent-ws";
 import { setupWorkspaceAgentWebSocket, dispatchSyncProject, getWorkspaceAgentStatus } from "./workspace-agent-ws";
 import { ensureDefaultTenant, getAuthContext, requireAuth, generateDeviceCode, pollDeviceCode, approveDeviceCode } from "./auth-middleware";
 import { registerTestLibraryRoutes } from "./test-library";
@@ -10734,13 +10734,19 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   });
 
   // Recording-specific agent availability check + Azure environment flag.
-  // Used by the recorder UI to show the agent connection banner.
-  app.get('/api/recorder/agent-status', (_req, res) => {
+  // Returns both global pool info (for compatibility) and per-user agent status so
+  // the UI can show "Your Agent" specifically and block cross-user routing.
+  app.get('/api/recorder/agent-status', (req, res) => {
     const isAzure = !!(process.env.NAT_ENV === 'azure' || process.env.WEBSITE_SITE_NAME);
+    const userId  = String((req as any).user?.id || (req as any).session?.userId || '');
+    const userStatus = userId
+      ? getAgentStatusForUser(userId)
+      : { yourAgentConnected: false, yourAgentIdle: false, yourAgent: null };
     res.json({
       isAzure,
       agentConnected: hasAgentConnected(),
       ...getAgentStatus(),
+      ...userStatus,
     });
   });
 

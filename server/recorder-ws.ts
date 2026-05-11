@@ -1882,7 +1882,8 @@ export function registerRecorderRoutes(app: Express) {
         try { session.extensionWs.send(JSON.stringify({ type: 'pause_recording' })); } catch {}
       }
       try {
-        // Pass the session owner's userId so the dispatcher routes to THEIR agent
+        // Pass the session owner's userId so the dispatcher routes to THEIR agent.
+        // Throws with { code: 'AGENT_BUSY' | 'NO_AGENT' } when isolation would be violated.
         await _agentDispatcher(sid, targetUrl, PW_RECORDER_INIT, session.userId);
         session.status = 'recording';
         return res.json({
@@ -1892,7 +1893,15 @@ export function registerRecorderRoutes(app: Express) {
         });
       } catch (err: any) {
         agentRecordedSessions.delete(sid);
-        return res.status(500).json({ error: `Agent recording failed: ${err.message}` });
+        session.recordingSource = undefined;
+        // Preserve structured error codes from the dispatcher (AGENT_BUSY / NO_AGENT)
+        const code = err.code as string | undefined;
+        const status = code === 'AGENT_BUSY' ? 409 : code === 'NO_AGENT' ? 404 : 500;
+        return res.status(status).json({
+          error: err.message,
+          code: code || 'AGENT_ERROR',
+          requiresAgent: !!(err.requiresAgent),
+        });
       }
     }
 
