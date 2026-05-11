@@ -1,0 +1,55 @@
+name: Astra Generator — Unit Tests
+
+# Runs on every push and every pull-request against any branch.
+# No Claude API key needed: all tests are pure static analysis (AST, regex,
+# file-system checks). The Anthropic client is constructed but never called.
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+env:
+  # Prevent the postinstall hook from downloading Playwright browsers —
+  # these tests don't launch a browser.
+  PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+  # Provide a dummy DATABASE_URL so modules that import db.ts don't throw
+  # at module-load time. No actual DB operations are performed by the tests.
+  DATABASE_URL: 'postgresql://ci:ci@localhost:5432/ci_dummy'
+
+jobs:
+  astra-unit-tests:
+    name: Astra Generator Unit Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # ── Suite 1: Template integrity (D1 regression) ────────────────────────
+      # Verifies the four static template constants in script-writer-agent.ts
+      # have no premature JSDoc block-comment closes AND compile clean with tsc.
+      - name: Run template tests
+        run: npx tsx server/templates.test.ts
+
+      # ── Suite 2: Validator gate + generator unit tests ─────────────────────
+      # Covers all 13 validator gates plus helper functions:
+      #   Gate 01–13 (static analysis gates)
+      #   D2  getLocatorModuleId / getLocatorClassName
+      #   D3  buildActionManifest
+      #   D4  buildVerifyFunction signature
+      #   D5  fixDoubleNavigation (leading-nav removal)
+      #   D6  toNaturalLanguage (ARIA role + whitespace normalization)
+      #   D7  buildTestFilePrompt tcId derivation + Gate 13 Excel sync
+      #   C2  writeTempProjectDir + buildRetryPreamble pipeline
+      - name: Run validator + generator unit tests
+        run: npx tsx server/validator/validator.test.ts

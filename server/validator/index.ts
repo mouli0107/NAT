@@ -18,6 +18,9 @@ import { runGate07Fixtures } from './gates/gate-07-fixtures';
 import { runGate08Imports } from './gates/gate-08-imports';
 import { runGate09TestStructure } from './gates/gate-09-test-structure';
 import { runGate10ConfigValues } from './gates/gate-10-config-values';
+import { runGate11ActionSymbols } from './gates/gate-11-action-symbols';
+import { runGate12ActionSignatures } from './gates/gate-12-action-signatures';
+import { runGate13TestDataSync } from './gates/gate-13-test-data-sync';
 
 export type { ValidationResult, GateResult } from './types';
 export { GenerationValidationError } from './runner';
@@ -26,7 +29,7 @@ export async function validateGeneratedProject(outputDir: string): Promise<Valid
   // Gates 01 (TypeScript compile) requires node_modules to be present.
   // All other gates are pure static analysis — they run in parallel.
   const [
-    g01, g02, g03, g04, g05, g06, g07, g08, g09, g10
+    g01, g02, g03, g04, g05, g06, g07, g08, g09, g10, g11, g12, g13
   ]: GateResult[] = await Promise.all([
     runGate01Typescript(outputDir),
     runGate02PomPurity(outputDir),
@@ -38,9 +41,12 @@ export async function validateGeneratedProject(outputDir: string): Promise<Valid
     runGate08Imports(outputDir),
     runGate09TestStructure(outputDir),
     runGate10ConfigValues(outputDir),
+    runGate11ActionSymbols(outputDir),
+    runGate12ActionSignatures(outputDir),
+    runGate13TestDataSync(outputDir),
   ]);
 
-  const gates: GateResult[] = [g01, g02, g03, g04, g05, g06, g07, g08, g09, g10];
+  const gates: GateResult[] = [g01, g02, g03, g04, g05, g06, g07, g08, g09, g10, g11, g12, g13];
   const allErrors = gates.flatMap(g => g.errors);
   const blockers = allErrors.filter(e => e.severity === 'blocker');
   const majors   = allErrors.filter(e => e.severity === 'major');

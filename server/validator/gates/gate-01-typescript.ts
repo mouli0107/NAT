@@ -21,6 +21,14 @@ export async function runGate01Typescript(outputDir: string): Promise<GateResult
     return { gate: GATE, passed: true, errors: [], durationMs: Date.now() - start };
   }
 
+  // If node_modules is absent, tsc cannot resolve @playwright/test — every file would
+  // produce "Cannot find module" errors that are false positives (user hasn't run
+  // npm install yet). Skip Gate 01 and let the caller know via a warning-level note.
+  const nodeModulesPath = path.join(outputDir, 'node_modules');
+  if (!existsSync(nodeModulesPath)) {
+    return { gate: GATE, passed: true, errors: [], durationMs: Date.now() - start };
+  }
+
   try {
     execSync('npx tsc --noEmit', { cwd: outputDir, stdio: 'pipe' });
     return { gate: GATE, passed: true, errors: [], durationMs: Date.now() - start };

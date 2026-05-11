@@ -26,6 +26,8 @@ import Anthropic from '@anthropic-ai/sdk';
 import type { Browser, BrowserContext, Page as PwPage } from 'playwright';
 import { UNIVERSAL_HELPERS_CONTENT } from './universal-helpers-content';
 import { KENDO_HELPERS_CONTENT } from './kendo-helpers-content';
+// recorder-nl.ts is the canonical home of toNaturalLanguage — no import needed here
+// (it is re-exported below).
 import { isAzureEnvironment } from './utils/environment';
 import { pool } from './db';
 
@@ -228,108 +230,9 @@ export function handleAgentRecordingEvent(
 }
 
 // ─── Natural Language Converter ──────────────────────────────────────────────
-
-function toNaturalLanguage(event: RecordingEvent, stepNum: number): string | null {
-  const el = event.element as any;
-  const desc = el?.description || el?.label || el?.placeholder || 'element';
-  const label = el?.label || desc;
-
-  switch (event.type) {
-    case 'click': {
-      const tag = (el?.tag || '').toLowerCase();
-      if (tag === 'a') return `Step ${stepNum}: Click link "${desc}"`;
-      if (tag === 'button' || (tag === 'input' && (el?.inputType === 'submit' || el?.inputType === 'button')))
-        return `Step ${stepNum}: Click button "${desc}"`;
-      return `Step ${stepNum}: Click on "${desc}"`;
-    }
-    case 'input': {
-      const val = (event as any).value || '';
-      // Encode the best locator key so the script generator can resolve exact element
-      const locData = el?.locatorData as any;
-      const primary = locData?.primary;
-      const elemId   = el?.elementId || '';
-      const elemName = el?.elementName || '';
-      // Use the primary strategy's value as the locator hint (most precise available)
-      let locatorHint = '';
-      if (primary?.strategy === 'id' && elemId)          locatorHint = `[id=${elemId}]`;
-      else if (primary?.strategy === 'name' && elemName)  locatorHint = `[name=${elemName}]`;
-      else if (primary?.strategy === 'data-testid')       locatorHint = `[testid=${locData?.effectiveEl?.testId || ''}]`;
-      else if (elemId)                                     locatorHint = `[id=${elemId}]`;
-      else if (elemName)                                   locatorHint = `[name=${elemName}]`;
-      return `Step ${stepNum}: Enter "${val}" in the "${label}${locatorHint}" field`;
-    }
-    case 'check':
-    {
-      const rc = (event as any).rowContext;
-      return rc
-        ? `Step ${stepNum}: Check the "${label}" checkbox in row "${rc}"`
-        : `Step ${stepNum}: Check the "${label}" checkbox`;
-    }
-    case 'uncheck': {
-      const rc = (event as any).rowContext;
-      return rc
-        ? `Step ${stepNum}: Uncheck the "${label}" checkbox in row "${rc}"`
-        : `Step ${stepNum}: Uncheck the "${label}" checkbox`;
-    }
-    case 'select':
-      return `Step ${stepNum}: Select "${(event as any).displayText || (event as any).value}" from the "${label}" dropdown`;
-    // ── Kendo UI widget events ──────────────────────────────────────────────
-    case 'kendo_select':
-      return `Step ${stepNum}: Select "${(event as any).selectedText}" from the "${label}" Kendo ${(event as any).widgetType || 'dropdown'}`;
-    case 'kendo_date':
-      return `Step ${stepNum}: Select date "${(event as any).formattedValue || (event as any).value}" in the "${label}" date picker`;
-    case 'kendo_multiselect':
-      return `Step ${stepNum}: Select "${(event as any).selectedText}" in the "${label}" Kendo multi-select`;
-    case 'kendo_tab':
-      return `Step ${stepNum}: Click tab "${(event as any).tabText}"`;
-    case 'kendo_tree_toggle':
-      return `Step ${stepNum}: Toggle tree node "${(event as any).nodeText}"`;
-    case 'kendo_tree_select':
-      return `Step ${stepNum}: Select tree node "${(event as any).nodeText}"`;
-    case 'kendo_grid_sort':
-      return `Step ${stepNum}: Sort grid column "${(event as any).column}" ${(event as any).direction}`;
-    case 'kendo_grid_page':
-      return `Step ${stepNum}: Go to grid page ${(event as any).pageNumber}`;
-    case 'kendo_grid_edit':
-      return `Step ${stepNum}: Edit grid "${(event as any).gridId}" row ${((event as any).rowIndex || 0) + 1} column "${(event as any).columnField}" with value "${(event as any).value}"`;
-    case 'navigation': {
-      try {
-        const path = new URL((event as any).toUrl || event.url).pathname;
-        return `Step ${stepNum}: Navigate to ${path}`;
-      } catch {
-        return `Step ${stepNum}: Navigate to ${(event as any).toUrl || event.url}`;
-      }
-    }
-    case 'page_load': {
-      // Skip internal browser pages — they are not meaningful steps
-      const pageUrl = event.url || '';
-      if (!pageUrl || pageUrl.startsWith('about:') || pageUrl.startsWith('data:') || pageUrl === 'srcdoc') return null;
-      // Skip third-party page_load events — these are background redirects
-      // from tracking/analytics/chat tools (Intellimize, Qualified, etc.)
-      // They are NOT user-initiated navigations and should never appear in NL steps
-      const sessionStartUrl = (event as any).sessionStartUrl as string | undefined;
-      if (sessionStartUrl) {
-        try {
-          const startOrigin = new URL(sessionStartUrl).hostname.split('.').slice(-2).join('.');
-          const loadOrigin  = new URL(pageUrl).hostname.split('.').slice(-2).join('.');
-          if (loadOrigin !== startOrigin) return null; // third-party — skip silently
-        } catch {}
-      }
-      return `Step ${stepNum}: Page loaded — "${event.pageTitle || pageUrl}"`;
-    }
-    case 'api_call': {
-      const method = (event as any).method || 'GET';
-      const status = (event as any).responseStatus || '';
-      let apiPath = '';
-      try { apiPath = new URL((event as any).url || '').pathname; } catch { apiPath = (event as any).url || ''; }
-      return `Step ${stepNum}: [API] ${method} ${apiPath} → ${status}`;
-    }
-    case 'screenshot':
-      return null; // screenshots don't generate NL steps
-    default:
-      return null;
-  }
-}
+// Logic lives in recorder-nl.ts (no database dependency) so it can be
+// imported by tests without pulling in Express / db / Playwright.
+export { toNaturalLanguage } from './recorder-nl.js';
 
 // ─── SSE Helper ───────────────────────────────────────────────────────────────
 
@@ -1166,7 +1069,9 @@ export function registerRecorderRoutes(app: Express) {
       effectiveEl: {
         tag: effTag, id: eff.id || '', name: nm, placeholder: ph,
         ariaLabel: ariaLbl, text: effText, type: effType,
-        cssPath: eff.id && !_isGen(eff.id) ? '#' + eff.id : null
+        cssPath: eff.id && !_isGen(eff.id) ? '#' + eff.id : null,
+        // D6: capture ARIA role so toNaturalLanguage can emit the correct semantic label
+        ariaRole: (eff.getAttribute && eff.getAttribute('role')) || ''
       }
     };
   }
@@ -1412,18 +1317,25 @@ export function registerRecorderRoutes(app: Express) {
     _lastClickKey = key;
     _lastClickTime = now;
 
-    var locData = _getAllLocators(el);
-    var eff     = locData.effectiveEl;
-    var desc    = eff.ariaLabel || eff.text || eff.placeholder || eff.id || eff.name || eff.tag;
-    var tag     = eff.tag;
-    var isLink  = tag === 'a';
+    var locData  = _getAllLocators(el);
+    var eff      = locData.effectiveEl;
+    // D6: normalize whitespace (removes stray double-spaces from textContent)
+    var rawDesc  = eff.ariaLabel || eff.text || eff.placeholder || eff.id || eff.name || eff.tag;
+    var desc     = rawDesc.replace(/\s+/g, ' ').trim();
+    var tag      = eff.tag;
+    // D6: ARIA role takes precedence over HTML tag for semantic labelling
+    var ariaRole = eff.ariaRole || '';
+    var isLink   = tag === 'a'      || ariaRole === 'link';
+    var isButton = tag === 'button' || ariaRole === 'button'
+                || (tag === 'input' && (eff.type === 'submit' || eff.type === 'button'));
 
     window.__devxqe_send({
       type: 'click',
       url: window.location.href,
       pageTitle: document.title,
       element: {
-        tag: tag, description: desc, label: eff.ariaLabel || desc, isLink: isLink,
+        tag: tag, description: desc, label: eff.ariaLabel || desc,
+        isLink: isLink, isButton: isButton, ariaRole: ariaRole,
         elementId: eff.id, elementName: eff.name, placeholder: eff.placeholder,
         locatorData: locData
       }
@@ -2984,13 +2896,74 @@ export function registerPlaywrightRoutes(app: Express) {
     };
 
     try {
-      const { generateFramework } = await import('./script-writer-agent.js');
-      for await (const event of generateFramework(
-        nlSteps, startUrl || '', testName || 'Recorded Flow',
-        events || [], projectOutputDir, tcId
-      )) {
-        send(event);
+      const { generateFramework, writeTempProjectDir, buildRetryPreamble } = await import('./script-writer-agent.js');
+      const { validateGeneratedProject } = await import('./validator/index.js');
+
+      const MAX_GEN_RETRIES = 3;
+      let retryContext: string | undefined;
+
+      for (let attempt = 1; attempt <= MAX_GEN_RETRIES; attempt++) {
+        // ── Collect all generated files for this attempt ────────────────────
+        const collectedFiles: Array<{ path: string; content: string; type: string }> = [];
+
+        for await (const event of generateFramework(
+          nlSteps, startUrl || '', testName || 'Recorded Flow',
+          events || [], projectOutputDir, tcId, retryContext
+        )) {
+          if (event.type === 'file') {
+            // Buffer file events — stream them only after validation passes
+            collectedFiles.push(event.file);
+          } else {
+            // Status/thinking/error events stream immediately for live UX
+            send(event);
+          }
+        }
+
+        // ── Validate against temp dir (Gates 01 + 13 skip automatically) ───
+        let tmpDir: string | undefined;
+        let validationPassed = true;
+
+        try {
+          tmpDir = writeTempProjectDir(collectedFiles as any);
+          const result = await validateGeneratedProject(tmpDir);
+          validationPassed = result.passed;
+
+          if (!validationPassed && attempt < MAX_GEN_RETRIES) {
+            const failedGates = result.gates
+              .filter(g => !g.passed)
+              .map(g => `${g.gate}(${g.errors.length})`).join(', ');
+            send({
+              type: 'status',
+              message: `🔄 Attempt ${attempt}/${MAX_GEN_RETRIES} validation failed ` +
+                `[${result.blockers.length} blockers, ${result.majors.length} majors — ${failedGates}] — retrying with fixes...`,
+            });
+            retryContext = result.promptForRetry;
+          } else if (!validationPassed) {
+            send({
+              type: 'status',
+              message: `⚠️ Validation still failing after ${MAX_GEN_RETRIES} attempts — delivering best-effort output`,
+            });
+          }
+        } catch (valErr: any) {
+          // Validation infrastructure error — non-fatal, deliver files as-is
+          console.warn(`[generate-framework] Validation error on attempt ${attempt}: ${valErr.message}`);
+          validationPassed = true; // treat as pass so we break out
+        } finally {
+          if (tmpDir) {
+            try { fs.rmSync(tmpDir, { recursive: true, force: true }); } catch {}
+          }
+        }
+
+        // ── Stream the buffered file events ─────────────────────────────────
+        if (validationPassed || attempt === MAX_GEN_RETRIES) {
+          for (const file of collectedFiles) {
+            send({ type: 'file', file });
+          }
+          break; // done — exit retry loop
+        }
+        // else: retry — collectedFiles are discarded, retryContext is set
       }
+
       send({ type: 'done' });
     } catch (err: any) {
       send({ type: 'error', message: err.message });
@@ -3417,7 +3390,50 @@ export default defineConfig({
         console.warn(`[save-ai-framework] DB project registration skipped: ${dbErr.message}`);
       }
 
-      res.json({ projectName: safeName, projectDir, written, skipped, merged });
+      // ── C1 Publish Gate: post-write static analysis ──────────────────────────
+      // Run all validator gates against the files just written to disk.
+      // Gate 01 (tsc) is skipped automatically when node_modules is absent.
+      // Blockers and majors are logged to console AND returned in the response
+      // so the client can surface them to the user before they download the zip.
+      let validation: { passed: boolean; blockers: number; majors: number; errors: Array<{ rule: string; file: string; severity: string; found: string }> } = {
+        passed: true, blockers: 0, majors: 0, errors: [],
+      };
+      try {
+        const { validateGeneratedProject } = await import('./validator/index.js');
+        const result = await validateGeneratedProject(projectDir);
+        const errors = [...result.blockers, ...result.majors].map(e => ({
+          rule:     e.rule,
+          file:     e.file || '',
+          severity: e.severity,
+          found:    e.found || '',
+        }));
+        validation = { passed: result.passed, blockers: result.blockers.length, majors: result.majors.length, errors };
+
+        if (!result.passed) {
+          const summary = result.gates
+            .filter(g => !g.passed)
+            .map(g => `${g.gate}(${g.errors.length})`)
+            .join(', ');
+          console.warn(
+            `[save-ai-framework] ⚠️  Publish gate FAILED for "${safeName}" — ` +
+            `${result.blockers.length} blockers, ${result.majors.length} majors. ` +
+            `Failed gates: [${summary}]`
+          );
+          for (const e of result.blockers) {
+            console.warn(`  [BLOCKER] ${e.rule} in ${e.file}: ${e.found}`);
+          }
+          for (const e of result.majors) {
+            console.warn(`  [MAJOR]   ${e.rule} in ${e.file}: ${e.found}`);
+          }
+        } else {
+          console.log(`[save-ai-framework] ✅ Publish gate PASSED for "${safeName}"`);
+        }
+      } catch (valErr: any) {
+        console.warn(`[save-ai-framework] Publish gate threw unexpectedly: ${valErr.message}`);
+        // Non-fatal — files are saved, gate error should not block the response
+      }
+
+      res.json({ projectName: safeName, projectDir, written, skipped, merged, validation });
     } catch (err: any) {
       res.status(500).json({ error: err.message });
     }
