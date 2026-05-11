@@ -1,0 +1,46 @@
+{
+  "_comment": "Canonical nousinfosystems.com generated project — C1 regression gate.\nUsed by server/fixtures/typecheck-canonical.ts to run `tsc --noEmit` in CI without calling the Claude API.\nUpdate this fixture by regenerating a Nous project in NAT 2.0 and replacing the generatedFiles below.",
+
+  "recording": {
+    "startUrl": "https://www.nousinfosystems.com/",
+    "nlSteps": [
+      "Navigate to https://www.nousinfosystems.com/",
+      "Verify page heading is visible",
+      "Verify navigation menu is present",
+      "Click Contact Us link",
+      "Verify URL contains contact"
+    ],
+    "testName": "TC001_VerifyHomePage",
+    "tcId": "TC001",
+    "moduleName": "Home",
+    "projectName": "Nous"
+  },
+
+  "generatedFiles": [
+    {
+      "path": "locators/NousinfosystemsHomePage.locators.ts",
+      "type": "pom",
+      "content": "import type { Page } from '@playwright/test';\n\n/**\n * Object Repository — NousinfosystemsHome page\n * All selectors live here. Import this from pages/*.ts only — never from tests.\n */\nexport const NousinfosystemsHomePageLocators = {\n  heroHeading: (page: Page) =>\n    page.locator('h1').first(),\n\n  servicesSection: (page: Page) =>\n    page.locator('section').nth(1),\n\n  contactUsLink: (page: Page) =>\n    page.getByRole('link', { name: /contact.*us/i }).first(),\n\n  aboutUsLink: (page: Page) =>\n    page.getByRole('link', { name: /about.*us/i }).first(),\n\n  getStartedButton: (page: Page) =>\n    page.getByRole('button', { name: /get.*started/i }).first(),\n\n  navigationMenu: (page: Page) =>\n    page.locator('nav').first(),\n\n  logoLink: (page: Page) =>\n    page.locator('header a').first(),\n};\n"
+    },
+    {
+      "path": "pages/NousinfosystemsHomePage.ts",
+      "type": "pom",
+      "content": "import type { Page } from '@playwright/test';\nimport { NousinfosystemsHomePageLocators } from '@locators/NousinfosystemsHomePage.locators';\n\n/**\n * Page Object — NousinfosystemsHome\n * Methods only — no assertions, no test logic.\n * Instantiate once per test; pass `page` from the Playwright fixture.\n */\nexport class NousinfosystemsHomePage {\n  constructor(private readonly page: Page) {}\n\n  /** Click the primary Contact Us navigation link */\n  async clickContactUs(): Promise<void> {\n    await NousinfosystemsHomePageLocators.contactUsLink(this.page).click();\n  }\n\n  /** Click the About Us navigation link */\n  async clickAboutUs(): Promise<void> {\n    await NousinfosystemsHomePageLocators.aboutUsLink(this.page).click();\n  }\n\n  /** Click the Get Started CTA button on the hero section */\n  async clickGetStarted(): Promise<void> {\n    await NousinfosystemsHomePageLocators.getStartedButton(this.page).click();\n  }\n\n  /** Returns true when the H1 hero heading is visible on screen */\n  async isHeroHeadingVisible(): Promise<boolean> {\n    return NousinfosystemsHomePageLocators.heroHeading(this.page).isVisible();\n  }\n\n  /** Returns the text content of the H1 hero heading */\n  async getHeroHeadingText(): Promise<string> {\n    return NousinfosystemsHomePageLocators.heroHeading(this.page).innerText();\n  }\n\n  /** Returns true when the top navigation bar is visible */\n  async isNavigationVisible(): Promise<boolean> {\n    return NousinfosystemsHomePageLocators.navigationMenu(this.page).isVisible();\n  }\n}\n"
+    },
+    {
+      "path": "actions/business/nousinfosystemshome.actions.ts",
+      "type": "business_action",
+      "content": "import type { Page } from '@playwright/test';\nimport { NousinfosystemsHomePage } from '@pages/NousinfosystemsHomePage';\nimport { navigateTo, waitForNetworkIdle } from '@actions/generic/browser.actions';\nimport { verifyText, verifyUrl } from '@actions/generic/assert.actions';\nimport type { TestDataRow } from '@fixtures/excel-reader';\n\n/**\n * Navigate to the Nousinfosystems home page using the baseUrl from test data.\n * Waits for the network to settle before returning.\n */\nexport async function navigateToHomePage(page: Page, _data: TestDataRow): Promise<void> {\n  await navigateTo(page, _data.baseUrl || 'https://www.nousinfosystems.com/');\n  await waitForNetworkIdle(page);\n}\n\n/**\n * Verify the home page has loaded correctly:\n * - Page contains 'Nousinfosystems' text\n * - Hero heading element is visible\n * - Navigation bar is visible\n */\nexport async function verifyNousinfosystemshome(page: Page, _data: TestDataRow): Promise<void> {\n  const pg = new NousinfosystemsHomePage(page);\n  await verifyText(page, 'Nousinfosystems');\n  const headingVisible = await pg.isHeroHeadingVisible();\n  if (!headingVisible) throw new Error('Hero heading not visible on home page');\n  const navVisible = await pg.isNavigationVisible();\n  if (!navVisible) throw new Error('Navigation menu not visible on home page');\n}\n\n/**\n * Click the Contact Us link and verify navigation to the contact page.\n */\nexport async function clickContactUsAndVerify(page: Page, _data: TestDataRow): Promise<void> {\n  const pg = new NousinfosystemsHomePage(page);\n  await pg.clickContactUs();\n  await waitForNetworkIdle(page);\n  await verifyUrl(page, 'contact');\n}\n"
+    },
+    {
+      "path": "tests/Home/TC001_VerifyHomePage.spec.ts",
+      "type": "test",
+      "content": "import { test } from '@playwright/test';\nimport {\n  navigateToHomePage,\n  verifyNousinfosystemshome,\n} from '@actions/business/nousinfosystemshome.actions';\nimport { getTestData } from '@fixtures/excel-reader';\nimport { prepareSite } from '@helpers/universal';\n\ntest.describe('TC001 — Verify Home Page', () => {\n  test('verify nousinfosystems home page loads and hero heading is visible', async ({ page }) => {\n    const data = getTestData('TC001');\n    await navigateToHomePage(page, data);\n    await prepareSite(page);\n    await verifyNousinfosystemshome(page, data);\n  });\n});\n"
+    },
+    {
+      "path": "playwright.config.ts",
+      "type": "config",
+      "content": "import { defineConfig, devices } from '@playwright/test';\nimport * as dotenv from 'dotenv';\ndotenv.config();\n\nexport default defineConfig({\n  testDir: './tests',\n  fullyParallel: true,\n  retries: process.env.CI ? 2 : 1,\n  timeout: 60000,\n  expect: { timeout: 10000 },\n  use: {\n    headless: process.env.CI ? true : false,\n    baseURL: process.env.BASE_URL || 'https://www.nousinfosystems.com/',\n    viewport: { width: 1280, height: 720 },\n    screenshot: 'only-on-failure',\n    video: 'retain-on-failure',\n    trace: 'retain-on-failure',\n  },\n  reporter: [\n    ['html', { open: 'never', outputFolder: 'playwright-report' }],\n    ['junit', { outputFile: 'test-results/results.xml' }],\n    ['allure-playwright', { detail: true, outputFolder: 'allure-results', suiteTitle: false }],\n    ['list'],\n  ],\n  outputDir: 'test-results',\n  projects: [\n    {\n      name: 'chromium',\n      use: { ...devices['Desktop Chrome'] },\n    },\n  ],\n});\n"
+    }
+  ]
+}

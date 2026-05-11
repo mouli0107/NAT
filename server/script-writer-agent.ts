@@ -500,7 +500,7 @@ export async function screenshotOnFailure(page: Page, label: string): Promise<st
 }
 `;
 
-function buildPlaywrightConfig(hasAuth: boolean, startUrl: string): string {
+export function buildPlaywrightConfig(hasAuth: boolean, startUrl: string): string {
   // Shared config block used in both auth and non-auth variants
   const sharedConfig = `  testDir: './tests',
   fullyParallel: true,
@@ -567,7 +567,7 @@ ${sharedConfig}
 `;
 }
 
-const PACKAGE_JSON = `{
+export const PACKAGE_JSON = `{
   "name": "recorded-test-framework",
   "version": "1.0.0",
   "description": "Auto-generated POM test framework from NAT 2.0 Recording Studio",
@@ -598,7 +598,7 @@ const PACKAGE_JSON = `{
 // ─── Excel Test Data Reader (generated into fixtures/excel-reader.ts) ─────────
 // This file is emitted ONCE per project and shared across ALL test cases.
 // Each TC gets its own row in fixtures/test-data.xlsx keyed by tcId.
-const EXCEL_READER_FILE = `/**
+export const EXCEL_READER_FILE = `/**
  * Excel Test Data Reader — fixtures/excel-reader.ts
  * ──────────────────────────────────────────────────────────────────────────────
  * All test data lives in fixtures/test-data.xlsx — NOT in TypeScript files.
@@ -762,7 +762,7 @@ export async function prepareSite(page: Page): Promise<void> {
 }
 `;
 
-const TSCONFIG_JSON = `{
+export const TSCONFIG_JSON = `{
   "compilerOptions": {
     "target": "ES2020",
     "module": "commonjs",

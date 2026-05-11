@@ -1,8 +1,13 @@
 name: Astra Generator — Unit Tests
 
 # Runs on every push and every pull-request against any branch.
-# No Claude API key needed: all tests are pure static analysis (AST, regex,
-# file-system checks). The Anthropic client is constructed but never called.
+# No real Claude API key needed: all tests are pure static analysis (AST, regex,
+# file-system checks, tsc). The Anthropic client is constructed but never called.
+#
+# Three test suites:
+#   Suite 1: Template integrity (D1 regression) — templates.test.ts
+#   Suite 2: Validator + generator unit tests   — validator/validator.test.ts
+#   Suite 3: generate-and-typecheck (C1 gate)   — fixtures/typecheck-canonical.ts
 on:
   push:
     branches: ['**']
@@ -53,3 +58,32 @@ jobs:
       #   C2  writeTempProjectDir + buildRetryPreamble pipeline
       - name: Run validator + generator unit tests
         run: npx tsx server/validator/validator.test.ts
+
+      # ── Suite 3: generate-and-typecheck (C1 gate) ──────────────────────────
+      # Assembles the canonical nousinfosystems.com project from committed static
+      # templates + the pre-generated fixture snapshot, then runs tsc --noEmit.
+      # No Claude API key needed — the AI-generated portions are stored in
+      # server/fixtures/recordings/canonical-nousinfosystems.json.
+      #
+      # This gate catches TypeScript regressions introduced by generator changes.
+      # To update the snapshot after a generator fix:
+      #   1. Generate a fresh Nous project in NAT 2.0
+      #   2. Copy the AI-generated files into canonical-nousinfosystems.json
+      #   3. Commit — this step will go green
+      - name: generate-and-typecheck
+        run: npx tsx server/fixtures/typecheck-canonical.ts
+        env:
+          # Provide a dummy key so the Anthropic client (constructed at module load
+          # time in script-writer-agent.ts) does not throw on import. No API calls
+          # are made — the typecheck script uses only the exported static constants.
+          ANTHROPIC_API_KEY: 'ci-dummy-key'
+          DATABASE_URL: 'postgresql://ci:ci@localhost:5432/ci_dummy'
+        continue-on-error: false
+
+      - name: Upload canonical project on typecheck failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canonical-typecheck-failure
+          path: /tmp/nat20-canonical-*
+          retention-days: 3

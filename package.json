@@ -14,6 +14,7 @@
     "test:merger": "vitest run server/lib/merger/__tests__/merger.test.ts",
     "test:unit": "vitest run",
     "test:astra": "npx tsx server/templates.test.ts && npx tsx server/validator/validator.test.ts",
+    "test:typecheck": "npx tsx server/fixtures/typecheck-canonical.ts",
     "db:push": "drizzle-kit push",
     "postinstall": "node -e \"if(process.env.PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD!=='1')require('child_process').execSync('npx playwright install chromium',{stdio:'inherit'})\" || true"
   },
