@@ -3108,6 +3108,9 @@ export default function RecorderPage() {
       if (hasReceivedStop.current) return;
       hasReceivedStop.current = true;
       setPwLiveFrame(null);
+      // Reset Playwright recording state so the button returns to "Record with Playwright"
+      // rather than staying stuck in "Stop" mode after an unexpected agent disconnect.
+      setIsPlaywrightRecording(false);
     });
 
     sse.addEventListener("recording_completed", () => {
