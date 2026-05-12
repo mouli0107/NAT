@@ -217,24 +217,24 @@ function ProjectTree({
   const pct           = totalCount > 0 ? Math.round((recordedCount / totalCount) * 100) : 0;
 
   return (
-    <div className="w-60 flex-shrink-0 border-r border-slate-200 flex flex-col bg-slate-900 overflow-hidden">
+    <div className="w-60 flex-shrink-0 border-r border-slate-200 flex flex-col bg-white overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-700/60 flex-shrink-0">
+      <div className="px-4 py-3 border-b border-slate-200 flex-shrink-0">
         <div className="flex items-center gap-2">
-          <span className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Framework Tree</span>
+          <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-widest">Framework Tree</span>
         </div>
       </div>
 
       {/* Tree */}
-      <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.15) transparent' }}>
+      <div className="flex-1 overflow-auto px-2 py-2 space-y-0.5" style={{ scrollbarWidth: 'thin', scrollbarColor: 'rgba(148,163,184,0.3) transparent' }}>
         {loading && (
-          <div className="text-xs text-slate-500 text-center py-6">Loading…</div>
+          <div className="text-xs text-slate-400 text-center py-6">Loading…</div>
         )}
 
         {!loading && modules.length === 0 && (
-          <div className="text-xs text-slate-500 text-center py-6 px-3">
+          <div className="text-xs text-slate-400 text-center py-6 px-3">
             No modules yet.<br />
-            <span className="text-slate-600">Click + Add Module to start.</span>
+            <span className="text-slate-500">Click + Add Module to start.</span>
           </div>
         )}
 
@@ -250,18 +250,18 @@ function ProjectTree({
                 onClick={() => { toggleModule(mod.id); onSelectModule(isSelMod && isExpanded ? null : mod); }}
                 className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer text-xs transition-colors ${
                   isSelMod && !selectedFeatureId
-                    ? 'bg-indigo-500/20 text-indigo-300'
-                    : 'hover:bg-white/5 text-slate-300'
+                    ? 'bg-indigo-50 text-indigo-600'
+                    : 'hover:bg-slate-50 text-slate-700'
                 }`}
               >
-                <span className="text-slate-500 w-3 text-center transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
+                <span className="text-slate-400 w-3 text-center transition-transform" style={{ transform: isExpanded ? 'rotate(90deg)' : '' }}>
                   {mod.features.length > 0 ? '▶' : '·'}
                 </span>
-                <span className="text-slate-400">📁</span>
+                <span className="text-slate-500">📁</span>
                 <span className="flex-1 font-medium truncate">{mod.name}</span>
                 {/* Progress ring — simple badge */}
                 <span className={`text-[9px] px-1.5 py-0.5 rounded-full font-bold flex-shrink-0 ${
-                  modCount > 0 ? 'bg-indigo-500/20 text-indigo-300' : 'bg-white/5 text-slate-500'
+                  modCount > 0 ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'
                 }`}>
                   {modCount}
                 </span>
@@ -277,14 +277,14 @@ function ProjectTree({
                     onClick={() => onSelectFeature(isSel ? null : feat, mod)}
                     className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg cursor-pointer text-[11px] ml-4 transition-colors ${
                       isSel
-                        ? 'bg-indigo-500/20 text-indigo-300 border-l-2 border-indigo-400 ml-3'
-                        : 'hover:bg-white/5 text-slate-400'
+                        ? 'bg-indigo-50 text-indigo-600 border-l-2 border-indigo-400 ml-3'
+                        : 'hover:bg-slate-50 text-slate-500'
                     }`}
                   >
-                    <span className="text-slate-600">↳</span>
+                    <span className="text-slate-400">↳</span>
                     <span className="flex-1 truncate">{feat.name}</span>
                     <span className={`text-[9px] px-1 py-0.5 rounded-full ${
-                      featCount > 0 ? 'bg-indigo-500/15 text-indigo-400' : 'text-slate-600'
+                      featCount > 0 ? 'bg-indigo-100 text-indigo-500' : 'text-slate-400'
                     }`}>
                       {featCount}
                     </span>
@@ -297,11 +297,11 @@ function ProjectTree({
       </div>
 
       {/* Progress bar + Add Module */}
-      <div className="px-3 py-2 border-t border-slate-700/50 flex-shrink-0">
-        <div className="text-[10px] text-slate-500 mb-1">
+      <div className="px-3 py-2 border-t border-slate-200 flex-shrink-0">
+        <div className="text-[10px] text-slate-400 mb-1">
           {recordedCount} spec{recordedCount !== 1 ? 's' : ''} recorded
         </div>
-        <div className="w-full bg-slate-700 rounded-full h-1.5 mb-2">
+        <div className="w-full bg-slate-200 rounded-full h-1.5 mb-2">
           <div
             className="bg-indigo-500 h-1.5 rounded-full transition-all"
             style={{ width: `${pct}%` }}
@@ -309,7 +309,7 @@ function ProjectTree({
         </div>
         <button
           onClick={onAddModule}
-          className="w-full px-3 py-1.5 rounded-lg border border-slate-700 text-slate-400 text-xs hover:border-indigo-500 hover:text-indigo-400 transition-colors text-left"
+          className="w-full px-3 py-1.5 rounded-lg border border-slate-300 text-slate-500 text-xs hover:border-indigo-400 hover:text-indigo-600 transition-colors text-left"
         >
           + Add Module
         </button>
