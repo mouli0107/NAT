@@ -1436,7 +1436,9 @@ export function registerRecorderRoutes(app: Express) {
   // This is far more reliable than DOM polling — it fires immediately when the
   // user selects an option, regardless of Kendo version or animation timing.
   // Re-scans periodically to catch dynamically created widgets (SPA pages).
-  (function initKendoListener() {
+  // Wrapped in try-catch: a failure here must never prevent __dxqe_setAssertMode
+  // (defined below) from being registered — assert mode is independent of Kendo.
+  try { (function initKendoListener() {
     var _boundWidgets = new Set();
     var _lastEmitKey = '';
     var _lastEmitTime = 0;
@@ -1706,7 +1708,12 @@ export function registerRecorderRoutes(app: Express) {
         }
         if (hasNewWidgets) _debouncedBind();
       });
-      observer.observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-role'] });
+      // document.body can be null when addInitScript runs before the parser creates <body>.
+      // Fall back to documentElement (always exists) so the observer still works.
+      var _observeRoot = document.body || document.documentElement;
+      if (_observeRoot) {
+        observer.observe(_observeRoot, { childList: true, subtree: true, attributes: true, attributeFilter: ['data-role'] });
+      }
     }
 
     // Also re-bind after radio/checkbox changes (enable/disable Kendo widgets)
@@ -1717,7 +1724,7 @@ export function registerRecorderRoutes(app: Express) {
         setTimeout(_debouncedBind, 1500);
       }
     }, true);
-  })();
+  })(); } catch(e) { console.warn('[NAT-Recorder] initKendoListener error (non-fatal):', e && e.message); }
 
   // ── SPA navigation (pushState / replaceState) ─────────────────────────────
   var _lastUrl = window.location.href;
