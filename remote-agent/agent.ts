@@ -678,14 +678,23 @@ function connect(): void {
         // on target sites that block eval().  Activates on ALL open pages/popups.
         const pagesOn = recordingContext ? recordingContext.pages()
                       : (recordingPage ? [recordingPage] : []);
+        log(`assert_mode_on: found ${pagesOn.length} page(s) in context`);
         let evaluatedOn = 0;
         for (const p of pagesOn) {
           if (!p.isClosed()) {
             evaluatedOn++;
+            const pageUrl = p.url();
             p.evaluate(() => {
               const w = window as any;
-              if (typeof w.__dxqe_setAssertMode === 'function') w.__dxqe_setAssertMode(true);
-            }).catch(err => log(`assert_mode_on evaluate failed on page: ${err.message}`));
+              const defined = typeof w.__dxqe_setAssertMode === 'function';
+              if (defined) {
+                w.__dxqe_setAssertMode(true);
+                return { defined: true, cursor: document.body?.style?.cursor };
+              }
+              return { defined: false };
+            }).then(result => {
+              log(`assert_mode_on [${pageUrl}]: __dxqe_setAssertMode defined=${(result as any)?.defined} cursor=${(result as any)?.cursor}`);
+            }).catch(err => log(`assert_mode_on evaluate failed [${pageUrl}]: ${err.message}`));
           }
         }
         if (evaluatedOn === 0) log('assert_mode_on: no active recording pages');
