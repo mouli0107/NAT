@@ -57,8 +57,8 @@ if (!process.env.SERVER_URL) {
 console.log(`[RemoteAgent] Target server: ${SERVER_URL}`);
 
 const AGENT_ID      = process.env.AGENT_ID      || ('agent-' + randomBytes(4).toString('hex'));
-const NAT_USER_ID   = process.env.NAT_USER_ID   || '';
-const NAT_USER_EMAIL= process.env.NAT_USER_EMAIL || '';
+const NAT_USER_ID   = (process.env.NAT_USER_ID   || '').trim();
+const NAT_USER_EMAIL= (process.env.NAT_USER_EMAIL || '').trim();
 
 if (NAT_USER_ID) {
   console.log(`[RemoteAgent] User identity: ${NAT_USER_EMAIL || NAT_USER_ID} (${NAT_USER_ID})`);

@@ -445,9 +445,9 @@ export function setupAgentWebSocket(server: Server): WebSocketServer {
           return;
         }
 
-        const agentId   = (msg.agentId   as string) || ('agent-' + randomBytes(4).toString('hex'));
-        const userId    = (msg.userId    as string) || undefined;
-        const userEmail = (msg.userEmail as string) || undefined;
+        const agentId   = ((msg.agentId   as string) || ('agent-' + randomBytes(4).toString('hex'))).trim();
+        const userId    = ((msg.userId    as string | undefined) || undefined)?.trim() || undefined;
+        const userEmail = ((msg.userEmail as string | undefined) || undefined)?.trim() || undefined;
         agent = {
           agentId,
           hostname: (msg.hostname as string) || 'unknown',
