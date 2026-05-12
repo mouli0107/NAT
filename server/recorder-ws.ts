@@ -1086,6 +1086,86 @@ export function registerRecorderRoutes(app: Express) {
     return null;
   }
 
+  // ── Assert Mode ──────────────────────────────────────────────────────────────
+  // Defined HERE, near the TOP of the script, so it is always available even
+  // if anything later in the init script (Kendo detection, SPA nav, etc.) throws.
+  // __dxqe_setAssertMode is called by the Remote Agent via page.evaluate() when
+  // the user clicks "Add Assert" in the NAT Azure UI.
+  function _getAssertElInfo(el) {
+    var tag  = el.tagName.toLowerCase();
+    var text = (el.innerText || el.textContent || '').trim().replace(/\s+/g, ' ').slice(0, 120);
+    var val  = el.value || '';
+    var ph   = el.getAttribute('placeholder') || '';
+    var al   = el.getAttribute('aria-label')  || '';
+    var nm   = el.getAttribute('name')        || '';
+    var tp   = el.getAttribute('type')        || '';
+    var lbl  = al;
+    if (!lbl && el.id) { var lb = document.querySelector('label[for="' + el.id + '"]'); if (lb) lbl = (lb.textContent || '').trim(); }
+    if (!lbl) { var lb2 = el.closest && el.closest('label'); if (lb2) lbl = (lb2.textContent || '').replace(text, '').trim(); }
+    if (!lbl) lbl = text.slice(0, 60);
+    if (!lbl) lbl = ph;
+    if (!lbl) lbl = nm;
+    if (!lbl) lbl = tp ? tp + ' ' + tag : tag;
+    var isInp = ['input','textarea','select'].includes(tag);
+    var isCb  = tp === 'checkbox' || tp === 'radio';
+    var attrs = {};
+    ['href','src','alt','title','data-testid','id','role'].forEach(function(a) { var v = el.getAttribute(a); if (v) attrs[a] = v; });
+    return { tag: tag, text: text, value: val, placeholder: ph, ariaLabel: al,
+             name: nm, type: tp, label: lbl, isInput: isInp, isCheckbox: isCb,
+             isChecked: el.checked || false, attrs: attrs };
+  }
+
+  window.__dxqe_setAssertMode = function(on) {
+    if (typeof window.__dxqe_assertOff === 'function') { window.__dxqe_assertOff(); }
+    if (!on) return;
+    function _setHL(el) {
+      var old = document.getElementById('__dxqe_hl');
+      if (old) old.remove();
+      if (!el) return;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) return;
+      var d = document.createElement('div');
+      d.id = '__dxqe_hl';
+      d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;' +
+        'border:2px solid #6366f1;background:rgba(99,102,241,0.08);' +
+        'border-radius:4px;box-shadow:0 0 0 1px rgba(99,102,241,0.3);transition:all 0.08s ease;';
+      d.style.top = r.top + 'px'; d.style.left = r.left + 'px';
+      d.style.width = r.width + 'px'; d.style.height = r.height + 'px';
+      document.documentElement.appendChild(d);
+    }
+    function _onOver(e) { var el = e.target; if (!el || el.id === '__dxqe_hl') return; _setHL(el); }
+    function _onOut(e)  { var old = document.getElementById('__dxqe_hl'); if (old) old.remove(); }
+    function _onClick(e) {
+      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+      var el = e.target;
+      if (!el || el.id === '__dxqe_hl') return;
+      window.__dxqe_assertOff();
+      var info = _getAssertElInfo(el);
+      if (typeof window.__devxqe_send === 'function') {
+        window.__devxqe_send({ type: 'assert_element', url: window.location.href,
+          pageTitle: document.title, elementInfo: info });
+      }
+    }
+    if (document.body) document.body.style.cursor = 'crosshair';
+    document.addEventListener('mouseover', _onOver,  true);
+    document.addEventListener('mouseout',  _onOut,   true);
+    document.addEventListener('click',     _onClick, true);
+    window.__dxqe_assertOff = function() {
+      if (document.body) document.body.style.cursor = '';
+      var hl = document.getElementById('__dxqe_hl'); if (hl) hl.remove();
+      document.removeEventListener('mouseover', _onOver,  true);
+      document.removeEventListener('mouseout',  _onOut,   true);
+      document.removeEventListener('click',     _onClick, true);
+      delete window.__dxqe_assertOff;
+    };
+  };
+  // postMessage backward-compat (proxy/iframe mode)
+  window.addEventListener('message', function(e) {
+    if (!e.data || e.data.target !== '__devxqe_assert') return;
+    window.__dxqe_setAssertMode(e.data.mode === 'on');
+  });
+  console.log('[NAT-Recorder] assertMode ready — __dxqe_setAssertMode type:', typeof window.__dxqe_setAssertMode);
+
   // ── page_load ─────────────────────────────────────────────────────────────
   if (window.location.href && !window.location.href.startsWith('about:') && !window.location.href.startsWith('data:')) {
     window.__devxqe_send({ type: 'page_load', url: window.location.href, pageTitle: document.title });
@@ -1740,114 +1820,6 @@ export function registerRecorderRoutes(app: Express) {
   history.pushState    = function () { _push.apply(history, arguments);    setTimeout(_checkNav, 150); };
   history.replaceState = function () { _repl.apply(history, arguments);    setTimeout(_checkNav, 150); };
   window.addEventListener('popstate', function () { setTimeout(_checkNav, 150); });
-
-  // ── Assert Mode ──────────────────────────────────────────────────────────────
-  // _getAssertElInfo builds the elementInfo payload that the server + client
-  // TypeScript interface (AssertElementInfo) expects.
-  function _getAssertElInfo(el) {
-    var tag  = el.tagName.toLowerCase();
-    var text = (el.innerText || el.textContent || '').trim().replace(/\\s+/g, ' ').slice(0, 120);
-    var val  = el.value || '';
-    var ph   = el.getAttribute('placeholder') || '';
-    var al   = el.getAttribute('aria-label')  || '';
-    var nm   = el.getAttribute('name')        || '';
-    var tp   = el.getAttribute('type')        || '';
-    // Best human label: aria-label → associated <label> → visible text → placeholder → name → tag
-    var lbl  = al;
-    if (!lbl && el.id) { var lb = document.querySelector('label[for="' + el.id + '"]'); if (lb) lbl = (lb.textContent || '').trim(); }
-    if (!lbl) { var lb2 = el.closest && el.closest('label'); if (lb2) lbl = (lb2.textContent || '').replace(text, '').trim(); }
-    if (!lbl) lbl = text.slice(0, 60);
-    if (!lbl) lbl = ph;
-    if (!lbl) lbl = nm;
-    if (!lbl) lbl = tp ? tp + ' ' + tag : tag;
-    var isInp = ['input','textarea','select'].includes(tag);
-    var isCb  = tp === 'checkbox' || tp === 'radio';
-    var attrs = {};
-    ['href','src','alt','title','data-testid','id','role'].forEach(function(a) { var v = el.getAttribute(a); if (v) attrs[a] = v; });
-    return { tag: tag, text: text, value: val, placeholder: ph, ariaLabel: al,
-             name: nm, type: tp, label: lbl, isInput: isInp, isCheckbox: isCb,
-             isChecked: el.checked || false, attrs: attrs };
-  }
-
-  // window.__dxqe_setAssertMode(true/false) is called by the Remote Agent via
-  // page.evaluate() when the user clicks "Add Assert" in the NAT Azure UI.
-  //
-  // Uses DYNAMIC listener registration (same pattern as the server's local-mode
-  // ASSERT_JS) — far more reliable than a flag-gated approach, and works on
-  // sites with strict Content Security Policy.
-  window.__dxqe_setAssertMode = function(on) {
-    // Always clean up any previous assert listeners first
-    if (typeof window.__dxqe_assertOff === 'function') {
-      window.__dxqe_assertOff();
-    }
-    if (!on) return; // turn-off path handled by __dxqe_assertOff above
-
-    // Highlight overlay — thin purple border, no full-page shadow so it
-    // does not obscure other elements and make the page appear broken.
-    function _setHL(el) {
-      var old = document.getElementById('__dxqe_hl');
-      if (old) old.remove();
-      if (!el) return;
-      var r = el.getBoundingClientRect();
-      if (r.width === 0 && r.height === 0) return;
-      var d = document.createElement('div');
-      d.id = '__dxqe_hl';
-      d.style.cssText = 'position:fixed;z-index:2147483647;pointer-events:none;' +
-        'border:2px solid #6366f1;background:rgba(99,102,241,0.08);' +
-        'border-radius:4px;box-shadow:0 0 0 1px rgba(99,102,241,0.3);' +
-        'transition:all 0.08s ease;';
-      d.style.top    = r.top    + 'px';
-      d.style.left   = r.left   + 'px';
-      d.style.width  = r.width  + 'px';
-      d.style.height = r.height + 'px';
-      document.documentElement.appendChild(d);
-    }
-
-    function _onOver(e) {
-      var el = e.target;
-      if (!el || el.id === '__dxqe_hl') return;
-      _setHL(el);
-    }
-
-    function _onOut(e) {
-      var old = document.getElementById('__dxqe_hl');
-      if (old) old.remove();
-    }
-
-    function _onClick(e) {
-      e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
-      var el = e.target;
-      if (!el || el.id === '__dxqe_hl') return;
-      window.__dxqe_assertOff(); // exit assert mode, remove listeners + overlay
-      var info = _getAssertElInfo(el);
-      if (typeof window.__devxqe_send === 'function') {
-        window.__devxqe_send({ type: 'assert_element', url: window.location.href,
-          pageTitle: document.title, elementInfo: info });
-      }
-    }
-
-    document.body.style.cursor = 'crosshair';
-    document.addEventListener('mouseover', _onOver,  true);
-    document.addEventListener('mouseout',  _onOut,   true);
-    document.addEventListener('click',     _onClick, true);
-
-    // Cleanup function — removes listeners and resets cursor/overlay
-    window.__dxqe_assertOff = function() {
-      document.body.style.cursor = '';
-      var hl = document.getElementById('__dxqe_hl');
-      if (hl) hl.remove();
-      document.removeEventListener('mouseover', _onOver,  true);
-      document.removeEventListener('mouseout',  _onOut,   true);
-      document.removeEventListener('click',     _onClick, true);
-      delete window.__dxqe_assertOff;
-    };
-  };
-
-  // Also respond to postMessage (backward-compat: proxy/iframe mode sends this)
-  window.addEventListener('message', function(e) {
-    if (!e.data || e.data.target !== '__devxqe_assert') return;
-    window.__dxqe_setAssertMode(e.data.mode === 'on');
-  });
 
   // ── Completion sentinel — confirms the ENTIRE init script executed ──────────
   console.log('[NAT-Recorder] PW_RECORDER_INIT COMPLETE — __dxqe_setAssertMode type:', typeof window.__dxqe_setAssertMode);
