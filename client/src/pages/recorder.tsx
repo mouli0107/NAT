@@ -3785,7 +3785,7 @@ export default function RecorderPage() {
     } catch (e: any) {
       alert(`Could not start Playwright recorder: ${e.message}`);
     }
-  }, [sessionId, isPlaywrightRecording]);
+  }, [sessionId, isPlaywrightRecording, isAzureEnv, yourAgentConnected, yourAgentIdle]);
 
   // Open recording in a separate full-screen popup window
   // Events relay back via BroadcastChannel('devxqe-recorder') injected into the proxy page
