@@ -1842,6 +1842,9 @@ export function registerRecorderRoutes(app: Express) {
     window.__dxqe_setAssertMode(e.data.mode === 'on');
   });
 
+  // ── Completion sentinel — confirms the ENTIRE init script executed ──────────
+  console.log('[NAT-Recorder] PW_RECORDER_INIT COMPLETE — __dxqe_setAssertMode type:', typeof window.__dxqe_setAssertMode);
+
 })();
 `;
 

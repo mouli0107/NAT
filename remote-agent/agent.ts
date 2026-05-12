@@ -270,7 +270,21 @@ async function runRecording(sessionId: string, targetUrl: string, initScript: st
   });
 
   // ── Inject the recorder init script into every page ────────────────────────
+  log(`addInitScript: initScript length=${initScript.length} chars`);
   await recordingContext.addInitScript(initScript);
+
+  // ── Forward browser console logs to agent log (helps diagnose initScript errors) ──
+  // Captures console.log/warn/error from the page so we can see NAT-Recorder diagnostics.
+  page.on('console', (msg) => {
+    const text = msg.text();
+    // Only forward NAT-related messages + errors to avoid noise
+    if (text.includes('[NAT-Recorder]') || msg.type() === 'error' || msg.type() === 'warning') {
+      log(`[Browser][${msg.type()}] ${text}`);
+    }
+  });
+  page.on('pageerror', (err) => {
+    log(`[Browser][pageerror] ${err.message}`);
+  });
 
   // ── Server-side navigation tracking (safety net for redirects) ────────────
   page.on('framenavigated', (frame) => {
