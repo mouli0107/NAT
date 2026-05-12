@@ -13,6 +13,31 @@
  *   SERVER_URL=ws://my-server:5000 npx tsx agent.ts
  */
 
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
+
+// Load .env from the same directory as agent.ts (works even when invoked from a different CWD)
+const __filename = fileURLToPath(import.meta.url);
+const __dirname  = dirname(__filename);
+const _require   = createRequire(import.meta.url);
+try {
+  const dotenvPath = join(__dirname, '.env');
+  const fs = await import('fs');
+  if (fs.existsSync(dotenvPath)) {
+    const lines = fs.readFileSync(dotenvPath, 'utf8').split('\n');
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const eq = trimmed.indexOf('=');
+      if (eq === -1) continue;
+      const key = trimmed.slice(0, eq).trim();
+      const val = trimmed.slice(eq + 1).trim();
+      if (key && !(key in process.env)) process.env[key] = val;
+    }
+  }
+} catch { /* silently ignore if .env is missing or unreadable */ }
+
 import WebSocket from 'ws';
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
 import { randomBytes } from 'crypto';
