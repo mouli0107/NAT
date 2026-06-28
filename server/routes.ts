@@ -6917,6 +6917,156 @@ test.describe('Automated Test Suite', () => {
     }
   });
 
+  // POST /api/synthetic-data/infer-schema-from-loader
+  // Upload a Schema_Loader.xlsx (DST custodian XML layout) and get back one
+  // InferredSchema per file type, ready for /generate or /generate-from-schema.
+  app.post("/api/synthetic-data/infer-schema-from-loader", async (req: Request, res: Response) => {
+    try {
+      const multer = (await import("multer")).default;
+      const upload = multer({
+        dest: "uploads/",
+        limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+      });
+
+      upload.single("file")(req, res, async (err: any) => {
+        if (err) {
+          res.status(400).json({ success: false, error: err.message });
+          return;
+        }
+        const file = (req as any).file;
+        if (!file) {
+          res.status(400).json({ success: false, error: "No file uploaded." });
+          return;
+        }
+        try {
+          const { parseSchemaLoaderXlsx } = await import("./synthetic-file-processor.js");
+          const { enrichSchemaNames }      = await import("./schema-name-enricher.js");
+
+          const loaderResult = parseSchemaLoaderXlsx(file.path);
+
+          // Enrich each file type's schema with Claude-style display names
+          for (const ft of loaderResult.fileTypes) {
+            try {
+              ft.schema = await enrichSchemaNames(ft.schema);
+            } catch {
+              // Non-fatal — enrichment is best-effort
+            }
+          }
+
+          // Clean up temp upload
+          try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+
+          res.json({ success: true, loaderResult });
+        } catch (innerErr: any) {
+          try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+          res.status(500).json({ success: false, error: innerErr.message });
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // POST /api/synthetic-data/generate-from-loader
+  // Full pipeline: upload Schema_Loader.xlsx → parse → generate test data for
+  // every file type (positive + edge + negative).
+  app.post("/api/synthetic-data/generate-from-loader", async (req: Request, res: Response) => {
+    try {
+      const multer = (await import("multer")).default;
+      const upload = multer({
+        dest: "uploads/",
+        limits: { fileSize: 50 * 1024 * 1024 },
+      });
+
+      upload.single("file")(req, res, async (err: any) => {
+        if (err) {
+          res.status(400).json({ success: false, error: err.message });
+          return;
+        }
+        const file = (req as any).file;
+        if (!file) {
+          res.status(400).json({ success: false, error: "No file uploaded." });
+          return;
+        }
+        try {
+          const { parseSchemaLoaderXlsx, generateTestData, schemaToSQL } =
+            await import("./synthetic-file-processor.js");
+          const { enrichSchemaNames } = await import("./schema-name-enricher.js");
+
+          const { recordCount = 100, includeManifest = true } = req.body;
+          const count = Math.min(Math.max(parseInt(recordCount) || 100, 1), 100_000);
+
+          const loaderResult = parseSchemaLoaderXlsx(file.path);
+
+          const results = await Promise.all(
+            loaderResult.fileTypes.map(async (ft) => {
+              try { ft.schema = await enrichSchemaNames(ft.schema); } catch { /* best-effort */ }
+              const result    = generateTestData({ schema: ft.schema, recordCount: count, includeManifest });
+              const sqlSchema = schemaToSQL(ft.schema);
+              return { fileType: ft.name, fileTypeFlag: ft.fileTypeFlag, rowPrefixes: ft.rowPrefixes, result, sqlSchema };
+            })
+          );
+
+          try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+          res.json({ success: true, parserName: loaderResult.parserName, parserId: loaderResult.parserId, results });
+        } catch (innerErr: any) {
+          try { fs.unlinkSync(file.path); } catch { /* ignore */ }
+          res.status(500).json({ success: false, error: innerErr.message });
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ── POST /api/synthetic-data/envestnet/generate-csh ──────────────────────────
+  // Generate SAL_CSH synthetic data for Envestnet / BETA Systems custodian files.
+  // Returns positive, edge, and negative test records as a pipe-delimited download.
+  app.post("/api/synthetic-data/envestnet/generate-csh", async (req: Request, res: Response) => {
+    try {
+      const { generateCshFile } = await import("./envestnet-generator.js");
+      const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
+      const includeManifest = req.body.includeManifest !== false;
+      const download = req.body.download === true;
+
+      const result = generateCshFile({ recordCount, includeManifest });
+
+      if (download) {
+        res.setHeader("Content-Disposition", "attachment; filename=sal_csh_synthetic.txt");
+        res.setHeader("Content-Type", "text/plain");
+        res.send(result.data);
+        return;
+      }
+      res.json({
+        success: true,
+        data:        result.data,
+        manifest:    result.manifest,
+        recordCount: result.recordCount,
+        breakdown:   result.breakdown,
+        columnSchema: result.columnSchema,
+      });
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
+  // ── POST /api/synthetic-data/envestnet/generate-csh/download ─────────────────
+  // Stream the file directly as a download (for large record counts).
+  app.post("/api/synthetic-data/envestnet/generate-csh/download", async (req: Request, res: Response) => {
+    try {
+      const { generateCshFile } = await import("./envestnet-generator.js");
+      const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
+      const includeManifest = req.body.includeManifest !== false;
+      const result = generateCshFile({ recordCount, includeManifest });
+
+      res.setHeader("Content-Disposition", "attachment; filename=sal_csh_synthetic.txt");
+      res.setHeader("Content-Type", "text/plain");
+      res.send(result.data);
+    } catch (error: any) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
+
   // ============================================
   // nRadiVerse Quality Engine API Endpoints
   // ============================================
@@ -11148,6 +11298,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
 
     archive.finalize();
   });
+
+  // ── ASTRA Code Lens ───────────────────────────────────────────────────────
+  const { codeLensRouter } = await import('./codelens-routes');
+  app.use('/api/v1/codelens', codeLensRouter);
 
   return httpServer;
 }
