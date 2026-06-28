@@ -38,7 +38,12 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        # Match the npm major that generated package-lock.json (npm 11). node 22
+        # ships npm 10.x, which misreads an npm-11 lockfile as out of sync and
+        # fails `npm ci` with EUSAGE (same reason the Dockerfile pins npm@11).
+        run: |
+          npm install -g npm@11
+          npm ci
 
       # ── Suite 1: Template integrity (D1 regression) ────────────────────────
       # Verifies the four static template constants in script-writer-agent.ts
