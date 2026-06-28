@@ -5,6 +5,7 @@
  */
 
 import * as XLSX from "xlsx";
+import { readFileSync } from "fs";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -99,6 +100,16 @@ const CUSTODIAN_FIRMS = [
 ];
 
 const STREET_TYPES = ["ST","AVE","DR","RD","LN","BLVD","CT","WAY","PLACE","CIR","LOOP","TRL","PL"];
+const STREET_NAMES = [
+  "MAIN","OAK","MAPLE","PINE","ELM","CEDAR","WALNUT","POPLAR","BIRCH","HICKORY",
+  "MAGNOLIA","HIGHLAND","RIVERSIDE","MEADOW","SUNSET","LAKEWOOD","WOODLAND","BROOKSIDE",
+  "HILLCREST","FAIRVIEW","GREENWOOD","MAPLEWOOD","OAKWOOD","RIDGEWOOD","FERNWOOD",
+  "WILLOWBROOK","NORTHWOOD","SOUTHWOOD","EASTWOOD","WESTWOOD","CHURCH","SCHOOL",
+  "MARKET","SPRING","SUMMER","WINTER","AUTUMN","PARK","LAKE","RIVER","CREEK","VALLEY",
+  "FOREST","GARDEN","ORCHARD","CHERRY","PEACH","WILLOW","SYCAMORE","CHESTNUT",
+  "WASHINGTON","LINCOLN","JEFFERSON","FRANKLIN","ADAMS","MADISON","HAMILTON",
+  "GRANT","HARRISON","JACKSON","LIBERTY","INDEPENDENCE","FREEDOM","UNION",
+];
 
 const US_STATES = [
   "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA",
@@ -194,7 +205,7 @@ function genAmount(max = 999999, decimalPlaces = 2): string {
 }
 
 function genAddress(): string {
-  return `${rnd(100, 9999)} ${pick(LAST_NAMES)} ${pick(STREET_TYPES)}`;
+  return `${rnd(100, 9999)} ${pick(STREET_NAMES)} ${pick(STREET_TYPES)}`;
 }
 
 function genName(isPerson = true): string {
@@ -356,6 +367,22 @@ function classifyFieldType(values: string[]): FieldType {
     if (sample.filter(v => /@/.test(v)).length >= sample.length * 0.4) return "email";
   }
 
+  // ── MUST come before code_pool: timestamp ─────────────────────────────────
+  // No ^ anchor: handles "01 4/2/2026 12:20:59 AM" style prefixed timestamps.
+  // Require at least 2 matching values (or ≥10% of sample) to avoid false positives.
+  const tsCount = sample.filter(v => /\d{1,2}\/\d{1,2}\/\d{4}/.test(v)).length;
+  if (tsCount >= Math.max(2, Math.floor(sample.length * 0.10))) return "timestamp";
+
+  // ── MUST come before code_pool: Comma-decimal or 4+ decimal amounts ────────
+  // sample.some is safe here: code-only columns (HGWX, DST1) never match the
+  // decimal-amount regex, so this only fires for genuine numeric columns.
+  if (sample.some(v => /^\d+\.\d+,\d+$/.test(v))) return "amount";
+  if (sample.some(v => /^\d+\.\d{4,}$/.test(v)))  return "amount";
+
+  // ── MUST come before code_pool: street address (number + words + suffix) ──
+  const ADDRESS_SUFFIX_RE = /\b(ST|AVE|DR|RD|LN|BLVD|CT|WAY|PLACE|PL|CIR|LOOP|TRL|HWY|PKWY|SQ|TERR?|COURT|DRIVE|STREET|AVENUE|ROAD|LANE|BOULEVARD)\b\.?$/i;
+  if (sample.some(v => /^\d{1,5}\s+\w[\w\s]{2,20}$/.test(v) && ADDRESS_SUFFIX_RE.test(v))) return "address";
+
   // ── All-digit financial code pools (e.g. account groups 9999246, 9999139) ──
   // Placed BEFORE the alpha code_pool check so 5-9 digit all-numeric codes with
   // low cardinality are treated as code_pool, not "text".
@@ -363,26 +390,21 @@ function classifyFieldType(values: string[]): FieldType {
     return "code_pool";
   }
 
-  // ── Fix #1 + #4: Expanded code_pool — allow spaces, higher cardinality ───
-  // Applies to short uppercase codes including compound codes like "6 DST1"
+  // ── Fix #1 + #4: Expanded code_pool — short UPPERCASE codes like "6 DST1" ─
+  // Tightened: max length 10 (was 15), no lowercase letters (excludes PII-scrambled
+  // strings like "ruBJMNvAYo"), at least one letter, not all-digit.
   if (
     unique.length <= 20 &&
-    nonEmpty.every(v => v.length <= 15 && /^[A-Z0-9$_\-\.\s]+$/i.test(v)) &&
-    nonEmpty.some(v => /[A-Z]/i.test(v)) &&         // must have at least some letter content
-    !nonEmpty.every(v => /^\d+$/.test(v))            // not all-digit (those handled separately)
+    nonEmpty.every(v => v.length <= 10 && /^[A-Z0-9$_\-\.\s]+$/.test(v)) &&  // UPPERCASE only
+    nonEmpty.some(v => /[A-Z]/.test(v)) &&              // must have at least one uppercase letter
+    !nonEmpty.every(v => /^\d+$/.test(v))               // not all-digit (those handled separately)
   ) {
     return "code_pool";
   }
 
-  // ── Fix #7: Comma-decimal amount format (e.g. 0.0000,0000 DST format) ────
-  if (sample.some(v => /^\d+\.\d+,\d+$/.test(v))) return "amount";
-  if (sample.some(v => /^\d+\.\d{4,}$/.test(v)))  return "amount";
-
   if (sample.every(v => /^\d{1,6}$/.test(v))) return "integer";
 
   // ── Text classification ───────────────────────────────────────────────────
-  if (sample.some(v => /\d+\/\d+\/\d{4}/.test(v))) return "timestamp";
-
   const avgLen = sample.reduce((s, v) => s + v.length, 0) / sample.length;
   if (avgLen > 8 && sample.some(v => /\d/.test(v) && /[A-Z]/.test(v))) return "address";
   if (avgLen > 4 && sample.some(v => /\s/.test(v))) {
@@ -476,8 +498,9 @@ function analyzeRecords(records: string[][], delimiter: string): FieldSchema[] {
       const nonEmpty = values.filter(v => v !== "");
       const maxLen = Math.max(...values.map(v => v.length), 1);
       const type = classifyFieldType(values);
+      // Trim every pool value and deduplicate — prevents trailing-space leakage
       const pool = type === "code_pool" || type === "literal"
-        ? Array.from(new Set(nonEmpty)).slice(0, 20)
+        ? Array.from(new Set(nonEmpty.map(v => v.trim()))).filter(v => v !== "").slice(0, 20)
         : undefined;
 
       allColumns.push({
@@ -1319,4 +1342,277 @@ export function generateCorrelatedData(opts: CorrelatedGenerateOptions): Correla
     sharedKeyCount: recordCount,
     breakdown: { positive: posCount, edge: edgeCount, negative: negCount },
   };
+}
+
+// =============================================================================
+// XML Schema Loader  (Schema_Loader.xlsx support)
+// =============================================================================
+//
+// DST custodian systems ship a Schema_Loader.xlsx whose first sheet contains
+// XML that describes the pipe-delimited file layout: parser name, multiple
+// file types (label, transaction, position, costbasis, …), row-prefix chars,
+// and field-to-column-position mappings.
+//
+// parseSchemaLoaderXlsx() converts each <file> block into an InferredSchema
+// so the existing generateTestData() can immediately produce positive / edge /
+// negative records with no sample data file needed.
+
+export interface SchemaLoaderFileType {
+  name:         string;
+  delimiter:    string;
+  fileTypeFlag: string;
+  rowPrefixes:  string[];
+  schema:       InferredSchema;
+}
+
+export interface SchemaLoaderResult {
+  parserName: string;
+  parserId:   string;
+  fileTypes:  SchemaLoaderFileType[];
+}
+
+/** Main entry-point: parse Schema_Loader.xlsx and return one InferredSchema per file type. */
+export function parseSchemaLoaderXlsx(filePath: string): SchemaLoaderResult {
+  // Use XLSX.read(buffer) — readFile is not reliably exposed via ESM namespace import
+  const buf = readFileSync(filePath);
+  const wb = XLSX.read(buf, { type: "buffer" });
+  let xmlStr = "";
+
+  for (const sName of wb.SheetNames) {
+    const ws = wb.Sheets[sName];
+    const rows = XLSX.utils.sheet_to_json<string[]>(ws, {
+      header: 1,
+      raw: false,
+    }) as string[][];
+    // Concatenate the first column — the XML is stored one row per cell
+    const candidate = rows.map((r) => r[0] ?? "").join("\n");
+    if (candidate.includes("<parser") || candidate.includes("<field")) {
+      xmlStr = candidate;
+      break;
+    }
+  }
+
+  if (!xmlStr) {
+    throw new Error(
+      "No XML schema definition found in the uploaded file. " +
+        "Expected Sheet1 to contain <parser>/<file>/<field> XML."
+    );
+  }
+
+  return _xlParseSchemaXml(xmlStr);
+}
+
+// ─── internal helpers ─────────────────────────────────────────────────────────
+
+function _xlParseSchemaXml(xml: string): SchemaLoaderResult {
+  const pm = xml.match(/<parser\s[^>]*name="([^"]+)"[^>]*id="([^"]+)"/);
+  const parserName = pm?.[1] ?? "Unknown";
+  const parserId   = pm?.[2] ?? "0";
+
+  const fileTypes: SchemaLoaderFileType[] = [];
+  const fileRe = /<file\s([\s\S]*?)>([\s\S]*?)<\/file>/g;
+  let fm: RegExpExecArray | null;
+
+  while ((fm = fileRe.exec(xml)) !== null) {
+    const fileAttrs    = fm[1];
+    const fileBody     = fm[2];
+    const fileName     = fileAttrs.match(/name="([^"]+)"/)?.[1]          ?? "unknown";
+    const delimiter    = fileAttrs.match(/delimiter="([^"]+)"/)?.[1]     ?? "|";
+    const fileTypeFlag = fileAttrs.match(/fileTypeFlag="([^"]+)"/)?.[1]  ?? "0";
+
+    // Collect all <row> groups (each may have a different row-prefix char)
+    const rowRe = /<row\s([\s\S]*?)>([\s\S]*?)<\/row>/g;
+    let rm: RegExpExecArray | null;
+    const rowGroups: Array<{ prefix: string; fields: _XlParsedField[] }> = [];
+
+    while ((rm = rowRe.exec(fileBody)) !== null) {
+      const prefix = rm[1].match(/prefix="([^"]*)"/)?.[1] ?? "";
+      const fields = _xlExtractFields(rm[2]);
+      if (fields.length > 0) rowGroups.push({ prefix, fields });
+    }
+
+    if (rowGroups.length === 0) continue;
+
+    // Use the row with the most positional fields as the primary schema driver
+    const primary = rowGroups.reduce((best, r) => {
+      return r.fields.filter((f) => f.position >= 0).length >
+             best.fields.filter((f) => f.position >= 0).length
+        ? r
+        : best;
+    }, rowGroups[0]);
+
+    const rowPrefixes = Array.from(new Set(rowGroups.map((r) => r.prefix).filter(Boolean)));
+    const schema      = _xlBuildSchema(primary.fields, delimiter, fileName, primary.prefix);
+    fileTypes.push({ name: fileName, delimiter, fileTypeFlag, rowPrefixes, schema });
+  }
+
+  return { parserName, parserId, fileTypes };
+}
+
+interface _XlParsedField {
+  name:     string;
+  position: number;   // -1 = pattern-based / skip
+}
+
+function _xlExtractFields(rowBody: string): _XlParsedField[] {
+  const re = /<field\s([\s\S]*?)\/>/g;
+  let m: RegExpExecArray | null;
+  const out: _XlParsedField[]  = [];
+  const seenPos = new Set<number>();
+
+  while ((m = re.exec(rowBody)) !== null) {
+    const attrs   = m[1];
+    const name    = attrs.match(/name="([^"]+)"/)?.[1];
+    const posStr  = attrs.match(/\bposition="(\d+)"/)?.[1];
+    const pattern = attrs.match(/pattern="([^"]+)"/)?.[1];
+
+    if (!name) continue;
+
+    if (posStr !== undefined) {
+      const pos = parseInt(posStr, 10);
+      if (!seenPos.has(pos)) {
+        seenPos.add(pos);
+        out.push({ name, position: pos });
+      }
+    } else if (!pattern) {
+      // No position and no pattern — include at position 0 if slot free
+      if (!seenPos.has(0)) {
+        seenPos.add(0);
+        out.push({ name, position: 0 });
+      }
+    }
+    // pattern="**SECINFO**" style lookup refs → skip entirely
+  }
+
+  return out;
+}
+
+function _xlBuildSchema(
+  fields:        _XlParsedField[],
+  delimiter:     string,
+  _fileTypeName: string,
+  rowPrefix:     string
+): InferredSchema {
+  const positional = fields
+    .filter((f) => f.position >= 0)
+    .sort((a, b) => a.position - b.position);
+
+  const columns: FieldSchema[] = positional.map((f) => {
+    const detectedType  = _xlInferType(f.name);
+    const isPII         = ["ssn", "phone", "email", "name", "address", "city"].includes(detectedType);
+    const maxLen        = _xlMaxLen(detectedType, f.name);
+    const isPrefix      = rowPrefix !== "" && f.position === 0;
+
+    return {
+      id:               "pos" + f.position,
+      displayName:      _xlCamelToDisplay(f.name),
+      lineIndex:        0,
+      position:         f.position,
+      sqlType:          _xlTypeToSql(detectedType, maxLen),
+      detectedType,
+      isPII,
+      sampleValue:      _xlSample(detectedType, f.name),
+      populatedCount:   1,
+      totalSampleCount: 1,
+      isLiteral:        isPrefix,
+      literalValue:     isPrefix ? rowPrefix : undefined,
+      maxObservedLength: maxLen,
+    };
+  });
+
+  return {
+    format:           "pipe_singleline",
+    delimiter,
+    linesPerRecord:   1,
+    sampleRecordCount: 0,
+    columns,
+  };
+}
+
+/** Map a camelCase field name to the best FieldType. */
+function _xlInferType(name: string): FieldType {
+  const n = name.toLowerCase();
+
+  if (/ssn|taxid|\btin\b|nationalid/.test(n))                              return "ssn";
+  if (/phone|mobile|cell|\bfax\b/.test(n))                                return "phone";
+  if (/\bzip\b|postal/.test(n))                                           return "zip_code";
+  if (/email/.test(n))                                                    return "email";
+  if (/(state)(code|abbr|cd)?$/.test(n))                                  return "state_code";
+  if (/(country)(code|abbr|cd)?$/.test(n))                                return "country_code";
+  if (/^address\d?$|^addr\d?$/.test(n))                                   return "address";
+  if (/^city/.test(n))                                                     return "city";
+  if (/(date|dt)$|(date|dt)[a-z]|expirydate|\bdob\b|birthdate/.test(n))  return "date_mmddyy";
+  if (/amount|price|cost|balance|interest|commission|\bvalue\b|proceeds|strike|marketprice|lotcost|saleamount|baseamount|avgunit|units|qty/.test(n)) return "amount";
+  if (/accountnumber|accountid|custodianaccount|acctno|acctnum/.test(n))  return "account_id";
+  if (/(name)(position)?$/.test(n))                                        return "name";
+  if (/comment\d?|description|remark|narrative/.test(n))                  return "text";
+  if (/secno|betasecno|taxlotid|importdisplot|lotid|sequence/.test(n))    return "integer";
+  if (/code$|type$|flag$|indicator$|method$|status$|recordtype|repcode|firmcode|transtype|trantype|buysell|cancelfl/.test(n)) return "code_pool";
+
+  return "text";
+}
+
+function _xlTypeToSql(type: FieldType, maxLen: number): string {
+  const map: Partial<Record<FieldType, string>> = {
+    account_id:   "VARCHAR(8)",
+    ssn:          "VARCHAR(9)",
+    phone:        "VARCHAR(10)",
+    zip_code:     "VARCHAR(10)",
+    email:        "VARCHAR(120)",
+    state_code:   "CHAR(2)",
+    country_code: "CHAR(2)",
+    date_mmddyy:  "VARCHAR(8)",
+    amount:       "DECIMAL(15,5)",
+    integer:      "INTEGER",
+    name:         "VARCHAR(80)",
+    address:      "VARCHAR(120)",
+    city:         "VARCHAR(60)",
+  };
+  return map[type] ?? `VARCHAR(${Math.max(maxLen, 50)})`;
+}
+
+function _xlMaxLen(type: FieldType, name: string): number {
+  const map: Partial<Record<FieldType, number>> = {
+    account_id: 8,  ssn: 9,  phone: 10,  zip_code: 10,
+    date_mmddyy: 8, state_code: 2, country_code: 2,
+    amount: 15, integer: 10, name: 60, address: 80, city: 40,
+  };
+  if (map[type] !== undefined) return map[type]!;
+  if (type === "code_pool") return name.toLowerCase().includes("cusip") ? 9 : 4;
+  return 50;
+}
+
+function _xlSample(type: FieldType, name: string): string {
+  const n = name.toLowerCase();
+  const map: Partial<Record<FieldType, string>> = {
+    account_id:   "12345678",
+    ssn:          "123456789",
+    phone:        "5551234567",
+    zip_code:     "10001",
+    email:        "test@example.com",
+    state_code:   "NY",
+    country_code: "US",
+    date_mmddyy:  "010125",
+    amount:       "1000.00000",
+    integer:      "1",
+    name:         "JOHN DOE",
+    address:      "123 MAIN ST",
+    city:         "NEW YORK",
+  };
+  if (map[type] !== undefined) return map[type]!;
+  if (type === "code_pool") {
+    if (n.includes("cusip"))  return "AAPL123AB";
+    if (n.includes("ticker")) return "AAPL";
+    if (n.includes("type"))   return "1";
+    return "T";
+  }
+  return "";
+}
+
+function _xlCamelToDisplay(name: string): string {
+  return name
+    .replace(/([A-Z]+)([A-Z][a-z])/g, "$1 $2")
+    .replace(/([a-z\d])([A-Z])/g, "$1 $2")
+    .replace(/^./, (s) => s.toUpperCase())
+    .trim();
 }

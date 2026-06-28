@@ -1,4 +1,4 @@
-import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList } from "lucide-react";
+import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
@@ -48,6 +48,7 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
     { id: "synthetic-data",    href: "/synthetic-data",    icon: Database,        label: "Synthetic Data",               testId: "nav-synthetic-data" },
     { id: "nradiverse",        href: "/nradiverse",        icon: Sparkles,        label: "AI Quality Engine",            testId: "nav-nradiverse" },
     { id: "reports",           href: "/reports",           icon: BarChart3,       label: "Reports & Analytics",          testId: "nav-reports" },
+    { id: "code-lens",         href: "/code-lens",         icon: ShieldCheck,     label: "Code Lens",                    testId: "nav-code-lens" },
     { id: "import-export",     href: "/import-export",     icon: ArrowUpDown,     label: "Import/Export",                testId: "nav-import-export" },
     { id: "projects",          href: "/projects",          icon: FolderOpen,      label: "Project History",              testId: "nav-projects" },
     { id: "architecture",      href: "/architecture",      icon: Layers,          label: "Architecture Diagram",         testId: "nav-architecture" },

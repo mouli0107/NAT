@@ -3,6 +3,21 @@ dist
 .DS_Store
 server/public
 vite.config.ts.*
-*.tar.gz.env
+*.tar.gz
 .claude/
 node_modules/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# Runtime / generated junk
+*.log
+.codelens-cache/
+data/temp-outputs/
+screenshots/
+test-results/
+assert-proof-screenshots/
+assert-test-screenshots/
+dist-test/

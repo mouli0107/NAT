@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, jsonb, boolean, unique } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, jsonb, boolean, unique, uuid, numeric, index } from "drizzle-orm/pg-core";
 // NOTE: text().array() is used for text[] columns (deduplication_log.removed_keys)
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -1819,3 +1819,140 @@ export type InsertAssetVersion = typeof assetVersions.$inferInsert;
 export type AssetConflict    = typeof assetConflicts.$inferSelect;
 export type InsertAssetConflict = typeof assetConflicts.$inferInsert;
 export type DeduplicationLog = typeof deduplicationLog.$inferSelect;
+
+// ── ASTRA Code Lens — persistent run storage ─────────────────────────────────
+
+export const codelensRuns = pgTable("codelens_runs", {
+  id:             uuid("id").primaryKey().defaultRandom(),
+  userId:         varchar("user_id", { length: 64 }),  // owner — per-user history isolation
+  sessionId:      varchar("session_id", { length: 64 }).unique().notNull(),
+  repoUrl:        varchar("repo_url", { length: 500 }).notNull(),
+  branch:         varchar("branch", { length: 200 }).notNull(),
+  commitHash:     varchar("commit_hash", { length: 40 }),
+  startedAt:      timestamp("started_at").defaultNow().notNull(),
+  completedAt:    timestamp("completed_at"),
+  status:         varchar("status", { length: 20 }).default("RUNNING").notNull(),
+  totalFiles:     integer("total_files").default(0),
+  scannedFiles:   integer("scanned_files").default(0),
+  ignoredFiles:   integer("ignored_files").default(0),
+  criticalCount:  integer("critical_count").default(0),
+  warningCount:   integer("warning_count").default(0),
+  infoCount:      integer("info_count").default(0),
+  passCount:      integer("pass_count").default(0),
+  compliancePct:  numeric("compliance_pct", { precision: 5, scale: 2 }).default("0"),
+  foldersScanned: text("folders_scanned").array(),
+  ignorePatterns: text("ignore_patterns").array(),
+}, (t) => ({
+  repoIdx: index("idx_codelens_runs_repo").on(t.repoUrl, t.branch, t.startedAt),
+}));
+
+export const codelensFileResults = pgTable("codelens_file_results", {
+  id:               uuid("id").primaryKey().defaultRandom(),
+  runId:            uuid("run_id").notNull().references(() => codelensRuns.id, { onDelete: "cascade" }),
+  filePath:         varchar("file_path", { length: 1000 }).notNull(),
+  fileName:         varchar("file_name", { length: 255 }).notNull(),
+  fileType:         varchar("file_type", { length: 50 }),
+  standardsChecked: integer("standards_checked").default(0),
+  criticalCount:    integer("critical_count").default(0),
+  warningCount:     integer("warning_count").default(0),
+  infoCount:        integer("info_count").default(0),
+  passCount:        integer("pass_count").default(0),
+  naCount:          integer("na_count").default(0),
+  applicableCells:  integer("applicable_cells").default(0),  // applicable standards (checks that should run)
+  verifiedCells:    integer("verified_cells").default(0),    // applicable cells verified (non-error)
+  compliancePct:    numeric("compliance_pct", { precision: 5, scale: 2 }).default("0"),
+  status:           varchar("status", { length: 10 }),
+}, (t) => ({
+  runIdx: index("idx_codelens_file_results_run").on(t.runId),
+}));
+
+export const codelensStandardResults = pgTable("codelens_standard_results", {
+  id:           uuid("id").primaryKey().defaultRandom(),
+  runId:        uuid("run_id").notNull().references(() => codelensRuns.id, { onDelete: "cascade" }),
+  fileResultId: uuid("file_result_id").notNull().references(() => codelensFileResults.id, { onDelete: "cascade" }),
+  filePath:     varchar("file_path", { length: 1000 }).notNull(),
+  standardId:   varchar("standard_id", { length: 10 }).notNull(),
+  standardName: varchar("standard_name", { length: 200 }).notNull(),
+  severity:     varchar("severity", { length: 20 }).notNull(),
+  status:       varchar("status", { length: 20 }).notNull(),
+  checked:      text("checked"),
+  createdAt:    timestamp("created_at").defaultNow(),
+}, (t) => ({
+  runIdx: index("idx_codelens_standard_results_run").on(t.runId),
+}));
+
+export const codelensViolations = pgTable("codelens_violations", {
+  id:           uuid("id").primaryKey().defaultRandom(),
+  runId:        uuid("run_id").notNull().references(() => codelensRuns.id, { onDelete: "cascade" }),
+  fileResultId: uuid("file_result_id").notNull().references(() => codelensFileResults.id, { onDelete: "cascade" }),
+  violationId:  varchar("violation_id", { length: 100 }).notNull(),
+  filePath:     varchar("file_path", { length: 1000 }).notNull(),
+  fileName:     varchar("file_name", { length: 255 }).notNull(),
+  standardId:   varchar("standard_id", { length: 10 }).notNull(),
+  standardName: varchar("standard_name", { length: 200 }).notNull(),
+  severity:     varchar("severity", { length: 20 }).notNull(),
+  lineStart:    integer("line_start"),
+  lineEnd:      integer("line_end"),
+  foundCode:    text("found_code"),
+  explanation:  text("explanation"),
+  fixSuggestion:text("fix_suggestion"),
+  status:       varchar("status", { length: 20 }).default("OPEN"),
+  fixedAt:      timestamp("fixed_at"),
+  fixedCommit:  varchar("fixed_commit", { length: 40 }),
+  createdAt:    timestamp("created_at").defaultNow(),
+}, (t) => ({
+  runIdx:     index("idx_codelens_violations_run").on(t.runId, t.severity),
+  compareIdx: index("idx_codelens_violations_compare").on(t.runId, t.filePath, t.standardId, t.lineStart),
+}));
+
+// Content-hash cache of per-(file, standard) verdicts. Keyed on a hash of the
+// file content + standard definition + checker version, so a verdict is reused
+// only when nothing that could change it has changed. Cross-run + cross-repo.
+export const codelensCheckCache = pgTable("codelens_check_cache", {
+  cacheKey:     varchar("cache_key", { length: 64 }).primaryKey(), // sha256 hex
+  standardId:   varchar("standard_id", { length: 10 }).notNull(),
+  status:       varchar("status", { length: 20 }).notNull(),       // PASS | VIOLATION | NOT_APPLICABLE
+  checked:      text("checked"),
+  violations:   jsonb("violations"),                               // [{line, found_code, explanation}]
+  checkerVersion: varchar("checker_version", { length: 80 }).notNull(),
+  createdAt:    timestamp("created_at").defaultNow(),
+  lastHitAt:    timestamp("last_hit_at").defaultNow(),
+});
+
+// Sticky suppressions: findings the user accepted/ignored. Keyed by a content
+// hash so a suppression holds until the offending code changes — this is what
+// lets re-reviews converge to a stable state instead of re-raising accepted items.
+export const codelensSuppressions = pgTable("codelens_suppressions", {
+  suppKey:    varchar("supp_key", { length: 64 }).primaryKey(), // sha256(user+repo+file+standard+normCode)
+  userId:     varchar("user_id", { length: 64 }),  // owner — per-user suppressions
+  repoUrl:    varchar("repo_url", { length: 500 }).notNull(),
+  filePath:   varchar("file_path", { length: 1000 }).notNull(),
+  standardId: varchar("standard_id", { length: 10 }).notNull(),
+  status:     varchar("status", { length: 20 }).notNull(), // IGNORED
+  createdAt:  timestamp("created_at").defaultNow(),
+}, (t) => ({
+  repoIdx: index("idx_codelens_suppressions_repo").on(t.repoUrl),
+}));
+
+// User-defined ("custom") standards layered on top of the 42 built-ins. The
+// built-ins stay code-defined and read-only; these are added/edited via the UI.
+export const codelensCustomStandards = pgTable("codelens_custom_standards", {
+  id:               varchar("id", { length: 20 }).primaryKey(),  // e.g. "C01"
+  userId:           varchar("user_id", { length: 64 }),  // owner — per-user custom standards
+  name:             varchar("name", { length: 200 }).notNull(),
+  severity:         varchar("severity", { length: 20 }).notNull(),
+  description:      text("description").notNull(),
+  whatToLookFor:    text("what_to_look_for").notNull(),
+  appliesTo:        varchar("applies_to", { length: 20 }).notNull(),
+  notApplicableWhen:text("not_applicable_when").notNull().default(''),
+  enabled:          boolean("enabled").notNull().default(true),
+  createdAt:        timestamp("created_at").defaultNow(),
+  updatedAt:        timestamp("updated_at").defaultNow(),
+});
+
+export type CodelensCustomStandard       = typeof codelensCustomStandards.$inferSelect;
+
+export type CodelensRun              = typeof codelensRuns.$inferSelect;
+export type InsertCodelensRun        = typeof codelensRuns.$inferInsert;
+export type CodelensFileResult       = typeof codelensFileResults.$inferSelect;
+export type CodelensViolation        = typeof codelensViolations.$inferSelect;

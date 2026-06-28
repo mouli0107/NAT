@@ -4,6 +4,8 @@ import { Sidebar } from "@/components/dashboard/sidebar";
 import { DashboardHeader } from "@/components/dashboard/header";
 import { useBranding } from "@/contexts/BrandingContext";
 import { SampleFileUploadMode } from "@/components/synthetic-data/SampleFileUploadMode";
+import { SchemaLoaderMode } from "@/components/synthetic-data/SchemaLoaderMode";
+import { EnvestnetMode } from "@/components/synthetic-data/EnvestnetMode";
 import { GenerationHistoryView } from "@/components/synthetic-data/GenerationHistoryView";
 import { CustodianProfileBuilder, BundleProfileList } from "@/components/synthetic-data/CustodianProfileBuilder";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -556,7 +558,7 @@ export default function SyntheticDataPage() {
   const { toast } = useToast();
   const { brand } = useBranding();
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
-  const [activeMode, setActiveMode] = useState<"template" | "upload" | "history" | "bundle">("template");
+  const [activeMode, setActiveMode] = useState<"template" | "upload" | "loader" | "history" | "bundle" | "envestnet">("template");
   const [bundleView, setBundleView] = useState<"list" | "create">("list");
   const [editingBundleId, setEditingBundleId] = useState<string | null>(null);
 
@@ -848,6 +850,18 @@ export default function SyntheticDataPage() {
                 From Sample File
               </button>
               <button
+                onClick={() => setActiveMode("loader")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "loader"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-xml-loader"
+              >
+                <FileSpreadsheet className="w-4 h-4" />
+                XML Schema Loader
+              </button>
+              <button
                 onClick={() => setActiveMode("history")}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
                   activeMode === "history"
@@ -871,6 +885,18 @@ export default function SyntheticDataPage() {
                 <Layers className="w-4 h-4" />
                 Custodian Bundle
               </button>
+              <button
+                onClick={() => setActiveMode("envestnet")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-all flex items-center gap-2 ${
+                  activeMode === "envestnet"
+                    ? "bg-background shadow-sm text-foreground"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+                data-testid="tab-envestnet"
+              >
+                <FileText className="w-4 h-4" />
+                Envestnet
+              </button>
             </div>
           </div>
 
@@ -880,6 +906,20 @@ export default function SyntheticDataPage() {
         {activeMode === "upload" && (
           <div className="px-6 pb-6">
             <SampleFileUploadMode />
+          </div>
+        )}
+
+        {/* ── XML Schema Loader Mode ── */}
+        {activeMode === "loader" && (
+          <div className="px-6 pb-6">
+            <SchemaLoaderMode />
+          </div>
+        )}
+
+        {/* ── Envestnet / BETA Systems Generator ── */}
+        {activeMode === "envestnet" && (
+          <div className="px-6 pb-6">
+            <EnvestnetMode />
           </div>
         )}
 
