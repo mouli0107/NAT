@@ -101,6 +101,18 @@ export interface FilesDiscoveredEvent {
   ignored_breakdown: DiscoveryBreakdown;
 }
 
+// Repo-wide architecture / dependency graph (mirrors server codelens-arch-graph.ts)
+export interface ArchitectureGraph {
+  nodes: { id: string; label: string; layer: 'controller' | 'service' | 'repository' | 'data' | 'other'; file: string }[];
+  edges: { from: string; to: string; viaInterface?: string; illegal?: boolean; reason?: string; standardId?: string }[];
+  violations: { from: string; to: string; reason: string; standardId: string }[];
+  mermaid: string;
+  stats: {
+    controllers: number; services: number; repositories: number; dataAccess: number;
+    edges: number; illegalEdges: number; filesAnalyzed: number; truncated: boolean;
+  };
+}
+
 export type CodeLensEvent =
   | { event: 'review_started'; session_id: string; total_files: number; total_rules: number; standards_source: string }
   | { event: 'standards_parsed'; rules: ParsedRule[]; total_rules: number }
@@ -119,6 +131,7 @@ export type CodeLensEvent =
   | { event: 'review_status'; message: string }
   | { event: 'bulk_fix_progress'; standard_id: string; fixed: number; failed: number; total: number; current_file: string }
   | { event: 'bulk_fix_complete'; standard_id: string; fixed: number; failed: number; total: number }
+  | { event: 'architecture_graph'; graph: ArchitectureGraph }
   | { event: 'error'; message: string };
 
 export const SSE_EVENT_TYPES = [
@@ -139,5 +152,6 @@ export const SSE_EVENT_TYPES = [
   'review_status',
   'bulk_fix_progress',
   'bulk_fix_complete',
+  'architecture_graph',
   'error',
 ] as const;

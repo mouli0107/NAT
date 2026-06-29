@@ -10,6 +10,7 @@ import {
   countMatchingFiles,
 } from './codelens-ignore';
 import { deterministicVerdict, DETERMINISTIC_MODE } from './codelens-deterministic';
+import { buildArchitectureGraph } from './codelens-arch-graph';
 import {
   ensureRepoReady,
   listTrackedFiles,
@@ -1988,6 +1989,20 @@ async function reviewFile(
 
 // â”€â”€â”€ Entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
+/** Build the repo-wide architecture/dependency graph and emit it once. Best-effort:
+ *  a failure here never blocks review completion. Reads cloned source from disk. */
+function emitArchitectureGraph(session: CodeLensSession): void {
+  try {
+    const graph = buildArchitectureGraph(
+      session.files.map(f => ({ relativePath: f.relativePath, absolutePath: f.absolutePath })),
+      (p) => { try { return fs.readFileSync(p, 'utf-8'); } catch { return null; } },
+    );
+    emit(session, { event: 'architecture_graph', graph });
+  } catch (err: any) {
+    console.warn('[CodeLens] architecture graph failed (non-fatal):', err?.message);
+  }
+}
+
 export async function runReview(session: CodeLensSession): Promise<void> {
   try {
     // Phase 1: clone once (or fetch latest if already cached)
@@ -2136,6 +2151,7 @@ export async function runReview(session: CodeLensSession): Promise<void> {
     if (session.status === ('stopped' as string)) {
       await finalizeRun(session, 'STOPPED');
     } else {
+      emitArchitectureGraph(session);
       await emitReviewComplete(session);
     }
   } catch (err: any) {
@@ -2166,6 +2182,7 @@ export async function resumeReview(session: CodeLensSession): Promise<void> {
     if (session.status === ('stopped' as string)) {
       await finalizeRun(session, 'STOPPED');
     } else {
+      emitArchitectureGraph(session);
       await emitReviewComplete(session);
     }
   } catch (err: any) {

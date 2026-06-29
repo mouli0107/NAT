@@ -1,5 +1,6 @@
-import { Download, Bug, CheckCircle, AlertTriangle, RefreshCw, Loader2 } from 'lucide-react';
-import type { ReviewSummary, RunStatus, CoverageInfo } from './codeLensTypes';
+import { Download, Bug, CheckCircle, AlertTriangle, RefreshCw, Loader2, Network } from 'lucide-react';
+import type { ReviewSummary, RunStatus, CoverageInfo, ArchitectureGraph } from './codeLensTypes';
+import { MermaidDiagram } from '@/components/functional/MermaidDiagram';
 
 interface ReportPanelProps {
   summary: ReviewSummary;
@@ -12,9 +13,11 @@ interface ReportPanelProps {
   retrying?: boolean;
   /** Return to the review screen to continue fixing violations (session still live). */
   onBackToReview?: () => void;
+  /** Repo-wide architecture/dependency graph (Controller → Service → Repository → DB). */
+  architecture?: ArchitectureGraph | null;
 }
 
-export function ReportPanel({ summary, reportUrl, onReset, runStatus, coverage, onRetryCoverage, retrying, onBackToReview }: ReportPanelProps) {
+export function ReportPanel({ summary, reportUrl, onReset, runStatus, coverage, onRetryCoverage, retrying, onBackToReview, architecture }: ReportPanelProps) {
   const handleDownload = () => {
     window.open(reportUrl, '_blank', 'noopener');
   };
@@ -24,7 +27,7 @@ export function ReportPanel({ summary, reportUrl, onReset, runStatus, coverage, 
   return (
     <div className="min-h-screen flex items-center justify-center p-6"
          style={{ background: '#0A1628' }}>
-      <div className="w-full max-w-2xl space-y-6">
+      <div className={`w-full space-y-6 ${architecture && architecture.nodes.length > 0 ? 'max-w-5xl' : 'max-w-2xl'}`}>
 
         {/* Title */}
         <div className="flex items-center gap-3">
@@ -164,6 +167,44 @@ export function ReportPanel({ summary, reportUrl, onReset, runStatus, coverage, 
             </span>
           </div>
         </div>
+
+        {/* Architecture & dependency graph (Controller → Service → Repository → DB) */}
+        {architecture && architecture.nodes.length > 0 && (
+          <div className="rounded-xl border p-5" style={{ background: '#0D1F3C', borderColor: '#1E3A5F' }}>
+            <div className="flex items-center gap-2 mb-1">
+              <Network className="w-4 h-4" style={{ color: '#00BFFF' }} />
+              <h3 className="text-sm font-semibold text-white">Architecture &amp; dependencies</h3>
+            </div>
+            <div className="text-[11px] mb-3" style={{ color: '#7A9CC0' }}>
+              {architecture.stats.controllers} controllers · {architecture.stats.services} services · {architecture.stats.repositories} repositories · {architecture.stats.edges} dependencies
+              {architecture.stats.illegalEdges > 0 && (
+                <span style={{ color: '#FF8080' }}> · {architecture.stats.illegalEdges} illegal edge(s)</span>
+              )}
+              {architecture.stats.truncated && (
+                <span style={{ color: '#4A6A8A' }}> · showing first {architecture.nodes.length} nodes (large repo, truncated)</span>
+              )}
+            </div>
+            <MermaidDiagram chart={architecture.mermaid} />
+            {architecture.violations.length > 0 && (
+              <div className="mt-3 space-y-1">
+                <div className="text-[11px] font-semibold" style={{ color: '#FF8080' }}>
+                  Layering violations (shown as red edges)
+                </div>
+                {architecture.violations.slice(0, 15).map((v, i) => (
+                  <div key={i} className="text-[11px] font-mono" style={{ color: '#7A9CC0' }}>
+                    <span style={{ color: '#FF8080' }}>{v.standardId}</span>{' '}
+                    {v.from} → {v.to} — {v.reason}
+                  </div>
+                ))}
+                {architecture.violations.length > 15 && (
+                  <div className="text-[11px]" style={{ color: '#4A6A8A' }}>
+                    …and {architecture.violations.length - 15} more
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Action buttons */}
         <div className="flex flex-col gap-3">

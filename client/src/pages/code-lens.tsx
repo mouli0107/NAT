@@ -37,6 +37,7 @@ import type {
   FilesDiscoveredEvent,
   RunStatus,
   CoverageInfo,
+  ArchitectureGraph,
 } from '@/components/code-lens/codeLensTypes';
 import type { RunSummary } from '@/lib/codeLensHistoryApi';
 
@@ -98,6 +99,8 @@ function CodeLensPageInner() {
   const [runStatus, setRunStatus] = useState<RunStatus | null>(null);
   const [coverage,  setCoverage]  = useState<CoverageInfo | null>(null);
   const [retrying,  setRetrying]  = useState(false);
+  // Repo-wide architecture/dependency graph (arrives once at review completion).
+  const [architecture, setArchitecture] = useState<ArchitectureGraph | null>(null);
   // Per-violation fix-verification result (✓ verified / ⚠ still failing).
   const [fixVerify, setFixVerify] = useState<Record<string, { verified: boolean; message: string }>>({});
 
@@ -292,6 +295,10 @@ function CodeLensPageInner() {
         // Stay on the review screen so the user can keep fixing violations; the
         // header now offers "View Report" + "New Review". (Previously this forced
         // a jump to the report, stranding the user away from the fix workflow.)
+        break;
+
+      case 'architecture_graph':
+        setArchitecture(ev.graph);
         break;
 
       case 'review_stopped':
@@ -489,6 +496,7 @@ function CodeLensPageInner() {
     setMode('SETUP');
     setSessionId(null);
     sessionIdRef.current = null;
+    setArchitecture(null);
     setFiles([]);
     setActiveFileId(null);
     setFileContents({});
@@ -642,6 +650,7 @@ function CodeLensPageInner() {
         onRetryCoverage={handleRetryCoverage}
         retrying={retrying}
         onBackToReview={() => setMode('REVIEW')}
+        architecture={architecture}
       />
     );
   }

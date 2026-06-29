@@ -1,4 +1,5 @@
 import type { Response } from 'express';
+import type { ArchitectureGraph } from './codelens-arch-graph';
 
 export type ViolationSeverity = 'Critical' | 'Warning' | 'Info';
 export type SessionStatus = 'pending' | 'cloning' | 'running' | 'stopped' | 'complete' | 'error';
@@ -239,6 +240,13 @@ export interface SseReviewResumed {
   resuming_from_file: string;
 }
 
+/** Repo-wide architecture/dependency graph (Controller → Service → Repository → DB),
+ *  emitted once at review completion. Layered overview + flagged illegal edges. */
+export interface SseArchitectureGraph {
+  event: 'architecture_graph';
+  graph: ArchitectureGraph;
+}
+
 export interface SseError {
   event: 'error';
   message: string;
@@ -285,6 +293,7 @@ export type SseEvent =
   | SseReviewStatus
   | SseBulkFixProgress
   | SseBulkFixComplete
+  | SseArchitectureGraph
   | SseError;
 
 // ─── Session ─────────────────────────────────────────────────────────────────
