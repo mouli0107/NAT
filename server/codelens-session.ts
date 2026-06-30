@@ -43,6 +43,7 @@ export function createSession(
     coverageErrors: new Map(),
     suppressions: new Set(),
     activeStandards: [],
+    reviewFlows: [],
   };
   sessions.set(sessionId, session);
   return session;

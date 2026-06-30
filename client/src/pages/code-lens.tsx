@@ -13,6 +13,7 @@ import type { BulkFixProgress } from '@/components/code-lens/CommonIssues';
 import { RunHistory }         from '@/components/code-lens/RunHistory';
 import { RunComparison }      from '@/components/code-lens/RunComparison';
 import { useCodeLensStream }  from '@/hooks/useCodeLensStream';
+import { MermaidDiagram }      from '@/components/functional/MermaidDiagram';
 import {
   startReview,
   stopReview,
@@ -99,8 +100,9 @@ function CodeLensPageInner() {
   const [runStatus, setRunStatus] = useState<RunStatus | null>(null);
   const [coverage,  setCoverage]  = useState<CoverageInfo | null>(null);
   const [retrying,  setRetrying]  = useState(false);
-  // Repo-wide architecture/dependency graph (arrives once at review completion).
+  // Repo-wide architecture/dependency graph (arrives up front, before file review).
   const [architecture, setArchitecture] = useState<ArchitectureGraph | null>(null);
+  const [showArch, setShowArch] = useState(true);
   // Per-violation fix-verification result (✓ verified / ⚠ still failing).
   const [fixVerify, setFixVerify] = useState<Record<string, { verified: boolean; message: string }>>({});
 
@@ -674,6 +676,29 @@ function CodeLensPageInner() {
         onViewReport={handleViewReport}
         onNewReview={handleReset}
       />
+
+      {/* Architecture graph — built up front, shown before/while files are reviewed */}
+      {architecture && architecture.nodes.length > 0 && (
+        <div className="flex-shrink-0 border-b" style={{ borderColor: '#1E3A5F', background: '#0D1F3C' }}>
+          <button
+            onClick={() => setShowArch(s => !s)}
+            className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-semibold"
+            style={{ color: '#00BFFF' }}
+          >
+            <span>{showArch ? '▾' : '▸'}</span>
+            <span style={{ color: '#7A9CC0' }}>Architecture —</span>
+            {architecture.stats.controllers} controllers · {architecture.stats.services} services · {architecture.stats.repositories} repositories · {architecture.stats.edges} deps
+            {architecture.stats.illegalEdges > 0 && (
+              <span style={{ color: '#FF8080' }}>· {architecture.stats.illegalEdges} illegal</span>
+            )}
+          </button>
+          {showArch && (
+            <div className="px-4 pb-3" style={{ maxHeight: '42vh', overflow: 'auto' }}>
+              <MermaidDiagram chart={architecture.mermaid} />
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Discovery banner */}
       {showDiscoveryBanner && discoverySummary && (

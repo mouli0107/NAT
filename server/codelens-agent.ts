@@ -10,7 +10,7 @@ import {
   countMatchingFiles,
 } from './codelens-ignore';
 import { deterministicVerdict, DETERMINISTIC_MODE } from './codelens-deterministic';
-import { buildArchitectureGraph } from './codelens-arch-graph';
+import { buildArchitectureGraph, planReviewOrder, type ArchitectureGraph } from './codelens-arch-graph';
 import {
   ensureRepoReady,
   listTrackedFiles,
@@ -1989,17 +1989,91 @@ async function reviewFile(
 
 // â”€â”€â”€ Entry point â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-/** Build the repo-wide architecture/dependency graph and emit it once. Best-effort:
- *  a failure here never blocks review completion. Reads cloned source from disk. */
-function emitArchitectureGraph(session: CodeLensSession): void {
+/** Build the repo-wide architecture graph, emit it (so the UI shows the
+ *  Controller→Service→Repository→DB view up front), and return it for ordering.
+ *  Best-effort — any failure falls back to a flat, unordered review. */
+function buildAndEmitArchitectureGraph(session: CodeLensSession): ArchitectureGraph | null {
   try {
     const graph = buildArchitectureGraph(
       session.files.map(f => ({ relativePath: f.relativePath, absolutePath: f.absolutePath })),
       (p) => { try { return fs.readFileSync(p, 'utf-8'); } catch { return null; } },
     );
     emit(session, { event: 'architecture_graph', graph });
+    return graph;
   } catch (err: any) {
     console.warn('[CodeLens] architecture graph failed (non-fatal):', err?.message);
+    return null;
+  }
+}
+
+/** Reorder session.files into per-controller flow order (Controller → Service →
+ *  Repository → DB), recording contiguous flow ranges so the review walks one
+ *  controller's chain fully before the next. Falls back to original order on any
+ *  mismatch. */
+function planAndReorderByFlows(session: CodeLensSession, graph: ArchitectureGraph): void {
+  try {
+    const plan = planReviewOrder(graph, session.files.map(f => f.relativePath));
+    if (plan.flows.length === 0) { session.reviewFlows = []; return; }
+    const byPath = new Map(session.files.map(f => [f.relativePath, f]));
+    const ordered: FileEntry[] = [];
+    const flows: { label: string; start: number; end: number }[] = [];
+    for (const flow of plan.flows) {
+      const start = ordered.length;
+      for (const rel of flow.files) { const fe = byPath.get(rel); if (fe) ordered.push(fe); }
+      if (ordered.length > start) flows.push({ label: flow.label, start, end: ordered.length });
+    }
+    const orphStart = ordered.length;
+    for (const rel of plan.orphans) { const fe = byPath.get(rel); if (fe) ordered.push(fe); }
+    if (ordered.length > orphStart) flows.push({ label: 'Other files', start: orphStart, end: ordered.length });
+    if (ordered.length === session.files.length) {
+      session.files = ordered;
+      session.reviewFlows = flows;
+      console.log(`[CodeLens] Review ordered into ${flows.length} controller flow(s)`);
+    } else {
+      session.reviewFlows = []; // safety: never drop files — fall back to flat
+    }
+  } catch (err: any) {
+    console.warn('[CodeLens] flow planning failed (non-fatal, flat review):', err?.message);
+    session.reviewFlows = [];
+  }
+}
+
+/** Read a file (truncating very large files) and review it against all standards. */
+function reviewOneFile(session: CodeLensSession, file: FileEntry, indexForProgress: number): Promise<void> {
+  let content: string;
+  try {
+    const raw = fs.readFileSync(file.absolutePath);
+    content = raw.length > MAX_FILE_BYTES
+      ? raw.slice(0, MAX_FILE_BYTES).toString('utf-8') + '\n// [file truncated — exceeds 150 KB]'
+      : raw.toString('utf-8');
+  } catch { content = ''; }
+  return reviewFile(session, file, content, indexForProgress);
+}
+
+/** Review one controller flow fully before starting the next (graph-ordered).
+ *  Honors stop + resume (startIndex). Falls back to a flat review when there are
+ *  no flows (no controllers detected, or planning failed). */
+async function reviewByFlows(session: CodeLensSession, limit: number, startIndex: number): Promise<void> {
+  const flows = session.reviewFlows;
+  if (!flows || flows.length === 0) return reviewFilesWithConcurrency(session, limit, startIndex);
+  const files = session.files;
+  for (let fi = 0; fi < flows.length; fi++) {
+    const flow = flows[fi];
+    if (flow.end <= startIndex) continue; // whole flow already reviewed (resume)
+    if ((session.status as string) === 'stopped') {
+      emit(session, { event: 'review_stopped', session_id: session.sessionId, files_reviewed: startIndex, files_remaining: files.length - startIndex });
+      return;
+    }
+    emit(session, { event: 'review_status', message: `Flow ${fi + 1}/${flows.length}: ${flow.label}` });
+    for (let i = Math.max(flow.start, startIndex); i < flow.end; i += limit) {
+      if ((session.status as string) === 'stopped') {
+        emit(session, { event: 'review_stopped', session_id: session.sessionId, files_reviewed: i, files_remaining: files.length - i });
+        return;
+      }
+      const batch = files.slice(i, Math.min(i + limit, flow.end));
+      await Promise.all(batch.map((file, j) => reviewOneFile(session, file, i + j + 1)));
+      session.lastReviewedFileIndex = Math.min(i + limit, flow.end);
+    }
   }
 }
 
@@ -2141,8 +2215,14 @@ export async function runReview(session: CodeLensSession): Promise<void> {
       total_rules: active.length,
     });
 
-    // Phase 3: review files
-    await reviewFilesWithConcurrency(session, FILE_CONCURRENCY, 0);
+    // Phase 2c: understand the repo FIRST — build the architecture graph and emit
+    // it so the UI shows the Controller→Service→Repository→DB view before review,
+    // then order the file queue by it (one controller flow at a time).
+    const archGraph = buildAndEmitArchitectureGraph(session);
+    if (archGraph) planAndReorderByFlows(session, archGraph);
+
+    // Phase 3: review files — one controller flow at a time when a graph exists.
+    await reviewByFlows(session, FILE_CONCURRENCY, 0);
 
     // Finalize either way. A stopped run is persisted to the DB (so it survives
     // in history and stays exportable) but emits NO review_complete — the user
@@ -2151,7 +2231,6 @@ export async function runReview(session: CodeLensSession): Promise<void> {
     if (session.status === ('stopped' as string)) {
       await finalizeRun(session, 'STOPPED');
     } else {
-      emitArchitectureGraph(session);
       await emitReviewComplete(session);
     }
   } catch (err: any) {
@@ -2178,11 +2257,10 @@ export async function resumeReview(session: CodeLensSession): Promise<void> {
   });
 
   try {
-    await reviewFilesWithConcurrency(session, FILE_CONCURRENCY, startFrom);
+    await reviewByFlows(session, FILE_CONCURRENCY, startFrom);
     if (session.status === ('stopped' as string)) {
       await finalizeRun(session, 'STOPPED');
     } else {
-      emitArchitectureGraph(session);
       await emitReviewComplete(session);
     }
   } catch (err: any) {

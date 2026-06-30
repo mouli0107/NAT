@@ -279,6 +279,52 @@ export function buildArchitectureGraph(
   return { nodes, edges, violations, mermaid, stats };
 }
 
+// ─── Review ordering — one controller flow at a time ─────────────────────────
+//
+// Produces the order in which files are reviewed: for each controller, its full
+// dependency chain (controller → service(s) → repository(ies) → DB) grouped
+// together, controllers in order, then everything not reachable from a controller.
+
+export interface ReviewFlow {
+  label: string;     // e.g. "OrdersController → OrderService → OrderRepository"
+  files: string[];   // relative paths, in chain order, deduped across flows
+}
+export interface ReviewPlan {
+  flows: ReviewFlow[];
+  orphans: string[]; // files not reachable from any controller (DTOs, models, Program.cs, unattached services)
+}
+
+export function planReviewOrder(graph: ArchitectureGraph, allRelPaths: string[]): ReviewPlan {
+  const adj = new Map<string, string[]>();
+  for (const e of graph.edges) {
+    const list = adj.get(e.from);
+    if (list) list.push(e.to); else adj.set(e.from, [e.to]);
+  }
+  const byId = new Map(graph.nodes.map(n => [n.id, n]));
+  const assigned = new Set<string>();
+  const flows: ReviewFlow[] = [];
+
+  for (const c of graph.nodes.filter(n => n.layer === 'controller')) {
+    // Breadth-first along dependency edges → controller, then its services, repos, DB.
+    const seen = new Set<string>([c.id]);
+    const queue = [c.id];
+    const files: string[] = [];
+    const labelParts: string[] = [];
+    while (queue.length) {
+      const id = queue.shift()!;
+      const node = byId.get(id);
+      if (!node) continue;
+      if (node.file && !assigned.has(node.file)) { files.push(node.file); assigned.add(node.file); }
+      if (node.id !== 'db' && labelParts.length < 4) labelParts.push(node.label);
+      for (const to of adj.get(id) ?? []) if (!seen.has(to)) { seen.add(to); queue.push(to); }
+    }
+    if (files.length) flows.push({ label: labelParts.join(' → '), files });
+  }
+
+  const orphans = allRelPaths.filter(p => !assigned.has(p));
+  return { flows, orphans };
+}
+
 const LAYER_TITLE: Record<ArchLayer, string> = {
   controller: 'Controllers', service: 'Services', repository: 'Repositories', data: 'Data', other: 'Other',
 };

@@ -347,4 +347,9 @@ export interface CodeLensSession {
   /** Effective standards for this run = built-in 42 + enabled custom standards.
    *  Loaded at review start; empty until then (callers fall back to built-ins). */
   activeStandards: CodeStandard[];
+  /** Per-controller review flows (Controller → Service → Repository → DB), in the
+   *  order files are reviewed. Contiguous index ranges over the (reordered) files
+   *  array; the review walks one flow fully before starting the next. Empty until
+   *  the architecture graph is built at review start. */
+  reviewFlows: { label: string; start: number; end: number }[];
 }
