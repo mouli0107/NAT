@@ -102,11 +102,16 @@ export interface FilesDiscoveredEvent {
 }
 
 // Repo-wide architecture / dependency graph (mirrors server codelens-arch-graph.ts)
+export interface ArchitectureFlow {
+  id: string; label: string; mermaid: string; nodeCount: number; illegal: number;
+}
 export interface ArchitectureGraph {
   nodes: { id: string; label: string; layer: 'controller' | 'service' | 'repository' | 'data' | 'other'; file: string }[];
   edges: { from: string; to: string; viaInterface?: string; illegal?: boolean; reason?: string; standardId?: string }[];
   violations: { from: string; to: string; reason: string; standardId: string }[];
   mermaid: string;
+  summaryMermaid: string;
+  flows: ArchitectureFlow[];
   stats: {
     controllers: number; services: number; repositories: number; dataAccess: number;
     edges: number; illegalEdges: number; filesAnalyzed: number; truncated: boolean;

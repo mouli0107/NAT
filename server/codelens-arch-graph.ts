@@ -36,11 +36,25 @@ export interface ArchViolation {
   standardId: string;
 }
 
+export interface FlowDiagram {
+  id: string;        // controller node id
+  label: string;     // OrdersController → OrderService → OrderRepository
+  mermaid: string;   // small, readable Mermaid for just this controller's chain
+  nodeCount: number;
+  illegal: number;   // illegal edges within this flow
+}
+
 export interface ArchitectureGraph {
   nodes: ArchNode[];
   edges: ArchEdge[];
   violations: ArchViolation[];
+  /** Full graph (every node) — only practical for small repos. */
   mermaid: string;
+  /** Aggregated 4-box layered overview (Controllers → Services → Repositories → DB
+   *  with counts + edge totals). Readable at any repo size — the default view. */
+  summaryMermaid: string;
+  /** One small diagram per controller for drill-down. */
+  flows: FlowDiagram[];
   stats: {
     controllers: number;
     services: number;
@@ -64,6 +78,8 @@ const FRAMEWORK_TYPES = new Set([
   'IHttpContextAccessor', 'IHttpClientFactory', 'HttpClient', 'CancellationToken',
   'IApplicationIdentity', 'IMemoryCache', 'IDistributedCache', 'IWebHostEnvironment',
   'IHostEnvironment', 'IValidator', 'IDaprClient', 'DaprClient',
+  // JSON:API paging context — injected into controllers by design; NOT a DbContext.
+  'JsonApiContext', 'IJsonApiContext',
 ]);
 
 interface ParsedClass {
@@ -161,7 +177,13 @@ function parseFile(filePath: string, content: string): ParsedClass[] {
     const nextIdx = content.indexOf('\nclass ', classRe.lastIndex);
     const body = content.slice(start, nextIdx === -1 ? content.length : nextIdx);
     const deps = extractDeps(name, primaryCtor, body);
-    const usesDbContext = /:\s*DbContext|DbSet<|\bDbContext\b/.test(body) || deps.some(d => /Context$/.test(d));
+    // Real EF DbContext only — `: SomeDbContext`, `DbSet<…>`, a `*DbContext` symbol,
+    // or a dependency type ending in `DbContext`. Must NOT match JsonApiContext etc.
+    const usesDbContext =
+      /:\s*[A-Za-z_]*DbContext\b/.test(body) ||
+      /\bDbSet\s*</.test(body) ||
+      /\b[A-Za-z_]*DbContext\b/.test(body) ||
+      deps.some(d => /DbContext$/.test(d));
     classes.push({ name, layer, file: filePath, interfaces, deps, usesDbContext });
   }
   return classes;
@@ -266,6 +288,8 @@ export function buildArchitectureGraph(
   }
 
   const mermaid = toMermaid(nodes, edges);
+  const summaryMermaid = buildSummaryMermaid(nodes, edges);
+  const flows = buildFlowDiagrams(nodes, edges);
   const stats = {
     controllers: nodes.filter(n => n.layer === 'controller').length,
     services: nodes.filter(n => n.layer === 'service').length,
@@ -276,7 +300,7 @@ export function buildArchitectureGraph(
     filesAnalyzed: csFiles.length,
     truncated,
   };
-  return { nodes, edges, violations, mermaid, stats };
+  return { nodes, edges, violations, mermaid, summaryMermaid, flows, stats };
 }
 
 // ─── Review ordering — one controller flow at a time ─────────────────────────
@@ -349,4 +373,47 @@ function toMermaid(nodes: ArchNode[], edges: ArchEdge[]): string {
   });
   illegalIdx.forEach(i => lines.push(`  linkStyle ${i} stroke:#ff4444,stroke-width:2px,color:#ff4444`));
   return lines.join('\n');
+}
+
+/** Aggregated 4-box overview — readable regardless of repo size (the default view). */
+function buildSummaryMermaid(nodes: ArchNode[], edges: ArchEdge[]): string {
+  const count = (l: ArchLayer) => nodes.filter(n => n.layer === l).length;
+  const layerOf = new Map(nodes.map(n => [n.id, n.layer]));
+  const between = (a: ArchLayer, b: ArchLayer) =>
+    edges.filter(e => layerOf.get(e.from) === a &&
+      (layerOf.get(e.to) === b || (b === 'data' && e.to === 'db'))).length;
+  const L = ['flowchart LR'];
+  L.push(`  C["Controllers<br/>${count('controller')}"]:::layer`);
+  L.push(`  S["Services<br/>${count('service')}"]:::layer`);
+  L.push(`  R["Repositories<br/>${count('repository')}"]:::layer`);
+  L.push(`  D[("Database")]:::layer`);
+  const cs = between('controller', 'service'); if (cs) L.push(`  C -->|"${cs}"| S`);
+  const sr = between('service', 'repository'); if (sr) L.push(`  S -->|"${sr}"| R`);
+  const rd = between('repository', 'data'); if (rd) L.push(`  R -->|"${rd}"| D`);
+  L.push('  classDef layer fill:#0D1F3C,stroke:#1E3A5F,color:#fff;');
+  return L.join('\n');
+}
+
+/** One small, readable diagram per controller — just its dependency chain. */
+function buildFlowDiagrams(nodes: ArchNode[], edges: ArchEdge[]): FlowDiagram[] {
+  const adj = new Map<string, string[]>();
+  for (const e of edges) { const l = adj.get(e.from); if (l) l.push(e.to); else adj.set(e.from, [e.to]); }
+  const byId = new Map(nodes.map(n => [n.id, n]));
+  const out: FlowDiagram[] = [];
+  for (const c of nodes.filter(n => n.layer === 'controller')) {
+    const seen = new Set<string>([c.id]);
+    const q = [c.id];
+    while (q.length) { const id = q.shift()!; for (const to of adj.get(id) ?? []) if (!seen.has(to)) { seen.add(to); q.push(to); } }
+    const subNodes = nodes.filter(n => seen.has(n.id));
+    const subEdges = edges.filter(e => seen.has(e.from) && seen.has(e.to));
+    const chain = subNodes.filter(n => n.id !== c.id && n.id !== 'db').slice(0, 4).map(n => n.label);
+    out.push({
+      id: c.id,
+      label: [c.label, ...chain].join(' → '),
+      mermaid: toMermaid(subNodes, subEdges),
+      nodeCount: subNodes.length,
+      illegal: subEdges.filter(e => e.illegal).length,
+    });
+  }
+  return out;
 }

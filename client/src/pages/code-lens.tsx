@@ -13,7 +13,7 @@ import type { BulkFixProgress } from '@/components/code-lens/CommonIssues';
 import { RunHistory }         from '@/components/code-lens/RunHistory';
 import { RunComparison }      from '@/components/code-lens/RunComparison';
 import { useCodeLensStream }  from '@/hooks/useCodeLensStream';
-import { MermaidDiagram }      from '@/components/functional/MermaidDiagram';
+import { ArchitectureView }    from '@/components/code-lens/ArchitectureView';
 import {
   startReview,
   stopReview,
@@ -694,7 +694,7 @@ function CodeLensPageInner() {
           </button>
           {showArch && (
             <div className="px-4 pb-3" style={{ maxHeight: '42vh', overflow: 'auto' }}>
-              <MermaidDiagram chart={architecture.mermaid} />
+              <ArchitectureView graph={architecture} />
             </div>
           )}
         </div>

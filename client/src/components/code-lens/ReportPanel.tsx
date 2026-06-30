@@ -1,6 +1,6 @@
 import { Download, Bug, CheckCircle, AlertTriangle, RefreshCw, Loader2, Network } from 'lucide-react';
 import type { ReviewSummary, RunStatus, CoverageInfo, ArchitectureGraph } from './codeLensTypes';
-import { MermaidDiagram } from '@/components/functional/MermaidDiagram';
+import { ArchitectureView } from './ArchitectureView';
 
 interface ReportPanelProps {
   summary: ReviewSummary;
@@ -184,7 +184,7 @@ export function ReportPanel({ summary, reportUrl, onReset, runStatus, coverage, 
                 <span style={{ color: '#4A6A8A' }}> · showing first {architecture.nodes.length} nodes (large repo, truncated)</span>
               )}
             </div>
-            <MermaidDiagram chart={architecture.mermaid} />
+            <ArchitectureView graph={architecture} />
             {architecture.violations.length > 0 && (
               <div className="mt-3 space-y-1">
                 <div className="text-[11px] font-semibold" style={{ color: '#FF8080' }}>
