@@ -1,6 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, lazy, Suspense } from 'react';
 import { MermaidDiagram } from '@/components/functional/MermaidDiagram';
 import type { ArchitectureGraph } from './codeLensTypes';
+
+// Lazy so React Flow (heavy) only loads when the user opens the interactive view.
+const ArchitectureFlowGraph = lazy(() =>
+  import('./ArchitectureFlowGraph').then(m => ({ default: m.ArchitectureFlowGraph })));
 
 /**
  * Architecture view for any repo size:
@@ -11,6 +15,7 @@ import type { ArchitectureGraph } from './codeLensTypes';
  * Avoids rendering all ~158 nodes at once (the unreadable full graph).
  */
 export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
+  const [mode, setMode] = useState<'summary' | 'interactive'>('summary');
   // 'overview' = the summary; otherwise a controller flow id.
   const [selected, setSelected] = useState<string>('overview');
 
@@ -24,6 +29,30 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
 
   return (
     <div className="space-y-2">
+      {/* View mode: Summary (Mermaid, fast) ⇄ Interactive (React Flow, explorable) */}
+      <div className="flex items-center gap-1">
+        {(['summary', 'interactive'] as const).map(m => (
+          <button
+            key={m}
+            onClick={() => setMode(m)}
+            className="text-[11px] font-semibold px-2.5 py-1 rounded"
+            style={{
+              background: mode === m ? '#00BFFF22' : 'transparent',
+              color: mode === m ? '#00BFFF' : '#7A9CC0',
+              border: `1px solid ${mode === m ? '#00BFFF55' : '#1E3A5F'}`,
+            }}
+          >
+            {m === 'summary' ? 'Summary' : 'Interactive graph'}
+          </button>
+        ))}
+      </div>
+
+      {mode === 'interactive' ? (
+        <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: '#4A6A8A' }}>Loading interactive graph…</div>}>
+          <ArchitectureFlowGraph graph={graph} />
+        </Suspense>
+      ) : (
+      <>
       <div className="flex items-center gap-2 flex-wrap">
         <select
           value={selected}
@@ -49,6 +78,8 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
             </span>}
       </div>
       <MermaidDiagram chart={chart} />
+      </>
+      )}
     </div>
   );
 }
