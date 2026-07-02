@@ -4,7 +4,7 @@ import { Sidebar } from '@/components/dashboard/sidebar';
 import { DashboardHeader } from '@/components/dashboard/header';
 import {
   Rocket, Play, Check, AlertTriangle, Circle, Copy, Download, Loader2, Globe,
-  ListChecks, Upload, FileSpreadsheet, Bug, Boxes, ArrowLeft, Settings, Link2,
+  ListChecks, Upload, FileSpreadsheet, Bug, Boxes, ArrowLeft, Settings, Link2, Video,
 } from 'lucide-react';
 
 interface GroundedStep { index: number; raw: string; status: 'grounded' | 'flagged' | 'setup'; locator?: string; code?: string; detail: string; }
@@ -36,14 +36,16 @@ export default function AutopilotPage() {
   const [result, setResult] = useState<RunResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [frame, setFrame] = useState<string | null>(null);   // live CDP screencast frame (data URL)
   const esRef = useRef<EventSource | null>(null);
+  const wsRef = useRef<WebSocket | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     fetch('/api/integrations/connected').then(r => r.json()).then(d => {
       if (d?.success && Array.isArray(d.integrations)) setConnected(d.integrations);
     }).catch(() => {});
-    return () => esRef.current?.close();
+    return () => { esRef.current?.close(); wsRef.current?.close(); };
   }, []);
 
   const has = (rx: RegExp) => connected.find(c => rx.test(c.platform) || rx.test(c.name));
@@ -69,8 +71,8 @@ export default function AutopilotPage() {
   };
 
   const run = async () => {
-    setRunning(true); setLive([]); setResult(null); setError(null); setCopied(false);
-    esRef.current?.close();
+    setRunning(true); setLive([]); setResult(null); setError(null); setCopied(false); setFrame(null);
+    esRef.current?.close(); wsRef.current?.close();
     try {
       const r = await fetch('/api/autopilot/run', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -78,12 +80,19 @@ export default function AutopilotPage() {
       });
       const data = await r.json();
       if (!r.ok) { setError(data.error || 'Failed to start'); setRunning(false); return; }
+      // Live video — CDP screencast frames over WebSocket.
+      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+      const ws = new WebSocket(`${proto}://${location.host}/ws/autopilot?sessionId=${data.sessionId}`);
+      ws.onmessage = (m) => setFrame('data:image/jpeg;base64,' + m.data);
+      ws.onerror = () => { /* ignore */ };
+      wsRef.current = ws;
+      // Step + result events over SSE.
       const es = new EventSource(data.streamUrl); esRef.current = es;
       es.onmessage = (e) => {
         const ev = JSON.parse(e.data);
         if (ev.type === 'step') setLive(prev => [...prev, ev.step]);
-        else if (ev.type === 'done') { setResult(ev.result); setRunning(false); es.close(); }
-        else if (ev.type === 'error') { setError(ev.message); setRunning(false); es.close(); }
+        else if (ev.type === 'done') { setResult(ev.result); setRunning(false); es.close(); ws.close(); }
+        else if (ev.type === 'error') { setError(ev.message); setRunning(false); es.close(); ws.close(); }
       };
       es.onerror = () => { es.close(); setRunning(false); };
     } catch (e: any) { setError(e.message); setRunning(false); }
@@ -226,6 +235,20 @@ export default function AutopilotPage() {
 
             {/* ── Output ── */}
             <div className="space-y-4 min-w-0">
+              {/* Live browser video (CDP screencast) */}
+              {(running || frame) && (
+                <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: '#e5e7eb', boxShadow: '0 1px 3px #0000000a' }}>
+                  <div className="flex items-center justify-between px-4 py-2 border-b" style={{ borderColor: '#e5e7eb' }}>
+                    <span className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-gray-500"><Video className="w-3.5 h-3.5" /> Live browser</span>
+                    {running && <span className="flex items-center gap-1 text-[11px] font-semibold text-red-500"><span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" /> LIVE</span>}
+                  </div>
+                  <div className="flex items-center justify-center" style={{ background: '#0b0f1a', aspectRatio: '16 / 10' }}>
+                    {frame ? <img src={frame} alt="live browser" className="w-full h-full object-contain" />
+                           : <div className="flex items-center gap-2 text-xs text-gray-400"><Loader2 className="w-4 h-4 animate-spin" /> starting browser…</div>}
+                  </div>
+                </div>
+              )}
+
               {(running || shownSteps.length > 0) && (
                 <div className="bg-white rounded-xl border p-4" style={{ borderColor: '#e5e7eb', boxShadow: '0 1px 3px #0000000a' }}>
                   <div className="flex items-center justify-between mb-3">

@@ -9,7 +9,7 @@
 // same mechanism proven live against nousinfosystems.com. No guesses: a locator is
 // only written after it worked once against the real app.
 
-import { chromium, type Browser, type Page } from 'playwright';
+import { chromium, type Browser, type Page, type CDPSession } from 'playwright';
 
 export type StepVerb = 'open' | 'navigate' | 'click' | 'fill' | 'assert' | 'unknown';
 
@@ -121,17 +121,30 @@ function tsRegex(phrase: string): string {
 export async function runAutopilot(
   targetUrl: string,
   rawSteps: string[],
-  opts: { testName?: string; onStep?: (g: GroundedStep) => void; headless?: boolean } = {},
+  opts: { testName?: string; onStep?: (g: GroundedStep) => void; onFrame?: (jpegBase64: string) => void; headless?: boolean } = {},
 ): Promise<AutopilotResult> {
   const parsed = parseSteps(rawSteps);
   const grounded: GroundedStep[] = [];
   const emit = (g: GroundedStep) => { grounded.push(g); opts.onStep?.(g); };
 
   let browser: Browser | null = null;
+  let cdp: CDPSession | null = null;
   let title = '';
   try {
     browser = await chromium.launch({ headless: opts.headless !== false });
     const page = await browser.newPage({ viewport: { width: 1366, height: 900 } });
+
+    // Live video: stream the browser as JPEG frames via CDP screencast (works headless).
+    if (opts.onFrame) {
+      try {
+        cdp = await page.context().newCDPSession(page);
+        cdp.on('Page.screencastFrame', async (f: any) => {
+          try { opts.onFrame!(f.data); } catch { /* ignore */ }
+          try { await cdp!.send('Page.screencastFrameAck', { sessionId: f.sessionId }); } catch { /* ignore */ }
+        });
+        await cdp.send('Page.startScreencast', { format: 'jpeg', quality: 55, maxWidth: 1280, maxHeight: 800, everyNthFrame: 1 } as any);
+      } catch { cdp = null; }
+    }
 
     // Always navigate to the target first.
     await page.goto(targetUrl, { waitUntil: 'domcontentloaded', timeout: 60000 });
@@ -218,6 +231,7 @@ export async function runAutopilot(
       emit({ index: i, raw: step.raw, status: 'flagged', detail: `Could not interpret step` });
     }
   } finally {
+    try { await cdp?.send('Page.stopScreencast'); } catch { /* ignore */ }
     await browser?.close().catch(() => {});
   }
 

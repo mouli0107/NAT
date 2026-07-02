@@ -10841,6 +10841,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   // Local workspace agent WebSocket (file sync + artifact roundtrip)
   const workspaceAgentWss = setupWorkspaceAgentWebSocket(httpServer);
 
+  // ASTRA Autopilot live-video (CDP screencast) WebSocket
+  const { setupAutopilotWebSocket } = await import('./autopilot-routes');
+  const autopilotWss = setupAutopilotWebSocket(httpServer);
+
   // Shared upgrade router — prevents multiple WSS instances from fighting over the upgrade event
   httpServer.on('upgrade', (req, socket, head) => {
     const pathname = req.url?.split('?')[0];
@@ -10855,6 +10859,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
     } else if (pathname === '/ws/workspace-agent') {
       workspaceAgentWss.handleUpgrade(req, socket as any, head, (ws) => {
         workspaceAgentWss.emit('connection', ws, req);
+      });
+    } else if (pathname === '/ws/autopilot') {
+      autopilotWss.handleUpgrade(req, socket as any, head, (ws) => {
+        autopilotWss.emit('connection', ws, req);
       });
     } else {
       socket.destroy();

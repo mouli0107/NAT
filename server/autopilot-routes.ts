@@ -1,8 +1,36 @@
 import { Router, type Request, type Response } from 'express';
 import { randomUUID } from 'crypto';
+import { WebSocketServer, type WebSocket } from 'ws';
+import type { Server } from 'http';
 import { runAutopilot } from './autopilot-agent';
 
 export const autopilotRouter = Router();
+
+// ─── Live video (CDP screencast) — per-session WS clients ─────────────────────
+const frameClients = new Map<string, Set<WebSocket>>();
+
+/** WebSocket server for /ws/autopilot?sessionId= — streams live JPEG frames. */
+export function setupAutopilotWebSocket(_httpServer: Server): WebSocketServer {
+  const wss = new WebSocketServer({ noServer: true });
+  wss.on('connection', (ws: WebSocket, req: any) => {
+    const sid = new URL(req.url || '', 'http://x').searchParams.get('sessionId') || '';
+    if (!sid) { ws.close(); return; }
+    let set = frameClients.get(sid);
+    if (!set) { set = new Set(); frameClients.set(sid, set); }
+    set.add(ws);
+    ws.on('close', () => { const s = frameClients.get(sid); if (s) { s.delete(ws); if (s.size === 0) frameClients.delete(sid); } });
+    ws.on('error', () => { /* ignore */ });
+  });
+  return wss;
+}
+
+function broadcastFrame(sid: string, jpegBase64: string) {
+  const set = frameClients.get(sid);
+  if (!set) return;
+  for (const ws of Array.from(set)) {
+    if (ws.readyState === 1) { try { ws.send(jpegBase64); } catch { /* ignore */ } }
+  }
+}
 
 interface APSession { id: string; clients: Set<Response>; events: unknown[]; done: boolean; createdAt: number; }
 const sessions = new Map<string, APSession>();
@@ -37,7 +65,7 @@ autopilotRouter.post('/run', (req: Request, res: Response) => {
   sessions.set(id, s);
   res.json({ sessionId: id, streamUrl: `/api/autopilot/stream?sessionId=${id}` });
 
-  runAutopilot(url, stepLines, { testName, onStep: g => emit(s, { type: 'step', step: g }) })
+  runAutopilot(url, stepLines, { testName, onStep: g => emit(s, { type: 'step', step: g }), onFrame: data => broadcastFrame(id, data) })
     .then(result => emit(s, { type: 'done', result }))
     .catch(err => emit(s, { type: 'error', message: String(err?.message ?? err).split('\n')[0] }))
     .finally(() => { s.done = true; });
