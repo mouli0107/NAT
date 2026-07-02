@@ -37,6 +37,8 @@ export default function AutopilotPage() {
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [frame, setFrame] = useState<string | null>(null);   // live CDP screencast frame (data URL)
+  const [videoMsg, setVideoMsg] = useState<string | null>(null);
+  const framesRef = useRef(0);
   const esRef = useRef<EventSource | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
   const fileRef = useRef<HTMLInputElement | null>(null);
@@ -71,7 +73,8 @@ export default function AutopilotPage() {
   };
 
   const run = async () => {
-    setRunning(true); setLive([]); setResult(null); setError(null); setCopied(false); setFrame(null);
+    setRunning(true); setLive([]); setResult(null); setError(null); setCopied(false); setFrame(null); setVideoMsg(null);
+    framesRef.current = 0;
     esRef.current?.close(); wsRef.current?.close();
     try {
       const r = await fetch('/api/autopilot/run', {
@@ -83,8 +86,9 @@ export default function AutopilotPage() {
       // Live video — CDP screencast frames over WebSocket.
       const proto = location.protocol === 'https:' ? 'wss' : 'ws';
       const ws = new WebSocket(`${proto}://${location.host}/ws/autopilot?sessionId=${data.sessionId}`);
-      ws.onmessage = (m) => setFrame('data:image/jpeg;base64,' + m.data);
-      ws.onerror = () => { /* ignore */ };
+      ws.onmessage = (m) => { framesRef.current++; setVideoMsg(null); setFrame('data:image/jpeg;base64,' + m.data); };
+      ws.onerror = () => { if (framesRef.current === 0) setVideoMsg('Live video channel unavailable — restart the dev server (the /ws/autopilot route is server-side and won\'t hot-reload).'); };
+      ws.onclose = () => { if (framesRef.current === 0 && running) setVideoMsg('Live video channel closed before any frame — restart the dev server so the /ws/autopilot route loads.'); };
       wsRef.current = ws;
       // Step + result events over SSE.
       const es = new EventSource(data.streamUrl); esRef.current = es;
@@ -244,6 +248,7 @@ export default function AutopilotPage() {
                   </div>
                   <div className="flex items-center justify-center" style={{ background: '#0b0f1a', aspectRatio: '16 / 10' }}>
                     {frame ? <img src={frame} alt="live browser" className="w-full h-full object-contain" />
+                           : videoMsg ? <div className="text-xs text-amber-400 px-6 text-center leading-relaxed">{videoMsg}</div>
                            : <div className="flex items-center gap-2 text-xs text-gray-400"><Loader2 className="w-4 h-4 animate-spin" /> starting browser…</div>}
                   </div>
                 </div>
