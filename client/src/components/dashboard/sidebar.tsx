@@ -1,4 +1,4 @@
-import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList, ShieldCheck } from "lucide-react";
+import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList, ShieldCheck, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
@@ -14,7 +14,7 @@ interface SidebarProps {
 }
 
 // Modules that are ALWAYS visible regardless of allowedModules (bottom section + dashboard)
-const ALWAYS_VISIBLE = new Set(['dashboard', 'recorder', 'framework-config', 'integration-management', 'settings', 'help']);
+const ALWAYS_VISIBLE = new Set(['dashboard', 'recorder', 'autopilot', 'framework-config', 'integration-management', 'settings', 'help']);
 
 export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRunning = false, isCollapsed = false, onToggleCollapse }: SidebarProps) {
   const [location] = useLocation();
@@ -39,6 +39,7 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
   const allNavItems = [
     { id: "dashboard",         href: "/dashboard",         icon: LayoutDashboard, label: "Dashboard",                    testId: "nav-dashboard" },
     { id: "recorder",          href: "/recorder",          icon: CircleDot,       label: "Recording Studio",             testId: "nav-recorder" },
+    { id: "autopilot",         href: "/autopilot",         icon: Rocket,          label: "Autopilot",                    testId: "nav-autopilot" },
     { id: "test-library",      href: "/test-library",      icon: Library,         label: "Test Library",                 testId: "nav-test-library" },
     { id: "test-management",   href: "/test-management",   icon: ClipboardList,   label: "Test Management",              testId: "nav-test-management" },
     { id: "functional-testing",href: "/functional-testing",icon: Zap,             label: "Autonomous Testing",           testId: "nav-functional" },

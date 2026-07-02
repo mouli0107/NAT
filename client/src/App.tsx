@@ -49,6 +49,7 @@ import ConflictReviewPage from "@/pages/ConflictReview";
 import TestManagementPage from "@/pages/test-management";
 import CoveragePage from "@/pages/coverage";
 import CodeLensPage from "@/pages/code-lens";
+import AutopilotPage from "@/pages/autopilot";
 import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
 function ProtectedRoute({ component: Component }: { component: React.ComponentType }) {
@@ -252,6 +253,9 @@ function Router() {
       </Route>
       <Route path="/code-lens">
         {() => <ProtectedRoute component={CodeLensPage} />}
+      </Route>
+      <Route path="/autopilot">
+        {() => <ProtectedRoute component={AutopilotPage} />}
       </Route>
       <Route path="/login" component={LoginPage} />
       <Route component={NotFound} />

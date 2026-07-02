@@ -11303,6 +11303,10 @@ Each element includes a fallback locator strategy (label, placeholder, text).
   const { codeLensRouter } = await import('./codelens-routes');
   app.use('/api/v1/codelens', codeLensRouter);
 
+  // ── ASTRA Autopilot — manual steps → live-grounded Playwright ─────────────
+  const { autopilotRouter } = await import('./autopilot-routes');
+  app.use('/api/autopilot', autopilotRouter);
+
   return httpServer;
 }
 
