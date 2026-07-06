@@ -486,7 +486,8 @@ export function EnvestnetMode() {
   const [includeManifest, setIncludeManifest] = useState(true);
   const [loading, setLoading]           = useState(false);
   const [result, setResult]             = useState<{
-    data: string;
+    clean: string;
+    negatives: string;
     manifest: string;
     recordCount: number;
     breakdown: { positive: number; edge: number; negative: number };
@@ -502,12 +503,12 @@ export function EnvestnetMode() {
       const resp = await fetch("/api/synthetic-data/envestnet/generate-csh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recordCount, includeManifest }),
+        body: JSON.stringify({ recordCount }),
       });
       const json = await resp.json();
       if (!json.success) throw new Error(json.error);
-      setResult({ data: json.data, manifest: json.manifest, recordCount: json.recordCount, breakdown: json.breakdown });
-      toast({ title: "Generated", description: `${json.recordCount} records across all SOURCE_CODEs` });
+      setResult({ clean: json.clean, negatives: json.negatives, manifest: json.manifest, recordCount: json.recordCount, breakdown: json.breakdown });
+      toast({ title: "Generated", description: `${json.recordCount} valid records + ${json.breakdown.negative} negative scenarios` });
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" });
     } finally {
@@ -678,56 +679,52 @@ export function EnvestnetMode() {
                   </div>
                 </div>
 
-                {/* Download buttons — prominent in content area */}
-                <div className="flex gap-2">
+                {/* Downloads — clean file, negative scenarios, and the scenario document are delivered separately */}
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="default"
                     className="flex-1"
-                    onClick={() => downloadFile(result.data, "sal_csh_synthetic.txt")}
+                    onClick={() => downloadFile(result.clean, "sal_csh_synthetic_clean.txt")}
                   >
                     <Download className="w-4 h-4 mr-2" />
-                    Download Data (.txt)
+                    Clean file (.txt)
                   </Button>
-                  {includeManifest && result.manifest && (
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => downloadFile(result.manifest, "sal_csh_manifest.txt")}
-                    >
-                      <FileText className="w-4 h-4 mr-2" />
-                      Download Manifest (.txt)
-                    </Button>
-                  )}
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => downloadFile(result.negatives, "sal_csh_synthetic_negatives.txt")}
+                  >
+                    <AlertTriangle className="w-4 h-4 mr-2" />
+                    Negative scenarios (.txt)
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={() => downloadFile(result.manifest, "sal_csh_scenarios.txt")}
+                  >
+                    <FileText className="w-4 h-4 mr-2" />
+                    Scenario doc (.txt)
+                  </Button>
                 </div>
 
-                {/* Section labels in preview */}
+                {/* Clean preview */}
                 <div>
-                  <Label className="text-xs text-muted-foreground mb-1 block">
-                    Preview — first 5 rows (positive section)
+                  <Label className="text-xs text-green-700 dark:text-green-400 mb-1 flex items-center gap-1">
+                    <CheckCircle2 className="w-3 h-3" /> Clean file — first 5 rows (100% valid)
                   </Label>
                   <pre className="text-xs bg-muted rounded-md p-3 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-48">
-                    {result.data.split("\n").slice(0, 5).join("\n")}
+                    {result.clean.split("\n").slice(0, 5).join("\n")}
                   </pre>
                 </div>
 
-                {/* Edge + negative preview */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-xs text-yellow-600 dark:text-yellow-400 mb-1 flex items-center gap-1">
-                      <Zap className="w-3 h-3" /> Edge rows (first 2)
-                    </Label>
-                    <pre className="text-xs bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-2 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-24">
-                      {result.data.split("\n").slice(result.breakdown.positive, result.breakdown.positive + 2).join("\n")}
-                    </pre>
-                  </div>
-                  <div>
-                    <Label className="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center gap-1">
-                      <AlertTriangle className="w-3 h-3" /> Negative rows (first 2)
-                    </Label>
-                    <pre className="text-xs bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-2 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-24">
-                      {result.data.split("\n").slice(result.breakdown.positive + result.breakdown.edge, result.breakdown.positive + result.breakdown.edge + 2).join("\n")}
-                    </pre>
-                  </div>
+                {/* Negative preview (separate file) */}
+                <div>
+                  <Label className="text-xs text-red-600 dark:text-red-400 mb-1 flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3" /> Negative-scenarios file — first 3 rows (each an intentional defect; see scenario doc)
+                  </Label>
+                  <pre className="text-xs bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-md p-2 overflow-x-auto whitespace-pre font-mono leading-relaxed max-h-24">
+                    {result.negatives.split("\n").slice(0, 3).join("\n")}
+                  </pre>
                 </div>
               </CardContent>
             </Card>

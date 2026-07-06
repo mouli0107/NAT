@@ -7026,20 +7026,26 @@ test.describe('Automated Test Suite', () => {
     try {
       const { generateCshFile } = await import("./envestnet-generator.js");
       const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
-      const includeManifest = req.body.includeManifest !== false;
-      const download = req.body.download === true;
+      const result = generateCshFile({ recordCount });
 
-      const result = generateCshFile({ recordCount, includeManifest });
-
-      if (download) {
-        res.setHeader("Content-Disposition", "attachment; filename=sal_csh_synthetic.txt");
+      const artifacts: Record<string, { content: string; file: string }> = {
+        clean:     { content: result.clean,     file: "sal_csh_synthetic_clean.txt" },
+        negatives: { content: result.negatives, file: "sal_csh_synthetic_negatives.txt" },
+        manifest:  { content: result.manifest,  file: "sal_csh_scenarios.txt" },
+      };
+      // Optional direct download of one artifact (download: 'clean'|'negatives'|'manifest'|true).
+      const dl = typeof req.body.download === "string" ? req.body.download
+               : req.body.download === true ? "clean" : null;
+      if (dl && artifacts[dl]) {
+        res.setHeader("Content-Disposition", `attachment; filename=${artifacts[dl].file}`);
         res.setHeader("Content-Type", "text/plain");
-        res.send(result.data);
+        res.send(artifacts[dl].content);
         return;
       }
       res.json({
         success: true,
-        data:        result.data,
+        clean:       result.clean,
+        negatives:   result.negatives,
         manifest:    result.manifest,
         recordCount: result.recordCount,
         breakdown:   result.breakdown,
@@ -7056,12 +7062,17 @@ test.describe('Automated Test Suite', () => {
     try {
       const { generateCshFile } = await import("./envestnet-generator.js");
       const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
-      const includeManifest = req.body.includeManifest !== false;
-      const result = generateCshFile({ recordCount, includeManifest });
+      const result = generateCshFile({ recordCount });
 
-      res.setHeader("Content-Disposition", "attachment; filename=sal_csh_synthetic.txt");
+      const artifacts: Record<string, { content: string; file: string }> = {
+        clean:     { content: result.clean,     file: "sal_csh_synthetic_clean.txt" },
+        negatives: { content: result.negatives, file: "sal_csh_synthetic_negatives.txt" },
+        manifest:  { content: result.manifest,  file: "sal_csh_scenarios.txt" },
+      };
+      const type = ["clean", "negatives", "manifest"].includes(req.body.type) ? req.body.type : "clean";
+      res.setHeader("Content-Disposition", `attachment; filename=${artifacts[type].file}`);
       res.setHeader("Content-Type", "text/plain");
-      res.send(result.data);
+      res.send(artifacts[type].content);
     } catch (error: any) {
       res.status(500).json({ success: false, error: error.message });
     }

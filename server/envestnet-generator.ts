@@ -496,57 +496,56 @@ function generateEdgeCases(minCount = 7): string[] {
 
 // ─── Negative cases ───────────────────────────────────────────────────────────
 
-function generateNegativeCases(): string[] {
-  const rows: string[] = [];
+export interface NegativeCase { id: string; description: string; row: string; }
 
-  // 1. Invalid BA_RECCODE (X)
-  rows.push("X" + genWtfee("A").slice(1));
+function generateNegativeCases(): NegativeCase[] {
+  const out: NegativeCase[] = [];
+  const add = (id: string, description: string, row: string) => out.push({ id, description, row });
 
-  // 2. Malformed TRADE_DATE — from actual sample line 3 ("202-04-01")
-  rows.push(genWtfee("A").replace(/20\d\d-\d\d-\d\d/, "202-04-01"));
+  add("NEG-01", "Invalid BA_RECCODE 'X' (valid: A/C/V) — tests record-type validation",
+    "X" + genWtfee("A").slice(1));
 
-  // 3. Negative WTFEE principal — build directly so amount is always known
+  add("NEG-02", "Malformed TRADE_CYMD '202-04-01' (missing a year digit) — tests date validation",
+    genWtfee("A").replace(/20\d\d-\d\d-\d\d/, "202-04-01"));
+
   {
     const cols = genWtfee("A").split("|");
     cols[30] = "-" + Math.abs(parseFloat(cols[30] || "35.00")).toFixed(2);
-    rows.push(cols.join("|"));
+    add("NEG-03", "Negative PRINCIPAL on a WTFEE fee — tests sign handling", cols.join("|"));
   }
-
-  // 4. STAX with SEC_NO=0 (security required for STAX)
-  const staxRow = genStax("A");
-  const colsS = staxRow.split("|");
-  colsS[7] = "0";
-  rows.push(colsS.join("|"));
-
-  // 5. Missing ACCT_NO
-  const w1 = genWtfee("A").split("|");
-  w1[3] = "";
-  rows.push(w1.join("|"));
-
-  // 6. ACCT_TYPE=0 (invalid — valid range 1-9)
-  const jrl = genJrl("A").split("|");
-  jrl[5] = "0";
-  rows.push(jrl.join("|"));
-
-  // 7. Invalid SOURCE_CODE
-  rows.push(genJrl("A").replace("|JRL|", "|XXXXX|"));
-
-  // 8. ACCT_NO > 9 digits
-  const w2 = genWtfee("A").split("|");
-  w2[3] = "1234567890";
-  rows.push(w2.join("|"));
-
-  // 9. ACCT_CLASS=CAPM on WTFEE (unexpected)
-  const w3 = genWtfee("A").split("|");
-  w3[4] = "CAPM";
-  rows.push(w3.join("|"));
-
-  // 10. C (Change) record with blank PRINCIPAL
-  const w4 = genWtfee("C").split("|");
-  w4[30] = "";
-  rows.push(w4.join("|"));
-
-  return rows;
+  {
+    const colsS = genStax("A").split("|");
+    colsS[7] = "0";
+    add("NEG-04", "STAX with SEC_NO=0 (security is required for STAX) — tests mandatory-security check", colsS.join("|"));
+  }
+  {
+    const w1 = genWtfee("A").split("|");
+    w1[3] = "";
+    add("NEG-05", "Missing ACCT_NO (mandatory for all custodians) — tests mandatory-field rejection", w1.join("|"));
+  }
+  {
+    const jrl = genJrl("A").split("|");
+    jrl[5] = "0";
+    add("NEG-06", "Invalid ACCT_TYPE '0' (valid: 1-9) — tests account-type validation", jrl.join("|"));
+  }
+  add("NEG-07", "Invalid SOURCE_CODE 'XXXXX' — tests source-code validation",
+    genJrl("A").replace("|JRL|", "|XXXXX|"));
+  {
+    const w2 = genWtfee("A").split("|");
+    w2[3] = "1234567890";
+    add("NEG-08", "ACCT_NO longer than 9 digits — tests field-length validation", w2.join("|"));
+  }
+  {
+    const w3 = genWtfee("A").split("|");
+    w3[4] = "CAPM";
+    add("NEG-09", "ACCT_CLASS=CAPM on a WTFEE fee (unexpected combination) — tests cross-field checks", w3.join("|"));
+  }
+  {
+    const w4 = genWtfee("C").split("|");
+    w4[30] = "";
+    add("NEG-10", "Change (C) record with blank PRINCIPAL — tests conditional-required validation", w4.join("|"));
+  }
+  return out;
 }
 
 // ─── Public API ───────────────────────────────────────────────────────────────
@@ -557,7 +556,11 @@ export interface CshGenerateOptions {
 }
 
 export interface CshGenerateResult {
-  data: string;
+  /** 100% valid records (positive + valid edge cases) — the deliverable file. */
+  clean: string;
+  /** Intentionally invalid records — one planted defect per line (see manifest). */
+  negatives: string;
+  /** Scenario document describing every clean + negative scenario. Always built. */
   manifest: string;
   recordCount: number;
   breakdown: { positive: number; edge: number; negative: number };
@@ -565,18 +568,14 @@ export interface CshGenerateResult {
 }
 
 export function generateCshFile(opts: CshGenerateOptions): CshGenerateResult {
-  const { recordCount, includeManifest = false } = opts;
+  const { recordCount } = opts;
 
-  // Generate edge + negative first so posCount absorbs any shortfall
-  const negCount  = Math.max(10, Math.floor(recordCount * 0.10));
-  const edgeCount = Math.max(7,  Math.floor(recordCount * 0.15));
-
-  const edgeRows     = generateEdgeCases(edgeCount);          // fills to edgeCount
-  const negativeRows = generateNegativeCases().slice(0, negCount);
-  const posCount     = Math.max(1, recordCount - edgeRows.length - negativeRows.length);
+  // The CLEAN file is entirely valid: positive transactions + valid boundary edge cases.
+  const edgeCount = Math.max(7, Math.floor(recordCount * 0.15));
+  const edgeRows  = generateEdgeCases(edgeCount);
+  const posCount  = Math.max(1, recordCount - edgeRows.length);
 
   const acctPool = Array.from({ length: 30 }, () => rnd(10_000_000, 99_999_999));
-
   const positiveRows: string[] = [];
   for (let i = 0; i < posCount; i++) {
     const src   = pick(SOURCE_POOL);
@@ -585,14 +584,16 @@ export function generateCshFile(opts: CshGenerateOptions): CshGenerateResult {
     positiveRows.push(GENERATORS[src](rtype, acct));
   }
 
-  // Output order: positive → edge → negative (clearly grouped)
-  const allRows = [...positiveRows, ...edgeRows, ...negativeRows];
+  // Negatives are DELIVERED SEPARATELY (never mixed into the clean file).
+  const negCases = generateNegativeCases();
+  const cleanRows = [...positiveRows, ...edgeRows];
 
   return {
-    data:        allRows.join("\n"),
-    manifest:    includeManifest ? buildManifest(positiveRows.length, edgeRows.length, negativeRows.length) : "",
-    recordCount: allRows.length,
-    breakdown:   { positive: positiveRows.length, edge: edgeRows.length, negative: negativeRows.length },
+    clean:        cleanRows.join("\n"),
+    negatives:    negCases.map(n => n.row).join("\n"),
+    manifest:     buildManifest(positiveRows.length, edgeRows.length, negCases),
+    recordCount:  cleanRows.length,
+    breakdown:    { positive: positiveRows.length, edge: edgeRows.length, negative: negCases.length },
     columnSchema: CSH_COLUMN_SCHEMA,
   };
 }
@@ -623,50 +624,38 @@ export const CSH_COLUMN_SCHEMA = {
 
 // ─── Manifest ─────────────────────────────────────────────────────────────────
 
-function buildManifest(pos: number, edge: number, neg: number): string {
-  return [
-    "=== SAL_CSH SYNTHETIC DATA MANIFEST ===",
-    "File type: Transaction (account_transaction table)",
-    "Format: Pipe-delimited | VARIABLE column count per SOURCE_CODE | 1 line per record",
-    "Source: Thomson Reuters BETA Systems (copybook EXCSHY2K)",
-    "",
-    "--- RECORD COUNTS ---",
-    `Positive (valid):   ${pos}`,
-    `Edge (boundary):    ${edge}`,
-    `Negative (invalid): ${neg}`,
-    `Total:              ${pos + edge + neg}`,
-    "",
-    "--- COLUMN COUNT BY SOURCE_CODE (verified vs Sal_csh.txt) ---",
-    "WTFEE=58  JRL=47  RPRM=48  YRINC=49  STAX=48  RDIV=45  WRAP=51",
-    "",
-    "--- SOURCE CODE SCENARIOS ---",
-    "WTFEE  Wire transfer fee — no security; PRINCIPAL>0; STATUS=E",
-    "JRL    Journal/inter-acct transfer — no security; PRINCIPAL +/- (neg=incoming)",
-    "RPRM   Premium distribution to Roth — no security; DESC2=source→dest accounts",
-    "YRINC  Dividends and interest — no security; PRINCIPAL +/-; extra ref amount",
-    "STAX   Foreign tax withholding — equity security; Julian lot; C/R flag",
-    "RDIV   Reinvested dividend — fund security; 3 DESC lines; Julian lot",
-    "WRAP   Wrap/management fee — TRADE_DATE only (no SETTLE_DATE); 3 DESC lines",
-    "",
-    "--- EDGE CASES ---",
-    "1. Zero-amount JRL",
-    "2. Minimum RDIV ($0.01)",
-    "3. Large negative YRINC (-$50,000 reversal)",
-    "4. STAX on margin account (ACCT_TYPE=2)",
-    "5. WTFEE international fee ($75)",
-    "6. WRAP large billing value ($1M)",
-    "7. RDIV with longest fund name (VANGUARD CASH RESERVES)",
-    "",
-    "--- NEGATIVE CASES ---",
-    "1. Invalid BA_RECCODE (X)",
-    "2. Malformed TRADE_DATE (3-char year: 202-04-01) — from actual sample",
-    "3. Negative WTFEE principal",
-    "4. STAX with SEC_NO=0",
-    "5. Missing ACCT_NO",
-    "6. ACCT_TYPE=0 (invalid)",
-    "7. Invalid SOURCE_CODE (XXXXX)",
-    "8. ACCT_NO > 9 digits",
-    "9. ACCT_CLASS=CAPM on WTFEE",
-    "10. C record with blank PRINCIPAL",
-  ].join("\n");
+function buildManifest(pos: number, edge: number, negCases: NegativeCase[]): string {
+  const L: string[] = [];
+  L.push("=== SAL_CSH SYNTHETIC DATA — SCENARIO DOCUMENT ===");
+  L.push("Source layout: Thomson Reuters BETA Systems copybook EXCSHY2K (CSH Documentation.pdf)");
+  L.push("Format: pipe-delimited, 1 line per record.");
+  L.push("");
+  L.push("--- IMPORTANT: FIELD COUNT ---");
+  L.push("This file mirrors the STRUCTURE of the provided Sal_csh.txt sample, in which each");
+  L.push("SOURCE_CODE emits a different set and position of fields (sample observed 45-58 fields;");
+  L.push("e.g. SOURCE_CODE sits at field 20 for STAX but field 28 for WTFEE, and WTFEE has 58).");
+  L.push("A single uniform count (e.g. 52) is not derivable from the sample (45-58) or the");
+  L.push("copybook (60+ fields). To normalize to a fixed layout, share the exact target field");
+  L.push("list/order and we will map every record to it.");
+  L.push("");
+  L.push("--- CLEAN FILE (sal_csh_synthetic_clean.txt): 100% VALID ---");
+  L.push(`Valid transactions: ${pos}   |   Valid edge (boundary) cases: ${edge}`);
+  L.push("Transaction types (SOURCE_CODE): JRL, YRINC, STAX, RDIV, WTFEE, WRAP, RPRM");
+  L.push("  WTFEE  Wire transfer fee — no security; PRINCIPAL>0");
+  L.push("  JRL    Journal / inter-account transfer — no security; PRINCIPAL +/-");
+  L.push("  RPRM   Premium distribution — no security");
+  L.push("  YRINC  Dividends and interest — no security; PRINCIPAL +/-");
+  L.push("  STAX   Foreign tax withholding — equity security (SEC_NO), Julian lot");
+  L.push("  RDIV   Reinvested dividend — fund security (SEC_NO), 3 DESC lines");
+  L.push("  WRAP   Wrap / management fee — TRADE_DATE only (no SETTLE_DATE)");
+  L.push("Valid edge cases: zero-amount JRL, $0.01 RDIV, large negative YRINC (reversal),");
+  L.push("  STAX on margin account, WTFEE intl wire ($75), WRAP large billing, long fund name.");
+  L.push("");
+  L.push("--- NEGATIVE FILE (sal_csh_synthetic_negatives.txt): intentionally INVALID ---");
+  L.push(`${negCases.length} planted defects — one per line. Provided for validation/rejection testing.`);
+  negCases.forEach((n, i) => L.push(`  Line ${String(i + 1).padStart(2, "0")}  ${n.id}: ${n.description}`));
+  L.push("");
+  L.push("Record types: A=Add, C=Change, V=Void.");
+  L.push("Account types: 1=Cash, 2=Margin, 3=TEFRA, 4=When-issued cash, 5-9=Firm-defined.");
+  return L.join("\n");
 }
