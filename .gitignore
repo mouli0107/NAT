@@ -21,3 +21,6 @@ test-results/
 assert-proof-screenshots/
 assert-test-screenshots/
 dist-test/
+
+# ASTRA template tsc-check temp projects (created in-repo so tsc resolves node_modules)
+.astra-tpl-*

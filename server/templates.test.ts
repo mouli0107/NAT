@@ -12,7 +12,6 @@
  */
 
 import * as fs   from 'fs';
-import * as os   from 'os';
 import * as path from 'path';
 import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
@@ -93,7 +92,12 @@ function assertNoBlockCommentClose(templateName: string, content: string): void 
  * Throws with tsc output on non-zero exit code.
  */
 function assertTscClean(templateName: string, content: string, filename: string): void {
-  const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'nat20-tpl-test-'));
+  // Create the temp project INSIDE the repo so tsc resolves @playwright/test and
+  // @types/node from <repo>/node_modules on ANY machine — including clean CI
+  // runners. Using os.tmpdir() only worked by luck when a node_modules happened
+  // to sit up-tree of the OS temp dir (true on dev boxes, false on CI /tmp).
+  const projectRoot = path.resolve(__dirname, '..');
+  const tmpDir = fs.mkdtempSync(path.join(projectRoot, '.astra-tpl-'));
   try {
     const filePath = path.join(tmpDir, filename);
     fs.writeFileSync(filePath, content, 'utf8');
@@ -118,7 +122,6 @@ function assertTscClean(templateName: string, content: string, filename: string)
     fs.writeFileSync(tsconfigPath, JSON.stringify(tsconfig, null, 2), 'utf8');
 
     // Run from project root so TypeScript resolves @playwright/test from its node_modules
-    const projectRoot = path.resolve(__dirname, '..');
     execSync(`npx tsc --project "${tsconfigPath}"`, {
       cwd:   projectRoot,
       stdio: 'pipe',
