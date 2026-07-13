@@ -1,19 +1,88 @@
 const BASE = '/api/v1/codelens';
 
+export type LoopGoalPolicy = 'full_coverage' | 'zero_blocker' | 'zero_blocker_full_coverage';
+
+export interface StartReviewOptions {
+  /** 'conform' = review + remediate loop; 'review' = report-only. */
+  mode?: 'review' | 'conform';
+  /** Enable a goal-based review loop (ignored when mode='conform', which always loops). */
+  loop?: { policy?: LoopGoalPolicy; budgets?: { maxIterations?: number; maxWallClockMs?: number; noProgressIterations?: number } };
+}
+
 export async function startReview(
   repoUrl: string,
   branch: string,
   pat: string,
   folders: string[] = [],
   ignorePatterns: string[] = [],
+  opts: StartReviewOptions = {},
 ) {
   const res = await fetch(`${BASE}/review/start`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ repoUrl, branch, pat, folders, ignorePatterns }),
+    body: JSON.stringify({ repoUrl, branch, pat, folders, ignorePatterns, ...opts }),
   });
   if (!res.ok) throw new Error(await res.text());
-  return res.json() as Promise<{ sessionId: string; streamUrl: string }>;
+  return res.json() as Promise<{ sessionId: string; streamUrl: string; mode?: string }>;
+}
+
+// ─── Schedules + PR policies (Phase 5) ────────────────────────────────────────
+
+export interface ScheduleDto {
+  id: string; repoUrl: string; branch: string; mode: 'review' | 'conform';
+  policy: LoopGoalPolicy;
+  cadence: { type: 'interval'; minutes: number } | { type: 'dailyUtc'; hour: number; minute: number };
+  enabled: boolean; lastRunAt: number | null; ownerUserId: string;
+}
+
+export async function listSchedules() {
+  const res = await fetch(`${BASE}/schedules`);
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json() as { schedules: ScheduleDto[] }).schedules;
+}
+
+export async function createSchedule(input: {
+  repoUrl: string; branch: string; mode: 'review' | 'conform'; policy: LoopGoalPolicy;
+  cadence: ScheduleDto['cadence'];
+}) {
+  const res = await fetch(`${BASE}/schedules`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<{ id: string }>;
+}
+
+export async function setScheduleEnabled(id: string, enabled: boolean) {
+  const res = await fetch(`${BASE}/schedules/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export async function deleteSchedule(id: string) {
+  const res = await fetch(`${BASE}/schedules/${id}`, { method: 'DELETE' });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+export interface PrPolicyDto {
+  repoFullName: string; enabled: boolean; baseBranchPattern: string;
+  mode: 'review' | 'conform'; blocking: boolean; pushMode: 'companion-pr' | 'direct-to-head';
+}
+
+export async function listPrPolicies() {
+  const res = await fetch(`${BASE}/pr-policies`);
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json() as { policies: PrPolicyDto[] }).policies;
+}
+
+export async function savePrPolicy(p: PrPolicyDto & { installationId?: number | null }) {
+  const res = await fetch(`${BASE}/pr-policies`, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
 }
 
 export async function parseIgnoreFile(content: string): Promise<{

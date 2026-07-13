@@ -247,6 +247,87 @@ export interface SseArchitectureGraph {
   graph: ArchitectureGraph;
 }
 
+// ─── Loop engineering (goal-based review loop) ───────────────────────────────
+
+/** What the loop is trying to reach before it stops iterating. */
+export type LoopGoalPolicy =
+  | 'full_coverage'                 // ledger COMPLETE (every applicable cell verified)
+  | 'zero_blocker'                  // no open Critical violations
+  | 'zero_blocker_full_coverage';   // both of the above
+
+/** Why the loop stopped iterating. */
+export type LoopStopReason =
+  | 'goal_met'
+  | 'max_iterations'
+  | 'timeout'
+  | 'no_progress'      // the target metric stopped improving for N iterations
+  | 'oscillation'      // a previously-reverted change was re-proposed (Phase 2)
+  | 'stopped'          // user halted the run
+  | 'error';
+
+/** Ledger-derived snapshot taken after each iteration. Completeness is read from
+ *  the coverage ledger, NOT session.status (finalizeRun collapses PARTIAL→stopped). */
+export interface LoopMetric {
+  runStatus: 'COMPLETE' | 'PARTIAL';
+  criticalOpen: number;
+  warningOpen: number;
+  infoOpen: number;
+  openViolations: number;
+  errorCells: number;
+  confidencePct: number;
+}
+
+/** Review-only loop vs. remediate-and-reconverge (Conform Mode). */
+export type LoopMode = 'review' | 'conform';
+
+export interface SseLoopStarted {
+  event: 'loop_started';
+  session_id: string;
+  mode: LoopMode;
+  policy: LoopGoalPolicy;
+  budgets: { max_iterations: number; max_wall_clock_ms: number; no_progress_iterations: number };
+}
+
+export interface SseLoopIteration {
+  event: 'loop_iteration';
+  session_id: string;
+  iteration: number;                                    // 1-based
+  action: 'review' | 'retry_coverage' | 'remediate';
+  metric: LoopMetric;
+  goal_met: boolean;
+  elapsed_ms: number;
+}
+
+/** A generated fix was screened against the Accepted-Deviations authority table.
+ *  allowed=false ⇒ the fix would INTRODUCE a banned pattern and was NOT applied. */
+export interface SseFixScreened {
+  event: 'fix_screened';
+  session_id: string;
+  violation_id: string;
+  allowed: boolean;
+  deviation_id: string | null;   // e.g. 'A3' when rejected; null when allowed
+  evidence: string;              // the offending snippet, or '' when allowed
+}
+
+/** Conform remediation pass summary (one per loop iteration that remediates). */
+export interface SseConformProgress {
+  event: 'conform_progress';
+  session_id: string;
+  iteration: number;
+  attempted: number;   // violations we tried to fix this pass
+  fixed: number;       // fixes generated, screened-clean, applied + verified
+  deferred: number;    // skipped by the authority gate (would violate a deviation)
+  failed: number;      // generation/apply errors
+}
+
+export interface SseLoopComplete {
+  event: 'loop_complete';
+  session_id: string;
+  stop_reason: LoopStopReason;
+  iterations: number;
+  final_metric: LoopMetric;
+}
+
 export interface SseError {
   event: 'error';
   message: string;
@@ -294,6 +375,11 @@ export type SseEvent =
   | SseBulkFixProgress
   | SseBulkFixComplete
   | SseArchitectureGraph
+  | SseLoopStarted
+  | SseLoopIteration
+  | SseLoopComplete
+  | SseFixScreened
+  | SseConformProgress
   | SseError;
 
 // ─── Session ─────────────────────────────────────────────────────────────────
@@ -321,6 +407,10 @@ export interface CodeLensSession {
   lastReviewedFileIndex: number;
   /** Folders to scan; empty = entire repo */
   folders: string[];
+  /** Optional allow-list of repo-relative paths to review (PR-triggered runs scope
+   *  to changed files). Empty/undefined = no restriction. Applied AFTER folder +
+   *  ignore filters as an intersection. */
+  restrictToFiles?: string[];
   /** User-supplied ignore patterns (in addition to built-in defaults) */
   ignorePatterns: string[];
   /** DB run UUID — set once createRun() resolves */

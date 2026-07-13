@@ -27,7 +27,10 @@ import {
   pushFixes,
   resumeFixing,
   retryCoverage,
+  type StartReviewOptions,
 } from '@/lib/codeLensApi';
+import { LoopPanel, type LoopUiState, type ScreenedFix } from '@/components/code-lens/LoopPanel';
+import { AutomationPanel } from '@/components/code-lens/AutomationPanel';
 import type {
   CodeLensEvent,
   FileRecord,
@@ -42,7 +45,7 @@ import type {
 } from '@/components/code-lens/codeLensTypes';
 import type { RunSummary } from '@/lib/codeLensHistoryApi';
 
-type PageMode = 'SETUP' | 'REVIEW' | 'REPORT' | 'HISTORY' | 'COMPARE';
+type PageMode = 'SETUP' | 'REVIEW' | 'REPORT' | 'HISTORY' | 'COMPARE' | 'AUTOMATION';
 
 function CodeLensPageInner() {
   // ── Mode ─────────────────────────────────────────────────────────────────
@@ -109,6 +112,11 @@ function CodeLensPageInner() {
   // ── Compare ───────────────────────────────────────────────────────────────
   const [compareRunId1, setCompareRunId1] = useState<string>('');
   const [compareRunId2, setCompareRunId2] = useState<string>('');
+
+  // ── Loop / Conform live state (Phase 5) ────────────────────────────────────
+  const [loopState,       setLoopState]       = useState<LoopUiState | null>(null);
+  const [conformProgress, setConformProgress] = useState<{ attempted: number; fixed: number; deferred: number; failed: number } | null>(null);
+  const [screenedFixes,   setScreenedFixes]   = useState<ScreenedFix[]>([]);
 
   const sessionIdRef = useRef<string | null>(null);
 
@@ -303,6 +311,40 @@ function CodeLensPageInner() {
         setArchitecture(ev.graph);
         break;
 
+      case 'loop_started':
+        setLoopState({
+          mode: ev.mode, policy: ev.policy,
+          maxIterations: ev.budgets.max_iterations,
+          iterations: [], stopReason: null, finalMetric: null,
+        });
+        break;
+
+      case 'loop_iteration':
+        setLoopState(prev => prev && ({
+          ...prev,
+          iterations: [...prev.iterations, {
+            index: ev.iteration, action: ev.action, goalMet: ev.goal_met,
+            elapsedMs: ev.elapsed_ms, metric: ev.metric,
+          }],
+        }));
+        break;
+
+      case 'loop_complete':
+        setLoopState(prev => prev && ({ ...prev, stopReason: ev.stop_reason, finalMetric: ev.final_metric }));
+        break;
+
+      case 'conform_progress':
+        setConformProgress({ attempted: ev.attempted, fixed: ev.fixed, deferred: ev.deferred, failed: ev.failed });
+        break;
+
+      case 'fix_screened':
+        if (!ev.allowed) {
+          setScreenedFixes(prev => [...prev, {
+            violationId: ev.violation_id, deviationId: ev.deviation_id, evidence: ev.evidence,
+          }]);
+        }
+        break;
+
       case 'review_stopped':
         setReviewStatus('stopped');
         break;
@@ -336,11 +378,15 @@ function CodeLensPageInner() {
     pat: string,
     folders: string[],
     ignorePatterns: string[],
+    opts: StartReviewOptions = {},
   ) => {
     setIsStartLoading(true);
     setStartError(null);
+    setLoopState(null);
+    setConformProgress(null);
+    setScreenedFixes([]);
     try {
-      const { sessionId: sid } = await startReview(repoUrl, branch, pat, folders, ignorePatterns);
+      const { sessionId: sid } = await startReview(repoUrl, branch, pat, folders, ignorePatterns, opts);
       sessionIdRef.current = sid;
       setSessionId(sid);
       setReviewStatus('running');
@@ -578,7 +624,7 @@ function CodeLensPageInner() {
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
-  if (mode === 'SETUP' || mode === 'HISTORY' || mode === 'COMPARE') {
+  if (mode === 'SETUP' || mode === 'HISTORY' || mode === 'COMPARE' || mode === 'AUTOMATION') {
     const handleCompareSelect = (run: RunSummary & { _baselineRunId?: string }) => {
       if (run._baselineRunId) {
         setCompareRunId1(run._baselineRunId);
@@ -594,21 +640,23 @@ function CodeLensPageInner() {
           className="flex gap-1 px-6 pt-4 pb-0 flex-shrink-0"
           style={{ borderBottom: '1px solid #1E3A5F' }}
         >
-          {(['SETUP', 'HISTORY'] as const).map(tab => (
-            <button
-              key={tab}
-              onClick={() => setMode(tab)}
-              className="px-5 py-2 text-xs font-semibold uppercase tracking-wider"
-              style={{
-                color: mode === tab || (tab === 'HISTORY' && mode === 'COMPARE') ? '#00BFFF' : '#7A9CC0',
-                borderBottom: mode === tab || (tab === 'HISTORY' && mode === 'COMPARE')
-                  ? '2px solid #00BFFF' : '2px solid transparent',
-                background: 'transparent',
-              }}
-            >
-              {tab === 'SETUP' ? 'New Review' : 'Run History'}
-            </button>
-          ))}
+          {(['SETUP', 'HISTORY', 'AUTOMATION'] as const).map(tab => {
+            const active = mode === tab || (tab === 'HISTORY' && mode === 'COMPARE');
+            return (
+              <button
+                key={tab}
+                onClick={() => setMode(tab)}
+                className="px-5 py-2 text-xs font-semibold uppercase tracking-wider"
+                style={{
+                  color: active ? '#00BFFF' : '#7A9CC0',
+                  borderBottom: active ? '2px solid #00BFFF' : '2px solid transparent',
+                  background: 'transparent',
+                }}
+              >
+                {tab === 'SETUP' ? 'New Review' : tab === 'HISTORY' ? 'Run History' : 'Automation'}
+              </button>
+            );
+          })}
         </div>
 
         <div className="flex-1 overflow-auto">
@@ -635,6 +683,7 @@ function CodeLensPageInner() {
               />
             </div>
           )}
+          {mode === 'AUTOMATION' && <AutomationPanel />}
         </div>
       </div>
     );
@@ -676,6 +725,13 @@ function CodeLensPageInner() {
         onViewReport={handleViewReport}
         onNewReview={handleReset}
       />
+
+      {/* Loop / Conform live status */}
+      {loopState && (
+        <div className="flex-shrink-0 border-b px-4 py-3" style={{ borderColor: '#1E3A5F', background: '#0D1F3C' }}>
+          <LoopPanel loop={loopState} conformProgress={conformProgress} screenedFixes={screenedFixes} />
+        </div>
+      )}
 
       {/* Architecture graph — built up front, shown before/while files are reviewed */}
       {architecture && architecture.nodes.length > 0 && (

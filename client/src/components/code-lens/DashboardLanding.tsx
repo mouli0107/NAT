@@ -5,7 +5,7 @@ import { StandardsCatalog } from './StandardsCatalog';
 import { fetchRecentRuns, type RunSummary } from '@/lib/codeLensHistoryApi';
 
 interface DashboardLandingProps {
-  onStart: (repoUrl: string, branch: string, pat: string, folders: string[], ignorePatterns: string[]) => void;
+  onStart: (repoUrl: string, branch: string, pat: string, folders: string[], ignorePatterns: string[], opts?: import('@/lib/codeLensApi').StartReviewOptions) => void;
   onResumeFixing: (repoUrl: string, branch: string, pat: string) => void;
   isLoading: boolean;
   error: string | null;

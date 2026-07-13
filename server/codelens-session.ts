@@ -32,6 +32,7 @@ export function createSession(
     totalFiles: 0,
     lastReviewedFileIndex: 0,
     folders,
+    restrictToFiles: undefined,
     ignorePatterns,
     runId: null,
     fileResultIds: new Map(),

@@ -7,7 +7,10 @@ import { exec } from 'child_process';
 import { promisify } from 'util';
 import type { Request, Response } from 'express';
 import { createSession, getSession, attachClient, detachClient } from './codelens-session';
-import type { CodeLensSession } from './codelens-types';
+import type { CodeLensSession, LoopGoalPolicy } from './codelens-types';
+import { runReviewLoop, normalizeBudgets, type LoopBudgets } from './codelens-loop';
+import { runConformLoop } from './codelens-conform';
+import { handleGithubWebhook } from './codelens-webhook';
 import {
   runReview,
   resumeReview,
@@ -123,17 +126,143 @@ function gitLsFiles(localPath: string, subPath = ''): Promise<string[]> {
   );
 }
 
+// ─── POST /webhook/github ───────────────────────────────────────────────────
+// GitHub App PR webhook. UNAUTHENTICATED by session (GitHub can't send cookies) —
+// authenticated instead by HMAC over the raw body (req.rawBody, stashed by the
+// global express.json verify hook). Full path: /api/v1/codelens/webhook/github.
+codeLensRouter.post('/webhook/github', (req: Request, res: Response) => {
+  handleGithubWebhook(req, res).catch(err => {
+    console.error('[CodeLens][webhook] handler error:', err?.message);
+    if (!res.headersSent) res.status(500).json({ error: 'webhook handler error' });
+  });
+});
+
+// ─── Schedules CRUD (Phase 5) ────────────────────────────────────────────────
+// Lazy-import codelens-loop-db inside handlers — it top-level-imports ./db, which
+// throws without DATABASE_URL, and this router must load DB-free.
+
+codeLensRouter.get('/schedules', async (req: Request, res: Response) => {
+  try {
+    const { userId } = await getAuthContext(req);
+    const { listSchedules } = await import('./codelens-loop-db');
+    return res.json({ schedules: await listSchedules(userId) });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to list schedules' });
+  }
+});
+
+codeLensRouter.post('/schedules', async (req: Request, res: Response) => {
+  try {
+    const { userId } = await getAuthContext(req);
+    const { repoUrl, branch, mode = 'review', policy = 'full_coverage', cadence } = req.body ?? {};
+    if (!repoUrl || !branch || !cadence?.type) {
+      return res.status(400).json({ error: 'repoUrl, branch, cadence{type,...} are required' });
+    }
+    if (cadence.type !== 'interval' && cadence.type !== 'dailyUtc') {
+      return res.status(400).json({ error: "cadence.type must be 'interval' or 'dailyUtc'" });
+    }
+    const { createSchedule } = await import('./codelens-loop-db');
+    const id = await createSchedule({
+      userId, repoUrl: String(repoUrl), branch: String(branch),
+      mode: mode === 'conform' ? 'conform' : 'review', policy, cadence,
+    });
+    return res.status(201).json({ id });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to create schedule' });
+  }
+});
+
+codeLensRouter.patch('/schedules/:id', async (req: Request, res: Response) => {
+  try {
+    const { userId } = await getAuthContext(req);
+    const { id } = req.params;
+    const { enabled } = req.body ?? {};
+    if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'enabled (boolean) required' });
+    const { listSchedules, setScheduleEnabled } = await import('./codelens-loop-db');
+    const owned = (await listSchedules(userId)).some(s => s.id === id);
+    if (!owned) return res.status(404).json({ error: 'schedule not found' });
+    await setScheduleEnabled(id, enabled);
+    return res.json({ id, enabled });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to update schedule' });
+  }
+});
+
+codeLensRouter.delete('/schedules/:id', async (req: Request, res: Response) => {
+  try {
+    const { userId } = await getAuthContext(req);
+    const { id } = req.params;
+    const { listSchedules, deleteSchedule } = await import('./codelens-loop-db');
+    const owned = (await listSchedules(userId)).some(s => s.id === id);
+    if (!owned) return res.status(404).json({ error: 'schedule not found' });
+    await deleteSchedule(id);
+    return res.json({ id, deleted: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to delete schedule' });
+  }
+});
+
+// ─── PR policies CRUD (Phase 5) ───────────────────────────────────────────────
+
+codeLensRouter.get('/pr-policies', async (req: Request, res: Response) => {
+  try {
+    await getAuthContext(req);
+    const { listPrPolicies } = await import('./codelens-loop-db');
+    return res.json({ policies: await listPrPolicies() });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to list policies' });
+  }
+});
+
+codeLensRouter.put('/pr-policies', async (req: Request, res: Response) => {
+  try {
+    await getAuthContext(req);
+    const { repoFullName, enabled = false, baseBranchPattern = 'main,staging',
+            mode = 'review', blocking = false, pushMode = 'companion-pr', installationId = null } = req.body ?? {};
+    if (!repoFullName || !/^[^/]+\/[^/]+$/.test(String(repoFullName))) {
+      return res.status(400).json({ error: 'repoFullName must be "owner/repo"' });
+    }
+    const { upsertPrPolicy } = await import('./codelens-loop-db');
+    await upsertPrPolicy({
+      repoFullName: String(repoFullName), enabled: !!enabled, baseBranchPattern: String(baseBranchPattern),
+      mode: mode === 'conform' ? 'conform' : 'review', blocking: !!blocking,
+      pushMode: pushMode === 'direct-to-head' ? 'direct-to-head' : 'companion-pr',
+      installationId: installationId == null ? null : Number(installationId),
+    });
+    return res.json({ repoFullName, saved: true });
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message ?? 'failed to save policy' });
+  }
+});
+
 // ─── POST /review/start ───────────────────────────────────────────────────────
 
 codeLensRouter.post('/review/start', async (req: Request, res: Response) => {
-  const { repoUrl, branch = '', pat = '', folders = [], ignorePatterns = [] } = req.body as {
+  const { repoUrl, branch = '', pat = '', folders = [], ignorePatterns = [], loop, mode = 'review' } = req.body as {
     repoUrl?: string; branch?: string; pat?: string;
     folders?: string[]; ignorePatterns?: string[];
+    mode?: 'review' | 'conform';
+    loop?: { policy?: string; budgets?: Partial<LoopBudgets> };
   };
 
   if (!repoUrl || typeof repoUrl !== 'string') {
     return res.status(400).json({ error: 'repoUrl (string) is required' });
   }
+
+  // Run mode:
+  //   'conform'          → review + remediate loop (Conform Mode)
+  //   'review' + loop    → goal-based review loop
+  //   'review' (no loop) → classic single-pass review
+  const VALID_POLICIES: LoopGoalPolicy[] = ['full_coverage', 'zero_blocker', 'zero_blocker_full_coverage'];
+  const isConform = mode === 'conform';
+  // Conform defaults to reaching zero blockers with full coverage; review loops
+  // default to full coverage.
+  const resolvedPolicy: LoopGoalPolicy = VALID_POLICIES.includes(loop?.policy as LoopGoalPolicy)
+    ? (loop!.policy as LoopGoalPolicy)
+    : (isConform ? 'zero_blocker_full_coverage' : 'full_coverage');
+  const loopConfig = (loop || isConform)
+    ? { policy: resolvedPolicy, budgets: normalizeBudgets(loop?.budgets) }
+    : null;
 
   const sessionId = `cls-${randomUUID().slice(0, 8)}`;
   const localPath = path.join(os.tmpdir(), 'codelens', sessionId);
@@ -157,7 +286,12 @@ codeLensRouter.post('/review/start', async (req: Request, res: Response) => {
   );
 
   setTimeout(() => {
-    runReview(session).catch(err =>
+    const run = isConform
+      ? runConformLoop(session, loopConfig!).then(() => undefined)
+      : loopConfig
+        ? runReviewLoop(session, loopConfig).then(() => undefined)
+        : runReview(session);
+    run.catch(err =>
       console.error(`[CodeLens] Unhandled review error for ${sessionId}:`, err),
     );
   }, 600);
@@ -165,6 +299,8 @@ codeLensRouter.post('/review/start', async (req: Request, res: Response) => {
   return res.status(202).json({
     sessionId,
     streamUrl: `/api/v1/codelens/review/stream?sessionId=${sessionId}`,
+    mode: isConform ? 'conform' : loopConfig ? 'loop' : 'single',
+    ...(loopConfig ? { loop: { policy: loopConfig.policy, budgets: loopConfig.budgets } } : {}),
   });
 });
 

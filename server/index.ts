@@ -122,6 +122,16 @@ app.use((req, res, next) => {
 
   const server = await registerRoutes(app);
 
+  // Phase 5: boot the in-process Code Lens scheduler (no-op unless
+  // CODELENS_SCHEDULER_ENABLED + DATABASE_URL are set). Lazy-imported so a boot
+  // failure can never take down the server.
+  try {
+    const { bootCodeLensScheduler } = await import('./codelens-scheduler-wiring');
+    bootCodeLensScheduler();
+  } catch (err: any) {
+    log(`[CodeLens][scheduler] boot skipped: ${err?.message}`);
+  }
+
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
     const message = err.message || "Internal Server Error";

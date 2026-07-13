@@ -3,7 +3,7 @@ import {
   Shield, Loader2, AlertCircle, Info, FolderOpen,
   ChevronRight, ChevronDown, Check, Filter, X, Plus, Upload,
 } from 'lucide-react';
-import { browseRepo, browseFolder, parseIgnoreFile } from '@/lib/codeLensApi';
+import { browseRepo, browseFolder, parseIgnoreFile, type StartReviewOptions, type LoopGoalPolicy } from '@/lib/codeLensApi';
 
 interface FolderNode {
   name: string;
@@ -16,7 +16,7 @@ interface FolderNode {
 }
 
 interface SetupPanelProps {
-  onStart: (repoUrl: string, branch: string, pat: string, folders: string[], ignorePatterns: string[]) => void;
+  onStart: (repoUrl: string, branch: string, pat: string, folders: string[], ignorePatterns: string[], opts?: StartReviewOptions) => void;
   onResumeFixing: (repoUrl: string, branch: string, pat: string) => void;
   isLoading: boolean;
   error: string | null;
@@ -44,6 +44,11 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
   // ── Step 2 state ──────────────────────────────────────────────────────────
   const [rootFolders,     setRootFolders]     = useState<FolderNode[]>([]);
   const [selectedFolders, setSelectedFolders] = useState<Set<string>>(new Set());
+
+  // Run mode + goal (Phase 5)
+  const [runMode,    setRunMode]    = useState<'review' | 'conform'>('review');
+  const [loopEnabled, setLoopEnabled] = useState(false);
+  const [goalPolicy, setGoalPolicy] = useState<LoopGoalPolicy>('full_coverage');
 
   // ── Connect to repo ───────────────────────────────────────────────────────
   const handleConnect = async () => {
@@ -126,12 +131,19 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
   // ── Start review ──────────────────────────────────────────────────────────
   const handleStart = () => {
+    const opts: StartReviewOptions =
+      runMode === 'conform'
+        ? { mode: 'conform' }
+        : loopEnabled
+          ? { mode: 'review', loop: { policy: goalPolicy } }
+          : { mode: 'review' };
     onStart(
       repoUrl.trim(),
       branch.trim(),
       pat,
       Array.from(selectedFolders),
       userIgnorePatterns,
+      opts,
     );
   };
 
@@ -497,6 +509,52 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
         {ScanExclusionsSection}
 
+        {/* Run mode — Review vs Conform (Phase 5) */}
+        <div className="space-y-2">
+          <div className="text-xs font-semibold" style={{ color: '#7A9CC0' }}>Run mode</div>
+          <div className="grid grid-cols-2 gap-2">
+            {([['review', 'Review', 'Find & report violations'],
+               ['conform', 'Conform', 'Fix to standards + open PR']] as const).map(([val, label, desc]) => (
+              <button
+                key={val}
+                type="button"
+                onClick={() => setRunMode(val)}
+                data-testid={`run-mode-${val}`}
+                className="rounded-lg px-3 py-2 text-left"
+                style={{
+                  background: runMode === val ? 'rgba(0,191,255,0.12)' : '#0A1628',
+                  border: `1px solid ${runMode === val ? '#00BFFF' : '#1E3A5F'}`,
+                }}
+              >
+                <div className="text-sm font-bold" style={{ color: runMode === val ? '#00BFFF' : '#CFE0F0' }}>{label}</div>
+                <div className="text-[11px]" style={{ color: '#7A9CC0' }}>{desc}</div>
+              </button>
+            ))}
+          </div>
+
+          {runMode === 'review' && (
+            <label className="flex items-center gap-2 text-xs" style={{ color: '#7A9CC0' }}>
+              <input type="checkbox" checked={loopEnabled} onChange={e => setLoopEnabled(e.target.checked)} data-testid="loop-enabled" />
+              Loop until goal met
+            </label>
+          )}
+
+          {(runMode === 'conform' || loopEnabled) && (
+            <select
+              value={runMode === 'conform' ? 'zero_blocker_full_coverage' : goalPolicy}
+              disabled={runMode === 'conform'}
+              onChange={e => setGoalPolicy(e.target.value as LoopGoalPolicy)}
+              data-testid="goal-policy"
+              className="w-full rounded-lg px-3 py-2 text-sm"
+              style={{ background: '#0A1628', border: '1px solid #1E3A5F', color: '#CFE0F0' }}
+            >
+              <option value="full_coverage">Goal: full coverage</option>
+              <option value="zero_blocker">Goal: zero blockers</option>
+              <option value="zero_blocker_full_coverage">Goal: zero blockers + full coverage</option>
+            </select>
+          )}
+        </div>
+
         {error && (
           <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
                style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid #FF4444', color: '#FF8080' }}>
@@ -516,8 +574,8 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           }}
         >
           {isLoading
-            ? <><Loader2 className="w-4 h-4 animate-spin" />Starting review…</>
-            : <><Shield className="w-4 h-4" />Start Code Review</>}
+            ? <><Loader2 className="w-4 h-4 animate-spin" />Starting…</>
+            : <><Shield className="w-4 h-4" />{runMode === 'conform' ? 'Start Conform Run' : 'Start Code Review'}</>}
         </button>
       </div>
     </div>

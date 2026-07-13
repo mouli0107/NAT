@@ -118,6 +118,21 @@ export interface ArchitectureGraph {
   };
 }
 
+// ─── Loop engineering / Conform (mirrors server codelens-types.ts) ─────────────
+export type LoopGoalPolicy = 'full_coverage' | 'zero_blocker' | 'zero_blocker_full_coverage';
+export type LoopMode = 'review' | 'conform';
+export type LoopStopReason = 'goal_met' | 'max_iterations' | 'timeout' | 'no_progress' | 'oscillation' | 'stopped' | 'error';
+
+export interface LoopMetric {
+  runStatus: 'COMPLETE' | 'PARTIAL';
+  criticalOpen: number;
+  warningOpen: number;
+  infoOpen: number;
+  openViolations: number;
+  errorCells: number;
+  confidencePct: number;
+}
+
 export type CodeLensEvent =
   | { event: 'review_started'; session_id: string; total_files: number; total_rules: number; standards_source: string }
   | { event: 'standards_parsed'; rules: ParsedRule[]; total_rules: number }
@@ -137,6 +152,11 @@ export type CodeLensEvent =
   | { event: 'bulk_fix_progress'; standard_id: string; fixed: number; failed: number; total: number; current_file: string }
   | { event: 'bulk_fix_complete'; standard_id: string; fixed: number; failed: number; total: number }
   | { event: 'architecture_graph'; graph: ArchitectureGraph }
+  | { event: 'loop_started'; session_id: string; mode: LoopMode; policy: LoopGoalPolicy; budgets: { max_iterations: number; max_wall_clock_ms: number; no_progress_iterations: number } }
+  | { event: 'loop_iteration'; session_id: string; iteration: number; action: 'review' | 'retry_coverage' | 'remediate'; metric: LoopMetric; goal_met: boolean; elapsed_ms: number }
+  | { event: 'loop_complete'; session_id: string; stop_reason: LoopStopReason; iterations: number; final_metric: LoopMetric }
+  | { event: 'fix_screened'; session_id: string; violation_id: string; allowed: boolean; deviation_id: string | null; evidence: string }
+  | { event: 'conform_progress'; session_id: string; iteration: number; attempted: number; fixed: number; deferred: number; failed: number }
   | { event: 'error'; message: string };
 
 export const SSE_EVENT_TYPES = [
@@ -158,5 +178,10 @@ export const SSE_EVENT_TYPES = [
   'bulk_fix_progress',
   'bulk_fix_complete',
   'architecture_graph',
+  'loop_started',
+  'loop_iteration',
+  'loop_complete',
+  'fix_screened',
+  'conform_progress',
   'error',
 ] as const;

@@ -1950,6 +1950,84 @@ export const codelensCustomStandards = pgTable("codelens_custom_standards", {
   updatedAt:        timestamp("updated_at").defaultNow(),
 });
 
+// ─── Loop engineering / Conform / PR trigger / Scheduler (Phase 5) ─────────────
+
+// Time-based scheduled loops. Cadence is stored decomposed (type + parts) and
+// reconstructed in codelens-db. lastKeys holds the previous run's violation keys
+// so a scheduled run can alert only on NEW findings.
+export const codelensSchedules = pgTable("codelens_schedules", {
+  id:              uuid("id").primaryKey().defaultRandom(),
+  userId:          varchar("user_id", { length: 64 }),
+  repoUrl:         varchar("repo_url", { length: 500 }).notNull(),
+  branch:          varchar("branch", { length: 200 }).notNull(),
+  mode:            varchar("mode", { length: 20 }).notNull().default("review"),      // review | conform
+  policy:          varchar("policy", { length: 40 }).notNull().default("full_coverage"),
+  cadenceType:     varchar("cadence_type", { length: 20 }).notNull().default("interval"), // interval | dailyUtc
+  intervalMinutes: integer("interval_minutes").default(1440),
+  dailyHour:       integer("daily_hour").default(0),
+  dailyMinute:     integer("daily_minute").default(0),
+  enabled:         boolean("enabled").notNull().default(true),
+  lastRunAt:       timestamp("last_run_at"),
+  lastKeys:        text("last_keys").array(),
+  createdAt:       timestamp("created_at").defaultNow(),
+  updatedAt:       timestamp("updated_at").defaultNow(),
+}, (t) => ({
+  enabledIdx: index("idx_codelens_schedules_enabled").on(t.enabled),
+}));
+
+// One row per loop run (review or conform) — summary + final metric snapshot.
+export const codelensLoopRuns = pgTable("codelens_loop_runs", {
+  id:          uuid("id").primaryKey().defaultRandom(),
+  sessionId:   varchar("session_id", { length: 64 }).notNull(),
+  userId:      varchar("user_id", { length: 64 }),
+  mode:        varchar("mode", { length: 20 }).notNull(),
+  policy:      varchar("policy", { length: 40 }).notNull(),
+  iterations:  integer("iterations").default(0),
+  stopReason:  varchar("stop_reason", { length: 30 }),
+  finalMetric: jsonb("final_metric"),
+  createdAt:   timestamp("created_at").defaultNow(),
+}, (t) => ({
+  sessionIdx: index("idx_codelens_loop_runs_session").on(t.sessionId),
+}));
+
+// Per-repo PR trigger policy (Phase 3 resolver reads this in prod).
+export const codelensPrPolicies = pgTable("codelens_pr_policies", {
+  repoFullName:      varchar("repo_full_name", { length: 300 }).primaryKey(), // owner/repo
+  enabled:           boolean("enabled").notNull().default(false),
+  baseBranchPattern: varchar("base_branch_pattern", { length: 300 }).notNull().default("main,staging"),
+  mode:              varchar("mode", { length: 20 }).notNull().default("review"),
+  blocking:          boolean("blocking").notNull().default(false),
+  pushMode:          varchar("push_mode", { length: 30 }).notNull().default("companion-pr"),
+  installationId:    integer("installation_id"),
+  updatedAt:         timestamp("updated_at").defaultNow(),
+});
+
+// Findings the conform loop could not resolve (fix didn't hold / would breach an
+// accepted deviation) — escalated for human review, never silently retried.
+export const codelensContestedFindings = pgTable("codelens_contested_findings", {
+  id:           uuid("id").primaryKey().defaultRandom(),
+  sessionId:    varchar("session_id", { length: 64 }),
+  userId:       varchar("user_id", { length: 64 }),
+  violationKey: varchar("violation_key", { length: 400 }).notNull(),
+  ruleId:       varchar("rule_id", { length: 10 }),
+  reason:       varchar("reason", { length: 200 }),
+  createdAt:    timestamp("created_at").defaultNow(),
+}, (t) => ({
+  sessionIdx: index("idx_codelens_contested_session").on(t.sessionId),
+}));
+
+// Single-flight lock for the in-process scheduler (safe when App Service scales
+// out): a row per lock key with an expiry the acquirer must beat.
+export const codelensSchedulerLocks = pgTable("codelens_scheduler_locks", {
+  lockKey:   varchar("lock_key", { length: 100 }).primaryKey(),
+  holder:    varchar("holder", { length: 100 }),
+  expiresAt: timestamp("expires_at").notNull(),
+});
+
+export type CodelensSchedule          = typeof codelensSchedules.$inferSelect;
+export type CodelensPrPolicy          = typeof codelensPrPolicies.$inferSelect;
+export type CodelensLoopRun           = typeof codelensLoopRuns.$inferSelect;
+
 export type CodelensCustomStandard       = typeof codelensCustomStandards.$inferSelect;
 
 export type CodelensRun              = typeof codelensRuns.$inferSelect;

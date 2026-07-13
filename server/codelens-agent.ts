@@ -2112,7 +2112,14 @@ export async function runReview(session: CodeLensSession): Promise<void> {
 
     // shouldIgnoreFile filter (test files, generated, user patterns, etc.)
     const userIgnorePatterns = session.ignorePatterns ?? [];
-    const relPathsToScan = folderFiltered.filter(rel => !shouldIgnoreFile(rel, userIgnorePatterns));
+    // Optional changed-files allow-list (PR-triggered runs). Applied AFTER folder
+    // + ignore filters as an intersection so a PR review only touches its diff.
+    const restrict = session.restrictToFiles && session.restrictToFiles.length > 0
+      ? new Set(session.restrictToFiles.map(f => f.replace(/\\/g, '/')))
+      : null;
+    const relPathsToScan = folderFiltered
+      .filter(rel => !shouldIgnoreFile(rel, userIgnorePatterns))
+      .filter(rel => !restrict || restrict.has(rel.replace(/\\/g, '/')));
     const ignoredRels    = folderFiltered.filter(rel =>  shouldIgnoreFile(rel, userIgnorePatterns));
     console.log(`[CodeLens] After ignore filter: ${relPathsToScan.length} to scan, ${ignoredRels.length} ignored`);
 
@@ -3026,6 +3033,36 @@ export async function applyFix(session: CodeLensSession, violationId: string): P
       console.warn('[CodeLens] fix verify failed (non-fatal):', err?.message);
     }
   }
+}
+
+/**
+ * HONEST post-apply verification for Conform Mode. Re-checks the standard against
+ * the fixed file on disk and sets the violation status truthfully:
+ *   PASS / NOT_APPLICABLE ⇒ status 'fixed'
+ *   VIOLATION            ⇒ status back to 'open' (the fix did NOT resolve it)
+ *   ERROR                ⇒ status left as-is (could not verify)
+ * applyFix() flips to 'fixed' optimistically; the conform loop calls this to get
+ * the truth before deciding whether the goal is met.
+ */
+export async function verifyFix(
+  session: CodeLensSession,
+  violationId: string,
+): Promise<{ verified: boolean; status: 'PASS' | 'VIOLATION' | 'NOT_APPLICABLE' | 'ERROR' }> {
+  const violation = session.violations.get(violationId);
+  if (!violation) return { verified: false, status: 'ERROR' };
+  const file = session.files.find(f => f.fileId === violation.fileId);
+  const std = effectiveStandards(session).find(s => s.id === violation.ruleId);
+  if (!file || !std) return { verified: false, status: 'ERROR' };
+
+  let content: string;
+  try { content = fs.readFileSync(file.absolutePath, 'utf-8'); }
+  catch { return { verified: false, status: 'ERROR' }; }
+
+  const result = await checkFileAgainstStandard(file.relativePath, content, std, classifyFile(file.relativePath));
+  const verified = result.status === 'PASS' || result.status === 'NOT_APPLICABLE';
+  if (verified) violation.status = 'fixed';
+  else if (result.status === 'VIOLATION') violation.status = 'open';
+  return { verified, status: result.status };
 }
 
 /**
