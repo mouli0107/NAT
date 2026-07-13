@@ -592,6 +592,7 @@ export const PACKAGE_JSON = `{
   },
   "devDependencies": {
     "@playwright/test": "^1.52.0",
+    "@types/node": "^20.0.0",
     "allure-playwright": "^3.0.0",
     "allure-commandline": "^2.30.0",
     "typescript": "^5.5.0"
