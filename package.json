@@ -82,6 +82,7 @@
     "json-schema-faker": "^0.5.9",
     "lucide-react": "^0.453.0",
     "mailparser": "^3.9.8",
+    "mammoth": "^1.12.1",
     "memorystore": "^1.6.7",
     "mermaid": "^11.13.0",
     "multer": "^2.0.2",
