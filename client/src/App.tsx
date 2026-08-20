@@ -49,6 +49,7 @@ import ConflictReviewPage from "@/pages/ConflictReview";
 import TestManagementPage from "@/pages/test-management";
 import CoveragePage from "@/pages/coverage";
 import CodeLensPage from "@/pages/code-lens";
+import PromptGeneratorPage from "@/pages/prompt-generator";
 import AutopilotPage from "@/pages/autopilot";
 import LoginPage from "@/pages/login";
 import NotFound from "@/pages/not-found";
@@ -253,6 +254,9 @@ function Router() {
       </Route>
       <Route path="/code-lens">
         {() => <ProtectedRoute component={CodeLensPage} />}
+      </Route>
+      <Route path="/prompt-generator">
+        {() => <ProtectedRoute component={PromptGeneratorPage} />}
       </Route>
       <Route path="/autopilot">
         {() => <ProtectedRoute component={AutopilotPage} />}
