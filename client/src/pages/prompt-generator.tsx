@@ -92,6 +92,7 @@ export default function PromptGeneratorPage() {
   // Story step
   const [stories, setStories] = useState<Story[]>([]);
   const [extracting, setExtracting] = useState(false);
+  const [extractProgress, setExtractProgress] = useState("");
   const [selectedIdx, setSelectedIdx] = useState<number | null>(null);
   const [manual, setManual] = useState<Story>({ externalId: "", title: "", description: "", acceptanceCriteria: [] });
   const [manualAcs, setManualAcs] = useState("");
@@ -225,19 +226,33 @@ export default function PromptGeneratorPage() {
   async function extractStories() {
     if (!bundleId) return;
     setExtracting(true);
+    setExtractProgress("");
     try {
-      const res = await fetch(`${API}/stories/extract`, {
+      // Background job + SSE progress — handles very large specs without timing out.
+      const res = await fetch(`${API}/stories/extract/start`, {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ bundleId }), credentials: "include",
       });
       if (!res.ok) throw new Error((await res.json()).error || "Extraction failed");
-      const data = await res.json();
-      setStories(data.stories ?? []);
-      setSelectedIdx(data.stories?.length ? 0 : null);
-      toast({ title: "Stories extracted", description: `${data.count ?? 0} user stor${data.count === 1 ? "y" : "ies"} found.` });
+      const { jobId } = await res.json();
+      const es = new EventSource(`${API}/stories/extract/stream?jobId=${jobId}`);
+      es.addEventListener("progress", (e: MessageEvent) => {
+        const d = JSON.parse(e.data); setExtractProgress(d.total > 1 ? `scanning ${d.done}/${d.total}` : "");
+      });
+      es.addEventListener("complete", (e: MessageEvent) => {
+        const d = JSON.parse(e.data);
+        setStories(d.stories ?? []); setSelectedIdx(d.stories?.length ? 0 : null);
+        setExtracting(false); setExtractProgress(""); es.close();
+        toast({ title: "Stories extracted", description: `${d.count ?? 0} user stor${d.count === 1 ? "y" : "ies"} found.` });
+      });
+      es.addEventListener("error", (e: MessageEvent) => {
+        if ((e as any).data) {
+          try { toast({ title: "Extraction failed", description: JSON.parse((e as any).data).message, variant: "destructive" }); } catch {}
+          setExtracting(false); setExtractProgress(""); es.close();
+        }
+      });
     } catch (e: any) {
       toast({ title: "Extraction failed", description: e.message, variant: "destructive" });
-    } finally {
       setExtracting(false);
     }
   }
@@ -516,7 +531,7 @@ export default function PromptGeneratorPage() {
           <CardContent className="space-y-3">
             <Button variant="outline" onClick={extractStories} disabled={!bundleId || extracting} className="w-full" data-testid="button-extract-stories">
               {extracting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <ListChecks className="h-4 w-4 mr-2" />}
-              Extract Stories from FSD/BRD
+              {extracting ? (extractProgress ? `Extracting… (${extractProgress})` : "Extracting…") : "Extract Stories from FSD/BRD"}
             </Button>
 
             <details className="rounded-md border p-2">

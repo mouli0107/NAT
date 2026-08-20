@@ -519,7 +519,10 @@ async function extractStoriesFromChunk(chunk: string): Promise<ExtractedStory[]>
  * model context window, so we scan the whole document in overlapping windows, run the
  * chunks in parallel, then merge + dedupe (by externalId, else title).
  */
-export async function extractStories(fsdText: string): Promise<ExtractedStory[]> {
+export async function extractStories(
+  fsdText: string,
+  onProgress?: (done: number, total: number) => void,
+): Promise<ExtractedStory[]> {
   if (!hasKey() || !fsdText.trim()) return [];
   const CHUNK = 120_000, OVERLAP = 2_000;
   const chunks: string[] = [];
@@ -528,7 +531,14 @@ export async function extractStories(fsdText: string): Promise<ExtractedStory[]>
   } else {
     for (let i = 0; i < fsdText.length; i += CHUNK - OVERLAP) chunks.push(fsdText.slice(i, i + CHUNK));
   }
-  const results = await Promise.all(chunks.map(c => limit(() => extractStoriesFromChunk(c).catch(() => []))));
+  let done = 0;
+  onProgress?.(0, chunks.length);
+  const results = await Promise.all(chunks.map(c => limit(async () => {
+    const r = await extractStoriesFromChunk(c).catch(() => [] as ExtractedStory[]);
+    done += 1;
+    onProgress?.(done, chunks.length);
+    return r;
+  })));
 
   const seen = new Set<string>();
   const out: ExtractedStory[] = [];
