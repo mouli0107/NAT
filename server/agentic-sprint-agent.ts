@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import Anthropic from "@anthropic-ai/sdk";
+import { resilientCreate } from "./lib/claude-resilient";
 import { db } from "./db.js";
 import { frameworkFunctions, frameworkConfigs } from "@shared/schema";
 import { eq } from "drizzle-orm";
@@ -857,7 +858,7 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
           try {
             const refinerModel = process.env.QA_REFINER_MODEL || "claude-haiku-4-5-20251001";
             const response = await withRetry(
-              () => anthropic.messages.create({
+              () => resilientCreate({
                 model: refinerModel,
                 max_tokens: 16000,
                 temperature: 0.4,
@@ -1583,7 +1584,7 @@ Generate EXACTLY ${targetCount} test cases. Favor quality over quantity — ${ta
   try {
     console.log(`[Generator] Calling Claude for ${categoryLabel} (${targetCount} tests)...`);
     const claudeMsg = await withRetry(
-      () => anthropic.messages.create({
+      () => resilientCreate({
         model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
         max_tokens: maxTokens,
         temperature: 0.5,
@@ -1913,7 +1914,7 @@ Return ONLY valid JSON (no markdown):
 }`;
 
   const claudeMsg = await withRetry(
-    () => anthropic.messages.create({
+    () => resilientCreate({
       model: process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001",
       max_tokens: 4000,
       temperature: 0.2,
