@@ -54,7 +54,8 @@ const PLAIN_TEXT_EXTS = new Set([
 export async function extractDocumentText(
   buffer: Buffer,
   fileName: string,
-  mimeType: string
+  mimeType: string,
+  maxChars: number = MAX_CHARS
 ): Promise<ExtractedDocument> {
   const ext = path.extname(fileName).toLowerCase();
 
@@ -90,11 +91,12 @@ export async function extractDocumentText(
   // Normalise whitespace: collapse blank lines, trim lines
   const normalised = normaliseWhitespace(rawText);
 
-  // Enforce per-document cap
-  const truncated = normalised.length > MAX_CHARS;
+  // Enforce per-document cap (caller-overridable — Ascent passes a much larger cap
+  // so large FSD/BRD specs aren't cut off before their user-story sections).
+  const truncated = normalised.length > maxChars;
   const content = truncated
-    ? normalised.slice(0, MAX_CHARS) +
-      `\n\n[... content truncated — original length ${normalised.length} chars, limit ${MAX_CHARS} ...]`
+    ? normalised.slice(0, maxChars) +
+      `\n\n[... content truncated — original length ${normalised.length} chars, limit ${maxChars} ...]`
     : normalised;
 
   return {
