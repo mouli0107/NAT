@@ -50,8 +50,10 @@ export interface TechProfile {
   builtin: boolean;
 }
 
-const SONNET = 'claude-sonnet-4-5';
-const OPUS = 'claude-opus-4-5';
+// Sonnet 5 across all tiers (per request). These raw ids are used on the direct
+// Anthropic API path; the gateway path uses the ANTHROPIC_MODEL deployment name.
+const SONNET = 'claude-sonnet-5';
+const OPUS = 'claude-sonnet-5';
 
 // ─── Default profile: .NET 10 (CQRS) + React/Aurora ──────────────────────────
 
