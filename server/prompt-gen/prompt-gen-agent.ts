@@ -78,13 +78,18 @@ async function once(client: Anthropic, model: string, system: string, user: stri
  */
 async function callClaude(tierModel: string, system: string, user: string, maxTokens: number): Promise<string> {
   try {
-    return await pRetry(() => once(gatewayClient, resolveModel(tierModel), system, user, maxTokens), { retries: 2 });
+    // Gateway: single fast attempt (no retries) so we fail over quickly when its
+    // deployment is unavailable, rather than retrying a broken deployment 3x.
+    return await once(gatewayClient, resolveModel(tierModel), system, user, maxTokens);
   } catch (err: any) {
-    if (directClient && usingGateway && isGatewayDeploymentError(err)) {
-      console.warn(`[PromptGen] gateway deployment unavailable (${err?.message}); falling back to direct API with ${tierModel}`);
+    // Fall back to the direct Anthropic API for ANY gateway error when a direct key exists.
+    if (directClient && usingGateway) {
+      if (isGatewayDeploymentError(err)) console.warn(`[PromptGen] gateway deployment unavailable (${err?.message}); using direct API with ${tierModel}`);
+      else console.warn(`[PromptGen] gateway call failed (${err?.message}); using direct API with ${tierModel}`);
       return await pRetry(() => once(directClient, tierModel, system, user, maxTokens), { retries: 2 });
     }
-    throw err;
+    // No gateway (local direct path) — retry directly.
+    return await pRetry(() => once(gatewayClient, resolveModel(tierModel), system, user, maxTokens), { retries: 2 });
   }
 }
 
@@ -217,7 +222,7 @@ function extractElements(json: any): ElementRecord[] {
 /** Fallback element extraction: derive the catalog from the contract markdown. */
 async function extractElementsLLM(markdown: string): Promise<ElementRecord[]> {
   const text = await callClaude(
-    'claude-sonnet-4-5',
+    'claude-sonnet-5',
     'You extract a structured element list from an implementation contract. Return only JSON.',
     [
       'From the contract below, list every element as a JSON array. Each item:',
@@ -454,7 +459,7 @@ export async function extractStories(
 ): Promise<{ externalId: string; title: string; description: string; acceptanceCriteria: string[] }[]> {
   if (!hasKey() || !fsdText.trim()) return [];
   const text = await callClaude(
-    'claude-sonnet-4-5',
+    'claude-sonnet-5',
     'You extract user stories from specifications accurately, without inventing content.',
     [
       'Extract every user story from the following specification. For each, return id (e.g. "US-4.1" if present,',
