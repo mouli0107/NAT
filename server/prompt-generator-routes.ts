@@ -18,6 +18,7 @@ import { extractDocumentText } from './document-extractor';
 import { listTechProfiles, getTechProfile } from './prompt-gen/tech-profiles';
 import {
   saveBundle, getBundle, createSession, getSession, attachClient, detachClient,
+  createExtractionJob, getExtractionJob, emitJob, attachJobClient, detachJobClient,
 } from './prompt-gen/prompt-gen-session';
 import { runGeneration, extractStories } from './prompt-gen/prompt-gen-agent';
 import type { ContextDoc, ContextRole, StoryInput } from './prompt-gen/prompt-gen-types';
@@ -262,6 +263,63 @@ promptGeneratorRouter.post('/stories/extract', async (req: Request, res: Respons
   } catch (e: any) {
     res.status(502).json({ error: e?.message ?? 'Story extraction failed' });
   }
+});
+
+// ─── Background extraction (for large specs, avoids request timeouts) ─────────────
+// POST /stories/extract/start → 202 { jobId, streamUrl }; GET .../stream → SSE.
+
+promptGeneratorRouter.post('/stories/extract/start', async (req: Request, res: Response) => {
+  const { bundleId } = req.body as { bundleId?: string };
+  if (!bundleId) return res.status(400).json({ error: 'bundleId is required' });
+
+  const { userId } = await getAuthContext(req);
+  const bundle = getBundle(bundleId);
+  if (!bundle || bundle.userId !== userId) {
+    return res.status(404).json({ error: 'Context bundle not found (it may have expired — re-upload).' });
+  }
+  const specText = bundle.docs.filter(d => d.role === 'fsd' || d.role === 'brd').map(d => d.content).join('\n\n');
+  if (!specText.trim()) {
+    return res.status(422).json({ error: 'No FSD/BRD content in this bundle to extract stories from.' });
+  }
+
+  const jobId = `pgx-${randomUUID().slice(0, 8)}`;
+  const job = createExtractionJob(jobId, userId);
+
+  setTimeout(() => {
+    (async () => {
+      try {
+        emitJob(job, { event: 'status', status: 'running' });
+        const stories = await extractStories(specText, (done, total) =>
+          emitJob(job, { event: 'progress', done, total }));
+        job.stories = stories;
+        job.status = 'complete';
+        emitJob(job, { event: 'complete', stories, count: stories.length });
+      } catch (e: any) {
+        job.status = 'error';
+        job.error = e?.message ?? 'extraction failed';
+        emitJob(job, { event: 'error', message: job.error });
+      }
+    })().catch(() => {});
+  }, 200);
+
+  res.status(202).json({ jobId, streamUrl: `/api/v1/prompt-generator/stories/extract/stream?jobId=${jobId}` });
+});
+
+promptGeneratorRouter.get('/stories/extract/stream', async (req: Request, res: Response) => {
+  const { jobId } = req.query as { jobId?: string };
+  if (!jobId) return res.status(400).json({ error: 'jobId is required' });
+  const { userId } = await getAuthContext(req);
+  const job = getExtractionJob(jobId);
+  if (!job || job.userId !== userId) return res.status(404).json({ error: `Job ${jobId} not found` });
+
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders?.();
+  attachJobClient(job, res);
+  const heartbeat = setInterval(() => { try { res.write(': heartbeat\n\n'); } catch { clearInterval(heartbeat); } }, 15_000);
+  req.on('close', () => { clearInterval(heartbeat); detachJobClient(job, res); });
 });
 
 // ─── POST /generate/start ───────────────────────────────────────────────────────

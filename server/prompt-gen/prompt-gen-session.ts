@@ -94,6 +94,53 @@ export function detachClient(session: PromptGenSession, res: Response): void {
   session.sseClients.delete(res);
 }
 
+// ─── Extraction jobs (background story extraction for large specs) ──────────────
+
+export interface ExtractionJob {
+  jobId: string;
+  userId: string;
+  status: 'running' | 'complete' | 'error';
+  stories: any[];
+  error: string | null;
+  sseClients: Set<Response>;
+  eventHistory: SseEvent[];
+  createdAt: number;
+}
+
+const extractionJobs = new Map<string, ExtractionJob>();
+
+export function createExtractionJob(jobId: string, userId: string): ExtractionJob {
+  const job: ExtractionJob = {
+    jobId, userId, status: 'running', stories: [], error: null,
+    sseClients: new Set(), eventHistory: [], createdAt: Date.now(),
+  };
+  extractionJobs.set(jobId, job);
+  return job;
+}
+
+export function getExtractionJob(jobId: string): ExtractionJob | undefined {
+  return extractionJobs.get(jobId);
+}
+
+export function emitJob(job: ExtractionJob, event: SseEvent): void {
+  job.eventHistory.push(event);
+  const payload = `event: ${event.event}\ndata: ${JSON.stringify(event)}\n\n`;
+  for (const client of Array.from(job.sseClients)) {
+    try { client.write(payload); } catch { job.sseClients.delete(client); }
+  }
+}
+
+export function attachJobClient(job: ExtractionJob, res: Response): void {
+  for (const evt of job.eventHistory) {
+    try { res.write(`event: ${evt.event}\ndata: ${JSON.stringify(evt)}\n\n`); } catch { return; }
+  }
+  job.sseClients.add(res);
+}
+
+export function detachJobClient(job: ExtractionJob, res: Response): void {
+  job.sseClients.delete(res);
+}
+
 // Purge finished sessions + old bundles periodically.
 setInterval(() => {
   const now = Date.now();
@@ -103,5 +150,8 @@ setInterval(() => {
   }
   for (const [id, b] of Array.from(bundles.entries())) {
     if (now - b.createdAt > BUNDLE_TTL_MS) bundles.delete(id);
+  }
+  for (const [id, j] of Array.from(extractionJobs.entries())) {
+    if (j.status !== 'running' && now - j.createdAt > SESSION_TTL_MS) extractionJobs.delete(id);
   }
 }, 10 * 60 * 1000);
