@@ -116,11 +116,21 @@ function assembleContext(session: PromptGenSession): string {
   const parts: string[] = ['## DEFAULT CODING STANDARDS (Insurity)', insurityStandardsBlock()];
   if (bundle) {
     const byRole = (role: string) => bundle.docs.filter(d => d.role === role);
+    // Per-doc cap for GENERATION context. The full spec may be ~1MB, which would
+    // overflow the model window across 7 prompts. The selected story (title + desc +
+    // ACs) already carries the story-specific detail, so a capped spec as background
+    // is enough here. (Extraction, by contrast, scans the full doc via chunking.)
+    const GEN_DOC_CAP = 40_000;
     const section = (title: string, role: string) => {
       const docs = byRole(role);
       if (!docs.length) return;
       parts.push(`## ${title}`);
-      for (const d of docs) parts.push(`### ${d.fileName}\n${d.content}`);
+      for (const d of docs) {
+        const body = d.content.length > GEN_DOC_CAP
+          ? d.content.slice(0, GEN_DOC_CAP) + `\n[... ${d.fileName} trimmed for generation context ...]`
+          : d.content;
+        parts.push(`### ${d.fileName}\n${body}`);
+      }
     };
     section('FUNCTIONAL SPEC (FSD)', 'fsd');
     section('BUSINESS REQUIREMENTS (BRD)', 'brd');
@@ -465,21 +475,21 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
 
 // ─── Story extraction (helper used by the /stories/extract route) ───────────────
 
-export async function extractStories(
-  fsdText: string,
-): Promise<{ externalId: string; title: string; description: string; acceptanceCriteria: string[] }[]> {
-  if (!hasKey() || !fsdText.trim()) return [];
+type ExtractedStory = { externalId: string; title: string; description: string; acceptanceCriteria: string[] };
+
+/** Extract stories from a single chunk of spec text. */
+async function extractStoriesFromChunk(chunk: string): Promise<ExtractedStory[]> {
   const text = await callClaude(
     'claude-sonnet-5',
     'You extract user stories from specifications accurately, without inventing content.',
     [
-      'Extract every user story from the following specification. For each, return id (e.g. "US-4.1" if present,',
-      'else ""), title, a one-paragraph description, and the acceptance criteria as an array of strings.',
+      'Extract every user story from the following specification excerpt. For each, return id (e.g. "US-4.1" if',
+      'present, else ""), title, a one-paragraph description, and the acceptance criteria as an array of strings.',
       'Return ONLY a JSON array: [{ "externalId": "", "title": "", "description": "", "acceptanceCriteria": [] }].',
-      'Scan the ENTIRE specification below (it may be long) and include EVERY user story you find.',
+      'Include EVERY user story in this excerpt. If there are none, return [].',
       '',
-      '=== SPECIFICATION ===',
-      fsdText.slice(0, 150000),
+      '=== SPECIFICATION EXCERPT ===',
+      chunk,
     ].join('\n'),
     16000,
   );
@@ -497,4 +507,31 @@ export async function extractStories(
   } catch {
     return [];
   }
+}
+
+/**
+ * Extract stories from a spec of ANY size. Large specs (e.g. a ~1MB FSD) exceed the
+ * model context window, so we scan the whole document in overlapping windows, run the
+ * chunks in parallel, then merge + dedupe (by externalId, else title).
+ */
+export async function extractStories(fsdText: string): Promise<ExtractedStory[]> {
+  if (!hasKey() || !fsdText.trim()) return [];
+  const CHUNK = 120_000, OVERLAP = 2_000;
+  const chunks: string[] = [];
+  if (fsdText.length <= CHUNK) {
+    chunks.push(fsdText);
+  } else {
+    for (let i = 0; i < fsdText.length; i += CHUNK - OVERLAP) chunks.push(fsdText.slice(i, i + CHUNK));
+  }
+  const results = await Promise.all(chunks.map(c => limit(() => extractStoriesFromChunk(c).catch(() => []))));
+
+  const seen = new Set<string>();
+  const out: ExtractedStory[] = [];
+  for (const s of results.flat()) {
+    const key = (s.externalId || s.title || '').toLowerCase().trim();
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out;
 }
