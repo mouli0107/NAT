@@ -67,8 +67,19 @@ async function once(client: Anthropic, model: string, system: string, user: stri
     system,
     messages: [{ role: 'user', content: user }],
   });
-  const block = res.content[0];
-  return block && block.type === 'text' ? block.text : '';
+  // Concatenate ALL text blocks. Claude 5 with extended thinking returns a
+  // `thinking` block first and the answer in a later `text` block, so reading only
+  // content[0] yields an empty string. Scan every block for type === 'text'.
+  const text = (res.content ?? [])
+    .filter((b: any) => b && b.type === 'text' && typeof b.text === 'string')
+    .map((b: any) => b.text)
+    .join('')
+    .trim();
+  if (!text) {
+    const kinds = (res.content ?? []).map((b: any) => b?.type).join(',');
+    console.warn(`[PromptGen] empty text from model=${model} stop=${(res as any).stop_reason} blocks=[${kinds}]`);
+  }
+  return text;
 }
 
 /**
