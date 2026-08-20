@@ -199,9 +199,12 @@ promptGeneratorRouter.post('/context', async (req: Request, res: Response) => {
       const files = (req.files ?? {}) as Record<string, Express.Multer.File[]>;
       const docs: ContextDoc[] = [];
 
+      // Ascent ingests full specs — large FSD/BRD must not be cut to 8k (that hides
+      // the user-story sections). Allow up to ~400k chars per document.
+      const ASCENT_DOC_CHARS = 400_000;
       for (const field of Object.keys(FIELD_ROLE)) {
         for (const f of files[field] ?? []) {
-          const extracted = await extractDocumentText(f.buffer, f.originalname, f.mimetype);
+          const extracted = await extractDocumentText(f.buffer, f.originalname, f.mimetype, ASCENT_DOC_CHARS);
           docs.push({
             fileName: extracted.fileName,
             role: FIELD_ROLE[field],

@@ -476,11 +476,12 @@ export async function extractStories(
       'Extract every user story from the following specification. For each, return id (e.g. "US-4.1" if present,',
       'else ""), title, a one-paragraph description, and the acceptance criteria as an array of strings.',
       'Return ONLY a JSON array: [{ "externalId": "", "title": "", "description": "", "acceptanceCriteria": [] }].',
+      'Scan the ENTIRE specification below (it may be long) and include EVERY user story you find.',
       '',
       '=== SPECIFICATION ===',
-      fsdText.slice(0, 24000),
+      fsdText.slice(0, 150000),
     ].join('\n'),
-    4000,
+    8000,
   );
   const raw = text.match(/\[[\s\S]*\]/)?.[0];
   if (!raw) return [];
