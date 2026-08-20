@@ -24,26 +24,29 @@ import { getBundle, emit } from './prompt-gen-session';
 import type { GeneratedContract, PromptGenSession } from './prompt-gen-types';
 import type { ElementRecord } from './prompt-gen-db';
 
-const anthropic = new Anthropic({
+// Primary client: the configured gateway (baseURL set in prod) or the direct API.
+const gatewayClient = new Anthropic({
   apiKey: process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY,
   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
+const usingGateway = !!process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL;
+// Direct api.anthropic.com fallback — used when the gateway deployment is unavailable.
+const directClient = process.env.ANTHROPIC_API_KEY
+  ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+  : null;
 
 // Bound parallel layer calls (house convention: pLimit(2)).
 const limit = pLimit(3);
 
 /**
- * Resolve the actual model/deployment to call.
- * In prod the Anthropic gateway (AI_INTEGRATIONS_ANTHROPIC_BASE_URL) maps requests
- * to a NAMED deployment set by ANTHROPIC_MODEL — raw ids like "claude-sonnet-4-5"
- * are not valid deployments there. So when ANTHROPIC_MODEL is configured we use it
- * for every call (with an optional opus-tier override); locally (no gateway model)
- * we keep the per-layer tiered defaults from the Tech Profile.
+ * Resolve the deployment name to send to the GATEWAY. In prod the gateway maps to a
+ * NAMED deployment set by ANTHROPIC_MODEL — raw ids like "claude-sonnet-4-5" are not
+ * valid there. Locally (no gateway model) we keep the per-layer tiered default.
  */
-function resolveModel(profileModel: string): string {
+function resolveModel(tierModel: string): string {
   const envModel = process.env.ANTHROPIC_MODEL;
-  if (!envModel) return profileModel;
-  if (/opus/i.test(profileModel) && process.env.ANTHROPIC_OPUS_MODEL) return process.env.ANTHROPIC_OPUS_MODEL;
+  if (!envModel) return tierModel;
+  if (/opus/i.test(tierModel) && process.env.ANTHROPIC_OPUS_MODEL) return process.env.ANTHROPIC_OPUS_MODEL;
   return envModel;
 }
 
@@ -51,19 +54,38 @@ function hasKey(): boolean {
   return !!(process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY);
 }
 
-async function callClaude(model: string, system: string, user: string, maxTokens: number): Promise<string> {
-  const res = await pRetry(
-    () =>
-      anthropic.messages.create({
-        model,
-        max_tokens: maxTokens,
-        system,
-        messages: [{ role: 'user', content: user }],
-      }),
-    { retries: 2 },
-  );
+/** Errors that mean "the gateway deployment isn't usable" → worth a direct-API retry. */
+function isGatewayDeploymentError(err: any): boolean {
+  const msg = String(err?.message ?? err ?? '');
+  return /DeploymentNotFound|DeploymentError|provisioningState|not ready|does not exist/i.test(msg);
+}
+
+async function once(client: Anthropic, model: string, system: string, user: string, maxTokens: number): Promise<string> {
+  const res = await client.messages.create({
+    model,
+    max_tokens: maxTokens,
+    system,
+    messages: [{ role: 'user', content: user }],
+  });
   const block = res.content[0];
   return block && block.type === 'text' ? block.text : '';
+}
+
+/**
+ * Call Claude with resilience: try the gateway (resolved deployment) first; if the
+ * gateway deployment is unavailable, fall back to the direct Anthropic API using the
+ * raw tier model id. `tierModel` is a real id (e.g. claude-sonnet-4-5 / -opus-4-5).
+ */
+async function callClaude(tierModel: string, system: string, user: string, maxTokens: number): Promise<string> {
+  try {
+    return await pRetry(() => once(gatewayClient, resolveModel(tierModel), system, user, maxTokens), { retries: 2 });
+  } catch (err: any) {
+    if (directClient && usingGateway && isGatewayDeploymentError(err)) {
+      console.warn(`[PromptGen] gateway deployment unavailable (${err?.message}); falling back to direct API with ${tierModel}`);
+      return await pRetry(() => once(directClient, tierModel, system, user, maxTokens), { retries: 2 });
+    }
+    throw err;
+  }
 }
 
 // ─── Context assembly ──────────────────────────────────────────────────────────
@@ -195,7 +217,7 @@ function extractElements(json: any): ElementRecord[] {
 /** Fallback element extraction: derive the catalog from the contract markdown. */
 async function extractElementsLLM(markdown: string): Promise<ElementRecord[]> {
   const text = await callClaude(
-    resolveModel('claude-sonnet-4-5'),
+    'claude-sonnet-4-5',
     'You extract a structured element list from an implementation contract. Return only JSON.',
     [
       'From the contract below, list every element as a JSON array. Each item:',
@@ -347,7 +369,7 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
     // Stage 1 — contract (reconciled against the foundation)
     emit(session, { event: 'contract_start', model: resolveModel(profile.contractModel) });
     const contractText = await callClaude(
-      resolveModel(profile.contractModel),
+      profile.contractModel,
       'You design precise, implementation-ready contracts. Be exact and consistent with names.',
       buildContractPrompt(session, profile, context, foundation),
       8000,
@@ -368,7 +390,7 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
           emit(session, { event: 'layer_start', layerId: layer.id, label: layer.label, model: resolveModel(layer.model) });
           try {
             const prompt = await callClaude(
-              resolveModel(layer.model),
+              layer.model,
               'You write excellent, unambiguous implementation prompts for coding agents.',
               buildLayerPrompt(session, profile, layer, session.contract!, context, foundation),
               4000,
@@ -432,7 +454,7 @@ export async function extractStories(
 ): Promise<{ externalId: string; title: string; description: string; acceptanceCriteria: string[] }[]> {
   if (!hasKey() || !fsdText.trim()) return [];
   const text = await callClaude(
-    resolveModel('claude-sonnet-4-5'),
+    'claude-sonnet-4-5',
     'You extract user stories from specifications accurately, without inventing content.',
     [
       'Extract every user story from the following specification. For each, return id (e.g. "US-4.1" if present,',
