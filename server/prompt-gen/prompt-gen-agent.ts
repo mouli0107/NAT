@@ -61,12 +61,17 @@ function isGatewayDeploymentError(err: any): boolean {
 }
 
 async function once(client: Anthropic, model: string, system: string, user: string, maxTokens: number): Promise<string> {
+  // Disable extended thinking. Claude 5 defaults to thinking on some deployments,
+  // and for large inputs it can consume the ENTIRE max_tokens budget on the thinking
+  // block (stop_reason=max_tokens, blocks=[thinking]) leaving no text. We want the
+  // answer text, so turn thinking off. Cast to any — older SDK types may omit the field.
   const res = await client.messages.create({
     model,
     max_tokens: maxTokens,
     system,
     messages: [{ role: 'user', content: user }],
-  });
+    thinking: { type: 'disabled' },
+  } as any);
   // Concatenate ALL text blocks. Claude 5 with extended thinking returns a
   // `thinking` block first and the answer in a later `text` block, so reading only
   // content[0] yields an empty string. Scan every block for type === 'text'.
