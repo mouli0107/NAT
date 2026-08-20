@@ -481,7 +481,7 @@ export async function extractStories(
       '=== SPECIFICATION ===',
       fsdText.slice(0, 150000),
     ].join('\n'),
-    8000,
+    16000,
   );
   const raw = text.match(/\[[\s\S]*\]/)?.[0];
   if (!raw) return [];
