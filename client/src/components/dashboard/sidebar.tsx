@@ -1,4 +1,4 @@
-import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList, ShieldCheck, Rocket } from "lucide-react";
+import { Activity, Zap, Target, FolderOpen, ChevronLeft, ChevronRight, LayoutDashboard, Eye, Play, Database, BarChart3, ArrowUpDown, Cog, HelpCircle, Bot, Sparkles, Layers, Library, CircleDot, ClipboardList, ShieldCheck, Rocket, Wand2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Link, useLocation } from "wouter";
@@ -50,6 +50,7 @@ export function Sidebar({ activeView = "testing", onViewChange = () => {}, isRun
     { id: "nradiverse",        href: "/nradiverse",        icon: Sparkles,        label: "AI Quality Engine",            testId: "nav-nradiverse" },
     { id: "reports",           href: "/reports",           icon: BarChart3,       label: "Reports & Analytics",          testId: "nav-reports" },
     { id: "code-lens",         href: "/code-lens",         icon: ShieldCheck,     label: "Code Lens",                    testId: "nav-code-lens" },
+    { id: "prompt-generator",  href: "/prompt-generator",  icon: Wand2,           label: "Ascent (AI-DLC Prompts)",      testId: "nav-prompt-generator" },
     { id: "import-export",     href: "/import-export",     icon: ArrowUpDown,     label: "Import/Export",                testId: "nav-import-export" },
     { id: "projects",          href: "/projects",          icon: FolderOpen,      label: "Project History",              testId: "nav-projects" },
     { id: "architecture",      href: "/architecture",      icon: Layers,          label: "Architecture Diagram",         testId: "nav-architecture" },
