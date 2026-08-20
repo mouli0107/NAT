@@ -32,6 +32,21 @@ const anthropic = new Anthropic({
 // Bound parallel layer calls (house convention: pLimit(2)).
 const limit = pLimit(3);
 
+/**
+ * Resolve the actual model/deployment to call.
+ * In prod the Anthropic gateway (AI_INTEGRATIONS_ANTHROPIC_BASE_URL) maps requests
+ * to a NAMED deployment set by ANTHROPIC_MODEL — raw ids like "claude-sonnet-4-5"
+ * are not valid deployments there. So when ANTHROPIC_MODEL is configured we use it
+ * for every call (with an optional opus-tier override); locally (no gateway model)
+ * we keep the per-layer tiered defaults from the Tech Profile.
+ */
+function resolveModel(profileModel: string): string {
+  const envModel = process.env.ANTHROPIC_MODEL;
+  if (!envModel) return profileModel;
+  if (/opus/i.test(profileModel) && process.env.ANTHROPIC_OPUS_MODEL) return process.env.ANTHROPIC_OPUS_MODEL;
+  return envModel;
+}
+
 function hasKey(): boolean {
   return !!(process.env.AI_INTEGRATIONS_ANTHROPIC_API_KEY || process.env.ANTHROPIC_API_KEY);
 }
@@ -180,7 +195,7 @@ function extractElements(json: any): ElementRecord[] {
 /** Fallback element extraction: derive the catalog from the contract markdown. */
 async function extractElementsLLM(markdown: string): Promise<ElementRecord[]> {
   const text = await callClaude(
-    'claude-sonnet-4-5',
+    resolveModel('claude-sonnet-4-5'),
     'You extract a structured element list from an implementation contract. Return only JSON.',
     [
       'From the contract below, list every element as a JSON array. Each item:',
@@ -330,9 +345,9 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
     if (foundation) emit(session, { event: 'foundation', hasFoundation: true });
 
     // Stage 1 — contract (reconciled against the foundation)
-    emit(session, { event: 'contract_start', model: profile.contractModel });
+    emit(session, { event: 'contract_start', model: resolveModel(profile.contractModel) });
     const contractText = await callClaude(
-      profile.contractModel,
+      resolveModel(profile.contractModel),
       'You design precise, implementation-ready contracts. Be exact and consistent with names.',
       buildContractPrompt(session, profile, context, foundation),
       8000,
@@ -350,10 +365,10 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
         limit(async () => {
           const target = session.layers.find(l => l.layerId === layer.id)!;
           target.status = 'running';
-          emit(session, { event: 'layer_start', layerId: layer.id, label: layer.label, model: layer.model });
+          emit(session, { event: 'layer_start', layerId: layer.id, label: layer.label, model: resolveModel(layer.model) });
           try {
             const prompt = await callClaude(
-              layer.model,
+              resolveModel(layer.model),
               'You write excellent, unambiguous implementation prompts for coding agents.',
               buildLayerPrompt(session, profile, layer, session.contract!, context, foundation),
               4000,
@@ -417,7 +432,7 @@ export async function extractStories(
 ): Promise<{ externalId: string; title: string; description: string; acceptanceCriteria: string[] }[]> {
   if (!hasKey() || !fsdText.trim()) return [];
   const text = await callClaude(
-    'claude-sonnet-4-5',
+    resolveModel('claude-sonnet-4-5'),
     'You extract user stories from specifications accurately, without inventing content.',
     [
       'Extract every user story from the following specification. For each, return id (e.g. "US-4.1" if present,',
