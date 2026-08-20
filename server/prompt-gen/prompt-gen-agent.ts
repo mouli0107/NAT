@@ -20,6 +20,7 @@ import pRetry from 'p-retry';
 import pLimit from 'p-limit';
 import { getTechProfile, type TechProfile, type LayerSpec } from './tech-profiles';
 import { insurityStandardsBlock } from './insurity-standards';
+import { INSURITY_GROUNDING } from './insurity-grounding';
 import { getBundle, emit } from './prompt-gen-session';
 import type { GeneratedContract, PromptGenSession } from './prompt-gen-types';
 import type { ElementRecord } from './prompt-gen-db';
@@ -173,6 +174,8 @@ function buildContractPrompt(session: PromptGenSession, profile: TechProfile, co
     'TARGET STACK:',
     profile.stackSummary,
     '',
+    INSURITY_GROUNDING,
+    '',
     foundation ? foundation + '\n' : '',
     foundation
       ? 'RECONCILIATION: This story is built ON TOP OF the existing project foundation above. REUSE existing ' +
@@ -309,62 +312,149 @@ function parseContract(text: string): GeneratedContract {
   return { markdown: text.trim(), json };
 }
 
-// ─── Stage 2: per-layer prompt ─────────────────────────────────────────────────
+// ─── Stage 2: per-layer prompt (BLOCK A system + BLOCK B grounding + BLOCK C tail) ──
 
-function buildLayerPrompt(
+const TERMINATOR = 'END OF PROMPT';
+
+/** AC identifiers for the story, e.g. "AC1, AC2, AC3". */
+function acList(session: PromptGenSession): string {
+  const n = session.story.acceptanceCriteria.length;
+  return n ? Array.from({ length: n }, (_, i) => `AC${i + 1}`).join(', ') : '(story acceptance criteria)';
+}
+
+/** BLOCK A — the system instruction for a single slice call. */
+function buildLayerSystem(session: PromptGenSession, layer: LayerSpec): string {
+  return [
+    'You are generating ONE implementation prompt for ONE layer. You are not generating',
+    'the contract, and you are not generating any other layer.',
+    '',
+    `LAYER: ${layer.label}`,
+    `STORY: ${session.story.externalId || '(no id)'} - ${session.story.title}`,
+    '',
+    'The Cross-Layer Implementation Contract is supplied below as read-only input. Every',
+    'type name, field name, route, status code, and DTO shape in your output must match',
+    'the contract exactly. Do not rename, pluralise differently, add fields, or invent',
+    'types not present in the contract or in the repository grounding block.',
+    '',
+    'Your output is a single self-contained markdown document with this exact section',
+    'order and nothing else:',
+    '',
+    '  1. Role and Context      (table: project, branch, story, FSD ref, layer,',
+    '                            namespace root, exact folder path, assigned Dev)',
+    '  2. Prerequisite          (which prior slice must be committed first, and the exact',
+    '                            type names this slice depends on; instruct the agent to',
+    '                            SEARCH and CONFIRM those exist before building, not assume)',
+    '  3. Scope                 (what this slice builds; explicit OUT OF SCOPE list)',
+    '  4. Files to create       (table: full path, contents)',
+    '  5. Files to modify       (table: full path, precise change; empty table if none)',
+    '  6. Implementation detail (invariants, guard clauses, state transitions, mappings,',
+    '                            registrations, in full, no ellipsis)',
+    '  7. Tests to write        (literal test method names, one per line, in a fenced',
+    '                            block; see coverage matrix in the grounding block)',
+    '  8. Completion checklist  (checkbox list; use the tail template supplied)',
+    '  9. Commit message        (conventional commit, one line)',
+    ` 10. ${TERMINATOR}`,
+    '',
+    'Hard rules for your output:',
+    '- Never abbreviate with "etc", "and so on", "...", or "similar to the above".',
+    '  If a list has fourteen items, write fourteen items.',
+    '- Never instruct the implementing agent to write a TODO, a stub, a placeholder, or',
+    '  a NotImplementedException.',
+    '- Never tell the implementing agent that failing tests are acceptable.',
+    '- If a type the contract depends on may not exist yet, instruct the agent to STOP',
+    '  and report the missing dependency. Do not instruct it to proceed on assumption.',
+    '- For any contract element tagged EXTEND or REUSE, instruct the agent to MODIFY the',
+    '  existing file/type in place; for NEW elements, create fresh files.',
+    '- Use only the repository grounding namespaces/paths. Never invent Insurity.PnC.* or',
+    '  Clean-Architecture folders. No banned construct from the grounding may appear.',
+    `- If you are running short of output budget, cut section 6 detail depth. Never cut`,
+    `  sections 7, 8, 9, or 10. The document must always terminate with ${TERMINATOR}.`,
+  ].join('\n');
+}
+
+/** BLOCK C — the required tail template the slice must end with. */
+function buildTailTemplate(session: PromptGenSession, layer: LayerSpec, nextLabel: string, nextIndex: number): string {
+  const nextLine = nextLabel
+    ? `Next: **PROMPT ${nextIndex} - ${nextLabel}**`
+    : 'Next: (final slice — all layers for this story are complete)';
+  return [
+    'End your document with EXACTLY these sections (fill the placeholders; replace {scope}',
+    'with the service name rules-engine or rating-engine, and {short summary} with a concise summary):',
+    '',
+    '## Completion checklist',
+    '',
+    '- [ ] Every file in "Files to create" exists and compiles',
+    '- [ ] Every file in "Files to modify" was edited in place, no parallel file created',
+    '- [ ] No stubs, no TODOs, no NotImplementedException, no commented-out code',
+    '- [ ] No banned construct present (grep the banned list)',
+    '- [ ] Every required construct for this layer present',
+    '- [ ] CancellationToken on every async method',
+    '- [ ] All tests in "Tests to write" exist and pass',
+    '- [ ] dotnet build PC.slnx succeeds with zero warnings',
+    '- [ ] validate-insurity.py passes',
+    `- [ ] FSD AC IDs ${acList(session)} referenced in code comments or test names`,
+    '- [ ] No dotnet ef migrations command was executed',
+    '',
+    'Paste this checklist back with every box ticked before proceeding to the next prompt.',
+    '',
+    `**Commit message:** \`feat({scope}): ${session.story.externalId || ''} ${layer.label} - {short summary}\``,
+    '',
+    nextLine,
+    '',
+    TERMINATOR,
+  ].join('\n');
+}
+
+/** BLOCK B grounding + contract + foundation + story = the user content for a slice. */
+function buildLayerUser(
   session: PromptGenSession,
   profile: TechProfile,
   layer: LayerSpec,
   contract: GeneratedContract,
   context: string,
   foundation: string,
+  prevLabel: string,
+  nextLabel: string,
+  nextIndex: number,
 ): string {
   const frameworkNotes =
-    layer.id === 'ui' ? `\n=== FRAMEWORK NOTES (UI) ===\n${profile.frameworkNotes}\n` : '';
-  // Elements the story reuses/extends → the coding agent must READ their existing files first (T2).
+    layer.id === 'ui' ? `\n=== FRAMEWORK NOTES (UI / Aurora) ===\n${profile.frameworkNotes}\n` : '';
   const priorNames = extractReuseExtendNames(contract.json);
-  const readFirst = priorNames.length
-    ? `Existing elements this story reuses/extends: ${priorNames.join(', ')}.`
-    : 'If any referenced element already exists in the codebase, locate it first.';
+  const prereq = prevLabel
+    ? `PREREQUISITE: the ${prevLabel} slice must be committed first. This slice depends on the types it defines`
+      + (priorNames.length ? ` and on these reused/extended elements: ${priorNames.join(', ')}.` : '.')
+    : 'PREREQUISITE: this is the first slice; it depends only on the shared kernel and contract.';
   return [
-    'You are an AI-DLC prompt engineer. Produce a single, ready-to-use IMPLEMENTATION PROMPT that a coding',
-    `agent (e.g. Claude Code) can execute to build the ${layer.label.toUpperCase()} layer for the story below.`,
-    'Do NOT write the implementation code yourself — write the PROMPT that will generate it.',
+    INSURITY_GROUNDING,
     '',
-    'The prompt you produce MUST:',
-    '- Begin with a "STEP 0 — READ FIRST" section that instructs the coding agent to READ the relevant existing',
-    `  files BEFORE writing any code, so the result integrates with the current codebase. ${readFirst}`,
-    '  Have it search/open the files that define those elements (and the neighbouring files in this layer) and',
-    '  the coding standards, and confirm understanding before building.',
-    '- Reference the exact names/shapes from the CONTRACT (do not invent new names).',
-    '- State the target stack and conventions precisely.',
-    '- Explicitly instruct the coding agent to USE THE INSURITY SHARED PACKAGES / base classes / extension methods',
-    '  (IApplicationIdentity, JSON:API framework, DTO & controller base classes, claims extensions, logging source',
-    '  generators) rather than writing new infrastructure.',
-    '- List the files to create/modify and what each contains.',
-    '- For elements tagged EXTEND/REUSE in the foundation, instruct the coding agent to MODIFY the existing',
-    '  file/type rather than create a new one; for NEW elements, create fresh files.',
-    '- Map the work back to the acceptance criteria and require the coding agent to satisfy each.',
-    '- Instruct the coding agent to adhere to the supplied Insurity coding standards.',
-    '- End with a short "Definition of done / verification" checklist.',
+    `LAYER GUIDANCE (what this slice covers): ${layer.guidance}`,
     '',
-    `LAYER GUIDANCE: ${layer.guidance}`,
+    prereq,
     '',
     'TARGET STACK:',
     profile.stackSummary,
     frameworkNotes,
     foundation ? '=== EXISTING PROJECT FOUNDATION (reuse/extend, do not duplicate) ===\n' + foundation + '\n' : '',
-    '=== CONTRACT (source of truth) ===',
+    '=== CROSS-LAYER IMPLEMENTATION CONTRACT (read-only, authoritative for names/shapes) ===',
     contract.markdown,
     '',
     '=== SELECTED USER STORY ===',
     storyBlock(session),
     '',
-    '=== ADDITIONAL CONTEXT (standards / memory excerpts) ===',
+    '=== ADDITIONAL CONTEXT (spec / standards / memory excerpts) ===',
     context || '(none)',
     '',
-    'Output ONLY the implementation prompt as markdown (no preamble, no explanation of what you are doing).',
+    buildTailTemplate(session, layer, nextLabel, nextIndex),
+    '',
+    'Output ONLY the implementation prompt markdown, sections 1-10 in order, ending with the tail above.',
+    'No preamble and no explanation of what you are doing.',
   ].filter(Boolean).join('\n');
+}
+
+/** True if the slice terminated with the required END OF PROMPT marker. */
+function terminatedOk(text: string): boolean {
+  const lines = text.trimEnd().split('\n').map(l => l.trim()).filter(Boolean);
+  return lines.length > 0 && lines[lines.length - 1] === TERMINATOR;
 }
 
 // ─── Orchestration ─────────────────────────────────────────────────────────────
@@ -403,7 +493,7 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
       profile.contractModel,
       'You design precise, implementation-ready contracts. Be exact and consistent with names.',
       buildContractPrompt(session, profile, context, foundation),
-      8000,
+      16000,
     );
     session.contract = parseContract(contractText);
     emit(session, {
@@ -412,23 +502,36 @@ export async function runGeneration(session: PromptGenSession): Promise<void> {
       json: session.contract.json,
     });
 
-    // Stage 2 — layers in parallel
+    // Stage 2 — one call per slice (parallel). Each is generated at a high token
+    // budget with an END OF PROMPT terminator assertion; a truncated slice is
+    // discarded and regenerated (up to 3 attempts) before it reaches a developer.
+    const ordered = [...profile.layers].sort((a, b) => a.order - b.order);
     await Promise.all(
-      profile.layers.map(layer =>
+      ordered.map((layer, idx) =>
         limit(async () => {
           const target = session.layers.find(l => l.layerId === layer.id)!;
+          const prevLabel = idx > 0 ? ordered[idx - 1].label : '';
+          const nextLabel = idx < ordered.length - 1 ? ordered[idx + 1].label : '';
+          const nextIndex = idx + 2; // this slice is PROMPT idx+1; next is idx+2
           target.status = 'running';
           emit(session, { event: 'layer_start', layerId: layer.id, label: layer.label, model: resolveModel(layer.model) });
           try {
-            const prompt = await callClaude(
-              layer.model,
-              'You write excellent, unambiguous implementation prompts for coding agents.',
-              buildLayerPrompt(session, profile, layer, session.contract!, context, foundation),
-              4000,
-            );
-            target.prompt = prompt.trim();
+            const system = buildLayerSystem(session, layer);
+            const user = buildLayerUser(session, profile, layer, session.contract!, context, foundation, prevLabel, nextLabel, nextIndex);
+            let prompt = '';
+            let ok = false;
+            for (let attempt = 1; attempt <= 3 && !ok; attempt++) {
+              prompt = (await callClaude(layer.model, system, user, 16000)).trim();
+              ok = terminatedOk(prompt);
+              if (!ok) emit(session, { event: 'layer_retry', layerId: layer.id, label: layer.label, attempt });
+            }
+            target.prompt = prompt;
             target.status = 'done';
-            emit(session, { event: 'layer_done', layerId: layer.id, label: layer.label, prompt: target.prompt });
+            if (!ok) {
+              target.error = 'slice did not terminate with END OF PROMPT after 3 attempts (possible truncation)';
+              emit(session, { event: 'layer_warning', layerId: layer.id, label: layer.label, message: target.error });
+            }
+            emit(session, { event: 'layer_done', layerId: layer.id, label: layer.label, prompt: target.prompt, terminated: ok });
           } catch (err: any) {
             target.status = 'error';
             target.error = err?.message ?? 'generation failed';
