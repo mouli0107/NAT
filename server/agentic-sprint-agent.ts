@@ -50,6 +50,26 @@ async function withRetry<T>(
   throw lastError;
 }
 
+/**
+ * Accept a refiner-authored title only when it obeys the PART 2 authoring rules.
+ * The deterministic authored title is the fallback, so a sloppy model response can
+ * never reintroduce a type prefix, a newline, or a capped-looking label.
+ */
+function acceptRefinedTitle(candidate: unknown, fallback: string): string {
+  if (typeof candidate !== "string") return fallback;
+  const t = candidate.replace(/[\r\n]+/g, " ").replace(/\s+/g, " ").trim();
+  if (!t) return fallback;
+  if (/^(Negative|Positive|Boundary|Edge|Security|Accessibility|Functional|Regression)\s*[-–—:]\s*/i.test(t)) return fallback;
+  if (/^\[.*?\]\s*/.test(t)) return fallback;
+  if (/\s+[-–—]\s+using |verify downstream/i.test(t)) return fallback;
+  if (/\bas an?\b|\bi want\b|\bso that\b/i.test(t)) return fallback;
+  if ((t.match(/"/g) || []).length % 2 !== 0) return fallback;
+  if (t.indexOf("(") !== -1 && t.indexOf(")") === -1) return fallback;
+  const n = t.split(/\s+/).length;
+  if (n < 5 || n > 12) return fallback;
+  return t;
+}
+
 export interface SprintTestCase {
   testCaseId: string;
   title: string;
@@ -60,6 +80,8 @@ export interface SprintTestCase {
   expectedResult: string;
   postconditions?: string[];
   testData: Record<string, any>;
+  /** Complete acceptance criterion text for this case, never truncated. */
+  linkedAcceptanceCriteria?: string;
   category: "functional" | "negative" | "edge_case" | "security" | "accessibility" | "regression";
   priority: string;
   traceability?: string;
@@ -100,7 +122,7 @@ export interface AgentStatus {
 }
 
 export interface AgenticPipelineEvent {
-  type: "agent_status" | "pipeline_stage" | "test_case" | "category_complete" | "analysis_result" | "plan_result" | "refinement" | "refined_test_cases" | "traceability_report" | "bdd_assets" | "complete" | "error";
+  type: "agent_status" | "pipeline_stage" | "test_case" | "category_complete" | "analysis_result" | "plan_result" | "refinement" | "refined_test_cases" | "traceability_report" | "bdd_assets" | "complete" | "error" | "enriched_context" | "coverage_summary";
   agent?: string;
   stage?: string;
   status?: AgentStatus;
@@ -521,21 +543,44 @@ export async function runAgenticPipeline(
       }
     }
 
-    // ── Step 2: Rule-based generation (uses enriched context if available) ──
+    // ── Step 2: Intent-based generation + merge + cap + guardrail gate ──
     const stage2StartMs = Date.now();
-    console.log("[TC-Generator] Stage 2: Rule-based generation starting...");
-    const { generateWithCoverageSummary } = await import("./claude-test-generator.js");
-    const { cases: allRuleBasedCases, summary: coverageSummary } = generateWithCoverageSummary(
-      {
-        workItemId: 0,
-        title: userStoryTitle,
-        description: userStoryDescription,
-        acceptanceCriteria,
-      },
-      enrichedContext
+    console.log("[TC-Generator] Stage 2: Intent-based generation starting...");
+    const { buildStoryTestCases } = await import("./testcase/index.js");
+    const storyId = (storyMetadata?.jiraKey || "US-1").replace(/[^A-Za-z0-9-]/g, "-");
+    const docTexts = (uploadedDocuments ?? []).map(d => d.content).filter(Boolean);
+    const built = buildStoryTestCases(
+      { storyId, title: userStoryTitle, description: userStoryDescription, acceptanceCriteria },
+      { docTexts, log: (l) => console.log(l) }
     );
+    const allRuleBasedCases = built.cases; // intent-merged, capped, guardrail-validated candidates
+    const coverageSummary = {
+      totalTests: built.cases.length,
+      criteriaCount: built.acs.length,
+      fieldsDetected: built.vocab.fields.length,
+      valuesDetected: built.vocab.entities.length,
+      byCategory: {} as Record<string, number>,
+      coverageStatement: `${built.cases.length} tests · ${built.acs.length} ACs · intent-merged · ${built.traceability.gapCount} coverage gap(s)`,
+      generatorVersion: "2.0.0-intent",
+    };
 
-    console.log(`[TC-Generator] Stage 2: Rule-based generation — ${allRuleBasedCases.length} TCs in ${Date.now() - stage2StartMs}ms`);
+    console.log(`[TC-Generator] Stage 2: Generated ${allRuleBasedCases.length} TCs in ${Date.now() - stage2StartMs}ms`);
+    // PART 7 guardrail gate (deterministic set): surface violations, never save silently.
+    if (!built.guardrail.passed) {
+      const { formatViolations } = await import("./testcase/index.js");
+      console.warn(formatViolations(built.guardrail));
+      onEvent({
+        type: "agent_status", agent: "Guardrail",
+        status: { agent: "Guardrail", status: "error",
+          message: `Guardrail violations: ${built.guardrail.violations.map(v => v.code).join(", ")}`,
+          details: built.guardrail.violations.map(v => `${v.code}: ${v.message}`).join(" | ") }
+      });
+    } else {
+      onEvent({
+        type: "agent_status", agent: "Guardrail",
+        status: { agent: "Guardrail", status: "completed", message: `Guardrail gate passed (${built.cases.length} cases)`, details: "G01–G14 satisfied" }
+      });
+    }
 
     onEvent({
       type: "agent_status",
@@ -582,12 +627,14 @@ export async function runAgenticPipeline(
     };
     const catCounters: Record<string, number> = {};
 
+    // PART 4.4 — IDs are already unique (TC-<StoryID>-<seq>) and MUST be preserved.
+    // The old per-category renumbering (FUNC-1, NEG-1 ...) collided across stories
+    // and produced the duplicate IDs reported in the audit (A7).
     const mappedCases: SprintTestCase[] = allRuleBasedCases.map(tc => {
-      const cat = typeToCategory[tc.testType] ?? "functional";
-      const prefix = typeToCategoryPrefix[tc.testType] ?? "TC";
+      const cat = tc.category ?? typeToCategory[tc.testType] ?? "functional";
       catCounters[cat] = (catCounters[cat] ?? 0) + 1;
       return {
-        testCaseId: `${prefix}-${catCounters[cat]}`,
+        testCaseId: tc.testCaseId,
         title: tc.title,
         description: tc.description,
         objective: tc.objective,
@@ -595,10 +642,14 @@ export async function runAgenticPipeline(
         testSteps: tc.testSteps,
         expectedResult: tc.expectedResult,
         postconditions: tc.postconditions,
-        testData: tc.testData,
+        // PART 1.3 — data variants travel as rows, not as extra test cases.
+        testData: tc.testData.length
+          ? { variants: tc.testData }
+          : {},
         category: cat as SprintTestCase["category"],
         priority: tc.priority,
-        traceability: undefined,
+        linkedAcceptanceCriteria: tc.linkedAcceptanceCriteria,
+        traceability: tc.acIds.join(", ") || undefined,
       };
     });
 
@@ -617,7 +668,7 @@ export async function runAgenticPipeline(
       grouped.set(tc.category, arr);
     }
 
-    for (const [catName, catTests] of grouped.entries()) {
+    for (const [catName, catTests] of Array.from(grouped.entries())) {
       const catLabel = allCategoryDefs[catName] ?? catName;
       onEvent({
         type: "pipeline_stage", stage: "generation",
@@ -754,205 +805,196 @@ ${docParts.join("\n\n")}`;
         return null;
       };
 
-      const BATCH_SIZE = 8;   // ↑ from 5 → fewer round trips (8–9 batches instead of 14)
-      const CONCURRENCY = 3;  // max simultaneous Claude API calls
-
-      // ── Build batch list upfront ──────────────────────────────────────────────
-      const batches: SprintTestCase[][] = [];
-      for (let i = 0; i < allTestCases.length; i += BATCH_SIZE) {
-        batches.push(allTestCases.slice(i, i + BATCH_SIZE));
-      }
-      const totalBatches = batches.length;
-
-      // Pre-allocate result slots — order preserved regardless of parallel completion
-      const refinedSlots: SprintTestCase[][] = new Array(totalBatches);
-      const batchElapsedMs: number[] = [];
-      let completedBatches = 0;
+      // ── PART 5: ONE call per story with the FULL merged candidate list ────────
+      // The old design sent batches of 8 in isolation, so the refiner could not see
+      // sibling cases and re-introduced duplicates. It also carried a literal 6-step
+      // JSON skeleton in the prompt, which is why every case came back with 6 steps.
       const refineStartMs = Date.now();
+      const { BANNED_PHRASES } = await import("./testcase/index.js");
 
-      console.log(`[TC-Generator] Stage 3: QA Refiner — ${totalBatches} batches × up to ${BATCH_SIZE} TCs, CONCURRENCY=${CONCURRENCY}`);
+      console.log(`[TC-Refine] Story ${storyId}: 1 call, ${allTestCases.length} cases, ${built.acs.length} ACs, ${docTexts.length} document(s)`);
 
-      const refinerSystemPrompt = `You are a senior QA engineer refining AI-generated test cases for a specific user story. Your job is to transform generic, template-driven test cases into precise, domain-aware test cases that reflect the exact terminology, UI elements, field names, and business rules described in the user story.`;
+      const refinerSystemPrompt = `You are a senior QA engineer refining a COMPLETE, already de-duplicated test case set for a single user story. You see every case for the story at once. Improve wording and specificity only. You must NOT add, remove, split, merge, or renumber cases, and you must NOT change how many steps a case has.`;
 
-      // ── Parallel chunk processing ─────────────────────────────────────────────
-      for (let ci = 0; ci < batches.length; ci += CONCURRENCY) {
-        const chunk = batches.slice(ci, ci + CONCURRENCY);
+      onEvent({
+        type: "agent_status", agent: "QA Refiner",
+        status: {
+          agent: "QA Refiner", status: "working",
+          message: `Refining all ${allTestCases.length} cases for ${storyId} in one pass...`,
+          details: `${built.acs.length} acceptance criteria · ${docTexts.length} document(s) of context`,
+          progress: 10, totalCount: allTestCases.length,
+        }
+      });
 
-        await Promise.all(chunk.map(async (batch, offset) => {
-          const slotIdx = ci + offset;
-          const batchNum = slotIdx + 1;
-          const batchT0 = Date.now();
+      const acListForPrompt = built.acs.map(a => `${a.id}: ${a.text}`).join("\n");
+      const stepCountContract = allTestCases
+        .map(tc => `${tc.testCaseId} = ${tc.testSteps.length} steps`)
+        .join(", ");
 
-          onEvent({
-            type: "agent_status", agent: "QA Refiner",
-            status: {
-              agent: "QA Refiner", status: "working",
-              message: `Refining batch ${batchNum}/${totalBatches} (${batch.length} tests)...`,
-              details: `Categories: ${[...new Set(batch.map(t => t.category))].join(", ")}`,
-              progress: Math.round((completedBatches / totalBatches) * 100),
-              batchNum, totalBatches, completedBatches,
-              totalCount: allTestCases.length,
-            }
-          });
-
-          console.log(`[QA Refiner] ▶ Batch ${batchNum}/${totalBatches} starting (${batch.length} TCs)`);
-
-          const refinementPrompt = `USER STORY CONTEXT:
+      const refinementPrompt = `USER STORY CONTEXT:
+Story ID: ${storyId}
 Title: ${userStoryTitle}
 Description: ${userStoryDescription}
 
-ACCEPTANCE CRITERIA:
-${acceptanceCriteria}
+ACCEPTANCE CRITERIA (referenced by ID):
+${acListForPrompt}
 
-RULE-BASED TEST CASES TO REFINE (${batch.length} tests):
-${JSON.stringify(batch.map(tc => ({
+THE COMPLETE TEST CASE SET FOR THIS STORY (${allTestCases.length} cases — this is all of them):
+${JSON.stringify(allTestCases.map(tc => ({
   testCaseId: tc.testCaseId,
   title: tc.title,
   category: tc.category,
   priority: tc.priority,
+  traceability: tc.traceability,
   objective: tc.objective,
-  testSteps: tc.testSteps,
   preconditions: tc.preconditions,
+  testSteps: tc.testSteps,
   expectedResult: tc.expectedResult,
   postconditions: tc.postconditions,
   testData: tc.testData,
 })), null, 2)}${docContextSection}
 
-YOUR REFINEMENT RULES:
-1. Keep the SAME testCaseId, category, and priority for each test
-2. Use the title and description to correctly NAME and SCOPE each test case — test titles must reference this specific user story's features, not generic templates
-3. Rewrite objective to reference the EXACT acceptance criterion this test validates
-4. Rewrite ALL test steps with CONCRETE actions and SPECIFIC expected behaviors using exact field names, button labels, and page names from the story:
-   - BAD: "Navigate to the relevant module/page" → GOOD: "Navigate to the Loan Agreement Dashboard and click 'New Agreement'"
-   - BAD: "System responds as expected" → GOOD: "Agreement status changes to 'Sent' and recipient receives email within 30 seconds"
-5. Improve natural language clarity — every step must be unambiguous and executable by a QA engineer with no extra context
-6. Add missing edge cases that are SUGGESTED BY THE DESCRIPTION but not captured by the acceptance criteria alone
-7. Remove test cases that are clearly out of scope for THIS user story (replace with a more relevant in-scope test if needed)
-8. Ensure every test case traces back to at least one acceptance criterion via the traceability field
-9. Add realistic test data using actual field names and values from the story context
-10. You are refining ${batch.length} test cases — output exactly ${batch.length} test cases
+REFINEMENT RULES:
+1. Output EXACTLY ${allTestCases.length} cases, with the SAME testCaseId, category, priority, and traceability values. Do not invent IDs.
+2. Preserve each case's step count EXACTLY. There is no standard step count. The required counts are: ${stepCountContract}
+3. Every step action must contain one concrete verb and one specifically named object taken from the story, the acceptance criteria, or the reference documents (a screen name, field label, button label, table, or endpoint). Put named objects in double quotes.
+4. Every expected_behavior must be independently observable: a named value, message, status, count, record, or state that a tester can judge pass or fail WITHOUT reading the acceptance criterion.
+5. You are looking at the whole set at once: no two cases may end up testing the same behaviour. If two cases look alike, differentiate them by data or path, do not delete either.
+6. Preconditions must name a specific role, record, or system state. Never write "the user is an authenticated user" or "X is available in the system".
+7. WRITE a title for every case. A title is a short authored label naming what is
+   verified. It is NOT the acceptance criterion sentence pasted in. Rules:
+     - 5 to 12 words
+     - starts with a noun phrase naming the object under test
+     - states the verification, not the requirement
+     - no leading "Add a", "The system shall", "The page can", "If ..."
+     - no quotes wrapping the whole string, no newline characters
+     - never begins with the coverage type: no "Negative - ", "Positive - ",
+       "Boundary - ", "Edge - " prefix. The type is a separate field.
+     - never carries a suffix such as " - using ..." or " - verify downstream ..."
+     - never contains user story narrative ("As a", "I want", "So that")
+     - unique within this story
+   Style examples, follow these:
+     AC:    Add a "Sale Qty Restriction" Yes/No setting to the Location Summary page (Info Section)
+     Title: Sale Qty Restriction toggle renders on Location Summary
+     AC:    The page can be saved successfully even if the toggle is set to Yes and no products are selected
+     Title: Location saves with restriction enabled and no products selected
+     AC:    If the operator does not have the required permission, the toggle must be hidden entirely
+     Title: Restriction toggle hidden for operator without permission
+     AC:    A "Choose Items" button becomes available only when Sale Qty Restriction is set to Yes
+     Title: Choose Items button appears only when restriction is Yes
+8. Keep every double quote balanced and never truncate a sentence mid-word. Titles
+   have NO character limit; author them short rather than cutting them off.
+9. These exact phrases are BANNED anywhere in your output:
+${BANNED_PHRASES.map(p => `   - "${p}"`).join("\n")}
 
-Return ONLY a valid JSON array of ${batch.length} refined test cases with this EXACT structure:
+Return ONLY a valid JSON array of exactly ${allTestCases.length} objects with this structure (step count per case varies, follow rule 2):
 [{
-  "testCaseId": "same as input",
-  "title": "specific title referencing exact story features",
-  "description": "specific description of what this test validates",
-  "objective": "specific objective referencing the exact AC line this covers",
-  "traceability": "exact acceptance criterion line this test validates",
-  "preconditions": ["specific precondition 1", "specific precondition 2"],
-  "testSteps": [
-    {"step_number": 1, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
-    {"step_number": 2, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
-    {"step_number": 3, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
-    {"step_number": 4, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
-    {"step_number": 5, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"},
-    {"step_number": 6, "action": "concrete specific action", "expected_behavior": "concrete specific outcome"}
-  ],
-  "expectedResult": "specific expected result with measurable outcomes",
+  "testCaseId": "unchanged",
+  "title": "authored 5 to 12 word label, noun phrase first, no type prefix",
+  "description": "what this test validates",
+  "objective": "objective referencing the AC ID it covers",
+  "traceability": "unchanged AC ID list",
+  "preconditions": ["specific named precondition"],
+  "testSteps": [{"step_number": 1, "action": "concrete action naming a specific object", "expected_behavior": "independently observable outcome"}],
+  "expectedResult": "measurable expected result",
   "postconditions": ["specific postcondition"],
-  "testData": {"fieldName": "realistic value matching story context"},
-  "category": "same as input",
-  "priority": "same as input"
+  "testData": {},
+  "category": "unchanged",
+  "priority": "unchanged"
 }]`;
 
-          try {
-            const refinerModel = process.env.QA_REFINER_MODEL || "claude-haiku-4-5-20251001";
-            const response = await withRetry(
-              () => resilientCreate({
-                model: refinerModel,
-                max_tokens: 16000,
-                temperature: 0.4,
-                system: refinerSystemPrompt,
-                messages: [{ role: "user", content: refinementPrompt }],
-              }),
-              2, 3000, `QA Refiner batch ${batchNum}`
-            );
+      // One refiner call per story (PART 5 of the title fix) routed through
+      // resilientCreate, so the gateway-to-direct fallback from main is kept.
+      let refinerApplied = false;
+      try {
+        const refinerModel = process.env.QA_REFINER_MODEL || "claude-haiku-4-5-20251001";
+        const response = await withRetry(
+          () => resilientCreate({
+            model: refinerModel,
+            max_tokens: 32000,
+            temperature: 0.3,
+            system: refinerSystemPrompt,
+            messages: [{ role: "user", content: refinementPrompt }],
+          }),
+          2, 3000, `QA Refiner story ${storyId}`
+        );
 
-            const text = response.content[0]?.type === "text" ? response.content[0].text : "";
-            let parsed: any[] = [];
+        const text = response.content[0]?.type === "text" ? response.content[0].text : "";
+        const parsed = tryParseJSON(text) || [];
 
-            console.log(`[QA Refiner] Batch ${batchNum} raw response (first 300 chars): ${text.substring(0, 300)}`);
-
-            parsed = tryParseJSON(text) || [];
-            if (parsed.length === 0) {
-              console.warn(`[QA Refiner] Batch ${batchNum} all parse attempts failed, response length: ${text.length}`);
-              refinedSlots[slotIdx] = batch; // keep originals
-            } else {
-              console.log(`[QA Refiner] Batch ${batchNum} parsed ${parsed.length} TCs`);
-              const batchRefined: SprintTestCase[] = [];
-              for (let i = 0; i < batch.length; i++) {
-                const original = batch[i];
-                const refinedTC = parsed[i] || parsed.find((p: any) => p.testCaseId === original.testCaseId);
-                if (refinedTC) {
-                  batchRefined.push({
-                    ...original,
-                    title: refinedTC.title || original.title,
-                    description: refinedTC.description || original.description,
-                    objective: refinedTC.objective || original.objective,
-                    traceability: refinedTC.traceability || original.traceability,
-                    preconditions: refinedTC.preconditions || original.preconditions,
-                    testSteps: (refinedTC.testSteps?.length >= 4) ? refinedTC.testSteps : original.testSteps,
-                    expectedResult: refinedTC.expectedResult || original.expectedResult,
-                    postconditions: refinedTC.postconditions || original.postconditions,
-                    testData: refinedTC.testData || original.testData,
-                  });
-                } else {
-                  batchRefined.push(original);
-                }
-              }
-              refinedSlots[slotIdx] = batchRefined;
-            }
-          } catch (err: any) {
-            console.warn(`[QA Refiner] Batch ${batchNum} API error: ${err.message}, keeping originals`);
-            refinedSlots[slotIdx] = batch;
-          }
-
-          // ── Update timing and emit progress ──────────────────────────────────
-          const batchElapsed = Date.now() - batchT0;
-          batchElapsedMs.push(batchElapsed);
-          completedBatches++;
-          const elapsedSeconds = Math.round((Date.now() - refineStartMs) / 1000);
-          const avgMs = batchElapsedMs.reduce((a, b) => a + b, 0) / batchElapsedMs.length;
-          const estimatedRemainingSeconds = Math.round(
-            (avgMs * Math.max(0, totalBatches - completedBatches)) / (1000 * CONCURRENCY)
-          );
-          const refinedCount = refinedSlots.reduce((acc, slot) => acc + (slot?.length ?? 0), 0);
-
-          console.log(
-            `[QA Refiner] ✓ Batch ${batchNum} done in ${Math.round(batchElapsed / 1000)}s — ` +
-            `${completedBatches}/${totalBatches} complete, ETA ~${estimatedRemainingSeconds}s`
-          );
-
-          onEvent({
-            type: "agent_status", agent: "QA Refiner",
-            status: {
-              agent: "QA Refiner", status: "working",
-              message: `Batch ${batchNum}/${totalBatches} complete`,
-              details: `${elapsedSeconds}s elapsed · ~${estimatedRemainingSeconds}s remaining`,
-              progress: Math.round((completedBatches / totalBatches) * 100),
-              batchNum,
-              totalBatches,
-              completedBatches,
-              elapsedSeconds,
-              estimatedRemainingSeconds,
-              refinedCount,
-              totalCount: allTestCases.length,
-            }
+        if (parsed.length === 0) {
+          console.warn(`[TC-Refine] Story ${storyId}: parse failed (${text.length} chars) — keeping deterministic set`);
+        } else {
+          console.log(`[TC-Refine] Story ${storyId}: parsed ${parsed.length} refined cases`);
+          const byId = new Map<string, any>(parsed.map((p: any) => [p.testCaseId, p]));
+          refinedTests = allTestCases.map(original => {
+            const r = byId.get(original.testCaseId);
+            if (!r) return original;
+            return {
+              ...original,
+              // A refined title is accepted only if it obeys the authoring rules.
+              // Anything capped, prefixed with a type, or newline-bearing is
+              // discarded in favour of the deterministic authored title.
+              title: acceptRefinedTitle(r.title, original.title),
+              description: r.description || original.description,
+              objective: r.objective || original.objective,
+              // Traceability is computed from AC mapping, never from the model.
+              traceability: original.traceability,
+              preconditions: Array.isArray(r.preconditions) && r.preconditions.length ? r.preconditions : original.preconditions,
+              // Step count is a contract: a refined case that changed it is rejected.
+              testSteps: Array.isArray(r.testSteps) && r.testSteps.length === original.testSteps.length
+                ? r.testSteps.map((s: any, i: number) => ({
+                    step_number: i + 1,
+                    action: s.action || original.testSteps[i].action,
+                    expected_behavior: s.expected_behavior || original.testSteps[i].expected_behavior,
+                  }))
+                : original.testSteps,
+              expectedResult: r.expectedResult || original.expectedResult,
+              postconditions: r.postconditions || original.postconditions,
+              testData: original.testData,
+            };
           });
-        }));
+          refinerApplied = true;
+        }
+      } catch (err: any) {
+        console.warn(`[TC-Refine] Story ${storyId}: API error "${err.message}" — keeping deterministic set`);
       }
 
-      const refined = refinedSlots.flatMap(slot => slot ?? []);
-      refinedTests = refined;
+      // ── PART 7: guardrail gate AFTER refinement, BEFORE storage ──────────────
+      if (refinerApplied) {
+        const { validateTestCaseSet, formatViolations } = await import("./testcase/index.js");
+        const refinedCandidates = built.cases.map(c => {
+          const r = refinedTests.find(t => t.testCaseId === c.testCaseId);
+          return r
+            ? { ...c, title: r.title, description: r.description, objective: r.objective,
+                preconditions: r.preconditions, testSteps: r.testSteps,
+                expectedResult: r.expectedResult, postconditions: r.postconditions }
+            : c;
+        });
+        const gate = validateTestCaseSet(storyId, refinedCandidates, built.acs, built.vocab);
+        if (!gate.passed) {
+          // Reject the refined set. Fall back to the deterministic set, which already
+          // passed the same gate. Never store a set that failed the guardrails.
+          console.warn(formatViolations(gate));
+          console.warn(`[Guardrail] Story ${storyId}: refined set REJECTED — reverting to the validated deterministic set`);
+          refinedTests = allTestCases;
+          onEvent({
+            type: "agent_status", agent: "Guardrail",
+            status: { agent: "Guardrail", status: "error",
+              message: `Refined set rejected (${gate.violations.map(v => v.code).join(", ")}) — deterministic set kept`,
+              details: gate.violations.map(v => `${v.code}: ${v.message}`).join(" | ") }
+          });
+        } else {
+          console.log(`[Guardrail] Story ${storyId}: refined set PASS (G01-G14)`);
+        }
+      }
+
       const stage3ElapsedSec = Math.round((Date.now() - refineStartMs) / 1000);
-      console.log(
-        `[TC-Generator] Stage 3: QA Refiner complete — ${refinedTests.length} TCs in ${stage3ElapsedSec}s ` +
-        `(${totalBatches} batches × CONCURRENCY=${CONCURRENCY})`
-      );
+      console.log(`[TC-Refine] Story ${storyId}: complete — ${refinedTests.length} cases in ${stage3ElapsedSec}s (1 call)`);
 
       onEvent({
         type: "agent_status", agent: "QA Refiner",
-        status: { agent: "QA Refiner", status: "completed", message: `Refined ${refinedTests.length} test cases with domain-specific steps`, details: `Quality score: ${calculateQualityScore(refinedTests)}%`, progress: 100 }
+        status: { agent: "QA Refiner", status: "completed", message: `Refined ${refinedTests.length} test cases in a single story-wide pass`, details: `Quality score: ${calculateQualityScore(refinedTests)}%`, progress: 100 }
       });
     } else {
       // No API key — pass through
@@ -960,16 +1002,19 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
       console.log(`[TC-Generator] Stage 3: QA Refiner skipped (no API key) — ${refinedTests.length} rule-based TCs passed through`);
     }
 
-    // ── Normalize test case IDs: UUID → short IDs (FUN-1, NEG-1, etc.) ──
-    const categoryPrefixes: Record<string, string> = {
-      functional: "FUN", negative: "NEG", edge_case: "EDG",
-      security: "SEC", accessibility: "ACC", regression: "REG",
-    };
-    const categoryCounters: Record<string, number> = {};
-    for (const tc of refinedTests) {
-      const prefix = categoryPrefixes[tc.category] || "TC";
-      categoryCounters[prefix] = (categoryCounters[prefix] || 0) + 1;
-      tc.testCaseId = `${prefix}-${categoryCounters[prefix]}`;
+    // PART 4.4 — IDs stay as TC-<StoryID>-<seq>. The old per-category renumbering
+    // (FUN-1, NEG-1, ...) restarted at 1 for every story, which is what produced the
+    // 689 duplicate IDs across the 12-story run. Assert uniqueness instead.
+    {
+      const seen = new Set<string>();
+      const dupes: string[] = [];
+      for (const tc of refinedTests) {
+        if (seen.has(tc.testCaseId)) dupes.push(tc.testCaseId);
+        seen.add(tc.testCaseId);
+      }
+      if (dupes.length) {
+        throw new Error(`[TC-Gen] Duplicate test case IDs produced for story ${storyId}: ${dupes.join(", ")}`);
+      }
     }
 
     const totalPipelineSec = Math.round((Date.now() - pipelineStartMs) / 1000);
@@ -987,6 +1032,35 @@ Return ONLY a valid JSON array of ${batch.length} refined test cases with this E
         qualityScore: calculateQualityScore(refinedTests)
       }
     });
+
+    // ── PART 8: per-story traceability matrix (AC ID | text | pos | neg | edge) ──
+    {
+      const covered = built.traceability.rows.filter(r => !r.gap).length;
+      const coveragePercentage = built.acs.length
+        ? Math.round((covered / built.acs.length) * 100)
+        : 0;
+      console.log(
+        `[TC-Gen] Traceability: story ${storyId}, ${built.acs.length} ACs, ` +
+        `${coveragePercentage}% covered, ${built.traceability.gapCount} gap(s)`
+      );
+      for (const r of built.traceability.rows) {
+        console.log(
+          `           ${r.acId} | pos:${r.positiveTcs.length} neg:${r.negativeTcs.length} ` +
+          `edge:${r.edgeTcs.length} total:${r.total}${r.gap ? " | GAP" : ""}`
+        );
+      }
+      onEvent({
+        type: "traceability_report",
+        agent: "QA Refiner",
+        message: `Requirements coverage: ${coveragePercentage}%`,
+        data: {
+          storyId,
+          coveragePercentage,
+          gapCount: built.traceability.gapCount,
+          rows: built.traceability.rows,
+        }
+      });
+    }
 
     // ── Script Generator agent: prepare BDD assets ──
     onEvent({

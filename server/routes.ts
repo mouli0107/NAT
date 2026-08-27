@@ -2239,7 +2239,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         })),
         expectedResult: tc.expectedResult,
         postconditions: tc.postconditions,
-        objective: tc.objective
+        objective: tc.objective,
+        // Full criterion text, so the UI download carries it untruncated too.
+        linkedAcceptanceCriteria: tc.linkedAcceptanceCriteria || tc.traceability || ''
       }));
 
       const exportMetadata: ExportMetadata = {
@@ -7025,8 +7027,10 @@ test.describe('Automated Test Suite', () => {
   app.post("/api/synthetic-data/envestnet/generate-csh", async (req: Request, res: Response) => {
     try {
       const { generateCshFile } = await import("./envestnet-generator.js");
-      const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
-      const result = generateCshFile({ recordCount });
+      // perCode = records per transaction code (customer wants >=10 per scenario);
+      // full-coverage default over all security + non-security codes.
+      const perCode = Math.min(Math.max(parseInt(req.body.perCode) || 10, 1), 500);
+      const result = generateCshFile({ perCode });
 
       const artifacts: Record<string, { content: string; file: string }> = {
         clean:     { content: result.clean,     file: "sal_csh_synthetic_clean.txt" },
@@ -7061,8 +7065,10 @@ test.describe('Automated Test Suite', () => {
   app.post("/api/synthetic-data/envestnet/generate-csh/download", async (req: Request, res: Response) => {
     try {
       const { generateCshFile } = await import("./envestnet-generator.js");
-      const recordCount = Math.min(Math.max(parseInt(req.body.recordCount) || 100, 10), 100_000);
-      const result = generateCshFile({ recordCount });
+      // perCode = records per transaction code (customer wants >=10 per scenario);
+      // full-coverage default over all security + non-security codes.
+      const perCode = Math.min(Math.max(parseInt(req.body.perCode) || 10, 1), 500);
+      const result = generateCshFile({ perCode });
 
       const artifacts: Record<string, { content: string; file: string }> = {
         clean:     { content: result.clean,     file: "sal_csh_synthetic_clean.txt" },
