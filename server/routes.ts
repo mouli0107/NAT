@@ -38,7 +38,6 @@ import { generateFunctionalTestCasesWithClaude } from "./claude-functional-test-
 import { analyzeVisualDifferencesWithClaude, analyzeScreenshotWithClaude } from "./claude-visual-analyzer";
 import { analyzeInsuranceScenarios } from "./claude-scenario-analyzer";
 import { generateTestCasesForScenarioBatch } from "./claude-batch-test-generator";
-import { generateSprintTestCases } from "./claude-sprint-agent";
 import { exportTestCasesToExcel } from "./excel-export";
 import { exportTestCasesToExcelEnhanced, type EnhancedTestCase, type ExportMetadata } from "./excel-export-enhanced";
 import { startLivePreview, stopLivePreview, scrollPreview, refreshPreview, navigatePreviewTo } from "./live-preview-service";
@@ -3731,52 +3730,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.post("/api/sprint/generate-tests", async (req: Request, res: Response) => {
-    try {
-      const { userStoryId } = req.body;
-      
-      if (!userStoryId) {
-        res.status(400).json({ 
-          success: false,
-          error: "User story ID is required" 
-        });
-        return;
-      }
-
-      const userStory = await storage.getUserStoryById(userStoryId);
-      if (!userStory) {
-        res.status(404).json({ 
-          success: false,
-          error: "User story not found" 
-        });
-        return;
-      }
-
-      const { generateTestCasesWithClaude } = await import("./claude-test-generator");
-      
-      const generatedTests = await generateTestCasesWithClaude({
-        workItemId: userStory.adoWorkItemId,
-        title: userStory.title,
-        description: userStory.description || "",
-        acceptanceCriteria: userStory.acceptanceCriteria || "",
-      });
-
-      await storage.saveSprintTestCases(userStoryId, generatedTests);
-
-      const savedTestCases = await storage.getSprintTestCasesByUserStory(userStoryId);
-      
-      res.json({ 
-        success: true,
-        testCases: savedTestCases,
-        count: savedTestCases.length
-      });
-    } catch (error: any) {
-      res.status(500).json({ 
-        success: false,
-        error: error.message || "Failed to generate test cases" 
-      });
-    }
-  });
+  // REMOVED: POST /api/sprint/generate-tests (legacy v1 sprint agent).
+  // It had no caller in the client or the server and used the old
+  // claude-test-generator fan-out. The live path is
+  // POST /api/tests/sprint-generate -> runAgenticPipeline -> server/testcase.
 
   app.get("/api/sprint/test-cases/:userStoryId", async (req: Request, res: Response) => {
     try {
