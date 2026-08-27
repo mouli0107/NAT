@@ -482,7 +482,7 @@ function PositionCatalog() {
 export function EnvestnetMode() {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState("csh");
-  const [recordCount, setRecordCount]   = useState(100);
+  const [perCode, setPerCode]           = useState(10);
   const [includeManifest, setIncludeManifest] = useState(true);
   const [loading, setLoading]           = useState(false);
   const [result, setResult]             = useState<{
@@ -490,7 +490,7 @@ export function EnvestnetMode() {
     negatives: string;
     manifest: string;
     recordCount: number;
-    breakdown: { positive: number; edge: number; negative: number };
+    breakdown: { securityCodes: number; nonSecurityCodes: number; perCode: number; negative: number };
   } | null>(null);
 
   const ft = FILE_TYPES.find(f => f.id === selectedFile)!;
@@ -503,7 +503,7 @@ export function EnvestnetMode() {
       const resp = await fetch("/api/synthetic-data/envestnet/generate-csh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ recordCount }),
+        body: JSON.stringify({ perCode }),
       });
       const json = await resp.json();
       if (!json.success) throw new Error(json.error);
@@ -533,8 +533,9 @@ export function EnvestnetMode() {
         <Info className="w-5 h-5 text-blue-600 flex-shrink-0" />
         <div className="text-sm text-blue-800 dark:text-blue-200">
           <span className="font-semibold">Envestnet / BETA Systems custodian file generator.</span>{" "}
-          Produces realistic pipe-delimited test data with correct SOURCE_CODE conditional logic,
-          derived from actual Sal_csh.txt sample analysis. Includes positive, edge, and negative test records.
+          Produces uniform 52-field pipe-delimited records in copybook (EXCSHY2K) order, covering all
+          security &amp; non-security transaction codes, all CSECTYPE / CPORS / ACCT_TYPE values.
+          CUSIP/Symbol populate only for security codes. Labeled negatives delivered as a separate file.
         </div>
       </div>
 
@@ -602,13 +603,13 @@ export function EnvestnetMode() {
 
               {/* Record count + options */}
               <div className="flex items-end gap-4">
-                <div className="space-y-1.5 w-40">
-                  <Label className="text-sm">Total records</Label>
+                <div className="space-y-1.5 w-44">
+                  <Label className="text-sm">Records per code</Label>
                   <Input
                     type="number"
-                    value={recordCount}
-                    onChange={e => setRecordCount(Math.min(100_000, Math.max(10, parseInt(e.target.value) || 100)))}
-                    min={10} max={100000}
+                    value={perCode}
+                    onChange={e => setPerCode(Math.min(500, Math.max(1, parseInt(e.target.value) || 10)))}
+                    min={1} max={500}
                     className="h-8 text-sm"
                   />
                 </div>
@@ -623,19 +624,19 @@ export function EnvestnetMode() {
                 </label>
               </div>
 
-              {/* Distribution preview */}
-              <div className="flex gap-3 text-xs text-muted-foreground">
+              {/* Coverage preview */}
+              <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1">
                   <CheckCircle2 className="w-3 h-3 text-green-500" />
-                  ~75% positive
+                  Uniform 52 fields (copybook order)
                 </span>
                 <span className="flex items-center gap-1">
                   <Zap className="w-3 h-3 text-yellow-500" />
-                  ~15% edge cases
+                  All security + non-security codes
                 </span>
                 <span className="flex items-center gap-1">
                   <AlertTriangle className="w-3 h-3 text-red-500" />
-                  ~10% negative
+                  Labeled negatives (separate file)
                 </span>
               </div>
 
@@ -661,16 +662,21 @@ export function EnvestnetMode() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {/* Breakdown */}
-                <div className="flex gap-4 text-sm">
+                <div className="flex flex-wrap gap-4 text-sm">
                   <div className="flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                    <span className="font-semibold">{result.breakdown.positive}</span>
-                    <span className="text-muted-foreground">positive</span>
+                    <span className="font-semibold">{result.breakdown.securityCodes}</span>
+                    <span className="text-muted-foreground">security codes</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <Zap className="w-3.5 h-3.5 text-yellow-500" />
-                    <span className="font-semibold">{result.breakdown.edge}</span>
-                    <span className="text-muted-foreground">edge</span>
+                    <span className="font-semibold">{result.breakdown.nonSecurityCodes}</span>
+                    <span className="text-muted-foreground">non-security codes</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-blue-500" />
+                    <span className="font-semibold">{result.breakdown.perCode}</span>
+                    <span className="text-muted-foreground">per code</span>
                   </div>
                   <div className="flex items-center gap-1.5">
                     <AlertTriangle className="w-3.5 h-3.5 text-red-500" />

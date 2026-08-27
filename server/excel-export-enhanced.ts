@@ -15,6 +15,8 @@ export interface EnhancedTestCase {
   expectedResult?: string;
   postconditions?: string[];
   objective?: string;
+  /** Complete acceptance criterion text, never truncated. */
+  linkedAcceptanceCriteria?: string;
 }
 
 export interface ExportMetadata {
@@ -88,6 +90,7 @@ export async function exportTestCasesToExcelEnhanced(
   testSheet.columns = [
     { header: 'Test Case ID', key: 'tcId', width: 12 },
     { header: 'Test Case Title', key: 'title', width: 60 },
+    { header: 'Linked Acceptance Criteria', key: 'linkedAc', width: 70 },
     { header: 'Category', key: 'category', width: 15 },
     { header: 'Priority', key: 'priority', width: 10 },
     { header: 'Preconditions', key: 'preconditions', width: 25 },
@@ -134,6 +137,7 @@ export async function exportTestCasesToExcelEnhanced(
       if (stepIndex === 0) {
         row.getCell('tcId').value = tcId;
         row.getCell('title').value = tc.title;
+        row.getCell('linkedAc').value = tc.linkedAcceptanceCriteria ?? '';
         row.getCell('category').value = capitalizeFirst(tc.category);
         row.getCell('priority').value = tc.priority.toUpperCase();
         row.getCell('preconditions').value = preconditionsText;
