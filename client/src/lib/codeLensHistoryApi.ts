@@ -135,6 +135,36 @@ export async function deleteCustomStandard(id: string): Promise<void> {
   if (!res.ok) throw new Error(await res.text());
 }
 
+/** Enable/disable any standard (built-in or custom) for the current user. */
+export async function setStandardEnabled(id: string, enabled: boolean): Promise<StandardInfo> {
+  const res = await fetch(`${BASE}/standards/${id}`, {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return (await res.json()).standard;
+}
+
+/** Enable or disable all 42 built-in standards for the current user. */
+export async function toggleAllBuiltins(enabled: boolean): Promise<{ enabled: boolean; count: number }> {
+  const res = await fetch(`${BASE}/standards/builtins/toggle-all`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ enabled }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
+/** Import a standards document (any text format) as the current user's custom standards.
+ *  mode 'replace' disables the built-ins + clears existing custom first. */
+export async function importStandards(content: string, mode: 'replace' | 'augment'): Promise<{
+  status: string; mode: string; parsed: number; imported: number; clearedCustom: number; builtinsDisabled: number;
+}> {
+  const res = await fetch(`${BASE}/standards/import`, {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ content, mode }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+
 export async function fetchRunHistory(repoUrl: string, branch: string, limit = 10): Promise<RunSummary[]> {
   const params = new URLSearchParams({ repoUrl, branch, limit: String(limit) });
   const res = await fetch(`${BASE}/history?${params}`);

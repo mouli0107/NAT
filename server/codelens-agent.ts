@@ -19,6 +19,7 @@ import {
   commitFixedFile,
   pushFixBranch,
   stripGitCredentials,
+  getChangedLineRanges,
 } from './codelens-git';
 // Lazy import so this module loads even when DATABASE_URL is absent.
 // All DB calls are fire-and-forget; a missing DB should not crash the review.
@@ -36,6 +37,7 @@ const putCachedCheck: DbModule['putCachedCheck'] = (...a) => dbModule().then(m =
 const getSuppressionKeys: DbModule['getSuppressionKeys'] = (...a) => dbModule().then(m => m.getSuppressionKeys(...a));
 const addSuppression: DbModule['addSuppression'] = (...a) => dbModule().then(m => m.addSuppression(...a));
 const getEnabledCustomStandards: DbModule['getEnabledCustomStandards'] = (...a) => dbModule().then(m => m.getEnabledCustomStandards(...a));
+const getDisabledBuiltinIds: DbModule['getDisabledBuiltinIds'] = (...a) => dbModule().then(m => m.getDisabledBuiltinIds(...a));
 import type {
   CodeLensSession,
   FileEntry,
@@ -53,7 +55,11 @@ const anthropic = new Anthropic({
   baseURL: process.env.AI_INTEGRATIONS_ANTHROPIC_BASE_URL,
 });
 
-const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || 'claude-opus-4-1';
+// Model id / deployment name. When AI_INTEGRATIONS_ANTHROPIC_BASE_URL points at
+// api.anthropic.com this is a public Anthropic model id; when it points at an
+// Azure AI Foundry endpoint it must be that resource's *deployment name*.
+// Override via ANTHROPIC_MODEL. Default is a current, high-throughput model.
+const CLAUDE_MODEL = process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
 
 // Bump RULESET_VERSION when the review methodology changes in a way that should
 // invalidate ALL cached verdicts. CHECKER_VERSION also folds in the model id, so
@@ -1543,6 +1549,17 @@ RULES:
 - NOT_APPLICABLE â†’ standard genuinely cannot apply
 - If a violation pattern repeats 5 times, report all 5 entries`;
 
+/** PR line scoping: should this violation become a PR comment? True when the
+ *  session has no line scoping (a normal review, or the diff was unavailable so
+ *  we fall back to whole-file). For a scoped PR review, keep only violations that
+ *  land inside a changed line range. */
+function violationInPrScope(session: CodeLensSession, relPath: string, line: number): boolean {
+  if (!session.changedLineRanges) return true;
+  const ranges = session.changedLineRanges.get(relPath.replace(/\\/g, '/'));
+  if (!ranges || ranges.length === 0) return false;
+  return ranges.some(([s, e]) => line >= s && line <= e);
+}
+
 export async function checkFileAgainstStandard(
   filePath: string,
   fileContent: string,
@@ -1638,10 +1655,10 @@ export async function checkFileAgainstStandard(
       });
 
       const text = message.content[0]?.type === 'text' ? message.content[0].text : '{}';
-      const cleaned = text.replace(/^```(?:json)?\s*/m, '').replace(/\s*```\s*$/m, '').trim();
+      const parsed = extractJsonObject<StandardCheckResult>(text);
 
-      try {
-        const result = JSON.parse(cleaned) as StandardCheckResult;
+      if (parsed) {
+        const result = parsed;
         result.severity = standard.severity;
         result.source = 'llm';
         // Shadow validation: compare the deterministic verdict to the LLM's and
@@ -1661,7 +1678,7 @@ export async function checkFileAgainstStandard(
           }).catch(() => {});
         }
         return result;
-      } catch {
+      } else {
         console.error(`[CodeLens] Parse error for ${standard.id} on ${filePath}:`, text.slice(0, 200));
         return {
           rule_id: standard.id, rule_name: standard.name, severity: standard.severity,
@@ -1839,6 +1856,9 @@ async function reviewFile(
         // Snap the line to where found_code actually is (fixes off-by-one
         // highlights landing on the doc-comment above the member).
         const line = snapLineToCode(fileContent, v.line, v.found_code);
+        // PR review: only surface violations on the lines the PR actually changed
+        // (drops pre-existing issues the PR didn't touch). No-op for normal reviews.
+        if (!violationInPrScope(session, file.relativePath, line)) continue;
         // Sticky suppression: was this exact finding accepted/ignored before?
         const suppressed = session.suppressions.has(
           suppressionKey(session.userId, cleanUrl, file.relativePath, result.rule_id, v.found_code),
@@ -2047,6 +2067,8 @@ function reviewOneFile(session: CodeLensSession, file: FileEntry, indexForProgre
       ? raw.slice(0, MAX_FILE_BYTES).toString('utf-8') + '\n// [file truncated — exceeds 150 KB]'
       : raw.toString('utf-8');
   } catch { content = ''; }
+  // Accumulate lines-of-code for defect-density scoring.
+  if (content) session.linesReviewed = (session.linesReviewed ?? 0) + content.split('\n').length;
   return reviewFile(session, file, content, indexForProgress);
 }
 
@@ -2077,6 +2099,65 @@ async function reviewByFlows(session: CodeLensSession, limit: number, startIndex
   }
 }
 
+export interface ParsedStandard {
+  name: string;
+  severity: 'Critical' | 'Warning' | 'Info';
+  appliesTo: string;
+  description: string;
+  whatToLookFor: string;
+  notApplicableWhen: string;
+}
+
+const IMPORT_SCOPES = new Set(['all', 'controller', 'service', 'repository', 'dto', 'migration', 'program', 'infrastructure', 'non-migration']);
+
+/** Parse a coding-standards document (markdown, plain text, JSON, CSV, pasted
+ *  text, etc.) into discrete, structured, checkable rules using Claude. */
+export async function parseStandardsDocument(content: string): Promise<ParsedStandard[]> {
+  const trimmed = (content ?? '').trim();
+  if (!trimmed) return [];
+  const doc = trimmed.length > 60_000 ? trimmed.slice(0, 60_000) : trimmed;
+
+  const system = `You convert a coding-standards document into a JSON array of discrete, checkable rules.
+Return ONLY JSON in this shape: {"standards":[{"name","severity","appliesTo","description","whatToLookFor","notApplicableWhen"}]}
+- name: short rule title (max 80 chars).
+- severity: one of "Critical","Warning","Info" (infer from wording; default "Warning").
+- appliesTo: one of all, controller, service, repository, dto, migration, program, infrastructure, non-migration (default "all").
+- description: one sentence on the rule's intent.
+- whatToLookFor: concrete, code-level signals a reviewer checks for.
+- notApplicableWhen: when the rule does not apply (may be empty string).
+Split compound rules into separate entries. Only extract rules that are actually present in the document; do not invent any.`;
+
+  const message = await anthropic.messages.create({
+    model: CLAUDE_MODEL,
+    max_tokens: 8000,
+    system,
+    messages: [{ role: 'user', content: `Extract the coding standards from this document:\n\n${doc}` }],
+  });
+  const text = message.content[0]?.type === 'text' ? message.content[0].text : '';
+  const parsed = extractJsonObject<{ standards?: any[] }>(text);
+  const list = Array.isArray(parsed?.standards) ? parsed!.standards
+    : Array.isArray(parsed) ? (parsed as any[]) : [];
+
+  const out: ParsedStandard[] = [];
+  for (const r of list) {
+    const name = String(r?.name ?? '').trim();
+    if (!name) continue;
+    const sev = String(r?.severity ?? '').toLowerCase();
+    const severity: ParsedStandard['severity'] =
+      sev.startsWith('crit') ? 'Critical' : sev.startsWith('info') ? 'Info' : 'Warning';
+    const scope = String(r?.appliesTo ?? '').toLowerCase().trim();
+    out.push({
+      name: name.slice(0, 120),
+      severity,
+      appliesTo: IMPORT_SCOPES.has(scope) ? scope : 'all',
+      description: String(r?.description ?? name).trim(),
+      whatToLookFor: String(r?.whatToLookFor ?? r?.description ?? name).trim(),
+      notApplicableWhen: String(r?.notApplicableWhen ?? '').trim(),
+    });
+  }
+  return out;
+}
+
 export async function runReview(session: CodeLensSession): Promise<void> {
   try {
     // Phase 1: clone once (or fetch latest if already cached)
@@ -2091,6 +2172,25 @@ export async function runReview(session: CodeLensSession): Promise<void> {
     );
     session.localPath  = localPath;
     session.commitHash = commitHash;
+
+    // PR review: compute the changed line ranges (diff vs the target branch) so
+    // only violations on changed lines become comments. An empty result keeps
+    // whole-file behavior — we never silently drop every comment.
+    if (session.prContext) {
+      try {
+        const lr = await getChangedLineRanges(localPath, session.prContext.targetBranch, session.repoUrl);
+        if (lr.size > 0) {
+          session.changedLineRanges = lr;
+          let total = 0;
+          for (const v of Array.from(lr.values())) total += v.length;
+          console.log(`[CodeLens] PR diff scope: ${lr.size} file(s), ${total} changed hunk range(s)`);
+        } else {
+          console.warn('[CodeLens] PR diff produced no line ranges — using whole-file comments');
+        }
+      } catch (e: any) {
+        console.warn('[CodeLens] Could not compute PR diff line ranges (whole-file fallback):', e?.message);
+      }
+    }
 
     // Phase 2: discover files via git ls-files (only tracked files)
     emit(session, { event: 'review_status', message: 'Discovering filesâ€¦' });
@@ -2112,9 +2212,23 @@ export async function runReview(session: CodeLensSession): Promise<void> {
 
     // shouldIgnoreFile filter (test files, generated, user patterns, etc.)
     const userIgnorePatterns = session.ignorePatterns ?? [];
-    const relPathsToScan = folderFiltered.filter(rel => !shouldIgnoreFile(rel, userIgnorePatterns));
+    let relPathsToScan = folderFiltered.filter(rel => !shouldIgnoreFile(rel, userIgnorePatterns));
     const ignoredRels    = folderFiltered.filter(rel =>  shouldIgnoreFile(rel, userIgnorePatterns));
     console.log(`[CodeLens] After ignore filter: ${relPathsToScan.length} to scan, ${ignoredRels.length} ignored`);
+
+    // PR review mode: restrict the scan to the PR's changed files (exact,
+    // slash-normalized path match). Anything the ignore/folder filters already
+    // dropped stays dropped, so PR reviews still skip tests/generated files.
+    if (session.changedFilesFilter && session.changedFilesFilter.length > 0) {
+      const changed = new Set(session.changedFilesFilter.map(p => p.replace(/\\/g, '/')));
+      const before = relPathsToScan.length;
+      relPathsToScan = relPathsToScan.filter(rel => changed.has(rel.replace(/\\/g, '/')));
+      console.log(`[CodeLens] PR scope: ${relPathsToScan.length} of ${changed.size} changed file(s) in scope (from ${before} scannable)`);
+      emit(session, {
+        event: 'review_status',
+        message: `PR scope: reviewing ${relPathsToScan.length} of ${changed.size} changed file(s)…`,
+      });
+    }
 
     // Discovery breakdown for the UI banner
     const testPatterns      = ['**/*.Tests/**', '**/Tests/**', '**/UnitTests/**', '**/IntegrationTests/**', '**/E2ETests/**'];
@@ -2146,21 +2260,28 @@ export async function runReview(session: CodeLensSession): Promise<void> {
     session.lastReviewedFileIndex = 0;
     session.status              = 'running';
 
-    // Active standards = built-in 42 + enabled custom standards (hybrid model).
+    // Active standards = (built-in 42 minus this user's disabled ones) + enabled
+    // custom standards. Per-user: two users can review the same repo with
+    // entirely different standard sets.
     try {
-      const custom = await getEnabledCustomStandards(session.userId);
+      const [custom, disabledBuiltins] = await Promise.all([
+        getEnabledCustomStandards(session.userId),
+        getDisabledBuiltinIds(session.userId).catch(() => [] as string[]),
+      ]);
+      const disabled = new Set(disabledBuiltins);
+      const builtins = STANDARDS.filter(s => !disabled.has(s.id));
       session.activeStandards = [
-        ...STANDARDS,
+        ...builtins,
         ...custom.map(c => ({
           id: c.id, name: c.name, severity: c.severity, description: c.description,
           whatToLookFor: c.whatToLookFor, appliesTo: c.appliesTo as CodeStandard['appliesTo'],
           notApplicableWhen: c.notApplicableWhen, custom: true,
         })),
       ];
-      if (custom.length) console.log(`[CodeLens] +${custom.length} custom standard(s) → ${session.activeStandards.length} total`);
+      console.log(`[CodeLens] Standards for ${session.userId}: ${builtins.length}/${STANDARDS.length} built-in + ${custom.length} custom → ${session.activeStandards.length} total`);
     } catch (e: any) {
       session.activeStandards = [...STANDARDS];
-      console.warn('[CodeLens] Could not load custom standards (using built-ins):', e?.message);
+      console.warn('[CodeLens] Could not load standards prefs (using built-ins):', e?.message);
     }
 
     // Coverage ledger contract: every file must produce a terminal verdict for
@@ -2281,12 +2402,16 @@ export async function resumeFixing(session: CodeLensSession): Promise<void> {
     session.status = 'cloning';
     emit(session, { event: 'review_status', message: 'Loading previous review…' });
 
-    // Load active standards (built-in + custom) so fixing a custom-standard
-    // violation can resolve its definition.
+    // Load active standards (built-in minus this user's disabled + custom) so
+    // fixing a custom-standard violation can resolve its definition.
     try {
-      const custom = await getEnabledCustomStandards(session.userId);
+      const [custom, disabledBuiltins] = await Promise.all([
+        getEnabledCustomStandards(session.userId),
+        getDisabledBuiltinIds(session.userId).catch(() => [] as string[]),
+      ]);
+      const disabled = new Set(disabledBuiltins);
       session.activeStandards = [
-        ...STANDARDS,
+        ...STANDARDS.filter(s => !disabled.has(s.id)),
         ...custom.map(c => ({
           id: c.id, name: c.name, severity: c.severity, description: c.description,
           whatToLookFor: c.whatToLookFor, appliesTo: c.appliesTo as CodeStandard['appliesTo'],
@@ -2443,6 +2568,7 @@ async function finalizeRun(
   runStatus: 'COMPLETE' | 'PARTIAL' | 'STOPPED';
   total: number; violations: number; critical: number; warning: number;
   info: number; filesPassing: number; filesFailing: number; compliancePct: number;
+  qualityScore: number; grade: string; defectDensity: number; linesReviewed: number;
   expectedCells: number; verifiedCells: number; errorCells: number;
   confidencePct: number; applicableCells: number; verifiedApplicableCells: number;
 }> {
@@ -2482,6 +2608,29 @@ async function finalizeRun(
     ? Math.round((verifiedApplicableCells / applicableCells) * 100)
     : 100;
 
+  // ── Industry-standard scoring ────────────────────────────────────────────────
+  // Severity-weighted rule compliance: each decided (file, standard) cell earns
+  // its severity weight when it PASSES and zero when it VIOLATES, so a Critical
+  // failure moves the score far more than an Info. (SonarQube-style weighting.)
+  const SEV_WEIGHT: Record<string, number> = { Critical: 10, Warning: 3, Info: 1 };
+  const sevById = new Map(effectiveStandards(session).map(s => [s.id, s.severity as string]));
+  let earnedWeight = 0;
+  let maxWeight = 0;
+  for (const r of session.standardResults) {
+    if (r.status !== 'PASS' && r.status !== 'VIOLATION') continue; // only applicable, decided cells
+    const w = SEV_WEIGHT[sevById.get(r.ruleId) ?? 'Info'] ?? 1;
+    maxWeight += w;
+    if (r.status === 'PASS') earnedWeight += w;
+  }
+  const qualityScore = maxWeight > 0 ? Math.round((earnedWeight / maxWeight) * 100) : 100;
+  const grade = qualityScore >= 90 ? 'A' : qualityScore >= 80 ? 'B' : qualityScore >= 70 ? 'C' : qualityScore >= 60 ? 'D' : 'F';
+
+  // Defect density: violations per 1,000 lines of reviewed code (industry norm).
+  const linesReviewed = session.linesReviewed ?? 0;
+  const defectDensity = linesReviewed > 0
+    ? Math.round((allViolations.length / linesReviewed) * 1000 * 10) / 10
+    : 0;
+
   session.status = runStatus === 'COMPLETE' ? 'complete' : 'stopped';
 
   if (session.runId) {
@@ -2493,13 +2642,16 @@ async function finalizeRun(
       ignoredFiles: 0,
       critical, warning, info,
       pass: filesPassing,
-      compliancePct,
+      // Store the industry-standard weighted quality score as the run's headline
+      // % so history + the dial stay consistent.
+      compliancePct: qualityScore,
     }).catch((err: any) => console.warn('[CodeLens] DB completeRun failed:', err?.message));
   }
 
   return {
     runStatus, total: denominator, violations: allViolations.length, critical, warning, info,
     filesPassing, filesFailing, compliancePct,
+    qualityScore, grade, defectDensity, linesReviewed,
     expectedCells, verifiedCells: session.coverageVerified, errorCells,
     confidencePct, applicableCells, verifiedApplicableCells,
   };
@@ -2532,6 +2684,11 @@ async function emitReviewComplete(session: CodeLensSession): Promise<void> {
       files_passing: s.filesPassing,
       files_failing: s.filesFailing,
       compliance_pct: s.compliancePct,
+      // Industry-standard scoring
+      quality_score: s.qualityScore,
+      grade: s.grade,
+      defect_density: s.defectDensity,
+      lines_reviewed: s.linesReviewed,
     },
     report_ready: true,
     report_download_url: `/api/v1/codelens/report/${session.sessionId}/excel`,
@@ -3073,14 +3230,50 @@ function findAllFiles(rootDir: string): string[] {
   return results;
 }
 
-function parseJsonSafe<T>(text: string, fallback: T): T {
-  try {
-    const cleaned = text
-      .replace(/^```(?:json)?\s*/m, '')
-      .replace(/\s*```\s*$/m, '')
-      .trim();
-    return JSON.parse(cleaned) as T;
-  } catch {
-    return fallback;
+/** Robustly extract a JSON object from an LLM response that may include prose
+ *  preamble, ```json fences, or trailing commentary. Returns null if none parses.
+ *  Tries, in order: the whole trimmed text, the first fenced block's contents,
+ *  then the first balanced {...} object (brace matching, string/escape aware). */
+function extractJsonObject<T>(text: string): T | null {
+  if (!text) return null;
+  const tryParse = (s: string): T | null => {
+    try { return JSON.parse(s) as T; } catch { return null; }
+  };
+
+  let r = tryParse(text.trim());
+  if (r !== null) return r;
+
+  const fence = /```(?:json)?\s*([\s\S]*?)```/i.exec(text);
+  if (fence && fence[1]) {
+    r = tryParse(fence[1].trim());
+    if (r !== null) return r;
   }
+
+  const start = text.indexOf('{');
+  if (start !== -1) {
+    let depth = 0, inStr = false, esc = false;
+    for (let i = start; i < text.length; i++) {
+      const ch = text[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (ch === '\\') esc = true;
+        else if (ch === '"') inStr = false;
+      } else if (ch === '"') inStr = true;
+      else if (ch === '{') depth++;
+      else if (ch === '}') {
+        depth--;
+        if (depth === 0) {
+          r = tryParse(text.slice(start, i + 1));
+          if (r !== null) return r;
+          break;
+        }
+      }
+    }
+  }
+  return null;
+}
+
+function parseJsonSafe<T>(text: string, fallback: T): T {
+  const obj = extractJsonObject<T>(text);
+  return obj === null ? fallback : obj;
 }

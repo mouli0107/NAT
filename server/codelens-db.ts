@@ -359,6 +359,75 @@ export async function deleteCustomStandard(id: string, userId: string): Promise<
     .where(and(eq(codelensCustomStandards.id, id), eq(codelensCustomStandards.userId, userId)));
 }
 
+/** Delete ALL of this user's custom standards (used by "replace" import). */
+export async function deleteAllCustomStandards(userId: string): Promise<number> {
+  const rows = await db.delete(codelensCustomStandards)
+    .where(eq(codelensCustomStandards.userId, userId))
+    .returning({ id: codelensCustomStandards.id });
+  return rows.length;
+}
+
+// ─── Per-user built-in standard preferences ──────────────────────────────────
+// Which of the 42 built-in standards a user has turned OFF. Presence of a row =
+// disabled for that user. Created lazily so it needs no migration wiring.
+
+let _builtinPrefsReady: Promise<void> | null = null;
+function ensureBuiltinPrefsTable(): Promise<void> {
+  if (!_builtinPrefsReady) {
+    _builtinPrefsReady = db.execute(sql`
+      CREATE TABLE IF NOT EXISTS codelens_disabled_builtins (
+        user_id text NOT NULL,
+        standard_id text NOT NULL,
+        PRIMARY KEY (user_id, standard_id)
+      )
+    `).then(() => undefined).catch(err => {
+      _builtinPrefsReady = null; // allow retry on transient failure
+      throw err;
+    });
+  }
+  return _builtinPrefsReady;
+}
+
+/** IDs of built-in standards this user has turned OFF. */
+export async function getDisabledBuiltinIds(userId: string): Promise<string[]> {
+  await ensureBuiltinPrefsTable();
+  const res: any = await db.execute(
+    sql`SELECT standard_id FROM codelens_disabled_builtins WHERE user_id = ${userId}`,
+  );
+  const rows = res.rows ?? res ?? [];
+  return rows.map((r: any) => r.standard_id as string);
+}
+
+/** Turn a single built-in standard on/off for this user. */
+export async function setBuiltinDisabled(userId: string, standardId: string, disabled: boolean): Promise<void> {
+  await ensureBuiltinPrefsTable();
+  if (disabled) {
+    await db.execute(
+      sql`INSERT INTO codelens_disabled_builtins (user_id, standard_id) VALUES (${userId}, ${standardId}) ON CONFLICT DO NOTHING`,
+    );
+  } else {
+    await db.execute(
+      sql`DELETE FROM codelens_disabled_builtins WHERE user_id = ${userId} AND standard_id = ${standardId}`,
+    );
+  }
+}
+
+/** Disable a set of built-in ids for this user ("replace" / "use only mine"). */
+export async function disableBuiltins(userId: string, ids: string[]): Promise<void> {
+  await ensureBuiltinPrefsTable();
+  for (const id of ids) {
+    await db.execute(
+      sql`INSERT INTO codelens_disabled_builtins (user_id, standard_id) VALUES (${userId}, ${id}) ON CONFLICT DO NOTHING`,
+    );
+  }
+}
+
+/** Re-enable ALL built-ins for this user. */
+export async function enableAllBuiltins(userId: string): Promise<void> {
+  await ensureBuiltinPrefsTable();
+  await db.execute(sql`DELETE FROM codelens_disabled_builtins WHERE user_id = ${userId}`);
+}
+
 // ─── Sticky suppressions (accepted/ignored findings) ─────────────────────────
 
 /** Suppression keys for ONE user + repo — loaded at review start into a Set. */

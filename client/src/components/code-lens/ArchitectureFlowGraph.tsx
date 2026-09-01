@@ -12,7 +12,7 @@ const LAYER_STYLE: Record<string, { bg: string; border: string }> = {
   service:    { bg: '#0d2a24', border: '#10B981' },
   repository: { bg: '#241a3a', border: '#A855F7' },
   data:       { bg: '#2a2200', border: '#F59E0B' },
-  other:      { bg: '#1A2A3F', border: '#4A6A8A' },
+  other:      { bg: '#1A2A3F', border: '#9ca3af' },
 };
 
 /** Interactive, draggable, auto-laid-out dependency graph (React Flow + dagre).
@@ -49,16 +49,16 @@ export function ArchitectureFlowGraph({ graph }: { graph: ArchitectureGraph }) {
       target: e.to,
       label: e.illegal ? `⚠ ${e.standardId ?? ''}` : (e.viaInterface ?? undefined),
       animated: !!e.illegal,
-      style: { stroke: e.illegal ? '#FF4444' : '#3E5C7E', strokeWidth: e.illegal ? 2 : 1.2, strokeDasharray: e.illegal ? '5 4' : undefined },
-      labelStyle: { fill: e.illegal ? '#FF8080' : '#7A9CC0', fontSize: 10 },
-      labelBgStyle: { fill: '#0A1628' },
+      style: { stroke: e.illegal ? '#dc2626' : '#3E5C7E', strokeWidth: e.illegal ? 2 : 1.2, strokeDasharray: e.illegal ? '5 4' : undefined },
+      labelStyle: { fill: e.illegal ? '#dc2626' : '#6b7280', fontSize: 10 },
+      labelBgStyle: { fill: '#f9fafb' },
     }));
 
     return { nodes: rfNodes, edges: rfEdges };
   }, [graph]);
 
   return (
-    <div style={{ height: 560, border: '1px solid #1E3A5F', borderRadius: 12, background: '#0A1628' }}>
+    <div style={{ height: 560, border: '1px solid #e5e7eb', borderRadius: 12, background: '#f9fafb' }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -67,12 +67,12 @@ export function ArchitectureFlowGraph({ graph }: { graph: ArchitectureGraph }) {
         nodesConnectable={false}
         elementsSelectable
       >
-        <Background color="#1E3A5F" gap={20} />
+        <Background color="#e5e7eb" gap={20} />
         <Controls showInteractive={false} />
         <MiniMap
           pannable
           zoomable
-          style={{ background: '#0D1F3C' }}
+          style={{ background: '#ffffff' }}
           nodeColor={(n) => {
             const gn = graph.nodes.find(x => x.id === n.id);
             return (LAYER_STYLE[gn?.layer ?? 'other'] ?? LAYER_STYLE.other).border;

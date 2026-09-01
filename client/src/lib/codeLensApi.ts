@@ -16,6 +16,49 @@ export async function startReview(
   return res.json() as Promise<{ sessionId: string; streamUrl: string }>;
 }
 
+export interface PrInfo {
+  id: number;
+  title: string;
+  sourceBranch: string;
+  targetBranch: string;
+  changedFiles: number;
+  webUrl: string;
+}
+
+/** Start a review of an Azure DevOps pull request (scoped to its changed files). */
+export async function startPrReview(prUrl: string, pat: string, ignorePatterns: string[] = []) {
+  const res = await fetch(`${BASE}/pr/review`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ prUrl, pat, ignorePatterns }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<{ sessionId: string; streamUrl: string; pr: PrInfo }>;
+}
+
+/** Get the exact markdown that would be posted (for copy-to-clipboard), without
+ *  posting. Empty violationIds returns all comments in the session. */
+export async function previewPrComment(sessionId: string, violationIds: string[] = []) {
+  const res = await fetch(`${BASE}/pr/comment/preview`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, violationIds }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<{ markdown: string; count: number }>;
+}
+
+/** Post the selected review comments to the PR as a single summary comment. */
+export async function postPrComment(sessionId: string, pat: string, violationIds: string[]) {
+  const res = await fetch(`${BASE}/pr/comment`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ sessionId, pat, violationIds }),
+  });
+  if (!res.ok) throw new Error(await res.text());
+  return res.json() as Promise<{ posted: number; threadId: number; webUrl: string }>;
+}
+
 export async function parseIgnoreFile(content: string): Promise<{
   patterns: string[];
   count: number;

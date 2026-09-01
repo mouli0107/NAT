@@ -207,7 +207,16 @@ export interface SseReviewComplete {
     info: number;
     files_passing: number;
     files_failing: number;
+    /** % of files with zero critical/warning violations (files-passing view). */
     compliance_pct: number;
+    /** Severity-weighted rule compliance (0-100) — the headline quality score. */
+    quality_score: number;
+    /** Letter grade derived from quality_score (A/B/C/D/F). */
+    grade: string;
+    /** Violations per 1,000 lines of reviewed code. */
+    defect_density: number;
+    /** Total lines of code reviewed (denominator for defect density). */
+    lines_reviewed: number;
   };
   report_ready: boolean;
   report_download_url: string;
@@ -296,6 +305,26 @@ export type SseEvent =
   | SseArchitectureGraph
   | SseError;
 
+// ─── Pull-request review context ─────────────────────────────────────────────
+
+/** Azure DevOps PR context attached to a PR-review session. Holds everything
+ *  needed to post a comment back to the PR (the PAT is NOT stored here — it is
+ *  re-supplied per request). */
+export interface PrContext {
+  provider: 'azure';
+  org: string;
+  project: string;
+  repo: string;
+  pullRequestId: number;
+  /** REST API base, e.g. https://dev.azure.com/{org}/{project} */
+  apiBase: string;
+  /** Web URL as supplied by the user. */
+  webUrl: string;
+  title: string;
+  sourceBranch: string;
+  targetBranch: string;
+}
+
 // ─── Session ─────────────────────────────────────────────────────────────────
 
 export interface CodeLensSession {
@@ -352,4 +381,18 @@ export interface CodeLensSession {
    *  array; the review walks one flow fully before starting the next. Empty until
    *  the architecture graph is built at review start. */
   reviewFlows: { label: string; start: number; end: number }[];
+  /** Running total of lines of code reviewed — denominator for defect density. */
+  linesReviewed?: number;
+
+  // ─── PR review mode (optional; set only for pull-request reviews) ──────────────
+  /** When set, the review is restricted to these repo-relative paths (the PR's
+   *  changed files). Undefined/null ⇒ normal full-repo/folder review. */
+  changedFilesFilter?: string[] | null;
+  /** PR diff scope: repo-relative path → added/modified line ranges [start,end].
+   *  When set, only violations landing inside a changed range become PR comments.
+   *  Null ⇒ no line scoping (whole-file). */
+  changedLineRanges?: Map<string, Array<[number, number]>> | null;
+  /** Azure DevOps PR context — present only on PR-review sessions. Enables the
+   *  "Add comments to PR" flow to post back to the correct pull request. */
+  prContext?: PrContext | null;
 }

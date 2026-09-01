@@ -1,8 +1,9 @@
 {
   "name": "HIlti",
-  "testCount": 1,
+  "testCount": 2,
   "modules": [
-    "Construction"
+    "Construction",
+    "home page"
   ],
-  "lastRecordedAt": "2026-04-21T09:23:57.384Z"
+  "lastRecordedAt": "2026-05-11T11:04:05.258Z"
 }

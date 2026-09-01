@@ -7,15 +7,15 @@ interface Props {
 }
 
 const STATUS_DOT: Record<StandardStatus, { color: string; label: string }> = {
-  PASS:           { color: '#00A896', label: '✓' },
-  VIOLATION:      { color: '#FF4444', label: '✗' },
+  PASS:           { color: '#059669', label: '✓' },
+  VIOLATION:      { color: '#dc2626', label: '✗' },
   NOT_APPLICABLE: { color: '#6B7280', label: '—' },
-  ERROR:          { color: '#FFA500', label: '!' },  // check did not complete (unverified)
+  ERROR:          { color: '#d97706', label: '!' },  // check did not complete (unverified)
 };
-const FALLBACK_DOT = { color: '#FFA500', label: '?' };
+const FALLBACK_DOT = { color: '#d97706', label: '?' };
 
 const SEVERITY_COLOR: Record<ViolationSeverity, string> = {
-  Critical: '#FF4444',
+  Critical: '#dc2626',
   Warning:  '#F59E0B',
   Info:     '#60A5FA',
 };
@@ -23,7 +23,7 @@ const SEVERITY_COLOR: Record<ViolationSeverity, string> = {
 export function StandardsChecklist({ fileId, results, onViolationClick }: Props) {
   if (!fileId) {
     return (
-      <div className="flex items-center justify-center h-24 text-xs" style={{ color: '#4A6A8A' }}>
+      <div className="flex items-center justify-center h-24 text-xs" style={{ color: '#9ca3af' }}>
         Select a file to see standards checklist
       </div>
     );
@@ -40,24 +40,24 @@ export function StandardsChecklist({ fileId, results, onViolationClick }: Props)
     <div className="flex flex-col h-full overflow-hidden">
       {/* Mini progress strip */}
       <div className="px-3 pt-2 pb-1 flex-shrink-0">
-        <div className="flex items-center justify-between text-xs mb-1" style={{ color: '#7A9CC0' }}>
+        <div className="flex items-center justify-between text-xs mb-1" style={{ color: '#6b7280' }}>
           <span>{loaded}/{totalStandards} checked</span>
           <span>
-            <span style={{ color: '#00A896' }}>{passes} pass</span>
+            <span style={{ color: '#059669' }}>{passes} pass</span>
             {' · '}
-            <span style={{ color: '#FF4444' }}>{violations} fail</span>
+            <span style={{ color: '#dc2626' }}>{violations} fail</span>
             {' · '}
             <span style={{ color: '#6B7280' }}>{notApplicable} N/A</span>
-            {errored > 0 && (<>{' · '}<span style={{ color: '#FFA500' }}>{errored} unverified</span></>)}
+            {errored > 0 && (<>{' · '}<span style={{ color: '#d97706' }}>{errored} unverified</span></>)}
           </span>
         </div>
-        <div className="w-full rounded-full overflow-hidden" style={{ height: 3, background: '#1E3A5F' }}>
+        <div className="w-full rounded-full overflow-hidden" style={{ height: 3, background: '#e5e7eb' }}>
           {loaded > 0 && (
             <div
               className="h-full rounded-full transition-all"
               style={{
                 width: `${(loaded / totalStandards) * 100}%`,
-                background: violations > 0 ? '#FF4444' : '#00A896',
+                background: violations > 0 ? '#dc2626' : '#059669',
               }}
             />
           )}
@@ -67,7 +67,7 @@ export function StandardsChecklist({ fileId, results, onViolationClick }: Props)
       {/* Rows */}
       <div className="flex-1 overflow-y-auto">
         {loaded === 0 ? (
-          <div className="text-xs text-center py-6" style={{ color: '#4A6A8A' }}>
+          <div className="text-xs text-center py-6" style={{ color: '#9ca3af' }}>
             Checking standards…
           </div>
         ) : (
@@ -83,7 +83,7 @@ export function StandardsChecklist({ fileId, results, onViolationClick }: Props)
                     title={r.checked}
                     className="border-b transition-colors"
                     style={{
-                      borderColor: '#1E3A5F',
+                      borderColor: '#e5e7eb',
                       cursor: isViolation ? 'pointer' : 'default',
                       background: isViolation ? 'rgba(255,68,68,0.05)' : 'transparent',
                     }}
@@ -105,7 +105,7 @@ export function StandardsChecklist({ fileId, results, onViolationClick }: Props)
                     </td>
 
                     {/* Rule ID */}
-                    <td className="py-1.5 pr-2 font-mono" style={{ color: '#7A9CC0', minWidth: 32 }}>
+                    <td className="py-1.5 pr-2 font-mono" style={{ color: '#6b7280', minWidth: 32 }}>
                       {r.rule_id}
                     </td>
 

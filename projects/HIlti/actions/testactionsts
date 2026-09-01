@@ -1,0 +1,16 @@
+import { Page } from '@playwright/test';
+import { WwwPage } from '../pages/WwwPage';
+import { prepareSite } from '../helpers/universal';
+import { selectKendoDropdown, selectKendoDate, waitAndDismissAnyKendoAlert, fillKendoGridDates } from '../helpers/kendo';
+
+export async function executetestWorkflow(
+  page: Page,
+  data: Record<string, any>
+) {
+  await page.goto(data.startUrl || 'https://www.hilti.com/');
+  await prepareSite(page);
+
+  const wwwPage = new WwwPage(page);
+  await wwwPage.clickAgreeAgreeToOurDataProcessin();
+  await page.waitForURL('**https://13082830.fls.doubleclick.net/activityi;dc_pre=COGc0tL-pJQDFfHFhAAdTxQKyA;src=13082830;type=pagev;cat=pagev0;rcb=3;ord=2014558194570;npa=0;auiddc=1210382226.1778081735;u1=false;u2=undefined;u3=undefined;u4=undefined;u5=false;u6=false;u7=undefined;u8=Homepage;u9=undefined;u10=undefined;gdid=dMTc4Zm;uaa=x86;uab=64;uafvl=Chromium%3B141.0.7390.37%7CNot%253FA_Brand%3B8.0.0.0;uamb=0;uam=;uap=Windows;uapv=10.0;uaw=0;pscdl=noapi;frm=0;_tu=KFA;gtm=45fe6541v9190369010z872146901za20gzb72146901zd72146901xea;gcs=G111;gcd=13n3n3n3n5l1;dma=0;dc_fmt=2;tcfd=1000g;tag_exp=0~115616985~115938465~115938469~118289195~118463262~118689382;epver=2;dc_random=1778081735_JsnjudNKYwXrQyYI7w5P9eko49JNctzhcA;_dc_test=1;~oref=https%3A%2F%2Fwww.hilti.com%2F?', { waitUntil: 'domcontentloaded' });
+}

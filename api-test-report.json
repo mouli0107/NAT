@@ -1,0 +1,312 @@
+{
+  "base": "https://devxtest92-e5b66070.azurewebsites.net",
+  "api": {
+    "title": "VitalEdge Integration API",
+    "version": "1.0.0",
+    "description": "Integration boundary between IntelliDealer Core (ID) and eServiceTech.\n\nID is the system of record for work-order, customer, equipment, billing and\nfinancial transactions; eServiceTech supports field-service execution.\n\n## Authentication\n\nMachine-to-machine only, via OAuth2 **client credentials**. Exchange your\nclient ID and secret at `/api/v1/oauth/token` for a bearer token,\nthen send it as `Authorization: Bearer <token>`. Tokens are least-privilege:\na route rejects any token missing a scope it declares.\n\n## Tenancy\n\nThe deployment is multi-tenant and dealer-scoped. Every access token carries\nan authoritative `dealer_id`, and all reads, writes, replay and reconciliation\nare filtered by it. `X-Dealer-Id` may be sent to assert intent, but it must\nmatch the token — a mismatch is refused, never coerced.\n\n## Correlation\n\nEvery request is assigned a correlation ID, returned in `X-Correlation-Id`.\nSend your own to stitch this call into an existing trace. The ID appears on\nsuccess and error responses alike so any exchange stays traceable end-to-end.\n\n## Error model\n\nFailures share one envelope carrying a stable `code`, a `category` from the\ntaxonomy below, and an explicit `retryable` flag — so a caller never has to\ninfer retry safety from the HTTP status.\n\n| Category | Meaning | Retryable |\n| --- | --- | --- |\n| `TRANSPORT_ERROR` | Timeout, DNS, connection, TLS, or gateway failure. | yes |\n| `AUTH_ERROR` | Expired token, invalid credential, or insufficient scope. | no |\n| `SCHEMA_ERROR` | Missing or invalid field, or unsupported format. | no |\n| `REFERENCE_DATA_ERROR` | Unknown customer, equipment, technician, part, or job. | no |\n| `BUSINESS_RULE_ERROR` | Invalid state transition, invalid quantity, or duplicate posting. | no |\n| `CONCURRENCY_ERROR` | Object changed since the source read it. | yes |\n| `ATTACHMENT_ERROR` | Unsupported file type, size exceeded, or inaccessible reference. | no |\n| `SYSTEM_ERROR` | Target service unavailable or internal failure. | yes |\n\n## Rate limits\n\nGeneral traffic is capped at 600 requests per\n60s. Credential exchange is capped separately at\n20 **failed** attempts per window — successful exchanges are not\ncounted, so a correctly configured client can always refresh. Responses carry\n`RateLimit` headers, and a 429 carries `Retry-After`.\n\n## Versioning\n\nThe major version is carried in the path (`/api/v1`). Additive changes\nship in place; breaking changes ship under a new major version."
+  },
+  "generatedAt": "2026-08-12T08:13:40.471Z",
+  "tally": {
+    "PASS": 9,
+    "SCOPE": 24
+  },
+  "results": [
+    {
+      "method": "get",
+      "path": "/health",
+      "status": 200,
+      "ms": 248,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/identity",
+      "status": 200,
+      "ms": 270,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/workorders/failures",
+      "status": 200,
+      "ms": 259,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/workorders/failures/{correlationId}",
+      "status": 404,
+      "ms": 279,
+      "outcome": "PASS",
+      "note": "synthetic id",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/security/audit",
+      "status": 403,
+      "ms": 257,
+      "outcome": "SCOPE",
+      "note": "needs scope: security",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/security/metrics",
+      "status": 403,
+      "ms": 276,
+      "outcome": "SCOPE",
+      "note": "needs scope: security",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/completions/monitoring",
+      "status": 403,
+      "ms": 243,
+      "outcome": "SCOPE",
+      "note": "needs scope: monitoring",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/completions/{id}",
+      "status": 403,
+      "ms": 277,
+      "outcome": "SCOPE",
+      "note": "needs scope: completion",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/completions/{id}/billing-readiness",
+      "status": 403,
+      "ms": 240,
+      "outcome": "SCOPE",
+      "note": "needs scope: billing-readiness",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/outbound/work-orders",
+      "status": 403,
+      "ms": 276,
+      "outcome": "SCOPE",
+      "note": "needs scope: workorder",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/outbound/work-orders/{id}",
+      "status": 403,
+      "ms": 247,
+      "outcome": "SCOPE",
+      "note": "needs scope: workorder",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/dispatch/assignments/{id}",
+      "status": 403,
+      "ms": 271,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/dispatch/monitoring",
+      "status": 403,
+      "ms": 241,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/master-data/customers",
+      "status": 200,
+      "ms": 270,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/master-data/customers/{id}",
+      "status": 404,
+      "ms": 264,
+      "outcome": "PASS",
+      "note": "synthetic id",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/master-data/equipment",
+      "status": 200,
+      "ms": 277,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/master-data/equipment/{id}",
+      "status": 404,
+      "ms": 241,
+      "outcome": "PASS",
+      "note": "synthetic id",
+      "snippet": ""
+    },
+    {
+      "method": "get",
+      "path": "/master-data/monitoring",
+      "status": 200,
+      "ms": 277,
+      "outcome": "PASS",
+      "note": "",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/workorders/{workOrderId}/replay",
+      "status": 403,
+      "ms": 268,
+      "outcome": "SCOPE",
+      "note": "needs scope: workorder",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/completions",
+      "status": 403,
+      "ms": 286,
+      "outcome": "SCOPE",
+      "note": "needs scope: completion",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/completions/{id}/replay",
+      "status": 403,
+      "ms": 241,
+      "outcome": "SCOPE",
+      "note": "needs scope: completion",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/reconciliation/checks",
+      "status": 403,
+      "ms": 284,
+      "outcome": "SCOPE",
+      "note": "needs scope: reconciliation",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/outbound/work-orders",
+      "status": 403,
+      "ms": 237,
+      "outcome": "SCOPE",
+      "note": "needs scope: workorder",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/outbound/work-orders/{id}/replay",
+      "status": 403,
+      "ms": 268,
+      "outcome": "SCOPE",
+      "note": "needs scope: workorder",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/dispatch/assignments",
+      "status": 403,
+      "ms": 263,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "patch",
+      "path": "/dispatch/assignments/{id}",
+      "status": 403,
+      "ms": 290,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/dispatch/status-events",
+      "status": 403,
+      "ms": 240,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/dispatch/reconciliation",
+      "status": 403,
+      "ms": 275,
+      "outcome": "SCOPE",
+      "note": "needs scope: dispatch",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/master-data/customers",
+      "status": 403,
+      "ms": 239,
+      "outcome": "SCOPE",
+      "note": "needs scope: customer",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/master-data/equipment",
+      "status": 403,
+      "ms": 280,
+      "outcome": "SCOPE",
+      "note": "needs scope: equipment",
+      "snippet": ""
+    },
+    {
+      "method": "patch",
+      "path": "/master-data/equipment/{id}/meter",
+      "status": 403,
+      "ms": 249,
+      "outcome": "SCOPE",
+      "note": "needs scope: equipment",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/master-data/reconciliation",
+      "status": 403,
+      "ms": 284,
+      "outcome": "SCOPE",
+      "note": "needs scope: master-data",
+      "snippet": ""
+    },
+    {
+      "method": "post",
+      "path": "/master-data/failures/{id}/replay",
+      "status": 403,
+      "ms": 279,
+      "outcome": "SCOPE",
+      "note": "needs scope: master-data",
+      "snippet": ""
+    }
+  ]
+}

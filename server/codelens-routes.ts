@@ -22,9 +22,18 @@ import {
   stripGitCredentials,
   suppressionKey,
   STANDARDS,
+  parseStandardsDocument,
 } from './codelens-agent';
 import { parseIgnoreFileContent } from './codelens-ignore';
 import { getAuthContext } from './auth-middleware';
+import {
+  parseAzurePrUrl,
+  repoCloneUrl,
+  getPullRequest,
+  getPullRequestChangedFiles,
+  postPullRequestThread,
+} from './codelens-azure-pr';
+import type { PrContext, ViolationRecord } from './codelens-types';
 // codelens-db is loaded lazily inside each history route so that this module
 // can load even when DATABASE_URL is absent (e.g. local dev without a DB).
 async function db() {
@@ -49,6 +58,101 @@ async function getOwnedSession(
   if (!session) return null;
   const { userId } = await getAuthContext(req);
   return session.userId === userId ? session : null;
+}
+
+/** Guess a fenced-code language hint from a file extension (best-effort). */
+function langForFile(file: string): string {
+  const ext = file.slice(file.lastIndexOf('.') + 1).toLowerCase();
+  const map: Record<string, string> = {
+    cs: 'csharp', ts: 'ts', tsx: 'tsx', js: 'js', jsx: 'jsx', java: 'java',
+    py: 'python', sql: 'sql', json: 'json', xml: 'xml', html: 'html',
+    css: 'css', yml: 'yaml', yaml: 'yaml', sh: 'bash', go: 'go', rb: 'ruby',
+  };
+  return map[ext] ?? '';
+}
+
+/** Format a "line 42" / "lines 42-45" / "file-level" location label. */
+function lineLabel(v: ViolationRecord): string {
+  if (v.lineStart > 0) {
+    return v.lineEnd > v.lineStart ? `lines ${v.lineStart}-${v.lineEnd}` : `line ${v.lineStart}`;
+  }
+  return 'file-level';
+}
+
+/** Render the offending code as a fenced block, trimmed to a sane size, using a
+ *  fence that will not collide with backticks already in the snippet. */
+function codeBlock(file: string, foundCode: string): string[] {
+  let code = (foundCode ?? '').replace(/\r\n/g, '\n').trimEnd();
+  if (!code) return [];
+  const lines = code.split('\n');
+  if (lines.length > 12) code = lines.slice(0, 12).join('\n') + '\n… (truncated)';
+  else if (code.length > 800) code = code.slice(0, 800) + '\n… (truncated)';
+  const fence = code.includes('```') ? '~~~' : '```';
+  return [`${fence}${langForFile(file)}`, code, fence];
+}
+
+/** Build the markdown body for the single summary comment posted to a PR.
+ *  Each comment is self-contained: file, line, the offending code, and the fix,
+ *  numbered so a reviewer can reference "comment 3". Grouped by file, most
+ *  severe first. */
+function buildPrCommentMarkdown(
+  selected: ViolationRecord[],
+  fileIndex: Map<string, string>,
+  pr: PrContext,
+  commitHash: string,
+): string {
+  const rank = (s: string) => (s === 'Critical' ? 0 : s === 'Warning' ? 1 : 2);
+  const icon = (s: string) => (s === 'Critical' ? '🔴' : s === 'Warning' ? '🟠' : '🔵');
+
+  const byFile = new Map<string, ViolationRecord[]>();
+  for (const v of selected) {
+    const p = fileIndex.get(v.fileId) ?? v.fileId;
+    const list = byFile.get(p);
+    if (list) list.push(v); else byFile.set(p, [v]);
+  }
+  // Files with the most severe finding first, then alphabetical.
+  const files = Array.from(byFile.entries()).sort((a, b) => {
+    const sa = Math.min(...a[1].map(v => rank(v.severity)));
+    const sb = Math.min(...b[1].map(v => rank(v.severity)));
+    return sa - sb || a[0].localeCompare(b[0]);
+  });
+
+  const crit = selected.filter(v => v.severity === 'Critical').length;
+  const warn = selected.filter(v => v.severity === 'Warning').length;
+  const info = selected.filter(v => v.severity === 'Info').length;
+
+  const out: string[] = [];
+  out.push('## ASTRA Code Lens review');
+  out.push('');
+  out.push(
+    `${selected.length} comment(s) on PR #${pr.pullRequestId} against the Insurity coding standards: ` +
+    `${crit} Critical, ${warn} Warning, ${info} Info.`,
+  );
+  const shortCommit = commitHash ? commitHash.slice(0, 8) : '';
+  out.push(
+    `Reviewed source: \`${pr.sourceBranch}\`` +
+    (shortCommit ? ` @ \`${shortCommit}\`` : '') +
+    ` (line numbers refer to this revision).`,
+  );
+  out.push('');
+
+  let n = 0;
+  for (const [file, list] of files) {
+    list.sort((a, b) => rank(a.severity) - rank(b.severity) || a.lineStart - b.lineStart);
+    out.push(`### \`${file}\``);
+    out.push('');
+    for (const v of list) {
+      n += 1;
+      out.push(`**${n}. ${icon(v.severity)} ${v.severity}: ${v.ruleName}** — ${lineLabel(v)}`);
+      out.push('');
+      const block = codeBlock(file, v.foundCode);
+      if (block.length) { out.push(...block); out.push(''); }
+      if (v.recommendedFix) { out.push(`Recommendation: ${v.recommendedFix}`); out.push(''); }
+    }
+  }
+
+  out.push('_Posted by ASTRA Code Lens._');
+  return out.join('\n');
 }
 
 /** Strip characters that are never valid in a git branch name but often appear
@@ -166,6 +270,153 @@ codeLensRouter.post('/review/start', async (req: Request, res: Response) => {
     sessionId,
     streamUrl: `/api/v1/codelens/review/stream?sessionId=${sessionId}`,
   });
+});
+
+// ─── POST /pr/review ──────────────────────────────────────────────────────────
+// Review an Azure DevOps pull request against the Code Lens standards catalog.
+// Parses the PR URL, reads the PR (source/target branch) + its changed files,
+// then runs the normal review engine scoped to just those files.
+
+codeLensRouter.post('/pr/review', async (req: Request, res: Response) => {
+  const { prUrl = '', pat = '', ignorePatterns = [] } = req.body as {
+    prUrl?: string; pat?: string; ignorePatterns?: string[];
+  };
+
+  if (!prUrl || typeof prUrl !== 'string') {
+    return res.status(400).json({ error: 'prUrl (string) is required' });
+  }
+  const ref = parseAzurePrUrl(prUrl);
+  if (!ref) {
+    return res.status(400).json({
+      error: 'Could not parse the Azure DevOps PR URL. Expected a form like ' +
+        'https://dev.azure.com/{org}/{project}/_git/{repo}/pullrequest/{id}',
+    });
+  }
+  if (!pat || typeof pat !== 'string') {
+    return res.status(400).json({ error: 'A Personal Access Token (pat) is required to read the PR and post comments.' });
+  }
+
+  // Read PR metadata + changed files up front so we can fail fast with a clear
+  // message (bad URL, bad PAT, no changes) before spinning up a review session.
+  let pr, changedFiles: string[];
+  try {
+    pr = await getPullRequest(ref, pat.trim());
+    changedFiles = await getPullRequestChangedFiles(ref, pat.trim());
+  } catch (err: any) {
+    return res.status(502).json({ error: err?.message ?? 'Failed to read the pull request from Azure DevOps.' });
+  }
+  if (changedFiles.length === 0) {
+    return res.status(422).json({ error: 'This PR has no reviewable file changes (only deletes or folders were found).' });
+  }
+
+  const sessionId = `cls-${randomUUID().slice(0, 8)}`;
+  const localPath = path.join(os.tmpdir(), 'codelens', sessionId);
+  fs.mkdirSync(localPath, { recursive: true });
+
+  const authUrl = buildAuthenticatedUrl(repoCloneUrl(ref), pat.trim());
+  const { userId } = await getAuthContext(req);
+  const session = createSession(
+    sessionId,
+    authUrl,
+    pr.sourceBranch,
+    localPath,
+    [],
+    Array.isArray(ignorePatterns) ? ignorePatterns : [],
+    userId,
+  );
+  session.changedFilesFilter = changedFiles;
+  session.prContext = {
+    provider: 'azure',
+    org: ref.org,
+    project: ref.project,
+    repo: ref.repo,
+    pullRequestId: ref.pullRequestId,
+    apiBase: ref.apiBase,
+    webUrl: ref.webUrl,
+    title: pr.title,
+    sourceBranch: pr.sourceBranch,
+    targetBranch: pr.targetBranch,
+  };
+
+  setTimeout(() => {
+    runReview(session).catch(err =>
+      console.error(`[CodeLens] Unhandled PR review error for ${sessionId}:`, err),
+    );
+  }, 600);
+
+  return res.status(202).json({
+    sessionId,
+    streamUrl: `/api/v1/codelens/review/stream?sessionId=${sessionId}`,
+    pr: {
+      id: ref.pullRequestId,
+      title: pr.title,
+      sourceBranch: pr.sourceBranch,
+      targetBranch: pr.targetBranch,
+      changedFiles: changedFiles.length,
+      webUrl: ref.webUrl,
+    },
+  });
+});
+
+// ─── POST /pr/comment/preview ─────────────────────────────────────────────────
+// Return the exact markdown that would be posted (for "Copy all to clipboard"),
+// without posting anything and without needing a PAT. Empty violationIds ⇒ all.
+
+codeLensRouter.post('/pr/comment/preview', async (req: Request, res: Response) => {
+  const { sessionId, violationIds } = req.body as { sessionId?: string; violationIds?: string[] };
+  const session = await getOwnedSession(req, sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found or not owned by caller.' });
+  if (!session.prContext) return res.status(400).json({ error: 'This session is not a pull-request review.' });
+
+  const ids = Array.isArray(violationIds) && violationIds.length
+    ? violationIds
+    : Array.from(session.violations.keys());
+  const selected = ids
+    .map(id => session.violations.get(id))
+    .filter((v): v is ViolationRecord => !!v);
+
+  const fileIndex = new Map(session.files.map(f => [f.fileId, f.relativePath]));
+  const markdown = selected.length
+    ? buildPrCommentMarkdown(selected, fileIndex, session.prContext, session.commitHash)
+    : '';
+  return res.json({ markdown, count: selected.length });
+});
+
+// ─── POST /pr/comment ─────────────────────────────────────────────────────────
+// Post the user-selected review comments as a single summary comment thread on
+// the PR. The PAT is re-supplied by the client (never stored server-side).
+
+codeLensRouter.post('/pr/comment', async (req: Request, res: Response) => {
+  const { sessionId, pat = '', violationIds = [] } = req.body as {
+    sessionId?: string; pat?: string; violationIds?: string[];
+  };
+
+  const session = await getOwnedSession(req, sessionId);
+  if (!session) return res.status(404).json({ error: 'Session not found or not owned by caller.' });
+  if (!session.prContext) return res.status(400).json({ error: 'This session is not a pull-request review.' });
+  if (!pat || typeof pat !== 'string') {
+    return res.status(400).json({ error: 'A Personal Access Token (pat) is required to post the comment.' });
+  }
+  if (!Array.isArray(violationIds) || violationIds.length === 0) {
+    return res.status(400).json({ error: 'Select at least one comment to add to the PR.' });
+  }
+
+  const selected = violationIds
+    .map(id => session.violations.get(id))
+    .filter((v): v is ViolationRecord => !!v);
+  if (selected.length === 0) {
+    return res.status(400).json({ error: 'None of the selected comments were found in this session.' });
+  }
+
+  const fileIndex = new Map(session.files.map(f => [f.fileId, f.relativePath]));
+  const markdown = buildPrCommentMarkdown(selected, fileIndex, session.prContext, session.commitHash);
+
+  try {
+    const { threadId } = await postPullRequestThread(session.prContext, pat.trim(), markdown);
+    return res.json({ posted: selected.length, threadId, webUrl: session.prContext.webUrl });
+  } catch (err: any) {
+    return res.status(502).json({ error: err?.message ?? 'Failed to post the comment to Azure DevOps.' });
+  }
 });
 
 // ─── GET /review/exists ───────────────────────────────────────────────────────
@@ -870,15 +1121,17 @@ codeLensRouter.get('/history/recent', async (req: Request, res: Response) => {
 
 // The full standards catalog = built-in 42 (read-only) + custom (editable).
 codeLensRouter.get('/standards', async (_req: Request, res: Response) => {
-  const builtin = STANDARDS.map(s => ({
-    id: s.id, name: s.name, severity: s.severity, description: s.description,
-    appliesTo: s.appliesTo, custom: false, enabled: true,
-  }));
   let custom: any[] = [];
+  let disabledBuiltins = new Set<string>();
   try {
     const { userId } = await getAuthContext(_req);
-    const { listCustomStandards } = await db();
-    custom = (await listCustomStandards(userId)).map(c => ({
+    const { listCustomStandards, getDisabledBuiltinIds } = await db();
+    const [customRows, disabledIds] = await Promise.all([
+      listCustomStandards(userId),
+      getDisabledBuiltinIds(userId).catch(() => [] as string[]),
+    ]);
+    disabledBuiltins = new Set(disabledIds);
+    custom = customRows.map(c => ({
       id: c.id, name: c.name, severity: c.severity, description: c.description,
       appliesTo: c.appliesTo, notApplicableWhen: c.notApplicableWhen,
       whatToLookFor: c.whatToLookFor, custom: true, enabled: c.enabled,
@@ -886,10 +1139,17 @@ codeLensRouter.get('/standards', async (_req: Request, res: Response) => {
   } catch (e: any) {
     console.warn('[CodeLens] listCustomStandards failed (showing built-ins only):', e?.message);
   }
+  // Built-ins reflect this user's enable/disable choices (per-user standards).
+  const builtin = STANDARDS.map(s => ({
+    id: s.id, name: s.name, severity: s.severity, description: s.description,
+    appliesTo: s.appliesTo, custom: false, enabled: !disabledBuiltins.has(s.id),
+  }));
+  const activeCount = builtin.filter(b => b.enabled).length + custom.filter(c => c.enabled).length;
   return res.json({
     total: builtin.length + custom.length,
     builtinCount: builtin.length,
     customCount: custom.length,
+    activeCount,
     standards: [...builtin, ...custom],
   });
 });
@@ -927,15 +1187,87 @@ codeLensRouter.post('/standards', async (req: Request, res: Response) => {
 
 codeLensRouter.patch('/standards/:id', async (req: Request, res: Response) => {
   const { id } = req.params;
-  if (!/^C/i.test(id)) return res.status(400).json({ error: 'Built-in standards are read-only; only custom (C…) standards can be edited.' });
   try {
     const { userId } = await getAuthContext(req);
+    // Built-in standards: only per-user enable/disable is allowed (content is fixed).
+    if (!/^C/i.test(id)) {
+      if (typeof req.body?.enabled !== 'boolean') {
+        return res.status(400).json({ error: 'Built-in standards support only enable/disable (send { enabled: boolean }).' });
+      }
+      if (!STANDARDS.some(s => s.id === id)) {
+        return res.status(404).json({ error: `Unknown built-in standard ${id}` });
+      }
+      const { setBuiltinDisabled } = await db();
+      await setBuiltinDisabled(userId, id, !req.body.enabled);
+      return res.json({ standard: { id, custom: false, enabled: req.body.enabled } });
+    }
     const { updateCustomStandard } = await db();
     const updated = await updateCustomStandard(id, userId, req.body ?? {});
     if (!updated) return res.status(404).json({ error: `Custom standard ${id} not found (or not yours)` });
     return res.json({ standard: { ...updated, custom: true } });
   } catch (e: any) {
     return res.status(500).json({ error: e?.message ?? 'Failed to update standard' });
+  }
+});
+
+// ─── POST /standards/builtins/toggle-all ──────────────────────────────────────
+// Enable or disable ALL 42 built-in standards for the calling user at once.
+codeLensRouter.post('/standards/builtins/toggle-all', async (req: Request, res: Response) => {
+  const { enabled } = req.body as { enabled?: boolean };
+  if (typeof enabled !== 'boolean') return res.status(400).json({ error: 'enabled (boolean) is required' });
+  try {
+    const { userId } = await getAuthContext(req);
+    const { enableAllBuiltins, disableBuiltins } = await db();
+    if (enabled) await enableAllBuiltins(userId);
+    else await disableBuiltins(userId, STANDARDS.map(s => s.id));
+    return res.json({ status: 'ok', enabled, count: STANDARDS.length });
+  } catch (e: any) {
+    return res.status(500).json({ error: e?.message ?? 'Failed to toggle built-in standards' });
+  }
+});
+
+// ─── POST /standards/import ───────────────────────────────────────────────────
+// Import a standards document (any text format) as this user's custom standards.
+// mode 'replace' = disable all built-ins + clear existing custom, then import.
+// mode 'augment' = keep everything and add the imported rules.
+codeLensRouter.post('/standards/import', async (req: Request, res: Response) => {
+  const { content = '', mode = 'augment' } = req.body as { content?: string; mode?: 'replace' | 'augment' };
+  if (!content || typeof content !== 'string' || !content.trim()) {
+    return res.status(400).json({ error: 'content (the standards document text) is required' });
+  }
+
+  let parsed;
+  try {
+    parsed = await parseStandardsDocument(content);
+  } catch (e: any) {
+    return res.status(502).json({ error: `Could not parse the standards document: ${e?.message ?? 'unknown error'}` });
+  }
+  if (parsed.length === 0) {
+    return res.status(422).json({ error: 'No coding standards could be extracted from that document.' });
+  }
+
+  try {
+    const { userId } = await getAuthContext(req);
+    const dbm = await db();
+    let clearedCustom = 0;
+    if (mode === 'replace') {
+      clearedCustom = await dbm.deleteAllCustomStandards(userId);
+      await dbm.disableBuiltins(userId, STANDARDS.map(s => s.id));
+    }
+    let imported = 0;
+    for (const p of parsed) {
+      try { await dbm.createCustomStandard(userId, p); imported++; } catch { /* skip bad row */ }
+    }
+    return res.json({
+      status: 'ok',
+      mode,
+      parsed: parsed.length,
+      imported,
+      clearedCustom,
+      builtinsDisabled: mode === 'replace' ? STANDARDS.length : 0,
+    });
+  } catch (e: any) {
+    return res.status(500).json({ error: e?.message ?? 'Failed to import standards' });
   }
 });
 
