@@ -64,7 +64,7 @@ export function CodeViewerPanel({
       {/* File name bar */}
       <div className="px-4 py-2 border-b flex items-center gap-2 flex-shrink-0"
            style={{ background: '#252526', borderColor: '#3C3C3C' }}>
-        <span className="w-2 h-2 rounded-full" style={{ background: '#00BFFF' }} />
+        <span className="w-2 h-2 rounded-full" style={{ background: '#2563eb' }} />
         <span className="text-xs font-mono" style={{ color: '#D4D4D4' }}>
           {fileName || 'Select a file from the tree'}
         </span>
@@ -76,7 +76,7 @@ export function CodeViewerPanel({
           <Editor
             height="100%"
             language="csharp"
-            theme="vs-dark"
+            theme="vs"
             value={fileContent}
             onMount={handleEditorMount}
             options={{

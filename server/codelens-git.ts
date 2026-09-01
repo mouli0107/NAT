@@ -253,3 +253,60 @@ export async function listTrackedFiles(localPath: string): Promise<string[]> {
       return lower.endsWith('.cs') || lower.endsWith('.csproj') || lower === 'appsettings.json';
     });
 }
+
+/** For a PR review: return the added/modified line ranges per changed file, by
+ *  diffing the (already-cloned) source branch HEAD against the target branch.
+ *  Repo-relative path (slash-normalized) → array of [startLine, endLine] on the
+ *  HEAD side. Returns an empty map if the diff cannot be computed (caller then
+ *  falls back to whole-file comments rather than dropping everything). */
+export async function getChangedLineRanges(
+  localPath: string,
+  targetBranch: string,
+  authenticatedUrl: string,
+): Promise<Map<string, Array<[number, number]>>> {
+  const ranges = new Map<string, Array<[number, number]>>();
+
+  // Bring the target branch into the shallow clone so we can diff against it.
+  try {
+    await execAsync(`git ${LONGPATHS_FLAG} remote set-url origin "${authenticatedUrl}"`, { cwd: localPath }).catch(() => {});
+    await execAsync(`git ${LONGPATHS_FLAG} fetch --depth 50 origin "${targetBranch}"`, {
+      cwd: localPath, timeout: 120_000,
+    });
+  } catch {
+    return ranges; // no target available — caller falls back to whole-file
+  }
+
+  // Prefer three-dot (changes since the branches diverged); fall back to two-dot
+  // if the merge-base is unreachable in a shallow clone.
+  let out = '';
+  for (const spec of [`"origin/${targetBranch}...HEAD"`, `"origin/${targetBranch}" HEAD`]) {
+    try {
+      const r = await execAsync(
+        `git ${LONGPATHS_FLAG} diff --unified=0 --no-color ${spec}`,
+        { cwd: localPath, maxBuffer: 50 * 1024 * 1024 },
+      );
+      out = r.stdout;
+      break;
+    } catch { /* try next spec */ }
+  }
+  if (!out) return ranges;
+
+  // Parse the unified diff. Track the current file from '+++ b/<path>' and the
+  // added/modified line ranges from each hunk header '@@ -a,b +c,d @@'.
+  let current: string | null = null;
+  for (const line of out.split('\n')) {
+    if (line.startsWith('+++ ')) {
+      const p = line.slice(4).trim();
+      current = p === '/dev/null' ? null : p.replace(/^b\//, '').replace(/\\/g, '/');
+      if (current && !ranges.has(current)) ranges.set(current, []);
+    } else if (line.startsWith('@@') && current) {
+      const m = /\+(\d+)(?:,(\d+))?/.exec(line);
+      if (m) {
+        const start = Number(m[1]);
+        const count = m[2] === undefined ? 1 : Number(m[2]);
+        if (count > 0) ranges.get(current)!.push([start, start + count - 1]);
+      }
+    }
+  }
+  return ranges;
+}

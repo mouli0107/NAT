@@ -31,9 +31,6 @@ export function ReviewProgress({
     ? Math.round((progress.current / progress.total) * 100)
     : 0;
 
-  // Compliance = passed ÷ (passed + critical + warning) over checks that have a
-  // real pass/fail verdict so far. Until at least one such verdict exists it is
-  // UNDEFINED — never show a placeholder 100% (N/A-only results don't count).
   const decided = stats.critical + stats.warning + stats.passed;
   const compliancePct: number | null = decided > 0
     ? Math.round((stats.passed / decided) * 100)
@@ -41,155 +38,119 @@ export function ReviewProgress({
 
   return (
     <div className="px-4 py-3 border-b space-y-2"
-         style={{ background: '#0A1628', borderColor: '#1E3A5F' }}>
+         style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
 
       {/* Top row: file name, count, compliance, controls */}
       <div className="flex items-center justify-between text-xs">
-        <span style={{ color: '#A0C0D8' }}>
+        <span style={{ color: '#374151' }}>
           {reviewStatus === 'complete' ? (
-            <span className="font-semibold flex items-center gap-1" style={{ color: '#00C896' }}>
+            <span className="font-semibold flex items-center gap-1" style={{ color: '#059669' }}>
               <CheckCircle className="w-3.5 h-3.5" /> Review complete — fix violations below, or view the report
             </span>
           ) : reviewStatus === 'stopped' ? (
-            <span className="font-semibold" style={{ color: '#FFA500' }}>⏸ Review paused</span>
+            <span className="font-semibold" style={{ color: '#d97706' }}>⏸ Review paused</span>
           ) : statusMessage ? (
-            <span className="font-mono" style={{ color: '#00BFFF' }}>
+            <span className="font-mono" style={{ color: '#2563eb' }}>
               <span className="inline-block animate-spin mr-1">⟳</span>
               {statusMessage}
             </span>
           ) : (
             <>
               Reviewing{' '}
-              <span className="font-mono font-medium text-white">{currentFile || '…'}</span>
+              <span className="font-mono font-medium" style={{ color: '#111827' }}>{currentFile || '…'}</span>
             </>
           )}
         </span>
 
         <div className="flex items-center gap-4">
-          <span style={{ color: '#7A9CC0' }}>
+          <span style={{ color: '#6b7280' }}>
             {progress.current} / {progress.total} files
           </span>
           {compliancePct === null ? (
-            <span style={{ color: '#7A9CC0' }}>compliance —</span>
+            <span style={{ color: '#6b7280' }}>quality —</span>
           ) : (
-            <span className="font-semibold" style={{ color: '#00BFFF' }}>
-              {compliancePct}% compliant{reviewStatus === 'running' ? ' so far' : ''}
+            <span className="font-semibold" style={{ color: '#2563eb' }}>
+              {compliancePct}% quality{reviewStatus === 'running' ? ' so far' : ''}
             </span>
           )}
 
-          {/* Stop/Resume/Cancel controls */}
           {reviewStatus === 'running' && (
-            <button
-              onClick={onStop}
-              title="Stop review"
+            <button onClick={onStop} title="Stop review"
               className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-              style={{ background: '#FF444422', color: '#FF8080', border: '1px solid #FF444455' }}
-            >
-              <Square className="w-3 h-3" />
-              Stop
+              style={{ background: '#fee2e2', color: '#dc2626', border: '1px solid #fecaca' }}>
+              <Square className="w-3 h-3" /> Stop
             </button>
           )}
 
           {reviewStatus === 'stopped' && (
             <>
-              <button
-                onClick={onResume}
-                title="Resume review"
+              <button onClick={onResume} title="Resume review"
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-                style={{ background: '#00BFFF22', color: '#00BFFF', border: '1px solid #00BFFF55' }}
-              >
-                <Play className="w-3 h-3" />
-                Resume
+                style={{ background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+                <Play className="w-3 h-3" /> Resume
               </button>
-              <button
-                onClick={onViewReport}
-                title="View & export the files reviewed so far"
+              <button onClick={onViewReport} title="View & export the files reviewed so far"
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-                style={{ background: '#00A87622', color: '#00C896', border: '1px solid #00A87655' }}
-              >
-                <FileSpreadsheet className="w-3 h-3" />
-                View Results &amp; Export
+                style={{ background: '#d1fae5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                <FileSpreadsheet className="w-3 h-3" /> View Results &amp; Export
               </button>
-              <button
-                onClick={onCancel}
-                title="Cancel and reset"
+              <button onClick={onCancel} title="Cancel and reset"
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-                style={{ background: '#1E3A5F', color: '#7A9CC0', border: '1px solid #1E3A5F' }}
-              >
-                <X className="w-3 h-3" />
-                Cancel
+                style={{ background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>
+                <X className="w-3 h-3" /> Cancel
               </button>
             </>
           )}
 
           {reviewStatus === 'complete' && (
             <>
-              <button
-                onClick={onViewReport}
-                title="View the report & export"
+              <button onClick={onViewReport} title="View the report & export"
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-                style={{ background: '#00A87622', color: '#00C896', border: '1px solid #00A87655' }}
-              >
-                <FileSpreadsheet className="w-3 h-3" />
-                View Report
+                style={{ background: '#d1fae5', color: '#059669', border: '1px solid #a7f3d0' }}>
+                <FileSpreadsheet className="w-3 h-3" /> View Report
               </button>
-              <button
-                onClick={onNewReview}
-                title="Start a new review"
+              <button onClick={onNewReview} title="Start a new review"
                 className="flex items-center gap-1 rounded px-2 py-1 text-xs font-semibold transition-colors"
-                style={{ background: '#00BFFF22', color: '#00BFFF', border: '1px solid #00BFFF55' }}
-              >
-                <Plus className="w-3 h-3" />
-                New Review
+                style={{ background: '#dbeafe', color: '#2563eb', border: '1px solid #bfdbfe' }}>
+                <Plus className="w-3 h-3" /> New Review
               </button>
             </>
           )}
 
-          {/* Always available: bail out to a fresh review */}
           {reviewStatus === 'running' && (
-            <button
-              onClick={onNewReview}
-              title="Stop and start a new review"
+            <button onClick={onNewReview} title="Stop and start a new review"
               className="flex items-center gap-1 rounded px-2 py-1 text-xs transition-colors"
-              style={{ color: '#7A9CC0' }}
-            >
-              <Plus className="w-3 h-3" />
-              New Review
+              style={{ color: '#6b7280' }}>
+              <Plus className="w-3 h-3" /> New Review
             </button>
           )}
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="relative h-1.5 rounded-full overflow-hidden"
-           style={{ background: '#1E3A5F' }}>
-        <div
-          className="absolute left-0 top-0 h-full rounded-full transition-all duration-300"
-          style={{
-            width: `${pct}%`,
-            background: reviewStatus === 'stopped' ? '#FFA500' : '#00BFFF',
-          }}
-        />
+      <div className="relative h-1.5 rounded-full overflow-hidden" style={{ background: '#e5e7eb' }}>
+        <div className="absolute left-0 top-0 h-full rounded-full transition-all duration-300"
+          style={{ width: `${pct}%`, background: reviewStatus === 'stopped' ? '#d97706' : '#2563eb' }} />
       </div>
 
       {/* Stats badges */}
       <div className="flex items-center gap-3 text-xs">
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#FF4444' }} />
-          <span style={{ color: '#FF8080' }}>{stats.critical} Critical</span>
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#dc2626' }} />
+          <span style={{ color: '#dc2626' }}>{stats.critical} Critical</span>
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#FFA500' }} />
-          <span style={{ color: '#FFC080' }}>{stats.warning} Warning</span>
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#d97706' }} />
+          <span style={{ color: '#d97706' }}>{stats.warning} Warning</span>
         </span>
         <span className="flex items-center gap-1">
-          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#00A896' }} />
-          <span style={{ color: '#80E0D0' }}>{stats.passed} Pass</span>
+          <span className="w-2 h-2 rounded-full inline-block" style={{ background: '#059669' }} />
+          <span style={{ color: '#059669' }}>{stats.passed} Pass</span>
         </span>
 
         {reviewStatus === 'stopped' && (
           <span className="ml-2 px-2 py-0.5 rounded-full text-[10px] font-semibold"
-                style={{ background: '#FFA50022', color: '#FFA500', border: '1px solid #FFA50055' }}>
+                style={{ background: '#fef3c7', color: '#d97706', border: '1px solid #fde68a' }}>
             PAUSED
           </span>
         )}

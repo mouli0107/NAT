@@ -71,6 +71,14 @@ export interface ReviewSummary {
   files_passing: number;
   files_failing: number;
   compliance_pct: number;
+  /** Severity-weighted rule compliance (0-100) — headline quality score. */
+  quality_score?: number;
+  /** Letter grade (A/B/C/D/F) derived from quality_score. */
+  grade?: string;
+  /** Violations per 1,000 lines of reviewed code. */
+  defect_density?: number;
+  /** Lines of code reviewed. */
+  lines_reviewed?: number;
 }
 
 export interface FixPreview {
@@ -145,7 +153,7 @@ export type CodeLensEvent =
   | ({ event: 'fix_preview' } & FixPreview)
   | { event: 'fix_applied'; violation_id: string; file_id: string; rule_id: string; commit_message: string; branch: string }
   | { event: 'fix_verified'; violation_id: string; rule_id: string; verified: boolean; status: string; message: string }
-  | { event: 'review_complete'; session_id: string; run_status: RunStatus; coverage: CoverageInfo; summary: ReviewSummary; report_ready: boolean; report_download_url: string }
+  | { event: 'review_complete'; session_id: string; run_status: RunStatus; coverage: CoverageInfo; summary: ReviewSummary & { quality_score?: number; grade?: string; defect_density?: number; lines_reviewed?: number }; report_ready: boolean; report_download_url: string }
   | { event: 'review_stopped'; session_id: string; files_reviewed: number; files_remaining: number }
   | { event: 'review_resumed'; session_id: string; resuming_from_file: string }
   | { event: 'review_status'; message: string }

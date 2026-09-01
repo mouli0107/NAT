@@ -28,9 +28,9 @@ interface CommonIssuesProps {
 }
 
 const SEVERITY_COLORS = {
-  Critical: { text: '#FF8080', bg: '#FF444420', border: '#FF444440', dot: '#FF4444' },
-  Warning:  { text: '#FFC080', bg: '#FFA50020', border: '#FFA50040', dot: '#FFA500' },
-  Info:     { text: '#80D4FF', bg: '#00BFFF15', border: '#00BFFF30', dot: '#00BFFF' },
+  Critical: { text: '#dc2626', bg: '#dc262620', border: '#dc262640', dot: '#dc2626' },
+  Warning:  { text: '#d97706', bg: '#d9770620', border: '#d9770640', dot: '#d97706' },
+  Info:     { text: '#80D4FF', bg: '#2563eb15', border: '#2563eb30', dot: '#2563eb' },
 };
 
 type SeverityFilter = 'All' | 'Critical' | 'Warning';
@@ -71,11 +71,11 @@ export function CommonIssues({
   if (entries.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center h-full py-16 text-center">
-        <CheckCircle className="w-8 h-8 mb-3" style={{ color: '#00A896' }} />
-        <div className="text-sm font-semibold" style={{ color: '#A0C0D8' }}>
+        <CheckCircle className="w-8 h-8 mb-3" style={{ color: '#059669' }} />
+        <div className="text-sm font-semibold" style={{ color: '#374151' }}>
           {totalFilesReviewed === 0 ? 'Review in progress…' : 'No violations found'}
         </div>
-        <div className="text-xs mt-1" style={{ color: '#4A6A8A' }}>
+        <div className="text-xs mt-1" style={{ color: '#9ca3af' }}>
           {totalFilesReviewed > 0
             ? 'All files pass all standards'
             : 'Common issues will appear here as files are reviewed'}
@@ -89,25 +89,25 @@ export function CommonIssues({
       {/* Summary row */}
       <div
         className="flex items-center gap-4 px-3 py-2 text-xs flex-shrink-0 border-b"
-        style={{ background: '#0D1F3C', borderColor: '#1E3A5F' }}
+        style={{ background: '#ffffff', borderColor: '#e5e7eb' }}
       >
-        <span style={{ color: '#4A6A8A' }}>
-          <span className="font-semibold" style={{ color: '#FF8080' }}>{totalViolations.toLocaleString()}</span> violations
+        <span style={{ color: '#9ca3af' }}>
+          <span className="font-semibold" style={{ color: '#dc2626' }}>{totalViolations.toLocaleString()}</span> violations
         </span>
         {totalFixed > 0 && (
-          <span style={{ color: '#4A6A8A' }}>
-            <span className="font-semibold" style={{ color: '#00A896' }}>{totalFixed.toLocaleString()}</span> fixed
+          <span style={{ color: '#9ca3af' }}>
+            <span className="font-semibold" style={{ color: '#059669' }}>{totalFixed.toLocaleString()}</span> fixed
           </span>
         )}
-        <span style={{ color: '#4A6A8A' }}>
-          <span className="font-semibold" style={{ color: '#A0C0D8' }}>{entries.length}</span> standards affected
+        <span style={{ color: '#9ca3af' }}>
+          <span className="font-semibold" style={{ color: '#374151' }}>{entries.length}</span> standards affected
         </span>
       </div>
 
       {/* Filter + sort controls */}
       <div
         className="flex items-center justify-between px-3 py-1.5 flex-shrink-0 border-b"
-        style={{ borderColor: '#1E3A5F', background: '#0A1628' }}
+        style={{ borderColor: '#e5e7eb', background: '#f9fafb' }}
       >
         <div className="flex gap-1">
           {(['All', 'Critical', 'Warning'] as const).map(f => (
@@ -117,13 +117,13 @@ export function CommonIssues({
               className="px-2 py-0.5 rounded text-[10px] font-semibold transition-colors"
               style={{
                 background: severityFilter === f
-                  ? (f === 'Critical' ? '#FF444430' : f === 'Warning' ? '#FFA50030' : '#00BFFF20')
+                  ? (f === 'Critical' ? '#dc262630' : f === 'Warning' ? '#d9770630' : '#2563eb20')
                   : 'transparent',
                 color: severityFilter === f
-                  ? (f === 'Critical' ? '#FF8080' : f === 'Warning' ? '#FFC080' : '#00BFFF')
-                  : '#4A6A8A',
+                  ? (f === 'Critical' ? '#dc2626' : f === 'Warning' ? '#d97706' : '#2563eb')
+                  : '#9ca3af',
                 border: `1px solid ${severityFilter === f
-                  ? (f === 'Critical' ? '#FF444450' : f === 'Warning' ? '#FFA50050' : '#00BFFF40')
+                  ? (f === 'Critical' ? '#dc262650' : f === 'Warning' ? '#d9770650' : '#2563eb40')
                   : 'transparent'}`,
               }}
             >
@@ -138,8 +138,8 @@ export function CommonIssues({
               onClick={() => setSortMode(s)}
               className="px-2 py-0.5 rounded text-[10px] transition-colors"
               style={{
-                color: sortMode === s ? '#00BFFF' : '#4A6A8A',
-                background: sortMode === s ? '#00BFFF15' : 'transparent',
+                color: sortMode === s ? '#2563eb' : '#9ca3af',
+                background: sortMode === s ? '#2563eb15' : 'transparent',
               }}
             >
               by {s}
@@ -164,19 +164,19 @@ export function CommonIssues({
             <div
               key={entry.ruleId}
               className="border-b"
-              style={{ borderColor: '#1E3A5F' }}
+              style={{ borderColor: '#e5e7eb' }}
             >
               {/* Main row */}
               <div
                 className="px-3 py-2"
-                style={{ background: '#0A1628' }}
+                style={{ background: '#f9fafb' }}
               >
                 <div className="flex items-start gap-2">
                   {/* Expand toggle */}
                   <button
                     onClick={() => toggleExpand(entry.ruleId)}
                     className="mt-0.5 flex-shrink-0"
-                    style={{ color: '#4A6A8A' }}
+                    style={{ color: '#9ca3af' }}
                   >
                     {isExpanded
                       ? <ChevronDown className="w-3 h-3" />
@@ -196,7 +196,7 @@ export function CommonIssues({
                         {entry.ruleName}
                       </span>
                       {allFixed && (
-                        <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: '#00A896' }}>✓ Fixed</span>
+                        <span className="text-[10px] font-semibold flex-shrink-0" style={{ color: '#059669' }}>✓ Fixed</span>
                       )}
                     </div>
 
@@ -204,19 +204,19 @@ export function CommonIssues({
                     <div className="flex items-center gap-2 mt-1.5">
                       <div
                         className="flex-1 h-1 rounded-full overflow-hidden"
-                        style={{ background: '#1E3A5F' }}
+                        style={{ background: '#e5e7eb' }}
                       >
                         <div
                           className="h-full rounded-full"
-                          style={{ width: `${bar}%`, background: allFixed ? '#00A896' : colors.dot }}
+                          style={{ width: `${bar}%`, background: allFixed ? '#059669' : colors.dot }}
                         />
                       </div>
-                      <span className="text-[10px] flex-shrink-0" style={{ color: '#7A9CC0' }}>
+                      <span className="text-[10px] flex-shrink-0" style={{ color: '#6b7280' }}>
                         <span className="font-semibold" style={{ color: colors.text }}>
                           {entry.fileCount.toLocaleString()}
                         </span>{' '}files ({pct}%)
                       </span>
-                      <span className="text-[10px] flex-shrink-0" style={{ color: '#4A6A8A' }}>
+                      <span className="text-[10px] flex-shrink-0" style={{ color: '#9ca3af' }}>
                         {entry.violationCount.toLocaleString()} violations
                       </span>
                     </div>
@@ -228,9 +228,9 @@ export function CommonIssues({
                           onClick={() => onBulkFix(entry.ruleId)}
                           className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded transition-colors"
                           style={{
-                            background: '#00BFFF15',
-                            color: '#00BFFF',
-                            border: '1px solid #00BFFF30',
+                            background: '#2563eb15',
+                            color: '#2563eb',
+                            border: '1px solid #2563eb30',
                           }}
                         >
                           <Zap className="w-2.5 h-2.5" />
@@ -243,21 +243,21 @@ export function CommonIssues({
                     {progress && progress.status === 'running' && (
                       <div className="mt-1.5">
                         <div className="flex items-center gap-2">
-                          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: '#1E3A5F' }}>
+                          <div className="flex-1 h-1 rounded-full overflow-hidden" style={{ background: '#e5e7eb' }}>
                             <div
                               className="h-full rounded-full transition-all duration-300"
                               style={{
                                 width: `${progress.total > 0 ? Math.round(((progress.fixed + progress.failed) / progress.total) * 100) : 0}%`,
-                                background: '#00BFFF',
+                                background: '#2563eb',
                               }}
                             />
                           </div>
-                          <span className="text-[10px] flex-shrink-0" style={{ color: '#7A9CC0' }}>
+                          <span className="text-[10px] flex-shrink-0" style={{ color: '#6b7280' }}>
                             {progress.fixed + progress.failed}/{progress.total}
                           </span>
                         </div>
                         {progress.currentFile && (
-                          <div className="text-[10px] mt-0.5 truncate" style={{ color: '#4A6A8A' }}>
+                          <div className="text-[10px] mt-0.5 truncate" style={{ color: '#9ca3af' }}>
                             {progress.currentFile.split('/').pop()}
                           </div>
                         )}
@@ -268,13 +268,13 @@ export function CommonIssues({
                     {progress && progress.status === 'done' && (
                       <div className="mt-1.5 flex items-center gap-2 text-[10px]">
                         {progress.fixed > 0 && (
-                          <span style={{ color: '#00A896' }}>
+                          <span style={{ color: '#059669' }}>
                             <CheckCircle className="inline w-3 h-3 mr-0.5" />
                             {progress.fixed} fixed
                           </span>
                         )}
                         {progress.failed > 0 && (
-                          <span style={{ color: '#FF8080' }}>
+                          <span style={{ color: '#dc2626' }}>
                             {progress.failed} failed
                           </span>
                         )}
@@ -285,8 +285,8 @@ export function CommonIssues({
                   {/* Severity icon */}
                   <div className="flex-shrink-0 mt-0.5">
                     {entry.severity === 'Critical'
-                      ? <AlertCircle className="w-3.5 h-3.5" style={{ color: '#FF4444' }} />
-                      : <AlertTriangle className="w-3.5 h-3.5" style={{ color: '#FFA500' }} />}
+                      ? <AlertCircle className="w-3.5 h-3.5" style={{ color: '#dc2626' }} />
+                      : <AlertTriangle className="w-3.5 h-3.5" style={{ color: '#d97706' }} />}
                   </div>
                 </div>
               </div>
@@ -295,9 +295,9 @@ export function CommonIssues({
               {isExpanded && (
                 <div
                   className="px-8 pb-2 text-[10px] leading-relaxed"
-                  style={{ color: '#7A9CC0', background: '#0D1F3C', borderTop: '1px solid #1E3A5F20' }}
+                  style={{ color: '#6b7280', background: '#ffffff', borderTop: '1px solid #e5e7eb20' }}
                 >
-                  <div className="font-semibold mb-0.5" style={{ color: '#A0C0D8' }}>What to fix:</div>
+                  <div className="font-semibold mb-0.5" style={{ color: '#374151' }}>What to fix:</div>
                   <div>{getRuleDescription(entry.ruleId)}</div>
                 </div>
               )}

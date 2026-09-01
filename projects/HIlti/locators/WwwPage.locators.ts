@@ -20,4 +20,5 @@ export const WwwPageLocators = {
   companyButton: (page: Page): Locator => page.locator("xpath=//button[normalize-space(text())='Company']"),
   shopNowPromoLink: (page: Page): Locator => page.locator("xpath=//a[normalize-space(text())='Shop now']"),
   registerTodayLink: (page: Page): Locator => page.locator("xpath=//a[normalize-space(text())='Register today']"),
+  pressReleasesLink: (page: Page) => page.locator('xpath=//a[normalize-space(text())=\'Press Releases\']').filter({ visible: true }).first(),
 };

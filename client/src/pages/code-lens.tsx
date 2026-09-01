@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useMemo } from 'react';
+import { useState, useCallback, useRef, useMemo, type ReactNode } from 'react';
 import { DashboardLanding }   from '@/components/code-lens/DashboardLanding';
 import { CodeLensErrorBoundary } from '@/components/code-lens/CodeLensErrorBoundary';
 import { FileTreePanel }      from '@/components/code-lens/FileTreePanel';
@@ -12,6 +12,11 @@ import { CommonIssues }       from '@/components/code-lens/CommonIssues';
 import type { BulkFixProgress } from '@/components/code-lens/CommonIssues';
 import { RunHistory }         from '@/components/code-lens/RunHistory';
 import { RunComparison }      from '@/components/code-lens/RunComparison';
+import { PrCommentsPanel }    from '@/components/code-lens/PrCommentsPanel';
+import type { PrPostState }   from '@/components/code-lens/PrCommentsPanel';
+import { CodeLensTopNav }     from '@/components/code-lens/CodeLensTopNav';
+import { Sidebar }            from '@/components/dashboard/sidebar';
+import '@/components/code-lens/code-lens.css';
 import { useCodeLensStream }  from '@/hooks/useCodeLensStream';
 import { ArchitectureView }    from '@/components/code-lens/ArchitectureView';
 import {
@@ -28,6 +33,10 @@ import {
   resumeFixing,
   retryCoverage,
   type StartReviewOptions,
+  startPrReview,
+  postPrComment,
+  previewPrComment,
+  type PrInfo,
 } from '@/lib/codeLensApi';
 import { LoopPanel, type LoopUiState, type ScreenedFix } from '@/components/code-lens/LoopPanel';
 import { AutomationPanel } from '@/components/code-lens/AutomationPanel';
@@ -50,6 +59,8 @@ type PageMode = 'SETUP' | 'REVIEW' | 'REPORT' | 'HISTORY' | 'COMPARE' | 'AUTOMAT
 function CodeLensPageInner() {
   // ── Mode ─────────────────────────────────────────────────────────────────
   const [mode, setMode] = useState<PageMode>('SETUP');
+  // Global app sidebar (left menu) collapse state.
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // ── Session ───────────────────────────────────────────────────────────────
   const [sessionId,      setSessionId]      = useState<string | null>(null);
@@ -85,7 +96,17 @@ function CodeLensPageInner() {
   // ── Standards checklist ────────────────────────────────────────────────────
   const [fileStandardResults, setFileStandardResults] =
     useState<Record<string, StandardCheckResult[]>>({});
-  const [rightTab, setRightTab] = useState<'checklist' | 'violations' | 'common'>('checklist');
+  const [rightTab, setRightTab] = useState<'checklist' | 'violations' | 'common' | 'pr'>('checklist');
+
+  // ── Pull-request review mode ───────────────────────────────────────────────
+  const [prInfo,          setPrInfo]          = useState<PrInfo | null>(null);
+  // PAT is held in memory only (never persisted) so we can re-send it when the
+  // user posts selected comments back to the PR.
+  const [prPat,           setPrPat]           = useState<string>('');
+  const [selectedComments, setSelectedComments] = useState<Set<string>>(new Set());
+  const [prPostState,     setPrPostState]     = useState<PrPostState>('idle');
+  const [prPostMessage,   setPrPostMessage]   = useState<string>('');
+  const [prCopyMessage,   setPrCopyMessage]   = useState<string>('');
 
   // ── Bulk fix progress (per standard_id) ───────────────────────────────────────
   const [bulkProgress, setBulkProgress] = useState<Record<string, BulkFixProgress>>({});
@@ -467,6 +488,62 @@ function CodeLensPageInner() {
     }
   };
 
+  const handleStartPr = async (prUrl: string, pat: string, ignorePatterns: string[]) => {
+    setIsStartLoading(true);
+    setStartError(null);
+    try {
+      const { sessionId: sid, pr } = await startPrReview(prUrl, pat, ignorePatterns);
+      sessionIdRef.current = sid;
+      setSessionId(sid);
+      setPrInfo(pr);
+      setPrPat(pat);
+      setSelectedComments(new Set());
+      setPrPostState('idle');
+      setPrPostMessage('');
+      setRightTab('pr');
+      setReviewStatus('running');
+      setMode('REVIEW');
+    } catch (e) {
+      setStartError(e instanceof Error ? e.message : 'Failed to start PR review');
+    } finally {
+      setIsStartLoading(false);
+    }
+  };
+
+  const togglePrComment = useCallback((violationId: string) => {
+    setSelectedComments(prev => {
+      const next = new Set(prev);
+      if (next.has(violationId)) next.delete(violationId); else next.add(violationId);
+      return next;
+    });
+  }, []);
+
+  const handleCopyAllPrComments = async () => {
+    if (!sessionId) return;
+    try {
+      const { markdown, count } = await previewPrComment(sessionId, []);
+      await navigator.clipboard.writeText(markdown);
+      setPrCopyMessage(`Copied ${count} comment${count === 1 ? '' : 's'} to clipboard.`);
+    } catch (e) {
+      setPrCopyMessage(e instanceof Error ? `Copy failed: ${e.message}` : 'Copy failed');
+    }
+    setTimeout(() => setPrCopyMessage(''), 3000);
+  };
+
+  const handlePostPrComment = async () => {
+    if (!sessionId || selectedComments.size === 0) return;
+    setPrPostState('posting');
+    setPrPostMessage('');
+    try {
+      const result = await postPrComment(sessionId, prPat, Array.from(selectedComments));
+      setPrPostState('posted');
+      setPrPostMessage(`Posted ${result.posted} comment${result.posted === 1 ? '' : 's'} to the PR.`);
+    } catch (e) {
+      setPrPostState('error');
+      setPrPostMessage(e instanceof Error ? e.message : 'Failed to post comment to the PR');
+    }
+  };
+
   const handleResumeFixing = async (repoUrl: string, branch: string, pat: string) => {
     setIsStartLoading(true);
     setStartError(null);
@@ -572,6 +649,12 @@ function CodeLensPageInner() {
     setCoverage(null);
     setRetrying(false);
     setFixVerify({});
+    setPrInfo(null);
+    setPrPat('');
+    setSelectedComments(new Set());
+    setPrPostState('idle');
+    setPrPostMessage('');
+    setPrCopyMessage('');
   };
 
   // Re-run the (file, standard) checks that didn't complete (hard fail-closed retry)
@@ -622,8 +705,36 @@ function CodeLensPageInner() {
     ? [...violations.filter(v => v.file_id === activeFileId)].reverse()
     : [...violations].reverse();
 
+  // Code quality score — the industry-standard severity-weighted score once the
+  // review completes, otherwise a live provisional from passed vs (passed +
+  // critical + warning) as the review runs.
+  const qualityScore = useMemo<number | null>(() => {
+    if (summary) return summary.quality_score ?? summary.compliance_pct;
+    const denom = stats.passed + stats.critical + stats.warning;
+    return denom > 0 ? Math.round((stats.passed / denom) * 100) : null;
+  }, [summary, stats]);
+
   // ─── Render ───────────────────────────────────────────────────────────────
 
+  // App shell: persistent global left sidebar + full-bleed Code Lens content.
+  // (A plain function returning JSX — NOT a component — so children never remount.)
+  const withShell = (content: ReactNode) => (
+    <div className="flex overflow-hidden" style={{ height: '100vh' }}>
+      <Sidebar isCollapsed={sidebarCollapsed} onToggleCollapse={() => setSidebarCollapsed(c => !c)} />
+      <div className="flex-1 flex flex-col cl-root cl-bg overflow-hidden min-w-0">
+        <CodeLensTopNav
+          mode={mode}
+          onNewReview={handleReset}
+          onOpenHistory={() => setMode('HISTORY')}
+          score={qualityScore}
+        />
+        {content}
+      </div>
+    </div>
+  );
+
+  // AUTOMATION comes from the scheduler work on main; the shell wrapper comes
+  // from the Code Lens refactor. Both are kept.
   if (mode === 'SETUP' || mode === 'HISTORY' || mode === 'COMPARE' || mode === 'AUTOMATION') {
     const handleCompareSelect = (run: RunSummary & { _baselineRunId?: string }) => {
       if (run._baselineRunId) {
@@ -633,85 +744,65 @@ function CodeLensPageInner() {
       }
     };
 
-    return (
-      <div className="min-h-screen flex flex-col" style={{ background: '#0A1628' }}>
-        {/* Top tab strip */}
-        <div
-          className="flex gap-1 px-6 pt-4 pb-0 flex-shrink-0"
-          style={{ borderBottom: '1px solid #1E3A5F' }}
-        >
-          {(['SETUP', 'HISTORY', 'AUTOMATION'] as const).map(tab => {
-            const active = mode === tab || (tab === 'HISTORY' && mode === 'COMPARE');
-            return (
-              <button
-                key={tab}
-                onClick={() => setMode(tab)}
-                className="px-5 py-2 text-xs font-semibold uppercase tracking-wider"
-                style={{
-                  color: active ? '#00BFFF' : '#7A9CC0',
-                  borderBottom: active ? '2px solid #00BFFF' : '2px solid transparent',
-                  background: 'transparent',
-                }}
-              >
-                {tab === 'SETUP' ? 'New Review' : tab === 'HISTORY' ? 'Run History' : 'Automation'}
-              </button>
-            );
-          })}
-        </div>
-
+    if (mode === 'SETUP') {
+      return withShell(
         <div className="flex-1 overflow-auto">
-          {mode === 'SETUP' && (
-            <DashboardLanding
-              onStart={handleStart}
-              onResumeFixing={handleResumeFixing}
-              isLoading={isStartLoading}
-              error={startError}
-              onOpenHistory={() => setMode('HISTORY')}
-            />
-          )}
-          {mode === 'HISTORY' && (
-            <div className="max-w-5xl mx-auto py-4">
-              <RunHistory onSelectForCompare={handleCompareSelect} />
-            </div>
-          )}
-          {mode === 'COMPARE' && compareRunId1 && compareRunId2 && (
-            <div className="max-w-5xl mx-auto py-4">
-              <RunComparison
-                runId1={compareRunId1}
-                runId2={compareRunId2}
-                onBack={() => setMode('HISTORY')}
-              />
-            </div>
-          )}
-          {mode === 'AUTOMATION' && <AutomationPanel />}
-        </div>
-      </div>
+          <DashboardLanding
+            onStart={handleStart}
+            onResumeFixing={handleResumeFixing}
+            onStartPr={handleStartPr}
+            isLoading={isStartLoading}
+            error={startError}
+            onOpenHistory={() => setMode('HISTORY')}
+          />
+        </div>,
+      );
+    }
+    if (mode === 'HISTORY') {
+      // Full-bleed two-pane master/detail (list left, selected run right).
+      return withShell(<RunHistory onSelectForCompare={handleCompareSelect} />);
+    }
+    if (mode === 'AUTOMATION') {
+      // Scheduler panel from main, rendered inside the new app shell.
+      return withShell(<AutomationPanel />);
+    }
+    // COMPARE
+    return withShell(
+      <div className="flex-1 overflow-auto p-4">
+        {compareRunId1 && compareRunId2 && (
+          <RunComparison
+            runId1={compareRunId1}
+            runId2={compareRunId2}
+            onBack={() => setMode('HISTORY')}
+          />
+        )}
+      </div>,
     );
   }
 
   if (mode === 'REPORT' && summary) {
-    return (
-      <ReportPanel
-        summary={summary}
-        reportUrl={reportUrl || getReportUrl(sessionId ?? '')}
-        sessionId={sessionId ?? ''}
-        onReset={handleReset}
-        runStatus={runStatus}
-        coverage={coverage}
-        onRetryCoverage={handleRetryCoverage}
-        retrying={retrying}
-        onBackToReview={() => setMode('REVIEW')}
-        architecture={architecture}
-      />
+    return withShell(
+      <div className="flex-1 overflow-auto">
+        <ReportPanel
+          summary={summary}
+          reportUrl={reportUrl || getReportUrl(sessionId ?? '')}
+          sessionId={sessionId ?? ''}
+          onReset={handleReset}
+          runStatus={runStatus}
+          coverage={coverage}
+          onRetryCoverage={handleRetryCoverage}
+          retrying={retrying}
+          onBackToReview={() => setMode('REVIEW')}
+          architecture={architecture}
+          score={qualityScore}
+        />
+      </div>,
     );
   }
 
   // REVIEW mode — three-panel grid
-  return (
-    <div
-      className="flex flex-col"
-      style={{ height: '100vh', background: '#0A1628', overflow: 'hidden' }}
-    >
+  return withShell(
+    <div className="flex-1 min-h-0 flex flex-col overflow-hidden">
       {/* Progress bar — full width top strip */}
       <ReviewProgress
         currentFile={currentFileName}
@@ -726,26 +817,48 @@ function CodeLensPageInner() {
         onNewReview={handleReset}
       />
 
-      {/* Loop / Conform live status */}
+      {/* Loop / Conform live status (from main). Restyled to the light theme
+          this page moved to, so it matches the panels around it. */}
       {loopState && (
-        <div className="flex-shrink-0 border-b px-4 py-3" style={{ borderColor: '#1E3A5F', background: '#0D1F3C' }}>
+        <div className="flex-shrink-0 border-b px-4 py-3" style={{ borderColor: '#e5e7eb', background: '#ffffff' }}>
           <LoopPanel loop={loopState} conformProgress={conformProgress} screenedFixes={screenedFixes} />
         </div>
       )}
 
-      {/* Architecture graph — built up front, shown before/while files are reviewed */}
-      {architecture && architecture.nodes.length > 0 && (
-        <div className="flex-shrink-0 border-b" style={{ borderColor: '#1E3A5F', background: '#0D1F3C' }}>
+      {/* PR review: one-line summary banner (replaces the architecture graph, which
+          is not useful when reviewing a diff). */}
+      {prInfo && (
+        <div className="flex items-center gap-2 px-4 py-2 text-xs flex-shrink-0"
+             style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb', color: '#374151' }}>
+          <span style={{ color: '#2563eb' }}>⌥</span>
+          <span className="truncate">
+            <strong className="text-gray-900">PR #{prInfo.id}</strong>
+            {prInfo.title ? ` — ${prInfo.title}` : ''}
+            {' · '}{prInfo.changedFiles} changed file(s)
+            {' · reviewed '}{files.filter(f => f.status === 'PASS' || f.status === 'FAIL').length}/{prInfo.changedFiles}
+            {' · '}<span style={{ color: '#dc2626' }}>{stats.critical} Critical</span>
+            {' · '}<span style={{ color: '#d97706' }}>{stats.warning} Warning</span>
+            {' · '}<span style={{ color: '#059669' }}>{violations.length} comment(s)</span>
+          </span>
+          <a href={prInfo.webUrl} target="_blank" rel="noreferrer" className="ml-auto flex-shrink-0 font-semibold"
+             style={{ color: '#2563eb' }}>Open PR ↗</a>
+        </div>
+      )}
+
+      {/* Architecture graph — built up front, shown before/while files are reviewed.
+          Hidden in PR mode (a diff review does not need the full-repo graph). */}
+      {!prInfo && architecture && architecture.nodes.length > 0 && (
+        <div className="flex-shrink-0 border-b" style={{ borderColor: '#e5e7eb', background: '#ffffff' }}>
           <button
             onClick={() => setShowArch(s => !s)}
             className="w-full flex items-center gap-2 px-4 py-2 text-[11px] font-semibold"
-            style={{ color: '#00BFFF' }}
+            style={{ color: '#2563eb' }}
           >
             <span>{showArch ? '▾' : '▸'}</span>
-            <span style={{ color: '#7A9CC0' }}>Architecture —</span>
+            <span style={{ color: '#6b7280' }}>Architecture —</span>
             {architecture.stats.controllers} controllers · {architecture.stats.services} services · {architecture.stats.repositories} repositories · {architecture.stats.edges} deps
             {architecture.stats.illegalEdges > 0 && (
-              <span style={{ color: '#FF8080' }}>· {architecture.stats.illegalEdges} illegal</span>
+              <span style={{ color: '#dc2626' }}>· {architecture.stats.illegalEdges} illegal</span>
             )}
           </button>
           {showArch && (
@@ -760,14 +873,14 @@ function CodeLensPageInner() {
       {showDiscoveryBanner && discoverySummary && (
         <div
           className="flex items-center justify-between px-4 py-2 text-xs flex-shrink-0"
-          style={{ background: '#0D1F3C', borderBottom: '1px solid #1E3A5F' }}
+          style={{ background: '#ffffff', borderBottom: '1px solid #e5e7eb' }}
         >
-          <div className="flex items-center gap-2" style={{ color: '#A0C0D8' }}>
-            <span style={{ color: '#00BFFF' }}>ℹ</span>
+          <div className="flex items-center gap-2" style={{ color: '#374151' }}>
+            <span style={{ color: '#2563eb' }}>ℹ</span>
             <span>
-              <strong className="text-white">{discoverySummary.total_found.toLocaleString()}</strong> files found
+              <strong className="text-gray-900">{discoverySummary.total_found.toLocaleString()}</strong> files found
               {' — '}scanning{' '}
-              <strong className="text-white">{discoverySummary.scanning.toLocaleString()}</strong> core files
+              <strong className="text-gray-900">{discoverySummary.scanning.toLocaleString()}</strong> core files
               {discoverySummary.ignored > 0 && (
                 <>
                   {' · '}Excluded:{' '}
@@ -798,7 +911,7 @@ function CodeLensPageInner() {
           <button
             onClick={() => setShowDiscoveryBanner(false)}
             className="ml-4 flex-shrink-0 text-xs"
-            style={{ color: '#4A6A8A' }}
+            style={{ color: '#9ca3af' }}
           >
             Dismiss ✕
           </button>
@@ -809,19 +922,19 @@ function CodeLensPageInner() {
       {fixBranch && (
         <div
           className="flex items-center justify-between px-4 py-2 text-xs flex-shrink-0"
-          style={{ background: '#0D2818', borderBottom: '1px solid #1E5F3A' }}
+          style={{ background: '#ecfdf5', borderBottom: '1px solid #a7f3d0' }}
         >
-          <div className="flex items-center gap-2" style={{ color: '#A0D8C0' }}>
-            <span style={{ color: '#00C896' }}>⎇</span>
+          <div className="flex items-center gap-2" style={{ color: '#059669' }}>
+            <span style={{ color: '#059669' }}>⎇</span>
             <span>
               Fixes committed to branch{' '}
-              <strong className="font-mono text-white">{fixBranch}</strong>
+              <strong className="font-mono text-gray-900">{fixBranch}</strong>
               {' '}— the base branch is never modified.
               {pushState === 'pushed' && (
-                <span className="ml-2" style={{ color: '#00C896' }}>✓ {pushMessage}</span>
+                <span className="ml-2" style={{ color: '#059669' }}>✓ {pushMessage}</span>
               )}
               {pushState === 'error' && (
-                <span className="ml-2" style={{ color: '#FF8080' }}>✕ {pushMessage}</span>
+                <span className="ml-2" style={{ color: '#dc2626' }}>✕ {pushMessage}</span>
               )}
             </span>
           </div>
@@ -830,9 +943,9 @@ function CodeLensPageInner() {
             disabled={pushState === 'pushing'}
             className="ml-4 flex-shrink-0 text-xs font-semibold px-3 py-1 rounded transition-colors"
             style={{
-              background: pushState === 'pushing' ? '#1E3A5F' : '#00A87620',
-              color: pushState === 'pushing' ? '#7A9CC0' : '#00C896',
-              border: '1px solid #00A87650',
+              background: pushState === 'pushing' ? '#e5e7eb' : '#ecfdf5',
+              color: pushState === 'pushing' ? '#6b7280' : '#059669',
+              border: '1px solid #a7f3d0',
               cursor: pushState === 'pushing' ? 'default' : 'pointer',
             }}
           >
@@ -851,7 +964,7 @@ function CodeLensPageInner() {
         style={{ gridTemplateColumns: '20% 50% 30%' }}
       >
         {/* Left: File tree */}
-        <div className="border-r overflow-hidden" style={{ borderColor: '#1E3A5F' }}>
+        <div className="border-r overflow-hidden" style={{ borderColor: '#e5e7eb' }}>
           <FileTreePanel
             files={files}
             activeFileId={activeFileId}
@@ -872,25 +985,42 @@ function CodeLensPageInner() {
         {/* Right: Tabbed — Standards Checklist / Violations */}
         <div
           className="border-l flex flex-col overflow-hidden"
-          style={{ borderColor: '#1E3A5F' }}
+          style={{ borderColor: '#e5e7eb' }}
         >
           {/* Tab bar */}
           <div
             className="flex border-b flex-shrink-0"
-            style={{ borderColor: '#1E3A5F', background: '#0D1F3C' }}
+            style={{ borderColor: '#e5e7eb', background: '#ffffff' }}
           >
-            {(['checklist', 'violations', 'common'] as const).map(tab => (
+            {(prInfo
+              ? (['pr', 'checklist', 'violations', 'common'] as const)
+              : (['checklist', 'violations', 'common'] as const)
+            ).map(tab => (
               <button
                 key={tab}
                 onClick={() => setRightTab(tab)}
                 className="flex-1 py-2 text-[10px] font-semibold uppercase tracking-wider transition-colors"
                 style={{
-                  color: rightTab === tab ? '#00BFFF' : '#7A9CC0',
-                  borderBottom: rightTab === tab ? '2px solid #00BFFF' : '2px solid transparent',
+                  color: rightTab === tab ? '#2563eb' : '#6b7280',
+                  borderBottom: rightTab === tab ? '2px solid #2563eb' : '2px solid transparent',
                   background: 'transparent',
                 }}
               >
-                {tab === 'checklist' ? (
+                {tab === 'pr' ? (
+                  <>
+                    PR
+                    {violations.length > 0 && (
+                      <span
+                        className="ml-1 rounded-full px-1.5 font-mono text-[10px]"
+                        style={{ background: '#2563eb30', color: '#2563eb' }}
+                      >
+                        {selectedComments.size > 0
+                          ? `${selectedComments.size}/${violations.length}`
+                          : violations.length}
+                      </span>
+                    )}
+                  </>
+                ) : tab === 'checklist' ? (
                   <>
                     Standards
                     {activeFileId && fileStandardResults[activeFileId] && (
@@ -905,7 +1035,7 @@ function CodeLensPageInner() {
                     {rightPanelViolations.filter(v => v.status === 'OPEN').length > 0 && (
                       <span
                         className="ml-1 rounded-full px-1.5 font-mono text-[10px]"
-                        style={{ background: '#FF444433', color: '#FF4444' }}
+                        style={{ background: '#fee2e2', color: '#dc2626' }}
                       >
                         {rightPanelViolations.filter(v => v.status === 'OPEN').length}
                       </span>
@@ -917,7 +1047,7 @@ function CodeLensPageInner() {
                     {standardAgg.length > 0 && (
                       <span
                         className="ml-1 rounded-full px-1.5 font-mono text-[10px]"
-                        style={{ background: '#FFA50030', color: '#FFA500' }}
+                        style={{ background: '#fef3c7', color: '#d97706' }}
                       >
                         {standardAgg.length}
                       </span>
@@ -929,7 +1059,22 @@ function CodeLensPageInner() {
           </div>
 
           {/* Tab content */}
-          {rightTab === 'checklist' ? (
+          {rightTab === 'pr' ? (
+            <PrCommentsPanel
+              pr={prInfo}
+              violations={violations}
+              fileName={(fid) => files.find(f => f.file_id === fid)?.path ?? fid}
+              selected={selectedComments}
+              onToggle={togglePrComment}
+              onSelectAll={() => setSelectedComments(new Set(violations.map(v => v.violation_id)))}
+              onClearAll={() => setSelectedComments(new Set())}
+              onPost={handlePostPrComment}
+              postState={prPostState}
+              postMessage={prPostMessage}
+              onCopyAll={handleCopyAllPrComments}
+              copyMessage={prCopyMessage}
+            />
+          ) : rightTab === 'checklist' ? (
             <StandardsChecklist
               fileId={activeFileId}
               results={activeFileId ? (fileStandardResults[activeFileId] ?? []) : []}
@@ -942,12 +1087,12 @@ function CodeLensPageInner() {
           ) : rightTab === 'violations' ? (
             <div className="flex-1 overflow-y-auto p-3 space-y-3">
               {activeFileId && activeFile && (
-                <div className="text-[10px] pb-1 truncate" style={{ color: '#4A6A8A' }}>
+                <div className="text-[10px] pb-1 truncate" style={{ color: '#9ca3af' }}>
                   {activeFile.path.split('/').pop()}
                 </div>
               )}
               {rightPanelViolations.length === 0 ? (
-                <div className="text-xs text-center py-8" style={{ color: '#4A6A8A' }}>
+                <div className="text-xs text-center py-8" style={{ color: '#9ca3af' }}>
                   {activeFileId ? 'No violations in this file' : 'No violations found yet'}
                 </div>
               ) : (

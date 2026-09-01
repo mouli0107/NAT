@@ -18,18 +18,23 @@ interface FolderNode {
 interface SetupPanelProps {
   onStart: (repoUrl: string, branch: string, pat: string, folders: string[], ignorePatterns: string[], opts?: StartReviewOptions) => void;
   onResumeFixing: (repoUrl: string, branch: string, pat: string) => void;
+  /** Start a review of an Azure DevOps pull request (scoped to its changed files). */
+  onStartPr: (prUrl: string, pat: string, ignorePatterns: string[]) => void;
   isLoading: boolean;
   error: string | null;
   /** When true, step 1 renders inline (no full-screen centering) for the dashboard. */
   embedded?: boolean;
 }
 
-export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded = false }: SetupPanelProps) {
+export function SetupPanel({ onStart, onResumeFixing, onStartPr, isLoading, error, embedded = false }: SetupPanelProps) {
   // ── Step 1 state ──────────────────────────────────────────────────────────
   const [step,    setStep]    = useState<1 | 2>(1);
+  /** 'repo' = review a whole repo/folders; 'pr' = review one Azure DevOps PR. */
+  const [reviewMode, setReviewMode] = useState<'repo' | 'pr'>('repo');
   const [repoUrl, setRepoUrl] = useState('');
   const [branch,  setBranch]  = useState('staging');
   const [pat,     setPat]     = useState('');
+  const [prUrl,   setPrUrl]   = useState('');
   const [connectLoading, setConnectLoading] = useState(false);
   const [connectError,   setConnectError]   = useState<string | null>(null);
 
@@ -149,11 +154,11 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
   // ── Shared field style ────────────────────────────────────────────────────
   const inputStyle = {
-    background: '#0A1628',
-    border: '1px solid #1E3A5F',
+    background: '#f9fafb',
+    border: '1px solid #e5e7eb',
   };
-  const focusOn  = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = '#00BFFF');
-  const focusOff = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = '#1E3A5F');
+  const focusOn  = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = '#2563eb');
+  const focusOff = (e: React.FocusEvent<HTMLInputElement>) => (e.currentTarget.style.borderColor = '#e5e7eb');
 
   // ── Scan Exclusions section (shared between step 1 and 2) ─────────────────
   const ScanExclusionsSection = (
@@ -163,15 +168,15 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
         type="button"
         onClick={() => setIgnoreExpanded(v => !v)}
         className="w-full flex items-center justify-between text-sm font-medium"
-        style={{ color: '#7A9CC0' }}
+        style={{ color: '#6b7280' }}
       >
         <span className="flex items-center gap-2">
-          <Filter className="w-4 h-4" style={{ color: '#00BFFF' }} />
+          <Filter className="w-4 h-4" style={{ color: '#2563eb' }} />
           Scan Exclusions
           {userIgnorePatterns.length > 0 && (
             <span
               className="text-[10px] px-1.5 py-0.5 rounded-full font-mono"
-              style={{ background: '#00BFFF22', color: '#00BFFF', border: '1px solid #00BFFF44' }}
+              style={{ background: '#2563eb22', color: '#2563eb', border: '1px solid #2563eb44' }}
             >
               +{userIgnorePatterns.length} custom
             </span>
@@ -185,17 +190,17 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
       {ignoreExpanded && (
         <div
           className="rounded-lg p-4 space-y-4"
-          style={{ background: '#0A1628', border: '1px solid #1E3A5F' }}
+          style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}
         >
           {/* Upload .codelensignore */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-white">Upload .codelensignore file</p>
+            <p className="text-xs font-medium text-gray-900">Upload .codelensignore file</p>
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
               disabled={uploadLoading}
               className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs transition-colors"
-              style={{ background: '#1E3A5F', color: '#A0C0D8', border: '1px dashed #2A4A6F' }}
+              style={{ background: '#e5e7eb', color: '#374151', border: '1px dashed #e5e7eb' }}
             >
               {uploadLoading
                 ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -214,13 +219,13 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
               }}
             />
             {uploadStatus && (
-              <p className="text-xs" style={{ color: '#00A896' }}>{uploadStatus}</p>
+              <p className="text-xs" style={{ color: '#059669' }}>{uploadStatus}</p>
             )}
           </div>
 
           {/* Manual pattern entry */}
           <div className="space-y-2">
-            <p className="text-xs font-medium text-white">Add patterns manually</p>
+            <p className="text-xs font-medium text-gray-900">Add patterns manually</p>
             <div className="flex gap-2">
               <input
                 type="text"
@@ -228,7 +233,7 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
                 onChange={e => setPatternInput(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && handleAddPattern()}
                 placeholder="**/Archive/**"
-                className="flex-1 rounded-lg px-3 py-2 text-xs text-white outline-none"
+                className="flex-1 rounded-lg px-3 py-2 text-xs text-gray-900 outline-none"
                 style={inputStyle}
                 onFocus={focusOn}
                 onBlur={focusOff}
@@ -239,8 +244,8 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
                 disabled={!patternInput.trim()}
                 className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-semibold"
                 style={{
-                  background: patternInput.trim() ? '#00BFFF' : '#1E3A5F',
-                  color:      patternInput.trim() ? '#0A1628'  : '#4A6A8A',
+                  background: patternInput.trim() ? '#2563eb' : '#e5e7eb',
+                  color:      patternInput.trim() ? '#f9fafb'  : '#9ca3af',
                 }}
               >
                 <Plus className="w-3.5 h-3.5" />
@@ -252,20 +257,20 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           {/* Active user patterns */}
           {userIgnorePatterns.length > 0 && (
             <div className="space-y-1.5">
-              <p className="text-xs font-medium text-white">Active exclusions</p>
+              <p className="text-xs font-medium text-gray-900">Active exclusions</p>
               <div className="space-y-1 max-h-32 overflow-y-auto">
                 {userIgnorePatterns.map(p => (
                   <div
                     key={p}
                     className="flex items-center justify-between rounded px-2 py-1"
-                    style={{ background: '#0D1F3C' }}
+                    style={{ background: '#ffffff' }}
                   >
-                    <span className="text-xs font-mono truncate" style={{ color: '#A0C0D8' }}>{p}</span>
+                    <span className="text-xs font-mono truncate" style={{ color: '#374151' }}>{p}</span>
                     <button
                       type="button"
                       onClick={() => handleRemovePattern(p)}
                       className="ml-2 flex-shrink-0"
-                      style={{ color: '#FF8080' }}
+                      style={{ color: '#dc2626' }}
                     >
                       <X className="w-3 h-3" />
                     </button>
@@ -278,13 +283,13 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           {/* Default exclusions note */}
           <div
             className="rounded-lg px-3 py-2.5 text-xs space-y-0.5"
-            style={{ background: '#0D1F3C', border: '1px solid #1E3A5F' }}
+            style={{ background: '#ffffff', border: '1px solid #e5e7eb' }}
           >
-            <p className="flex items-center gap-1.5 font-medium" style={{ color: '#7A9CC0' }}>
-              <Info className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00BFFF' }} />
+            <p className="flex items-center gap-1.5 font-medium" style={{ color: '#6b7280' }}>
+              <Info className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#2563eb' }} />
               Default exclusions always active (cannot be removed):
             </p>
-            <p style={{ color: '#4A6A8A', paddingLeft: '18px' }}>
+            <p style={{ color: '#9ca3af', paddingLeft: '18px' }}>
               Test projects (*.Tests, UnitTests, Playwright) · bin / obj / .vs ·
               Auto-generated files (*.Designer.cs, *.generated.cs) ·
               .env &amp; secret files · Build output &amp; coverage folders
@@ -307,39 +312,123 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
       : 'w-full max-w-lg rounded-xl border p-8 space-y-6';
     return (
       <div className={outerClass}
-           style={embedded ? undefined : { background: '#0A1628' }}>
+           style={embedded ? undefined : { background: '#f9fafb' }}>
         <div className={cardClass}
-             style={{ background: '#0D1F3C', borderColor: '#1E3A5F' }}>
+             style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
 
           {embedded ? (
             // Dashboard hero already shows the ASTRA title — just a step label here.
             <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider"
-                 style={{ color: '#00BFFF' }}>
+                 style={{ color: '#2563eb' }}>
               <span className="w-5 h-5 rounded-full flex items-center justify-center text-[11px]"
-                    style={{ background: '#00BFFF22' }}>1</span>
+                    style={{ background: '#2563eb22' }}>1</span>
               Connect to repository
             </div>
           ) : (
             <div className="flex items-center gap-3">
-              <Shield className="w-7 h-7" style={{ color: '#00BFFF' }} />
+              <Shield className="w-7 h-7" style={{ color: '#2563eb' }} />
               <div>
-                <h1 className="text-xl font-bold text-white">ASTRA Code Lens</h1>
-                <p className="text-sm" style={{ color: '#7A9CC0' }}>
+                <h1 className="text-xl font-bold text-gray-900">ASTRA Code Lens</h1>
+                <p className="text-sm" style={{ color: '#6b7280' }}>
                   Step 1 of 2 — Connect to repository
                 </p>
               </div>
             </div>
           )}
 
+          {/* Review mode toggle: whole repo vs a single pull request */}
+          <div className="flex gap-1 p-1 rounded-lg" style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
+            {(['repo', 'pr'] as const).map(m => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setReviewMode(m)}
+                className="flex-1 py-1.5 text-xs font-semibold rounded-md transition-colors"
+                style={{
+                  background: reviewMode === m ? '#2563eb' : 'transparent',
+                  color:      reviewMode === m ? '#f9fafb'  : '#6b7280',
+                }}
+              >
+                {m === 'repo' ? 'Full Repository' : 'Pull Request'}
+              </button>
+            ))}
+          </div>
+
+          {reviewMode === 'pr' ? (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-900">Pull Request URL</label>
+                <input
+                  type="text"
+                  value={prUrl}
+                  onChange={e => setPrUrl(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && prUrl.trim() && !isLoading && onStartPr(prUrl.trim(), pat, userIgnorePatterns)}
+                  placeholder="https://dev.azure.com/org/proj/_git/repo/pullrequest/123"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none"
+                  style={inputStyle}
+                  onFocus={focusOn}
+                  onBlur={focusOff}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-gray-900">Personal Access Token (PAT)</label>
+                <input
+                  type="password"
+                  value={pat}
+                  onChange={e => setPat(e.target.value)}
+                  placeholder="••••••••••••••••••••••••••••••••"
+                  className="w-full rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none"
+                  style={inputStyle}
+                  onFocus={focusOn}
+                  onBlur={focusOff}
+                />
+                <p className="flex items-center gap-1.5 text-xs" style={{ color: '#6b7280' }}>
+                  <Info className="w-3.5 h-3.5 flex-shrink-0" />
+                  Token requires <strong className="text-gray-900">Code: Read &amp; Write</strong> to post comments
+                </p>
+              </div>
+
+              {ScanExclusionsSection}
+
+              {error && (
+                <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
+                     style={{ background: '#fef2f2', border: '1px solid #dc2626', color: '#dc2626' }}>
+                  <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                  {error}
+                </div>
+              )}
+
+              <button
+                disabled={!prUrl.trim() || isLoading}
+                onClick={() => onStartPr(prUrl.trim(), pat, userIgnorePatterns)}
+                className="w-full flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-bold"
+                style={{
+                  background: prUrl.trim() && !isLoading ? '#2563eb' : '#e5e7eb',
+                  color:      prUrl.trim() && !isLoading ? '#f9fafb'  : '#9ca3af',
+                  cursor:     prUrl.trim() && !isLoading ? 'pointer'  : 'not-allowed',
+                }}
+              >
+                {isLoading
+                  ? <><Loader2 className="w-4 h-4 animate-spin" />Reviewing PR…</>
+                  : <><Shield className="w-4 h-4" />Review PR</>}
+              </button>
+              <p className="text-[11px] text-center" style={{ color: '#9ca3af' }}>
+                Reviews only the files changed in the PR against the Insurity coding standards.
+                You choose which comments to post back.
+              </p>
+            </>
+          ) : (
+          <>
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white">Repository URL</label>
+            <label className="text-sm font-medium text-gray-900">Repository URL</label>
             <input
               type="text"
               value={repoUrl}
               onChange={e => setRepoUrl(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && canConnect && handleConnect()}
               placeholder="https://dev.azure.com/org/proj/_git/repo"
-              className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none"
+              className="w-full rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none"
               style={inputStyle}
               onFocus={focusOn}
               onBlur={focusOff}
@@ -347,13 +436,13 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white">Branch</label>
+            <label className="text-sm font-medium text-gray-900">Branch</label>
             <input
               type="text"
               value={branch}
               onChange={e => setBranch(e.target.value)}
               placeholder="staging"
-              className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none"
+              className="w-full rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none"
               style={inputStyle}
               onFocus={focusOn}
               onBlur={focusOff}
@@ -361,20 +450,20 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           </div>
 
           <div className="space-y-1.5">
-            <label className="text-sm font-medium text-white">Personal Access Token (PAT)</label>
+            <label className="text-sm font-medium text-gray-900">Personal Access Token (PAT)</label>
             <input
               type="password"
               value={pat}
               onChange={e => setPat(e.target.value)}
               placeholder="••••••••••••••••••••••••••••••••"
-              className="w-full rounded-lg px-3 py-2.5 text-sm text-white outline-none"
+              className="w-full rounded-lg px-3 py-2.5 text-sm text-gray-900 outline-none"
               style={inputStyle}
               onFocus={focusOn}
               onBlur={focusOff}
             />
-            <p className="flex items-center gap-1.5 text-xs" style={{ color: '#7A9CC0' }}>
+            <p className="flex items-center gap-1.5 text-xs" style={{ color: '#6b7280' }}>
               <Info className="w-3.5 h-3.5 flex-shrink-0" />
-              Token requires <strong className="text-white">Code: Read</strong> permission
+              Token requires <strong className="text-gray-900">Code: Read</strong> permission
             </p>
           </div>
 
@@ -382,14 +471,14 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
           {connectError && (
             <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
-                 style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid #FF4444', color: '#FF8080' }}>
+                 style={{ background: '#fef2f2', border: '1px solid #dc2626', color: '#dc2626' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               {connectError}
             </div>
           )}
           {error && (
             <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
-                 style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid #FF4444', color: '#FF8080' }}>
+                 style={{ background: '#fef2f2', border: '1px solid #dc2626', color: '#dc2626' }}>
               <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
               {error}
             </div>
@@ -400,8 +489,8 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
             onClick={handleConnect}
             className="w-full flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-bold"
             style={{
-              background: canConnect ? '#00BFFF' : '#1E3A5F',
-              color:      canConnect ? '#0A1628'  : '#4A6A8A',
+              background: canConnect ? '#2563eb' : '#e5e7eb',
+              color:      canConnect ? '#f9fafb'  : '#9ca3af',
               cursor:     canConnect ? 'pointer'  : 'not-allowed',
             }}
           >
@@ -412,9 +501,9 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
           {/* Resume fixing — skip the review, load open violations from the last run */}
           <div className="flex items-center gap-3 pt-1">
-            <div className="flex-1 h-px" style={{ background: '#1E3A5F' }} />
-            <span className="text-[10px] uppercase tracking-wider" style={{ color: '#4A6A8A' }}>or</span>
-            <div className="flex-1 h-px" style={{ background: '#1E3A5F' }} />
+            <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
+            <span className="text-[10px] uppercase tracking-wider" style={{ color: '#9ca3af' }}>or</span>
+            <div className="flex-1 h-px" style={{ background: '#e5e7eb' }} />
           </div>
           <button
             disabled={!repoUrl.trim() || isLoading || connectLoading}
@@ -422,8 +511,8 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
             className="w-full flex items-center justify-center gap-2 rounded-lg py-2.5 text-sm font-semibold"
             style={{
               background: 'transparent',
-              color: repoUrl.trim() && !isLoading ? '#00C896' : '#4A6A8A',
-              border: `1px solid ${repoUrl.trim() && !isLoading ? '#00A87650' : '#1E3A5F'}`,
+              color: repoUrl.trim() && !isLoading ? '#059669' : '#9ca3af',
+              border: `1px solid ${repoUrl.trim() && !isLoading ? '#05966950' : '#e5e7eb'}`,
               cursor: repoUrl.trim() && !isLoading ? 'pointer' : 'not-allowed',
             }}
           >
@@ -431,10 +520,12 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
               ? <><Loader2 className="w-4 h-4 animate-spin" />Loading previous review…</>
               : <>↻ Resume fixing from last review</>}
           </button>
-          <p className="text-[11px] text-center" style={{ color: '#4A6A8A' }}>
+          <p className="text-[11px] text-center" style={{ color: '#9ca3af' }}>
             Loads the open violations from your most recent review of this repo &amp; branch —
             no re-scan needed.
           </p>
+          </>
+          )}
         </div>
       </div>
     );
@@ -448,40 +539,40 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
     <div className={embedded
             ? 'fixed inset-0 z-50 flex items-center justify-center p-6 overflow-auto'
             : 'min-h-screen flex items-center justify-center p-6'}
-         style={{ background: embedded ? 'rgba(10,22,40,0.96)' : '#0A1628' }}>
+         style={{ background: embedded ? 'rgba(10,22,40,0.96)' : '#f9fafb' }}>
       <div className="w-full max-w-2xl rounded-xl border p-8 space-y-6"
-           style={{ background: '#0D1F3C', borderColor: '#1E3A5F' }}>
+           style={{ background: '#ffffff', borderColor: '#e5e7eb' }}>
 
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Shield className="w-7 h-7" style={{ color: '#00BFFF' }} />
+            <Shield className="w-7 h-7" style={{ color: '#2563eb' }} />
             <div>
-              <h1 className="text-xl font-bold text-white">ASTRA Code Lens</h1>
-              <p className="text-sm" style={{ color: '#7A9CC0' }}>Step 2 of 2 — Select folders to review</p>
+              <h1 className="text-xl font-bold text-gray-900">ASTRA Code Lens</h1>
+              <p className="text-sm" style={{ color: '#6b7280' }}>Step 2 of 2 — Select folders to review</p>
             </div>
           </div>
-          <button onClick={() => setStep(1)} className="text-xs" style={{ color: '#4A6A8A' }}>
+          <button onClick={() => setStep(1)} className="text-xs" style={{ color: '#9ca3af' }}>
             ← Back
           </button>
         </div>
 
         {/* Repo chip */}
         <div className="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
-             style={{ background: '#0A1628', border: '1px solid #1E3A5F', color: '#7A9CC0' }}>
-          <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#00BFFF' }} />
-          <span className="font-mono truncate text-white">{repoUrl}</span>
+             style={{ background: '#f9fafb', border: '1px solid #e5e7eb', color: '#6b7280' }}>
+          <FolderOpen className="w-3.5 h-3.5 flex-shrink-0" style={{ color: '#2563eb' }} />
+          <span className="font-mono truncate text-gray-900">{repoUrl}</span>
           <span className="flex-shrink-0">· {branch}</span>
         </div>
 
-        <p className="text-xs" style={{ color: '#7A9CC0' }}>
+        <p className="text-xs" style={{ color: '#6b7280' }}>
           Select specific folders to review, or leave all unselected to review the entire repository.
         </p>
 
         {/* Folder tree */}
         <div className="rounded-lg overflow-y-auto"
-             style={{ maxHeight: '280px', background: '#0A1628', border: '1px solid #1E3A5F' }}>
+             style={{ maxHeight: '280px', background: '#f9fafb', border: '1px solid #e5e7eb' }}>
           {rootFolders.length === 0 ? (
-            <div className="text-xs text-center py-8" style={{ color: '#4A6A8A' }}>
+            <div className="text-xs text-center py-8" style={{ color: '#9ca3af' }}>
               No top-level folders found
             </div>
           ) : (
@@ -501,7 +592,7 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           )}
         </div>
 
-        <div className="text-xs" style={{ color: '#7A9CC0' }}>
+        <div className="text-xs" style={{ color: '#6b7280' }}>
           {selectedFolders.size === 0
             ? 'Entire repository will be reviewed'
             : `${selectedFolders.size} folder${selectedFolders.size > 1 ? 's' : ''} selected`}
@@ -557,7 +648,7 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
 
         {error && (
           <div className="flex items-start gap-2 rounded-lg px-3 py-2.5 text-sm"
-               style={{ background: 'rgba(255,68,68,0.1)', border: '1px solid #FF4444', color: '#FF8080' }}>
+               style={{ background: '#fef2f2', border: '1px solid #dc2626', color: '#dc2626' }}>
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
             {error}
           </div>
@@ -568,8 +659,8 @@ export function SetupPanel({ onStart, onResumeFixing, isLoading, error, embedded
           onClick={handleStart}
           className="w-full flex items-center justify-center gap-2 rounded-lg py-3 text-sm font-bold"
           style={{
-            background: !isLoading ? '#00BFFF' : '#1E3A5F',
-            color:      !isLoading ? '#0A1628'  : '#4A6A8A',
+            background: !isLoading ? '#2563eb' : '#e5e7eb',
+            color:      !isLoading ? '#f9fafb'  : '#9ca3af',
             cursor:     !isLoading ? 'pointer'  : 'not-allowed',
           }}
         >
@@ -599,12 +690,12 @@ function FolderTreeNode({ node, idx, depth, selectedFolders, onToggleSelect, onT
     <>
       <div
         className="flex items-center gap-1.5 py-1.5 cursor-pointer"
-        style={{ paddingLeft: `${12 + depth * 16}px`, background: isSelected ? '#00BFFF11' : 'transparent' }}
+        style={{ paddingLeft: `${12 + depth * 16}px`, background: isSelected ? '#2563eb11' : 'transparent' }}
       >
         <button
           onClick={e => { e.stopPropagation(); onToggleExpand(node, idx); }}
           className="flex-shrink-0 w-4 h-4 flex items-center justify-center"
-          style={{ color: node.hasChildren ? '#7A9CC0' : 'transparent', cursor: node.hasChildren ? 'pointer' : 'default' }}
+          style={{ color: node.hasChildren ? '#6b7280' : 'transparent', cursor: node.hasChildren ? 'pointer' : 'default' }}
         >
           {node.loading
             ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -617,17 +708,17 @@ function FolderTreeNode({ node, idx, depth, selectedFolders, onToggleSelect, onT
           onClick={() => onToggleSelect(node.path)}
           className="flex-shrink-0 w-4 h-4 rounded flex items-center justify-center"
           style={{
-            background: isSelected ? '#00BFFF' : 'transparent',
-            border: `1px solid ${isSelected ? '#00BFFF' : '#1E3A5F'}`,
+            background: isSelected ? '#2563eb' : 'transparent',
+            border: `1px solid ${isSelected ? '#2563eb' : '#e5e7eb'}`,
           }}
         >
-          {isSelected && <Check className="w-3 h-3" style={{ color: '#0A1628' }} />}
+          {isSelected && <Check className="w-3 h-3" style={{ color: '#f9fafb' }} />}
         </button>
 
-        <FolderOpen className="w-4 h-4 flex-shrink-0" style={{ color: '#00BFFF' }} />
+        <FolderOpen className="w-4 h-4 flex-shrink-0" style={{ color: '#2563eb' }} />
         <span
           className="text-xs truncate flex-1"
-          style={{ color: isSelected ? '#00BFFF' : '#A0C0D8' }}
+          style={{ color: isSelected ? '#2563eb' : '#374151' }}
           onClick={() => onToggleSelect(node.path)}
         >
           {node.name}
@@ -635,7 +726,7 @@ function FolderTreeNode({ node, idx, depth, selectedFolders, onToggleSelect, onT
 
         {typeof node.fileCount === 'number' && node.fileCount > 0 && (
           <span className="text-[10px] px-1.5 rounded-full flex-shrink-0 mr-2"
-                style={{ background: '#1E3A5F', color: '#4A6A8A' }}>
+                style={{ background: '#e5e7eb', color: '#9ca3af' }}>
             {node.fileCount} .cs
           </span>
         )}

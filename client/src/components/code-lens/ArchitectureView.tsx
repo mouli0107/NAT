@@ -37,9 +37,9 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
             onClick={() => setMode(m)}
             className="text-[11px] font-semibold px-2.5 py-1 rounded"
             style={{
-              background: mode === m ? '#00BFFF22' : 'transparent',
-              color: mode === m ? '#00BFFF' : '#7A9CC0',
-              border: `1px solid ${mode === m ? '#00BFFF55' : '#1E3A5F'}`,
+              background: mode === m ? '#2563eb22' : 'transparent',
+              color: mode === m ? '#2563eb' : '#6b7280',
+              border: `1px solid ${mode === m ? '#2563eb55' : '#e5e7eb'}`,
             }}
           >
             {m === 'summary' ? 'Summary' : 'Interactive graph'}
@@ -48,7 +48,7 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
       </div>
 
       {mode === 'interactive' ? (
-        <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: '#4A6A8A' }}>Loading interactive graph…</div>}>
+        <Suspense fallback={<div className="text-xs py-8 text-center" style={{ color: '#9ca3af' }}>Loading interactive graph…</div>}>
           <ArchitectureFlowGraph graph={graph} />
         </Suspense>
       ) : (
@@ -58,7 +58,7 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
           value={selected}
           onChange={e => setSelected(e.target.value)}
           className="text-xs rounded px-2 py-1.5"
-          style={{ background: '#0A1628', color: '#C0D8F0', border: '1px solid #1E3A5F', maxWidth: '460px' }}
+          style={{ background: '#f9fafb', color: '#C0D8F0', border: '1px solid #e5e7eb', maxWidth: '460px' }}
         >
           <option value="overview">
             Overview — {graph.stats.controllers} controllers · {graph.stats.services} services · {graph.stats.repositories} repositories
@@ -70,10 +70,10 @@ export function ArchitectureView({ graph }: { graph: ArchitectureGraph }) {
           ))}
         </select>
         {current
-          ? <span className="text-[11px]" style={{ color: '#7A9CC0' }}>
-              {current.nodeCount} nodes{current.illegal > 0 && <span style={{ color: '#FF8080' }}> · {current.illegal} illegal edge(s)</span>}
+          ? <span className="text-[11px]" style={{ color: '#6b7280' }}>
+              {current.nodeCount} nodes{current.illegal > 0 && <span style={{ color: '#dc2626' }}> · {current.illegal} illegal edge(s)</span>}
             </span>
-          : <span className="text-[11px]" style={{ color: '#7A9CC0' }}>
+          : <span className="text-[11px]" style={{ color: '#6b7280' }}>
               pick a controller to walk its Controller → Service → Repository → DB chain
             </span>}
       </div>

@@ -5,10 +5,10 @@
 const { spawn } = require('child_process')
 const path = require('path')
 
-const serveScript = path.resolve(__dirname, '../../pc-platform/apps/pc-web/serve-dist.cjs')
+const serveScript = 'C:/Users/chandramouli/Downloads/pc-platform/apps/pc-web/serve-dist.cjs'
 
 const child = spawn(process.execPath, [serveScript], {
-  cwd: path.resolve(__dirname, '../../pc-platform/apps/pc-web'),
+  cwd: 'C:/Users/chandramouli/Downloads/pc-platform/apps/pc-web',
   stdio: 'inherit',
   env: { ...process.env },
 })
