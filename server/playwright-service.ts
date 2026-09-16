@@ -1,6 +1,5 @@
 import { chromium, Browser, BrowserContext, Page } from 'playwright';
-import { getBrowserExecutablePath } from './playwright-setup';
-import * as fs from 'fs';
+import { getBrowserExecutablePath, findRealChrome } from './playwright-setup';
 
 export interface PlaywrightConfig {
   headless: boolean;
@@ -32,6 +31,29 @@ export interface PageInfo {
   h1: string[];
 }
 
+/**
+ * Decide how a HEADED browser should be launched, as a pure function so the
+ * Linux behaviour can be asserted without a Linux machine.
+ *
+ * The rule that matters: `channel: 'chrome'` asks Playwright for a real Google
+ * Chrome install, which on Linux it looks for at /opt/google/chrome/chrome.
+ * Server images do not ship that, so the channel is only ever requested on a
+ * desktop OS where Chrome is plausibly installed. Everywhere else we hand over
+ * an explicit executable, or let Playwright fall back to its bundled Chromium.
+ */
+export function headedLaunchPlan(
+  platform: NodeJS.Platform,
+  realChrome: string | null,
+  cachedExecutable: string | null
+): { executablePath: string | undefined; channel: 'chrome' | undefined } {
+  const executablePath = realChrome ?? cachedExecutable ?? undefined;
+  const isDesktop = platform === 'win32' || platform === 'darwin';
+  return {
+    executablePath,
+    channel: !executablePath && isDesktop ? 'chrome' : undefined,
+  };
+}
+
 class PlaywrightService {
   private browser: Browser | null = null;
   private contexts: Map<string, BrowserContext> = new Map();
@@ -60,27 +82,33 @@ class PlaywrightService {
         });
         console.log('[Playwright] Launched headless browser');
       } else {
-        // Headed mode — open visible Chrome window so user can watch the crawl
-        const chromePaths = [
-          'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
-          'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-        ];
-        const chromeExe = chromePaths.find(p => {
-          try { return fs.existsSync(p); } catch { return false; }
-        });
-        console.log(`[Playwright] Launching headed browser — Chrome: ${chromeExe ?? 'channel:chrome'}`);
+        // Headed mode — open a visible window so the user can watch the crawl.
+        //
+        // A real Google Chrome is preferred (familiar window), but it is only a
+        // nicety. When there is none we fall back to the Chromium Playwright
+        // ships with. `channel: 'chrome'` must NEVER be a blind fallback: on
+        // Linux it resolves to /opt/google/chrome/chrome, which server images do
+        // not install, and the launch fails with
+        //   "Chromium distribution 'chrome' is not found at /opt/google/chrome/chrome".
+        const plan = headedLaunchPlan(process.platform, findRealChrome(), execPath);
+
+        console.log(
+          `[Playwright] Launching headed browser — executable: ${plan.executablePath ?? '(playwright bundled chromium)'}` +
+          `${plan.channel ? ` channel:${plan.channel}` : ''} DISPLAY=${process.env.DISPLAY ?? '(none)'}`
+        );
         this.browser = await chromium.launch({
           headless: false,
           slowMo: this.config.slowMo ?? 150,
-          executablePath: chromeExe,
-          channel: chromeExe ? undefined : 'chrome',
+          executablePath: plan.executablePath,
+          ...(plan.channel ? { channel: plan.channel } : {}),
           args: [
             '--no-sandbox', '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
             '--start-maximized',
             '--disable-blink-features=AutomationControlled',
           ],
         });
-        console.log('[Playwright] Headed Chrome window launched successfully');
+        console.log('[Playwright] Headed browser window launched successfully');
       }
       console.log('[Playwright] Browser initialized successfully');
     } catch (error: any) {

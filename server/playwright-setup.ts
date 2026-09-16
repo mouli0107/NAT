@@ -1,5 +1,8 @@
 import { execSync, exec, execFileSync } from 'child_process';
-import { existsSync } from 'fs';
+// Static imports only: the server is bundled as ESM, where require() is not
+// defined. The previous require('fs') here sat in a Windows-only branch, so it
+// never threw on Linux, but it would have the moment that branch ran.
+import { existsSync, readdirSync } from 'fs';
 import { glob } from 'glob';
 
 let resolvedBrowserPath: string | null = null;
@@ -14,7 +17,13 @@ const SYSTEM_CHROME_CANDIDATES = [
   // Windows: system Chrome
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
-  // Linux: system paths
+  // macOS: system Chrome
+  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
+  // Linux: system paths. /opt/google/chrome is where a real Google Chrome
+  // package installs, and is the path Playwright's `channel: 'chrome'` looks
+  // for, so probing it here lets us use it when it genuinely exists.
+  '/opt/google/chrome/chrome',
+  '/opt/google/chrome/google-chrome',
   '/usr/bin/chromium',
   '/usr/bin/chromium-browser',
   '/usr/bin/google-chrome',
@@ -22,6 +31,66 @@ const SYSTEM_CHROME_CANDIDATES = [
   '/usr/bin/google-chromium',
   '/snap/bin/chromium',
 ];
+
+/**
+ * Directories that may hold a Playwright-managed browser download.
+ * PLAYWRIGHT_BROWSERS_PATH is what the Docker image sets (/ms-playwright), so it
+ * is checked first. The previous implementation only probed a hardcoded Replit
+ * path, which meant the container's own Chromium was never found.
+ */
+function playwrightCacheDirs(): string[] {
+  const dirs: string[] = [];
+  const envPath = process.env.PLAYWRIGHT_BROWSERS_PATH;
+  if (envPath && envPath !== '0') dirs.push(envPath);
+  dirs.push('/ms-playwright');
+  const home = process.env.HOME || process.env.USERPROFILE;
+  if (home) {
+    dirs.push(`${home}/.cache/ms-playwright`);
+    dirs.push(`${home}\\AppData\\Local\\ms-playwright`);
+  }
+  dirs.push('/root/.cache/ms-playwright');
+  dirs.push('/home/runner/workspace/.cache/ms-playwright');
+  return dirs;
+}
+
+/** Binary layouts Playwright uses inside a chromium-* download folder. */
+const CHROMIUM_BINARY_SUFFIXES = [
+  'chrome-linux/chrome',
+  'chrome-linux64/chrome',
+  'chrome-linux/headless_shell',
+  'chrome-headless-shell-linux64/chrome-headless-shell',
+  'chrome-win64\\chrome.exe',
+  'chrome-win\\chrome.exe',
+  'chrome-mac/Chromium.app/Contents/MacOS/Chromium',
+];
+
+/**
+ * Find a Chromium binary that Playwright previously downloaded, on any platform.
+ * Returns null when no cache directory holds one.
+ */
+export function resolvePlaywrightCache(): string | null {
+  for (const dir of playwrightCacheDirs()) {
+    let entries: string[];
+    try {
+      if (!existsSync(dir)) continue;
+      entries = readdirSync(dir).filter((d: string) => d.startsWith('chromium')).sort().reverse();
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      for (const suffix of CHROMIUM_BINARY_SUFFIXES) {
+        const sep = suffix.includes('\\') ? '\\' : '/';
+        const candidate = `${dir}${sep}${entry}${sep}${suffix}`;
+        try {
+          if (existsSync(candidate)) return candidate;
+        } catch {
+          // unreadable path — keep looking
+        }
+      }
+    }
+  }
+  return null;
+}
 
 /**
  * Resolve the browser executable path.
@@ -38,29 +107,10 @@ function resolveSystemChrome(): string | null {
     }
   }
 
-  // 2. Windows: Playwright user cache (~\AppData\Local\ms-playwright\chromium-*\chrome-win64\chrome.exe)
-  const winCache = process.env.USERPROFILE || process.env.LOCALAPPDATA?.replace('\\Roaming', '');
-  if (winCache && process.platform === 'win32') {
-    try {
-      const msPlaywrightDir = `${winCache}\\AppData\\Local\\ms-playwright`;
-      if (existsSync(msPlaywrightDir)) {
-        // Find the highest-numbered chromium-* folder
-        const { readdirSync } = require('fs') as typeof import('fs');
-        const dirs = readdirSync(msPlaywrightDir)
-          .filter((d: string) => d.startsWith('chromium-'))
-          .sort()
-          .reverse();
-        for (const dir of dirs) {
-          const exePath = `${msPlaywrightDir}\\${dir}\\chrome-win64\\chrome.exe`;
-          if (existsSync(exePath)) return exePath;
-          const exePath2 = `${msPlaywrightDir}\\${dir}\\chrome-win\\chrome.exe`;
-          if (existsSync(exePath2)) return exePath2;
-        }
-      }
-    } catch {
-      // ignore — Playwright will find its own cache automatically
-    }
-  }
+  // 2. Playwright's own download cache, on any platform (covers the container's
+  //    PLAYWRIGHT_BROWSERS_PATH=/ms-playwright as well as local dev caches).
+  const cached = resolvePlaywrightCache();
+  if (cached) return cached;
 
   // 3. NixOS Nix store — find any chromium binary
   try {
@@ -75,20 +125,46 @@ function resolveSystemChrome(): string | null {
     // find not available or nix store absent — ignore
   }
 
-  // 4. Linux Playwright cache (if previously installed)
-  try {
-    const cacheMatches = execSync(
-      'find /home/runner/workspace/.cache/ms-playwright -name "chrome" -o -name "headless_shell" 2>/dev/null | head -1',
-      { timeout: 3000, stdio: ['pipe', 'pipe', 'pipe'] }
-    ).toString().trim();
-    if (cacheMatches && existsSync(cacheMatches)) {
-      return cacheMatches;
-    }
-  } catch {
-    // cache not present — ignore
-  }
-
   return null;
+}
+
+/**
+ * A REAL Google Chrome / Chromium install (not a Playwright download), if one
+ * exists on this machine. Used only to make a headed window look familiar on a
+ * developer desktop; never required.
+ */
+export function findRealChrome(): string | null {
+  for (const p of SYSTEM_CHROME_CANDIDATES) {
+    try {
+      if (existsSync(p)) return p;
+    } catch {
+      // unreadable path — keep looking
+    }
+  }
+  return null;
+}
+
+/**
+ * Whether a browser window should actually be opened.
+ *
+ * A desktop OS defaults to headed so the operator can watch a crawl. A server
+ * (Azure App Service, Docker, CI) has nobody watching, so it defaults to
+ * headless; the crawl is streamed to the UI over SSE regardless. Headed can
+ * still be forced there with AUTOTEST_HEADED=true, but only once a display
+ * exists, which ensureXvfb() provides.
+ */
+export function shouldRunHeaded(): boolean {
+  const flag = process.env.AUTOTEST_HEADED;
+  const isDesktop = process.platform === 'win32' || process.platform === 'darwin';
+
+  if (isDesktop) return flag !== 'false';
+  if (flag !== 'true') return false;
+
+  if (!process.env.DISPLAY) {
+    console.warn('[Playwright Setup] AUTOTEST_HEADED=true but no DISPLAY is set — running headless');
+    return false;
+  }
+  return true;
 }
 
 /**

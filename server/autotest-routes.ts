@@ -6,6 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import { EnhancedCrawler } from './enhanced-crawler';
 import { playwrightService } from './playwright-service';
+import { shouldRunHeaded } from './playwright-setup';
 import { spawn } from 'child_process';
 import { writeFile, mkdir, rm, readFile } from 'fs/promises';
 import * as path from 'path';
@@ -1056,7 +1057,7 @@ async function runCrawl(runId: string, url: string, maxPages: number, credential
   if (!run) return;
 
   try {
-    console.log(`[autotest] runCrawl() — creating EnhancedCrawler with headless=false, slowMo=150`);
+    console.log(`[autotest] runCrawl() — creating EnhancedCrawler with headless=${!shouldRunHeaded()}, slowMo=150 (platform=${process.platform}, DISPLAY=${process.env.DISPLAY ?? 'none'})`);
     if (credentials) {
       run.agentStatuses['Auth Agent'] = { type: 'agent_status', agent: 'Auth Agent', status: 'working', message: `Logging in as ${credentials.username}…`, details: 'Detecting login form and submitting credentials' };
       broadcast(runId, { type: 'agent_status', agent: 'Auth Agent', status: 'working', message: `Logging in as ${credentials.username}…`, details: 'Detecting login form and submitting credentials' });
@@ -1073,7 +1074,10 @@ async function runCrawl(runId: string, url: string, maxPages: number, credential
       probeCommonPaths,
       sameDomainOnly: true,
       timeout: 30000,
-      headless: false,  // headed — opens real Chrome window so user can watch the crawl
+      // Headed on a developer desktop so the crawl can be watched; headless on a
+      // server, where there is no screen and the crawl is streamed to the UI over
+      // SSE anyway. Force with AUTOTEST_HEADED=true (needs a DISPLAY).
+      headless: !shouldRunHeaded(),
       ...(credentials ? {
         credentials: {
           username: credentials.username,
@@ -1886,7 +1890,7 @@ module.exports = {
   workers: 1,
   use: {
     baseURL: ${JSON.stringify(baseUrl || 'http://localhost')},
-    headless: false,
+    headless: ${!shouldRunHeaded()},
     viewport: { width: 1280, height: 800 },
     screenshot: 'only-on-failure',
     video: 'off',
@@ -1902,7 +1906,7 @@ module.exports = {
         const fileCount = Object.keys(files).length;
         const specCount = Object.keys(files as Record<string, string>).filter(f => f.endsWith('.spec.ts')).length;
         sendAndLog({ type: 'log', message: `✓  ${fileCount} files written — ${specCount} spec files across 6 test categories\n` });
-        sendAndLog({ type: 'log', message: `▶  Starting Playwright execution (headed Chrome)...\n   baseURL: ${baseUrl}\n   tmpDir:  ${tmpDir}\n   log:     ${path.join(logsDir, execId + '.log')}\n` });
+        sendAndLog({ type: 'log', message: `▶  Starting Playwright execution (${shouldRunHeaded() ? 'headed' : 'headless'})...\n   baseURL: ${baseUrl}\n   tmpDir:  ${tmpDir}\n   log:     ${path.join(logsDir, execId + '.log')}\n` });
 
       } else {
         // ── Legacy single-file mode (backward compat) ─────────────────────
@@ -1922,7 +1926,7 @@ module.exports = {
 module.exports = {
   testMatch: [${JSON.stringify(specGlob)}],
   timeout: 60000, retries: 0, workers: 1,
-  use: { headless: false, viewport: { width: 1280, height: 800 },
+  use: { headless: ${!shouldRunHeaded()}, viewport: { width: 1280, height: 800 },
          screenshot: 'only-on-failure', video: 'off', launchOptions: { slowMo: 300 } },
   reporter: [['json', { outputFile: ${JSON.stringify(resultsPath)} }], ['line']],
   projects: [{ name: 'chromium' }],
